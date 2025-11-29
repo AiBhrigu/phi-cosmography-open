@@ -128,3 +128,35 @@ body {
     text-align: center;
     background: #020617;
 }
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.image-card {
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: radial-gradient(circle at top, rgba(250, 204, 21, 0.06), rgba(15, 23, 42, 0.98));
+    padding: 14px 14px 16px;
+}
+
+.image-card img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.image-card-title {
+    font-size: 14px;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+
+.image-card-caption {
+    font-size: 13px;
+    color: #9ca3af;
+}
