@@ -1,0 +1,130 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: #020617;
+    color: #e5e7eb;
+    min-height: 100vh;
+}
+
+.site-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.site-header {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.site-title {
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #facc15;
+}
+
+.site-nav a {
+    margin-left: 16px;
+    color: #e5e7eb;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.site-nav a:hover {
+    color: #fbbf24;
+    opacity: 1;
+}
+
+.site-main {
+    flex: 1;
+    padding: 40px 24px 32px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.hero {
+    text-align: center;
+    margin-top: 48px;
+}
+
+.hero-title {
+    font-size: 36px;
+    margin-bottom: 12px;
+    color: #facc15;
+}
+
+.hero-subtitle {
+    font-size: 18px;
+    color: #cbd5f5;
+    margin-bottom: 32px;
+}
+
+.hero-link {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(250, 204, 21, 0.7);
+    color: #facc15;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.hero-link:hover {
+    background: rgba(250, 204, 21, 0.1);
+}
+
+.section-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: #e5e7eb;
+}
+
+.section-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #cbd5f5;
+    margin-bottom: 18px;
+}
+
+.link-list {
+    margin-top: 12px;
+    list-style: none;
+}
+
+.link-list li {
+    margin-bottom: 8px;
+}
+
+.link-list a {
+    color: #fbbf24;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.link-list a:hover {
+    text-decoration: underline;
+}
+
+.site-footer {
+    border-top: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 12px 24px;
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+    background: #020617;
+}
