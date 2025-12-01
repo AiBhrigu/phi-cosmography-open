@@ -1,0 +1,38 @@
+<svg width="520" height="520" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="xpolar-bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#020817"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#xpolar-bg)"/>
+
+  <!-- Center (Sun reference) -->
+  <circle cx="260" cy="260" r="6" fill="#facc15"/>
+  <text x="272" y="262" fill="#fde68a" font-size="11">Sun</text>
+
+  <!-- Inner rings (schematic orbital shells) -->
+  <circle cx="260" cy="260" r="60"  stroke="#4b5563" stroke-width="1" fill="none" opacity="0.7"/>
+  <circle cx="260" cy="260" r="110" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.8"/>
+  <circle cx="260" cy="260" r="170" stroke="#22c55e" stroke-width="1.2" fill="none" opacity="0.8"/>
+  <circle cx="260" cy="260" r="230" stroke="#e5e7eb" stroke-width="1.4" fill="none" opacity="0.9" stroke-dasharray="4 6"/>
+
+  <!-- Labels for shells -->
+  <text x="330" y="260" fill="#93c5fd" font-size="11">Neptune ref shell</text>
+  <text x="330" y="280" fill="#bbf7d0" font-size="11">Helion φ⁵ corridor band</text>
+  <text x="330" y="300" fill="#e5e7eb" font-size="11">X-domain search shell</text>
+
+  <!-- Example candidate points (abstract, no IDs) -->
+  <circle cx="260" cy="30"  r="3.5" fill="#e5e7eb"/>
+  <circle cx="80"  cy="260" r="3.5" fill="#e5e7eb"/>
+  <circle cx="440" cy="250" r="3.5" fill="#e5e7eb"/>
+  <circle cx="120" cy="120" r="3.5" fill="#e5e7eb"/>
+  <circle cx="410" cy="120" r="3.5" fill="#e5e7eb"/>
+  <circle cx="120" cy="400" r="3.5" fill="#e5e7eb"/>
+  <circle cx="410" cy="400" r="3.5" fill="#e5e7eb"/>
+
+  <text x="180" y="490" fill="#9ca3af" font-size="11">
+    Polar φ-view of the X-domain search shell (geometry only, no orbital data).
+  </text>
+</svg>
