@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Φ-Cosmography · Solar-System Mapping Atlas</title>
   <link rel="stylesheet" href="css/phi.css" />
-
   <style>
     body {
       background: radial-gradient(circle at 50% 0%, rgba(18,20,40,0.5), #05060a 60%);
@@ -16,11 +15,7 @@
       overflow-x: hidden;
     }
 
-    a { 
-      color: #c9b458; 
-      text-decoration: none; 
-      transition: 0.2s ease; 
-    }
+    a { color: #c9b458; text-decoration: none; transition: 0.2s ease; }
     a:hover { color: #f1d97c; }
 
     .nav {
@@ -34,7 +29,6 @@
       top: 0;
       z-index: 999;
     }
-
     .nav-title {
       font-size: 22px;
       font-weight: 600;
@@ -42,14 +36,12 @@
       color: #f1d97c;
       filter: drop-shadow(0 0 4px rgba(241,217,124,0.25));
     }
-
     .nav-links a {
       margin-left: 32px;
       font-size: 15px;
       opacity: 0.85;
       position: relative;
     }
-
     .nav-links a::after {
       content: "";
       position: absolute;
@@ -60,10 +52,7 @@
       background: #f1d97c;
       transition: width 0.25s ease;
     }
-
-    .nav-links a:hover::after {
-      width: 100%;
-    }
+    .nav-links a:hover::after { width: 100%; }
 
     .hero {
       text-align: center;
@@ -71,22 +60,18 @@
       animation: fadeIn 1.6s ease forwards;
       opacity: 0;
     }
-
     .hero-title {
       font-size: 48px;
       font-weight: 700;
       margin-bottom: 20px;
       color: #fff;
-      letter-spacing: 0.01em;
       text-shadow: 0 0 14px rgba(200,180,70,0.15);
     }
-
     .hero-sub {
       font-size: 19px;
       opacity: 0.82;
       margin-bottom: 50px;
     }
-
     .enter-btn {
       padding: 15px 38px;
       background: #c9b458;
@@ -94,10 +79,9 @@
       border-radius: 32px;
       font-weight: 600;
       font-size: 16px;
-      transition: 0.2s;
       box-shadow: 0 0 14px rgba(201,180,88,0.5);
+      transition: 0.2s;
     }
-
     .enter-btn:hover {
       background: #f1d97c;
       transform: translateY(-3px);
@@ -114,26 +98,21 @@
       transform: translateY(40px);
       animation: riseIn 1.2s ease forwards;
     }
-
     .block:nth-child(even) {
       background: #0d0e15;
     }
-
     .block-inner {
       max-width: 900px;
       margin: auto;
       padding: 0 25px;
     }
-
     .block-title {
       text-align: center;
       font-size: 31px;
       color: #f1d97c;
       margin-bottom: 24px;
-      letter-spacing: 0.03em;
       text-shadow: 0 0 10px rgba(240,210,130,0.25);
     }
-
     .block-text {
       font-size: 17px;
       opacity: 0.85;
@@ -157,13 +136,8 @@
       margin-top: 40px;
     }
 
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    @keyframes riseIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes riseIn { to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 
@@ -184,7 +158,7 @@
   <div class="hero">
     <div class="hero-title">Solar-System Mapping Atlas</div>
     <div class="hero-sub">
-      Golden-ratio geometry · DE440/441 ephemerides · φ-structured cartography  
+      Golden-ratio geometry · DE440/441 ephemerides · φ-structured cartography
     </div>
     <a class="enter-btn" href="atlas.html">→ Enter Atlas</a>
   </div>
@@ -193,12 +167,12 @@
     <div class="block-inner">
       <div class="block-title">Atlas Tour · From Core → X-Domain</div>
       <div class="block-text">
-        The Φ-Cosmography Atlas organizes the Solar System into a fractal, golden-ratio hierarchy:
+        The Φ-Cosmography Atlas organizes the Solar System into a fractal hierarchy:
         <br><br>
-        • <b>Inner φ-Core</b> — Sun-centred spatial grid and reference geometry.<br>
-        • <b>φ-Floors</b> — Jupiter → Saturn → Uranus → Neptune layered architecture.<br>
-        • <b>Helion φ⁵</b> — bridge between giant-planet domain and deep-space corridors.<br>
-        • <b>X-Domain</b> — φ-aligned search region for detached and long-period candidates.
+        • <b>Inner φ-Core</b> — Solar grid & geometry.<br>
+        • <b>φ-Floors</b> — Jupiter → Saturn → Uranus → Neptune layers.<br>
+        • <b>Helion φ⁵</b> — bridge to outer corridors.<br>
+        • <b>X-Domain</b> — φ-search region for long-period candidates.
       </div>
     </div>
   </div>
@@ -208,9 +182,7 @@
       <div class="block-title">Atlas Layers · Quick Jump</div>
       <div class="quick-links">
         <a href="inner_core.html">Inner φ-Core</a>
-        <a href="sun_grid.html">Central φ-Grid & Inner-System Floor</a>
         <a href="phi_floors.html">φ-Floors</a>
-        <a href="giant_floors.html">Jupiter–Saturn–Uranus–Neptune Levels</a>
         <a href="helion.html">Helion φ⁵</a>
         <a href="x_domain.html">X-Domain</a>
       </div>
