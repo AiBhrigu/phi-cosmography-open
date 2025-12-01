@@ -1,37 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Φ-Cosmography · Solar-System Mapping Atlas</title>
-  <link rel="stylesheet" href="css/phi.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Φ-Cosmography · Solar System Atlas</title>
 
-  <style>
-    body {
-      background: #05060a !important; /* глубокий космос */
-      color: #f6f6f6;
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #05060a;
+    color: #f4f4f4;
+    font-family: Inter, sans-serif;
+  }
 
-    /* остальной CSS оставляем — не ломаем сайт */
-  </style>
+  /* NAV */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 40px;
+    background: rgba(0,0,0,0.28);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(6px);
+    z-index: 100;
+  }
+  .nav-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f1d97c;
+    letter-spacing: 0.05em;
+  }
+  .nav-links a {
+    margin-left: 30px;
+    color: #d9c05a;
+    text-decoration: none;
+    font-size: 15px;
+    transition: 0.25s;
+  }
+  .nav-links a:hover {
+    color: #ffea9e;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 120px 20px 110px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, #1b1d26, #05060a 70%);
+  }
+  .hero-title {
+    font-size: 48px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  .hero-sub {
+    font-size: 19px;
+    opacity: 0.85;
+    margin-bottom: 40px;
+  }
+  .hero-btn {
+    padding: 14px 34px;
+    background: #c9b458;
+    color: #000;
+    border-radius: 26px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.25s;
+  }
+  .hero-btn:hover {
+    background: #f1d97c;
+    transform: translateY(-3px);
+  }
+
+  /* BLOCKS */
+  .block {
+    padding: 70px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: #0b0c12;
+    text-align: center;
+  }
+  .block-title {
+    font-size: 30px;
+    color: #f1d97c;
+    margin-bottom: 24px;
+  }
+  .block-text {
+    font-size: 17px;
+    max-width: 800px;
+    margin: auto;
+    line-height: 1.65;
+    opacity: 0.85;
+  }
+
+  .quick-links a {
+    display: block;
+    margin: 10px 0;
+    color: #d9c05a;
+    text-decoration: none;
+    transition: 0.25s;
+  }
+  .quick-links a:hover {
+    color: #ffea9e;
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 45px 0;
+    text-align: center;
+    opacity: 0.55;
+    font-size: 15px;
+  }
+</style>
+
 </head>
 
 <body>
 
-  <div class="nav">
-    <div class="nav-title">Φ-COSMOGRAPHY</div>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="atlas/atlas.html">Atlas</a>
-      <a href="phi_floors/phi_floors.html">φ-Floors</a>
-      <a href="helion/helion.html">Helion φ⁵</a>
-      <a href="x_domain/x_domain.html">X-Domain</a>
-      <a href="inner_core/index.html">Inner φ-Core</a>
-    </div>
+<div class="nav">
+  <div class="nav-title">Φ-COSMOGRAPHY</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="atlas/atlas.html">Atlas</a>
+    <a href="phi_floors/phi_floors.html">φ-Floors</a>
+    <a href="helion/helion.html">Helion φ⁵</a>
+    <a href="x_domain/x_domain.html">X-Domain</a>
+    <a href="inner_core/index.html">Inner φ-Core</a>
   </div>
+</div>
 
-  <!-- остальная часть страницы НЕ ТРОГАЕТСЯ -->
+<div class="hero">
+  <div class="hero-title">Solar-System Mapping Atlas</div>
+  <div class="hero-sub">Golden-ratio geometry · DE440/441 ephemerides · φ-structured cartography</div>
+  <a class="hero-btn" href="atlas/atlas.html">→ Enter Atlas</a>
+</div>
+
+<div class="block">
+  <div class="block-title">Atlas Structure</div>
+  <div class="block-text">
+    The Φ-Cosmography Atlas models the Solar System as a golden-ratio architecture:<br><br>
+    • Inner φ-Core — solar reference grid<br>
+    • φ-Floors — Jupiter → Saturn → Uranus → Neptune layers<br>
+    • Helion φ⁵ — bridge to the deep outer domain<br>
+    • X-Domain — φ-aligned search region for long-period candidates
+  </div>
+</div>
+
+<div class="block">
+  <div class="block-title">Quick Jump</div>
+  <div class="quick-links">
+    <a href="inner_core/index.html">Inner φ-Core</a>
+    <a href="phi_floors/phi_floors.html">φ-Floors</a>
+    <a href="helion/helion.html">Helion φ⁵</a>
+    <a href="x_domain/x_domain.html">X-Domain</a>
+  </div>
+</div>
+
+<div class="footer">
+  Φ-Cosmography · ORION Engine · Golden-Ratio Space-Mapping Framework
+</div>
+
+</body>
+</html>
