@@ -14,42 +14,61 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// λ — фрактальный коэффициент
+const LAMBDA = 1.889;
+
 const particles = [];
-for (let i = 0; i < 36; i++) {
-  particles.push({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    s: 0.4 + Math.random() * 0.9,
-    speed: 0.3 + Math.random() * 0.6,
-    img: flakes[Math.floor(Math.random() * flakes.length)],
-    angle: Math.random() * Math.PI * 2
-  });
+
+function spawn() {
+  for (let i = 0; i < 24; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: 8 + Math.random() * 12,
+      vx: (Math.random() - 0.5) * 0.25 * LAMBDA,
+      vy: (Math.random() - 0.5) * 0.25 * LAMBDA,
+      orbit: Math.random() * Math.PI * 2,
+      img: new Image()
+    });
+  }
+
+  for (let p of particles) {
+    p.img.src = flakes[Math.floor(Math.random() * flakes.length)];
+  }
 }
 
-function loop() {
+spawn();
+
+let t = 0;
+
+function tick() {
+  t += 0.01;
+
   ctx.clearRect(0, 0, W, H);
 
-  particles.forEach(p => {
-    p.y += p.speed;
-    p.angle += 0.003;
-    p.x += Math.sin(p.angle) * 0.4;
+  for (let p of particles) {
+    // λ-модуляция скорости (дыхание)
+    const pulse = 1 + 0.12 * Math.sin(t * LAMBDA);
 
-    if (p.y > H + 20) {
-      p.y = -20;
-      p.x = Math.random() * W;
-    }
+    p.x += p.vx * pulse;
+    p.y += p.vy * pulse;
 
-    const img = new Image();
-    img.src = p.img;
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.translate(p.x, p.y);
-    ctx.scale(p.s, p.s);
-    ctx.drawImage(img, -16, -16, 32, 32);
-    ctx.restore();
-  });
+    // микро-орбитальное смещение
+    p.orbit += 0.0025 * LAMBDA;
+    p.x += Math.cos(p.orbit) * 0.15;
+    p.y += Math.sin(p.orbit) * 0.15;
 
-  requestAnimationFrame(loop);
+    // перезапуск за пределами экрана
+    if (p.x < -50) p.x = W + 50;
+    if (p.x > W + 50) p.x = -50;
+    if (p.y < -50) p.y = H + 50;
+    if (p.y > H + 50) p.y = -50;
+
+    ctx.globalAlpha = 0.70;
+    ctx.drawImage(p.img, p.x, p.y, p.r, p.r);
+  }
+
+  requestAnimationFrame(tick);
 }
 
-loop();
+tick();
