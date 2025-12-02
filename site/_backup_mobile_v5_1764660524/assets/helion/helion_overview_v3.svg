@@ -1,9 +1,0 @@
-<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
-<rect width="100%" height="100%" fill="#020b14"/>
-<circle cx="120" cy="180" r="8" fill="#facc15"/> <!-- Sun -->
-<circle cx="260" cy="180" r="5" fill="#ffe66d"/> <!-- Jupiter band -->
-<circle cx="400" cy="180" r="5" fill="#e2e8f0"/> <!-- Saturn band -->
-<ellipse cx="340" cy="180" rx="260" ry="110"
-         stroke="#7dd3fc88" stroke-width="2" fill="none"/> <!-- Helion corridor arc -->
-<text x="40" y="40" fill="#facc15" font-size="16">Helion φ⁵ — φ-Corridor Map (Public Layer)</text>
-</svg>
