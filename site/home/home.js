@@ -1,16 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("phi-home-root");
-  if (!root) {
-    console.error("Φ-Home: root not found");
-    return;
-  }
-
-  root.innerHTML = `
+  const r = document.getElementById("phi-home-root");
+  r.innerHTML = `
     <div class="phi-home-container">
       <h1 class="phi-title">Φ-Cosmography</h1>
-
       <p class="phi-sub">Golden-Ratio Space-Mapping Framework</p>
-
       <div class="phi-nav">
         <a href="φ-atlas/atlas.html">Atlas</a>
         <a href="φ-floors/floors.html">Floors</a>
@@ -18,8 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <a href="φ-inner/core.html">Inner Core</a>
         <a href="φ-domain/x.html">X-Domain</a>
       </div>
-
-      <p class="phi-build">Φ-Build: v1.5</p>
-    </div>
-  `;
+      <p class="phi-build">Φ-Build v1.7</p>
+    </div>`;
 });
