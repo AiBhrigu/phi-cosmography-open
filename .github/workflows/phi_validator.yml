@@ -1,0 +1,36 @@
+name: Φ-Validator CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  phi-validate:
+    name: Φ Validation Suite
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Run Φ-Autovalidator
+      run: |
+        chmod +x tools/phi_validator.sh
+        ./tools/phi_validator.sh
+
+    - name: Φ-Cleaner (backup & duplicate purge)
+      run: |
+        chmod +x tools/phi_cleaner.sh
+        ./tools/phi_cleaner.sh
+
+    - name: Φ-SunCore Integrity Check
+      run: |
+        chmod +x tools/phi_suncore_check.sh
+        ./tools/phi_suncore_check.sh
+
+    - name: Φ-Layers/Field/Text Integrity Check
+      run: |
+        chmod +x tools/phi_layers_check.sh
+        ./tools/phi_layers_check.sh
+
