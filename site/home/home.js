@@ -16,12 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <a href="../φ-domain/x.html">X-Domain</a>
       </div>
 
-      <div class="ascii-block">${asciiSunCore()}</div>
+      <div class="ascii-block">${asciiSun()}</div>
 
-      <p class="phi-build">Φ-Build v2.1 — Pre-Patent Shell</p>
+      <p class="phi-build">Φ-Build v2.1 — Stable</p>
     </div>
   `;
 
+  // --- φ SunCore background ---
   const c = document.getElementById("phi-sun-core");
   const ctx = c.getContext("2d");
 
@@ -37,12 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const y = c.height / 2;
     const r = Math.min(x, y) * 0.55;
 
-    const gradient = ctx.createRadialGradient(x, y, r*0.1, x, y, r);
-    gradient.addColorStop(0, "rgba(255,220,120,0.9)");
-    gradient.addColorStop(0.6, "rgba(255,220,120,0.2)");
-    gradient.addColorStop(1, "rgba(255,220,120,0)");
+    const g = ctx.createRadialGradient(x, y, r*0.2, x, y, r);
+    g.addColorStop(0, "rgba(255,230,150,0.9)");
+    g.addColorStop(0.6, "rgba(255,230,150,0.15)");
+    g.addColorStop(1, "rgba(255,230,150,0)");
 
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -55,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", resize);
 });
 
-function asciiSunCore() {
+function asciiSun() {
   return `
                  .      .
             .      *       .

@@ -3,7 +3,6 @@ body {
   background: #000;
   color: #f7d47d;
   font-family: Arial, sans-serif;
-  overflow-x: hidden;
 }
 
 #phi-sun-core {
@@ -22,28 +21,26 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  text-align: center;
+  justify-content: center;
 }
 
 .phi-title {
   font-size: 52px;
   margin: 0 0 10px;
-  text-shadow: 0 0 14px #f7d47d88;
+  text-shadow: 0 0 12px #f7d47d99;
 }
 
 .phi-sub {
-  font-size: 16px;
-  opacity: .8;
-  margin-bottom: 30px;
+  opacity: 0.75;
+  margin-bottom: 40px;
 }
 
 .phi-nav a {
-  margin: 0 16px;
-  text-decoration: none;
+  margin: 0 14px;
+  font-size: 20px;
   color: #f7d47d;
-  font-size: 18px;
+  text-decoration: none;
 }
 
 .phi-nav a:hover {
@@ -53,14 +50,14 @@ body {
 .ascii-block {
   margin-top: 60px;
   white-space: pre;
+  opacity: .45;
   font-family: "Courier New", monospace;
   font-size: 12px;
-  opacity: .45;
   line-height: 1.1;
 }
 
 .phi-build {
-  opacity: .7;
-  margin-top: 40px;
+  opacity: .6;
   font-size: 14px;
+  margin-top: 40px;
 }
