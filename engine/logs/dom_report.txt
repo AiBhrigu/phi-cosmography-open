@@ -1,2 +1,0 @@
-DOM nodes: 4
-Heavy: 0
