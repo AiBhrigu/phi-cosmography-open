@@ -1,0 +1,48 @@
+body {
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+#phi-home {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+#phi-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.phi-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #f7e7b6;
+}
+
+.phi-center-text h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.links {
+  margin-top: 20px;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.links a {
+  color: #f7d47d;
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.links a:hover {
+  color: #ffeebc;
+}
