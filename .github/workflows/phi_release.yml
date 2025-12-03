@@ -1,0 +1,66 @@
+name: Φ-Validator + Φ-Build + AutoRelease
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  phi-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    # ============================
+    # Φ-VALIDATION
+    # ============================
+    - name: Run Φ-Autovalidator
+      run: |
+        chmod +x tools/phi_validator.sh
+        ./tools/phi_validator.sh
+
+    - name: Φ-Cleaner (backup purge)
+      run: |
+        chmod +x tools/phi_cleaner.sh
+        ./tools/phi_cleaner.sh
+
+    - name: Φ-SunCore Integrity Check
+      run: |
+        chmod +x tools/phi_suncore_check.sh
+        ./tools/phi_suncore_check.sh
+
+    - name: Φ-Layers/Field/Text Integrity
+      run: |
+        chmod +x tools/phi_layers_check.sh
+        ./tools/phi_layers_check.sh
+
+    # ============================
+    # Φ-BUILD STAGE
+    # ============================
+    - name: Φ-BUILD (auto-compiler)
+      run: |
+        chmod +x tools/phi_build.sh
+        ./tools/phi_build.sh
+
+    # ============================
+    # AUTO RELEASE
+    # ============================
+    - name: Upload Release Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: phi-cosmography-dist
+        path: |
+          dist/
+          phi_cosmography_build_*.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: "release-${{ github.run_number }}"
+        name: "Φ-Release ${{ github.run_number }}"
+        files: |
+          phi_cosmography_build_*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

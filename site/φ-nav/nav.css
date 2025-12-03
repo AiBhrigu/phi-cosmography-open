@@ -1,0 +1,19 @@
+.phi-nav {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+}
+
+.phi-link {
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #f7d47d;
+  transition: 0.2s ease-in-out;
+}
+
+.phi-link:hover {
+  color: #ffe7ac;
+  transform: scale(1.05);
+}
