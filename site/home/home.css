@@ -3,6 +3,7 @@ body {
   background: #000;
   color: #f7d47d;
   font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 
 #phi-sun-core {
@@ -11,11 +12,11 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1;
   pointer-events: none;
+  z-index: 1;
 }
 
-.phi-home-container {
+#phi-home-root {
   position: relative;
   z-index: 2;
   height: 100vh;
@@ -23,41 +24,43 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
 .phi-title {
-  font-size: 52px;
+  font-size: 54px;
   margin: 0 0 10px;
-  text-shadow: 0 0 12px #f7d47d99;
+  letter-spacing: 1px;
+  text-shadow: 0 0 22px #f7d47d55;
 }
 
 .phi-sub {
   opacity: 0.75;
   margin-bottom: 40px;
+  font-size: 18px;
 }
 
 .phi-nav a {
   margin: 0 14px;
-  font-size: 20px;
   color: #f7d47d;
+  font-size: 20px;
   text-decoration: none;
 }
-
 .phi-nav a:hover {
-  color: #fff;
+  color: #ffffff;
 }
 
 .ascii-block {
-  margin-top: 60px;
+  margin-top: 45px;
+  opacity: 0.55;
+  font-size: 11px;
+  line-height: 13px;
   white-space: pre;
-  opacity: .45;
-  font-family: monospace;
-  font-size: 12px;
-  line-height: 1.1;
 }
 
 .phi-build {
-  margin-top: 40px;
-  opacity: .6;
+  position: absolute;
+  bottom: 22px;
   font-size: 14px;
+  opacity: 0.65;
 }
