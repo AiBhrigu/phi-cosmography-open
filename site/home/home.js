@@ -9,14 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
       <p class="phi-sub">Golden-Ratio Space-Mapping Framework</p>
 
       <div class="phi-nav">
-        <a href="φ-atlas/atlas.html">Atlas</a>
-        <a href="φ-floors/floors.html">Floors</a>
-        <a href="φ-helion/helion.html">Helion</a>
-        <a href="φ-inner/core.html">Inner Core</a>
-        <a href="φ-domain/x.html">X-Domain</a>
+        <a href="../φ-atlas/atlas.html">Atlas</a>
+        <a href="../φ-floors/floors.html">Floors</a>
+        <a href="../φ-helion/helion.html">Helion φ⁵</a>
+        <a href="../φ-inner/core.html">Inner Core</a>
+        <a href="../φ-domain/x.html">X-Domain</a>
       </div>
 
-      <p class="phi-build">Φ-Build v2.0 — Pre-Patent Shell</p>
+      <div class="ascii-block">${asciiSunCore()}</div>
+
+      <p class="phi-build">Φ-Build v2.1 — Pre-Patent Shell</p>
     </div>
   `;
 
@@ -28,27 +30,42 @@ document.addEventListener("DOMContentLoaded", () => {
     c.height = window.innerHeight;
   }
 
-  function loop() {
+  function draw() {
     ctx.clearRect(0, 0, c.width, c.height);
 
     const x = c.width / 2;
     const y = c.height / 2;
-    const r = Math.min(c.width, c.height) * 0.23;
+    const r = Math.min(x, y) * 0.55;
 
-    const g = ctx.createRadialGradient(x, y, r * 0.1, x, y, r);
-    g.addColorStop(0, "rgba(255,220,120,1)");
-    g.addColorStop(0.45, "rgba(255,200,90,0.7)");
-    g.addColorStop(1, "rgba(255,180,60,0)");
+    const gradient = ctx.createRadialGradient(x, y, r*0.1, x, y, r);
+    gradient.addColorStop(0, "rgba(255,220,120,0.9)");
+    gradient.addColorStop(0.6, "rgba(255,220,120,0.2)");
+    gradient.addColorStop(1, "rgba(255,220,120,0)");
 
-    ctx.fillStyle = g;
+    ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
 
-    requestAnimationFrame(loop);
+    requestAnimationFrame(draw);
   }
 
   resize();
+  draw();
   window.addEventListener("resize", resize);
-  loop();
 });
+
+function asciiSunCore() {
+  return `
+                 .      .
+            .      *       .
+       .     .    |    .      .
+           .    \\ | /     .
+        .     .  \\|/  .         .
+       ------------*------------
+        .     .  /|\\    .     .
+           .    / | \\      .
+       .      .    |   .       .
+                .     .
+  `;
+}
