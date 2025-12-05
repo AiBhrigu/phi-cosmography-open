@@ -1,0 +1,134 @@
+/* ============================================================
+   Φ-Theme v1.4 · REL1 Normalized Color System
+   15 φ-Color CSS Variables · Golden Ratio Palette
+   ============================================================ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────
+     PRIMARY φ-COLORS (Gold / Solar Spectrum)
+     ───────────────────────────────────────────────────────────── */
+  --phi-gold-primary:     #facc15;           /* Primary gold accent */
+  --phi-gold-bright:      #fbbf24;           /* Bright gold hover */
+  --phi-gold-soft:        #ffdc7f;           /* Soft gold links */
+  --phi-gold-muted:       rgba(255, 215, 140, 0.65);  /* Muted gold glow */
+  --phi-gold-halo:        rgba(255, 215, 140, 0.08);  /* Halo effect */
+
+  /* ─────────────────────────────────────────────────────────────
+     CORE φ-COLORS (Light Gradient Layers)
+     ───────────────────────────────────────────────────────────── */
+  --phi-core-0:           rgba(255, 230, 160, 0.30);  /* Core center */
+  --phi-core-1:           rgba(255, 220, 150, 0.22);  /* Core layer 1 */
+  --phi-core-2:           rgba(255, 210, 130, 0.14);  /* Core layer 2 */
+  --phi-core-3:           rgba(255, 200, 120, 0.06);  /* Core layer 3 */
+  --phi-core-4:           rgba(0, 0, 0, 0);           /* Core transparent */
+
+  /* ─────────────────────────────────────────────────────────────
+     BACKGROUND φ-COLORS (Dark Space Theme)
+     ───────────────────────────────────────────────────────────── */
+  --phi-bg-deep:          #020617;           /* Deep space background */
+  --phi-bg-dark:          #05060a;           /* Dark background */
+  --phi-bg-panel:         rgba(15, 23, 42, 0.95);    /* Panel background */
+
+  /* ─────────────────────────────────────────────────────────────
+     TEXT φ-COLORS (Readable Contrast)
+     ───────────────────────────────────────────────────────────── */
+  --phi-text-primary:     #e5e7eb;           /* Primary text */
+  --phi-text-secondary:   #cbd5f5;           /* Secondary text */
+  --phi-text-muted:       #9ca3af;           /* Muted text */
+}
+
+/* ============================================================
+   Φ-Header v1.4 · Sticky Navigation Component
+   ============================================================ */
+
+.phi-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--phi-bg-panel);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.phi-header-title {
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--phi-gold-primary);
+}
+
+.phi-header-nav a {
+  margin-left: 16px;
+  color: var(--phi-text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.9;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.phi-header-nav a:hover {
+  color: var(--phi-gold-bright);
+  opacity: 1;
+}
+
+.phi-header-nav a.active {
+  color: var(--phi-gold-primary);
+  opacity: 1;
+}
+
+/* ============================================================
+   Φ-Grid v1.1 · Golden Ratio Layout System
+   Based on φ = 1.618033988749895
+   ============================================================ */
+
+.phi-grid {
+  display: grid;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Two-column golden ratio: 61.8% / 38.2% */
+.phi-grid-2 {
+  grid-template-columns: 61.8fr 38.2fr;
+}
+
+/* Three-column φ-balanced */
+.phi-grid-3 {
+  grid-template-columns: 38.2fr 23.6fr 38.2fr;
+}
+
+/* Golden section containers */
+.phi-section-major {
+  flex: 1.618;
+}
+
+.phi-section-minor {
+  flex: 1;
+}
+
+/* Responsive φ-grid */
+@media (max-width: 768px) {
+  .phi-grid-2,
+  .phi-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Φ-Footer v1.4 · Site Footer Component
+   ============================================================ */
+
+.phi-footer {
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 12px 24px;
+  font-size: 12px;
+  color: var(--phi-text-muted);
+  text-align: center;
+  background: var(--phi-bg-deep);
+}
