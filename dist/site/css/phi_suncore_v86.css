@@ -1,0 +1,44 @@
+/* ============================================================
+   Φ-v8.6 · SUN-CORE
+   Golden φ-Core • Low-Glare • λ-Depth • Soft Cosmographic Light
+   ============================================================ */
+
+:root {
+  --phi-core-0: rgba(255, 230, 160, 0.45);  /* центр */
+  --phi-core-1: rgba(255, 220, 150, 0.33);  /* мягкое ядро */
+  --phi-core-2: rgba(255, 210, 130, 0.22);  /* средняя зона */
+  --phi-core-3: rgba(255, 200, 120, 0.10);  /* внешняя зона */
+  --phi-core-4: rgba(0,0,0,0);              /* затухание */
+}
+
+/* Φ-Core — новая структура */
+.phi-sun-core {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 820px;
+  height: 820px;
+  margin-left: -410px;
+  margin-top: -410px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--phi-core-0) 0%,
+    var(--phi-core-1) 28%,
+    var(--phi-core-2) 55%,
+    var(--phi-core-3) 78%,
+    var(--phi-core-4) 100%
+  );
+  filter: blur(55px);
+  opacity: 0.78;
+  pointer-events: none;
+  z-index: 1;
+  animation: sunBreath 17s infinite ease-in-out;
+}
+
+/* мягкое дыхание по λ */
+@keyframes sunBreath {
+  0%   { transform: scale(0.985); opacity: 0.70; }
+  50%  { transform: scale(1.015); opacity: 0.82; }
+  100% { transform: scale(0.985); opacity: 0.70; }
+}

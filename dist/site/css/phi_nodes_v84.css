@@ -1,0 +1,20 @@
+/* ============================================
+   Φ-v8.4 — Resonance Nodes (φ-nodes)
+   ============================================ */
+
+.phi-node {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,215,140,0.75);
+  box-shadow: 0 0 12px rgba(255,200,120,0.55);
+  transform: translate(-50%, -50%);
+  animation: phiPulse 4s infinite ease-in-out;
+}
+
+@keyframes phiPulse {
+  0%   { transform: scale(0.85); opacity: 0.55; }
+  50%  { transform: scale(1.18); opacity: 1.0; }
+  100% { transform: scale(0.85); opacity: 0.55; }
+}

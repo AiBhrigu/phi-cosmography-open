@@ -1,0 +1,7 @@
+body { margin: 0; background: #000; color: #f7d47d; font-family: Arial; }
+.phi-shell { padding: 60px 80px; max-width: 900px; }
+.phi-title { font-size: 42px; margin-bottom: 10px; }
+.phi-sub { opacity: .7; margin-bottom: 40px; }
+.phi-links a { margin-right: 20px; color: #f7d47d; text-decoration: none; }
+.phi-links a:hover { color: #fff; }
+.phi-block { margin: 40px 0; }

@@ -1,0 +1,30 @@
+/* Φ-v8.8 SUN-CORE */
+:root {
+  --phi-core-0: rgba(255, 230, 160, 0.34);
+  --phi-core-1: rgba(255, 220, 150, 0.28);
+  --phi-core-2: rgba(255, 210, 130, 0.18);
+  --phi-core-3: rgba(255, 200, 120, 0.08);
+  --phi-core-4: rgba(0,0,0,0);
+}
+.phi-sun-core {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 760px;
+  height: 760px;
+  margin-left: -380px;
+  margin-top: -380px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+      circle,
+      var(--phi-core-0) 0%,
+      var(--phi-core-1) 19%,
+      var(--phi-core-2) 38%,
+      var(--phi-core-3) 72%,
+      var(--phi-core-4) 100%
+  );
+  opacity: 0.92;
+  filter: blur(38px);
+}

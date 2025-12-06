@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frey-v03"
+version = "0.3.0"
+description = "Frey-Core + Frey-API stabilised build"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "pydantic",
+]
+
+[project.urls]
+homepage = "https://github.com/aibhrigu"
