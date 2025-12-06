@@ -1,0 +1,12 @@
+{
+  "name": "phi-cosmography-open",
+  "version": "2.0.0",
+  "description": "Φ-Release Engine v2 for ORION OpenSite",
+  "type": "module",
+  "scripts": {
+    "phi-release": "node engine/phi_release/run.js"
+  },
+  "dependencies": {
+    "jsdom": "^27.2.0"
+  }
+}
