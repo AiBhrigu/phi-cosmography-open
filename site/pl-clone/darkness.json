@@ -1,0 +1,8 @@
+{
+  "state": "sealed",
+  "timestamp": "2025-01-00T00:00:00.000Z",
+  "version": "1.0.0",
+  "type": "pre-light-snapshot",
+  "description": "Static symbolic Pre-Light Master Snapshot - PL-Clone v1.0",
+  "note": "This is a fully static placeholder with no runtime logic"
+}
