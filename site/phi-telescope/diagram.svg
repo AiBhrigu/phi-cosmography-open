@@ -10,7 +10,7 @@
   <circle cx="200" cy="150" r="80" 
           fill="none" stroke="#666" stroke-width="1.5"/>
   
-  <!-- φ-lens marker (inner guide) -->
+  <!-- φ-lens marker (inner guide, r = 80/φ ≈ 49.44 for golden ratio) -->
   <circle cx="200" cy="150" r="49.44" 
           fill="none" stroke="#999" stroke-width="1" 
           stroke-dasharray="3,3"/>
