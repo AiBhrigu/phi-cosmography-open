@@ -1,0 +1,24 @@
+/* Φ System Tokens v1.4 */
+:root {
+  --phi-gold-1: #f7e8b0;
+  --phi-gold-2: #f2d98c;
+  --phi-gold-3: #eac65d;
+  --phi-gold-4: #d8a931;
+  --phi-gold-5: #c89218;
+
+  --phi-dark-1: #0d0d0f;
+  --phi-dark-2: #141418;
+  --phi-dark-3: #1b1b20;
+
+  --phi-blue-1: #141e3a;
+  --phi-blue-2: #1e2c55;
+
+  --phi-step-1: 8px;
+  --phi-step-2: 13px;
+  --phi-step-3: 21px;
+  --phi-step-4: 34px;
+  --phi-step-5: 55px;
+
+  --phi-major: 61.8%;
+  --phi-minor: 38.2%;
+}
