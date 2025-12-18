@@ -8,7 +8,7 @@ let playwright;
 try {
   playwright = await import("playwright");
 } catch {
-  console.error("Playwright not found. Install deps first (npm/pnpm/yarn) or add playwright as devDependency.");
+  console.error("Playwright not found. Install deps first or add playwright as devDependency.");
   process.exit(2);
 }
 
