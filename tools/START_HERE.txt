@@ -1,0 +1,6 @@
+ONE COMMAND:
+  ./tools/go.sh
+
+Does:
+- installs git hooks if missing
+- runs preflight + surface status
