@@ -3,15 +3,19 @@ set -euo pipefail
 
 SESSION="${1:-COSMO_OPEN}"
 
-# If already inside tmux — do nothing.
+# If already inside tmux — do nothing (no nesting).
 if [ -n "${TMUX:-}" ]; then
-  echo "Already inside tmux. Session: ${TMUX}"
+  echo "Already inside tmux: ${TMUX}"
+  echo "Keep working, or switch client manually if needed."
   exit 0
 fi
 
-command -v tmux >/dev/null 2>&1 || { echo "ERROR: tmux not installed"; exit 2; }
+command -v tmux >/dev/null 2>&1 || {
+  echo "ERROR: tmux not installed."
+  echo "Install: sudo apt-get update && sudo apt-get install -y tmux"
+  exit 2
+}
 
-# Attach if exists, else create.
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   exec tmux attach -t "$SESSION"
 else
