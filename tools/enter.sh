@@ -2,9 +2,8 @@
 set -euo pipefail
 
 SESSION="${1:-COSMO_OPEN}"
-DRY="${2:-}"
-
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+WIN="ATOMIC_START"
 
 command -v tmux >/dev/null 2>&1 || {
   echo "ERROR: tmux not installed."
@@ -12,27 +11,24 @@ command -v tmux >/dev/null 2>&1 || {
   exit 2
 }
 
-CMD="cd '$ROOT' && ./tools/atomic_start.sh; echo; exec \$SHELL -l"
-WIN="ATOMIC_START"
-
-if [ "$DRY" = "--dry-run" ]; then
-  echo "DRY-RUN:"
-  echo "session=$SESSION"
-  echo "window=$WIN"
-  echo "cmd=$CMD"
-  exit 0
-fi
+CMD="cd \"$ROOT\" && ./tools/atomic_start.sh | head -n 120; echo; exec ${SHELL:-bash} -l"
+QCMD="$(printf %q "$CMD")"
 
 # ensure session exists
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-  tmux new-session -d -s "$SESSION" -c "$ROOT" "bash -lc $CMD"
+  tmux new-session -d -s "$SESSION" -c "$ROOT" -n "$WIN" "bash -lc $QCMD"
 else
-  # create a fresh window that runs atomic_start
-  tmux new-window -t "$SESSION" -n "$WIN" -c "$ROOT" "bash -lc $CMD" >/dev/null
+  # ensure window exists; if exists — refresh pane
+  if tmux list-windows -t "$SESSION" -F '#{window_name}' | grep -qx "$WIN"; then
+    tmux respawn-pane -k -t "$SESSION:$WIN" "bash -lc $QCMD"
+  else
+    tmux new-window -t "$SESSION" -n "$WIN" -c "$ROOT" "bash -lc $QCMD"
+  fi
 fi
 
-# switch/attach (no nesting)
+# attach/switch
 if [ -n "${TMUX:-}" ]; then
+  tmux select-window -t "$SESSION:$WIN" >/dev/null 2>&1 || true
   exec tmux switch-client -t "$SESSION"
 else
   exec tmux attach -t "$SESSION"

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SESSION="${1:-COSMO_OPEN}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 command -v tmux >/dev/null 2>&1 || {
   echo "ERROR: tmux not installed."
@@ -9,20 +10,16 @@ command -v tmux >/dev/null 2>&1 || {
   exit 2
 }
 
-# If already inside tmux — switch client to target session (no nesting).
+# inside tmux: switch client to session (no nesting)
 if [ -n "${TMUX:-}" ]; then
   if tmux has-session -t "$SESSION" 2>/dev/null; then
     exec tmux switch-client -t "$SESSION"
   else
     echo "ERROR: session '$SESSION' not found."
-    echo "Create: tmux new -d -s '$SESSION'"
+    echo "Create: tmux new-session -d -s '$SESSION' -c '$ROOT'"
     exit 3
   fi
 fi
 
-# Outside tmux — attach or create.
-if tmux has-session -t "$SESSION" 2>/dev/null; then
-  exec tmux attach -t "$SESSION"
-else
-  exec tmux new -s "$SESSION"
-fi
+# outside tmux: attach/create with correct cwd
+exec tmux new-session -As "$SESSION" -c "$ROOT"
