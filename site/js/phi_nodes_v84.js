@@ -3,7 +3,7 @@
    Ties into orbital motion (phi_orbits_v83.js)
    ============================================================ */
 
-const LAMBDA = 1.889;
+const LAMBDA = 1.618;
 
 const nodeCanvas = document.createElement("canvas");
 nodeCanvas.id = "phi-nodes-canvas";

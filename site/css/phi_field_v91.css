@@ -1,6 +1,6 @@
 /* ============================================================
    Φ-v9.1 · λ-PULSE-FIELD
-   Deep-field breathing (λ = 1.889)
+   Deep-field breathing (λ = 1.618)
    ============================================================ */
 
 @keyframes phiFieldBreath {
@@ -25,6 +25,6 @@
     rgba(0,0,0,0.15)
   );
 
-  animation: phiFieldBreath calc(22s * 1.889) ease-in-out infinite;
+  animation: phiFieldBreath calc(22s * 1.618) ease-in-out infinite;
   filter: blur(22px);
 }

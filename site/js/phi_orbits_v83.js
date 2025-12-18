@@ -1,9 +1,9 @@
 /* ============================================================
    Φ-v8.3 — Orbital Dynamics Engine
-   Earth · Venus · Mars — golden-ratio motion (λ = 1.889)
+   Earth · Venus · Mars — golden-ratio motion (λ = 1.618)
    ============================================================ */
 
-const L = 1.889;
+const L = 1.618;
 
 // орбитальные параметры (условные, без эфемерид)
 const orbits = [

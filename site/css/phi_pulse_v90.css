@@ -1,6 +1,6 @@
 /* ============================================
    Φ-v9.0 · λ-PULSE
-   Golden breathing core (λ = 1.889)
+   Golden breathing core (λ = 1.618)
    ============================================ */
 
 @keyframes phiPulseCore {
@@ -10,5 +10,5 @@
 }
 
 .phi-sun-core {
-  animation: phiPulseCore calc(14s * 1.889) ease-in-out infinite;
+  animation: phiPulseCore calc(14s * 1.618) ease-in-out infinite;
 }
