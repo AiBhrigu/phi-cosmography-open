@@ -15,7 +15,7 @@ window.addEventListener('resize', resize);
 resize();
 
 // λ — фрактальный коэффициент
-const LAMBDA = 1.889;
+const LAMBDA = 1.618;
 
 const particles = [];
 

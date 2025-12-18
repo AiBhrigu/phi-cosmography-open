@@ -1,7 +1,7 @@
 // Φ-SunCore v100 — живое ядро ORION OpenSite v2
-// λ = 1.889, Golden decay + shift field
+// λ = 1.618, Golden decay + shift field
 
-const lambda = 1.889;
+const lambda = 1.618;
 
 export function initSunCore() {
   const canvas = document.getElementById("phi-suncore");
