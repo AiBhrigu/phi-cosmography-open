@@ -26,7 +26,9 @@ fi
 echo
 
 echo "-- forbidden zones (existence scan; read-only) --"
-find . -maxdepth 4 -type d \( -path "*/.git/worktrees*" -o -path "*/dist*" -o -iname "_backup_*" \) 2>/dev/null | head -n 40 || true
+find . -maxdepth 4 -type d \
+  \( -path "*/.git/worktrees*" -o -path "./dist*" -o -iname "_backup_*" \) \
+  -not -path "./node_modules/*" 2>/dev/null | head -n 40 || true
 echo
 
 echo "-- site entrypoints --"
