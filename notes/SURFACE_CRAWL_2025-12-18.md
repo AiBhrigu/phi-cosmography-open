@@ -1,19 +1,6 @@
-# SURFACE CRAWL · 2025-12-18
+cd ~/phi-cosmography-open || exit 1
+./tools/preflight.sh
 
-## Links
--
-
-## Console
--
-
-## Layout
--
-
-## Focus/UX
--
-
-## Next atoms (FP2..)
-- FP2:
-- FP3:
-- FP4:
-- FP5:
+git add notes/SURFACE_CRAWL_2025-12-18.md
+git commit -m "notes: fill FP1 crawl results (2025-12-18)"
+git push
