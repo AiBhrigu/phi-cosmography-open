@@ -5,10 +5,10 @@ Goal: 0 console errors on key routes.
 ## Routes
 / /start /cosmography /map /orion /frey /dao
 
-## Output
-See: /tmp/fp3/console_summary.txt
-See: /tmp/fp3/console_errors.json
-See: /tmp/fp3/request_failures.json
+## Artifacts
+- /tmp/fp3/console_summary.txt
+- /tmp/fp3/console_errors.json
+- /tmp/fp3/request_failures.json
 
 ## Summary (raw)
 ```

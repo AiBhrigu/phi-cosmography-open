@@ -1,12 +1,13 @@
 import fs from "node:fs";
 
 const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:4173";
-const ROUTES = (process.env.ROUTES || "/ /start /cosmography /map /orion /frey /dao").split(/\s+/).filter(Boolean);
+const ROUTES = (process.env.ROUTES || "/ /start /cosmography /map /orion /frey /dao")
+  .split(/\s+/).filter(Boolean);
 
 let playwright;
 try {
   playwright = await import("playwright");
-} catch (e) {
+} catch {
   console.error("Playwright not found. Install deps first (npm/pnpm/yarn) or add playwright as devDependency.");
   process.exit(2);
 }
