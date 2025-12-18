@@ -21,7 +21,6 @@ else
   npm ci 2>/dev/null || npm i
 fi
 
-# ensure playwright browsers exist if playwright is present
 if node -e "require.resolve('playwright')" >/dev/null 2>&1; then
   npx playwright install >/dev/null 2>&1 || true
 fi
