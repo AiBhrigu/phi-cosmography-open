@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SESSION="${1:-COSMO_OPEN}"
 
+# If already inside tmux — do nothing.
 if [ -n "${TMUX:-}" ]; then
   echo "Already inside tmux. Session: ${TMUX}"
   exit 0
 fi
 
-# attach or create session at repo root
-tmux new-session -As "$SESSION" -c "$ROOT" \; \
-  rename-window -t "$SESSION:0" "lane" \; \
-  set-option -t "$SESSION" history-limit 20000 \; \
-  display-message "COSMO lane ready. Run: ./tools/atomic_start.sh"
+command -v tmux >/dev/null 2>&1 || { echo "ERROR: tmux not installed"; exit 2; }
+
+# Attach if exists, else create.
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  exec tmux attach -t "$SESSION"
+else
+  exec tmux new -s "$SESSION"
+fi
