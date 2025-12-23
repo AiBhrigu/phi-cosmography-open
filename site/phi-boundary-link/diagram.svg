@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <!-- Symbolic scaffold for φ-Boundary-Link -->
+  
+  <!-- Three nodes: T (Telescope), L (Lens), F (Frame) -->
+  <circle cx="150" cy="60" r="20" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="150" y="67" text-anchor="middle" font-size="16" font-family="Arial">T</text>
+  
+  <circle cx="80" cy="200" r="20" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="80" y="207" text-anchor="middle" font-size="16" font-family="Arial">L</text>
+  
+  <circle cx="220" cy="200" r="20" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="220" y="207" text-anchor="middle" font-size="16" font-family="Arial">F</text>
+  
+  <!-- Linking arc connecting the three nodes -->
+  <path d="M 150 80 Q 100 130 80 180" fill="none" stroke="#666" stroke-width="1.5"/>
+  <path d="M 150 80 Q 200 130 220 180" fill="none" stroke="#666" stroke-width="1.5"/>
+  <path d="M 100 200 L 200 200" fill="none" stroke="#666" stroke-width="1.5"/>
+  
+  <!-- Centered Φ marker -->
+  <text x="150" y="150" text-anchor="middle" font-size="36" font-family="serif" fill="#999">Φ</text>
+</svg>
