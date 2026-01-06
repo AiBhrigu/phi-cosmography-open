@@ -6,3 +6,7 @@ _wip_quarantine/
 # python cache
 __pycache__/
 *.pyc
+
+# python build/install artifacts
+*.egg-info/
+**/*.egg-info/
