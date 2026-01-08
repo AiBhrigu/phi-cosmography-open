@@ -2,3 +2,11 @@ node_modules/
 site/_backup_*/
 site/_backup_mobile_*/
 _wip_quarantine/
+
+# python cache
+__pycache__/
+*.pyc
+
+# python build/install artifacts
+*.egg-info/
+**/*.egg-info/
