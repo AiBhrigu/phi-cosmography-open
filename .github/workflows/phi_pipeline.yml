@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+
+permissions:
+  contents: read
+
 jobs:
   phi-pipeline:
     runs-on: ubuntu-latest
@@ -89,15 +93,3 @@ jobs:
         path: |
           dist/
           phi_cosmography_build_*.zip
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: "release-${{ github.run_number }}"
-        name: "Φ-Release ${{ github.run_number }}"
-        files: |
-          phi_cosmography_build_*.zip
-          lighthouse_report.html
-          lighthouse_report.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
