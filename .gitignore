@@ -10,3 +10,7 @@ __pycache__/
 # python build/install artifacts
 *.egg-info/
 **/*.egg-info/
+
+# ops runner backups (do not track)
+ops/_bak_*/
+ops/*.bak.*
