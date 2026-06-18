@@ -41,6 +41,217 @@
   .hub-boundary p { margin:8px 0 0; color:#94a3b8; font-size:13px; }
 
 
+
+  /* CRYPTO_ASTRO_LAUNCH_SHELL_V2_STYLE:BEGIN */
+  body { position:relative; overflow-x:hidden; }
+  body::before {
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      linear-gradient(rgba(143,183,255,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(143,183,255,.045) 1px, transparent 1px),
+      radial-gradient(circle at 18% 12%, rgba(247,212,125,.12), transparent 28%),
+      radial-gradient(circle at 82% 8%, rgba(143,183,255,.10), transparent 26%);
+    background-size:44px 44px,44px 44px,100% 100%,100% 100%;
+  }
+  .surface-hub-frame,
+  .crypto-shell,
+  .phi-footer { position:relative; z-index:1; }
+  .launch-shell { display:grid; gap:26px; }
+  .launch-hero {
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:34px;
+    padding:38px;
+    background:
+      radial-gradient(circle at top left, rgba(143,183,255,.14), transparent 36%),
+      radial-gradient(circle at bottom right, rgba(247,212,125,.10), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.024));
+    box-shadow:0 28px 80px rgba(0,0,0,.28);
+  }
+  .launch-kicker {
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#8fb7ff;
+    font-size:12px;
+    font-weight:700;
+  }
+  .launch-title {
+    max-width:880px;
+    margin:16px 0 0;
+    color:#f8fafc;
+    font-size:clamp(42px,7vw,82px);
+    line-height:.94;
+    letter-spacing:-.06em;
+  }
+  .launch-lead {
+    max-width:820px;
+    margin:20px 0 0;
+    color:rgba(226,232,240,.78);
+    font-size:18px;
+    line-height:1.72;
+  }
+  .launch-badges {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:28px;
+  }
+  .launch-badge {
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:8px 12px;
+    color:#e2e8f0;
+    background:rgba(255,255,255,.035);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  .launch-badge.gold { color:#f7d47d; border-color:rgba(247,212,125,.34); }
+  .launch-badge.blue { color:#8fb7ff; border-color:rgba(143,183,255,.34); }
+  .launch-badge.green { color:#86efac; border-color:rgba(134,239,172,.30); }
+  .launch-metrics {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+  }
+  .metric-card {
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:24px;
+    padding:20px;
+    background:rgba(255,255,255,.028);
+  }
+  .metric-value {
+    color:#f7d47d;
+    font-size:34px;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+  .metric-label {
+    margin-top:10px;
+    color:#94a3b8;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .route-strip {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    border:1px solid rgba(143,183,255,.20);
+    border-radius:28px;
+    padding:18px;
+    background:rgba(143,183,255,.045);
+  }
+  .route-pill {
+    flex:1 1 auto;
+    min-width:104px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:999px;
+    padding:10px 12px;
+    color:#e2e8f0;
+    background:rgba(255,255,255,.026);
+    font-size:11px;
+    font-weight:750;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  .surface-launcher {
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:34px;
+    padding:28px;
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  }
+  .launch-section-header {
+    max-width:820px;
+    margin-bottom:22px;
+  }
+  .launch-section-header h2 {
+    margin:12px 0 0;
+    color:#f8fafc;
+    font-size:32px;
+    letter-spacing:-.04em;
+  }
+  .launch-section-header p {
+    margin:12px 0 0;
+    color:rgba(226,232,240,.72);
+    line-height:1.64;
+  }
+  .launcher-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:16px;
+  }
+  .launcher-card {
+    min-height:150px;
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:24px;
+    padding:20px;
+    background:
+      radial-gradient(circle at top left, rgba(143,183,255,.07), transparent 42%),
+      rgba(255,255,255,.024);
+  }
+  .launcher-card h3 {
+    margin:0 0 10px;
+    color:#f7d47d;
+    font-size:17px;
+  }
+  .launcher-card p {
+    margin:0;
+    color:#cbd5e1;
+    line-height:1.55;
+    font-size:14px;
+  }
+  .launch-action {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:14px;
+    border:1px solid rgba(143,183,255,.42);
+    border-radius:999px;
+    padding:10px 14px;
+    color:#8fb7ff;
+    text-decoration:none;
+    font-size:12px;
+    font-weight:750;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    background:rgba(143,183,255,.06);
+  }
+  .status-seal {
+    border-left:3px solid #8fb7ff;
+    border-radius:22px;
+    padding:18px 20px;
+    color:#cfc7a2;
+    background:rgba(143,183,255,.06);
+  }
+  .status-seal strong {
+    display:block;
+    color:#f7d47d;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    margin-bottom:8px;
+  }
+  .status-seal span { color:#cbd5e1; line-height:1.6; }
+  @media (max-width: 760px) {
+    .launch-hero { padding:26px; border-radius:26px; }
+    .launch-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .route-pill { min-width:120px; }
+    .surface-launcher { padding:22px; border-radius:26px; }
+  }
+  @media (max-width: 520px) {
+    .launch-metrics { grid-template-columns:1fr; }
+    .launch-title { font-size:40px; }
+  }
+  /* CRYPTO_ASTRO_LAUNCH_SHELL_V2_STYLE:END */
+
 </style>
 </head>
 <body>
@@ -57,79 +268,99 @@
 </section>
 <!-- CRYPTO_ASTRO_SURFACE_HUB_FRAME_v0_1:END -->
 
-<main class="crypto-shell">
-<div class="kicker">BHRIGU / ORION · Research surface</div>
-<h1>Crypto-Astro Signal Membrane</h1>
-<p class="lead">
-A public-safe static surface for the Crypto-Astro research contour:
-snapshot structure, proof status, boundary language, and operator-reviewed output framing.
+<main class="crypto-shell launch-shell" data-crypto-astro-launch-shell="v2">
+<!-- CRYPTO_ASTRO_LAUNCH_SHELL_V2:BEGIN -->
+<section class="launch-hero" aria-label="Crypto-Astro Research Launch Shell">
+<div class="launch-kicker">BHRIGU / ORION · Public-safe research surface</div>
+<h1 class="launch-title">Crypto-Astro Research Launch Shell</h1>
+<p class="launch-lead">
+A public-safe research surface for manual and synthetic crypto snapshot context:
+snapshot route, proof state, evidence pair, and operator-reviewed output framing.
 </p>
-
-<!-- CRYPTO_ASTRO_STATIC_SURFACE_MODULE_REFRESH_V1:BEGIN -->
-<section class="grid" aria-label="Crypto-Astro Public-Safe Status">
-<div class="card">
-<h2>Public-Safe Locked</h2>
-<p>Static research surface. Runtime is not active. Research context only.</p>
-</div>
-<div class="card">
-<h2>No Trading Route</h2>
-<p>No trading signal, buy / sell / hold language, entry / exit instruction, or leverage framing.</p>
-</div>
-<div class="card">
-<h2>No Prediction Claim</h2>
-<p>No price forecast, guaranteed outcome, profit claim, or financial-advice route.</p>
+<div class="launch-badges" aria-label="Crypto-Astro boundary badges">
+<span class="launch-badge gold">Public-Safe Locked</span>
+<span class="launch-badge blue">Static Surface V2</span>
+<span class="launch-badge green">Rights Locked</span>
+<span class="launch-badge">Runtime Not Active</span>
 </div>
 </section>
 
-<section class="grid" aria-label="Crypto-Astro Snapshot Route">
-<div class="card">
-<h2>Snapshot Route</h2>
+<section class="launch-metrics" aria-label="Crypto-Astro surface metrics">
+<div class="metric-card"><div class="metric-value">1</div><div class="metric-label">Intake Route</div></div>
+<div class="metric-card"><div class="metric-value">3</div><div class="metric-label">Proof Layers</div></div>
+<div class="metric-card"><div class="metric-value">2</div><div class="metric-label">Evidence Units</div></div>
+<div class="metric-card"><div class="metric-value">0</div><div class="metric-label">Runtime Active</div></div>
+</section>
+
+<nav class="route-strip" aria-label="Crypto-Astro primary research route">
+<span class="route-pill">Observe</span>
+<span class="route-pill">Frame</span>
+<span class="route-pill">Verify</span>
+<span class="route-pill">Prove</span>
+<span class="route-pill">Package</span>
+<span class="route-pill">Review</span>
+<span class="route-pill">Share Safely</span>
+</nav>
+
+<section class="surface-launcher" aria-labelledby="crypto-astro-surface-launcher-title">
+<div class="launch-section-header">
+<div class="launch-kicker">Static Surface Modules</div>
+<h2 id="crypto-astro-surface-launcher-title">Crypto-Astro Surface Launcher</h2>
+<p>
+A bounded launch shell for snapshot research context. It explains how a request is framed,
+verified, packaged, and kept public-safe before any worker flow can open.
+</p>
+</div>
+
+<div class="launcher-grid">
+<article class="launcher-card">
+<h3>Snapshot Route</h3>
 <p>Manual or synthetic snapshot context: asset / ticker, UTC snapshot time, observation window, research focus, output language, and optional source preference.</p>
-</div>
-<div class="card">
-<h2>Input Boundary</h2>
-<p>No live market feed, wallet data, exchange connection, automated execution, or backend/API control.</p>
-</div>
-<div class="card">
-<h2>Access Bridge</h2>
-<p>Request a Crypto-Astro Snapshot via <a href="https://www.bhrigu.io/access" style="color:#8fb7ff;">BHRIGU Access</a>. Payment is not active on the public surface.</p>
-</div>
-</section>
+</article>
 
-<section class="grid" aria-label="Crypto-Astro Proof and Output">
-<div class="card">
-<h2>Proof State</h2>
+<article class="launcher-card">
+<h3>Proof State</h3>
 <p>Every accepted output must show what is proven, what is not proven, which boundary applies, and the source precision label.</p>
-</div>
-<div class="card">
-<h2>Snapshot Research Note</h2>
+</article>
+
+<article class="launcher-card">
+<h3>Snapshot Research Note</h3>
 <p>Output format: Snapshot Context, Market Structure Notes, Temporal / Astro-Cycle Notes, Risk Boundary, Public-Safe Summary, and Evidence / Source Notes.</p>
-</div>
-<div class="card">
-<h2>Evidence Pair</h2>
+</article>
+
+<article class="launcher-card">
+<h3>Evidence Pair</h3>
 <p>Each closed snapshot requires a Source Package and Public-Safe Output Note. Archive status is required before closure.</p>
-</div>
-</section>
+</article>
 
-<section class="grid" aria-label="Crypto-Astro Locked Layers">
-<div class="card">
-<h2>Locked Layers</h2>
+<article class="launcher-card">
+<h3>Access Bridge</h3>
+<p>Request a Crypto-Astro Snapshot via BHRIGU Access. Payment is not active on the public surface.</p>
+<a class="launch-action" href="https://www.bhrigu.io/access">Open BHRIGU Access</a>
+</article>
+
+<article class="launcher-card">
+<h3>Locked Layers</h3>
 <p>Runtime, backend/API, live market feed, wallet / exchange connection, checkout, and payment automation are not active.</p>
-</div>
-<div class="card">
-<h2>Boundary Filter</h2>
-<p>No trading signal, prediction claim, financial advice, product-readiness claim, or mechanism exposure.</p>
-</div>
-<div class="card">
-<h2>Operator Review</h2>
+</article>
+
+<article class="launcher-card">
+<h3>Operator Review</h3>
 <p>Accepted requests remain manually reviewed and public-safe. Worker execution opens only after supervisor intake acceptance.</p>
+</article>
+
+<article class="launcher-card">
+<h3>Boundary Filter</h3>
+<p>No trading signal, prediction claim, financial advice, product-readiness claim, or mechanism exposure.</p>
+</article>
 </div>
 </section>
-<!-- CRYPTO_ASTRO_STATIC_SURFACE_MODULE_REFRESH_V1:END -->
 
-<div class="boundary">
-STATUS: PUBLIC_SAFE_STATIC_SURFACE · STATIC MODULE REFRESH V1 · No runtime · No backend · No live data · No trading · No prediction · No financial advice.
-</div>
+<section class="status-seal" aria-label="Crypto-Astro final boundary seal">
+<strong>Status</strong>
+<span>PUBLIC_SAFE_STATIC_SURFACE · LAUNCH SHELL V2 · No runtime · No backend · No live data · No trading · No prediction · No financial advice.</span>
+</section>
+<!-- CRYPTO_ASTRO_LAUNCH_SHELL_V2:END -->
 </main>
 
 <footer class="phi-footer">
