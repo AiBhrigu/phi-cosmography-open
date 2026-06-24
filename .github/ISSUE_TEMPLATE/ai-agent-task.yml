@@ -1,0 +1,58 @@
+name: AI Agent Task
+about: Bounded OPS/F task packet for AI-assisted repository work
+title: "[AI TASK] <NODE>"
+labels: ["ai-task", "ops-f"]
+body:
+  - type: textarea
+    id: node
+    attributes:
+      label: Node
+      description: Exact OPS/F node name.
+      placeholder: CRYPTO_ASTRO_MODULE_7_SERVICE_ENTRY_SHELL_SCOPE_v0_1
+    validations:
+      required: true
+  - type: textarea
+    id: accepted_state
+    attributes:
+      label: Accepted state
+      description: What is already verified and must not be repeated.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Allowed scope
+      description: Files and changes allowed for this task.
+    validations:
+      required: true
+  - type: textarea
+    id: strict_stops
+    attributes:
+      label: Strict stops
+      description: Changes explicitly not allowed.
+      value: |
+        - no backend/API activation
+        - no payment automation
+        - no public feed
+        - no client auto-delivery
+        - no live market data route
+        - no trading-signal language
+        - no price-target language
+        - no financial-advice language
+        - no ORION core exposure
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Required verification
+      description: Checks that must pass before PR is ready.
+    validations:
+      required: true
+  - type: textarea
+    id: expected_pr
+    attributes:
+      label: Expected PR output
+      description: Summary, changed files, verification, boundary, next safe node.
+    validations:
+      required: true
