@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGETS=("site" "OPS_F_AGENT_BOUNDARY.md" ".github/copilot-instructions.md")
+# Scan public-facing content only. Boundary/control files intentionally contain
+# prohibited phrases as deny-list documentation and must not fail this check.
+TARGETS=("site")
 PATTERN='guaranteed profit|investment advice|financial advice|trading signal|price target|auto-delivery|live market data|ORION core exposure'
 
 status=0
