@@ -344,6 +344,12 @@
 
 
   .brand-link { text-decoration:none; color:inherit; cursor:pointer; }
+
+  .scoring-subhead { margin-top:30px; }
+  .scoring-input-grid { margin-bottom:34px; }
+  .scoring-calc-subhead { margin-top:36px; }
+  .scoring-calc-intro { margin-bottom:20px; }
+
 </style>
 </head>
 <body>
@@ -551,15 +557,15 @@
     <div class="scoring-chip"><strong>Φ Resonance</strong><span>Dynamic state</span></div>
     <div class="scoring-chip"><strong>Sem Phase</strong><span>Phase window</span></div>
   </div>
-    <p class="eyebrow">Signal inputs</p>
+    <p class="eyebrow scoring-subhead">Signal inputs</p>
   <p class="small">A / E / M combines search attention, public discussion, and market movement into one normalized signal profile.</p>
-  <div class="scoring-matrix" aria-label="A E M signal inputs">
+  <div class="scoring-matrix scoring-input-grid" aria-label="A E M signal inputs">
     <div class="scoring-chip"><strong>A · Attention</strong><span>Search interest<br/>what people are actively looking for</span></div>
     <div class="scoring-chip"><strong>E · Engagement</strong><span>Public discussion<br/>what people are actively discussing across X.com and similar social channels</span></div>
     <div class="scoring-chip"><strong>M · Market Momentum</strong><span>Market movement<br/>price · volume · 24h change from CoinGecko</span></div>
   </div>
-  <p class="eyebrow">How scoring is calculated</p>
-  <p class="small">The scoring flow starts with raw inputs, converts them into a normalized A / E / M signal profile, then derives structural balance, dynamic resonance, and phase context.</p>
+  <p class="eyebrow scoring-subhead scoring-calc-subhead">How scoring is calculated</p>
+  <p class="small scoring-calc-intro">The scoring flow starts with raw inputs, converts them into a normalized A / E / M signal profile, then derives structural balance, dynamic resonance, and phase context.</p>
   <div class="scoring-matrix" aria-label="How scoring is calculated">
     <div class="scoring-chip"><strong>1 · Raw signals</strong><span>search interest · public discussion · market movement · phase context</span></div>
     <div class="scoring-chip"><strong>2 · A/E/M vector</strong><span>A = attention<br/>E = engagement<br/>M = market momentum</span></div>
