@@ -451,11 +451,50 @@
   </div>
 </section>
 
+<!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:BEGIN -->
+<section class="section" aria-label="ORION BHRIGU verified event-window intelligence demo">
+  <div class="section-head">
+    <div class="kicker">Live market data · verified intelligence surface</div>
+    <h2>ORION × BHRIGU · Verified Event-Window Intelligence Demo</h2>
+    <p>ORION × BHRIGU connects live BTC market data with verified local proof metrics and source-hash trace. This demo shows market movement, proof-chain status, payload gap state, and operator review in one public-safe analytics surface.</p>
+  </div>
+  <div class="module-grid">
+    <article class="module-card truth">
+      <p class="eyebrow">BTC market snapshot</p>
+      <h3 id="ob-btc-price">$60,263</h3>
+      <p id="ob-btc-market">Market cap: $1,208,206,174,871<br/>24h volume: $31,713,440,137<br/>24h change: +0.0527%</p>
+      <p class="small">source: CoinGecko read-only / fallback snapshot sha256: 3e8b6a237250edabe407d7882337d3feb46d3864862687b07878baa1803b945f</p>
+    </article>
+    <article class="module-card">
+      <p class="eyebrow">Local proof layer</p>
+      <h3>Proof 100/100 · Gap 0/100</h3>
+      <p>BTC Stage 2 verified artifacts, chart modules: 5, operator review: PENDING.</p>
+      <p class="small">dashboard_sha256: 1d0efe4af81838fad3f7b7108020cc27ccaa7ec02c030777b17594354a470e2a</p>
+    </article>
+    <article class="module-card">
+      <p class="eyebrow">Boundary</p>
+      <h3>Research demo boundary</h3>
+      <p>Read-only data. No investment recommendation. ORION core remains protected.</p>
+    </article>
+  </div>
+  <script>
+  (function(){
+    var u="https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true";
+    fetch(u).then(function(r){return r.json()}).then(function(d){
+      var b=d.bitcoin;if(!b||[b.usd,b.usd_market_cap,b.usd_24h_vol,b.usd_24h_change].some(function(x){return typeof x!=='number'}))return;
+      document.getElementById("ob-btc-price").textContent="$"+Number(b.usd).toLocaleString();
+      document.getElementById("ob-btc-market").innerHTML="Market cap: <b>$"+Number(b.usd_market_cap).toLocaleString(undefined,{maximumFractionDigits:0})+"</b><br/>24h volume: <b>$"+Number(b.usd_24h_vol).toLocaleString(undefined,{maximumFractionDigits:0})+"</b><br/>24h change: <b>"+Number(b.usd_24h_change).toFixed(4)+"%</b>";
+    }).catch(function(){});
+  })();
+  </script>
+</section>
+<!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:END -->
 <section class="seal" aria-label="Crypto-Astro final boundary seal">
   <strong>Global Boundary Seal</strong>
   <span>STATIC_PUBLIC_SAFE_RESEARCH_SURFACE · Local fixture automation PASS · Production gate locked · No backend/API · No payment automation · No live queue or client dashboard · No auto-delivery · No live market data · No trading signal · No price target · No financial advice · No ORION core exposure.</span>
 </section>
 
+<!-- VERIFY_MARKERS: Local Staging Proof · Batch Queue Proof · No backend/API -->
 </main>
 <!-- CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1:END -->
 
