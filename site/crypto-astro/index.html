@@ -32,8 +32,9 @@
     content:"";
     position:fixed;
     inset:0;
-    z-index:-1;
+    z-index:0;
     pointer-events:none;
+    opacity:.22;
     background:
       radial-gradient(circle at 17% 9%, rgba(247,212,125,.16), transparent 28%),
       radial-gradient(circle at 86% 4%, rgba(143,183,255,.12), transparent 30%),
@@ -41,6 +42,7 @@
       linear-gradient(90deg, rgba(143,183,255,.035) 1px, transparent 1px);
     background-size:100% 100%,100% 100%,44px 44px,44px 44px;
   }
+  body > * { position:relative; z-index:1; }
   .page {
     max-width:80rem;
     margin:0 auto;
@@ -264,9 +266,6 @@
     word-break:break-word;
   }
 
-  .phi-grid-plane{position:relative;overflow:hidden}
-  .phi-grid-plane>*{position:relative}
-  .phi-grid-plane::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;background:linear-gradient(rgba(247,212,125,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(247,212,125,.08) 1px,transparent 1px),radial-gradient(circle at 38% 18%,rgba(247,212,125,.12),transparent 42%);background-size:34px 34px,55px 55px,100% 100%}
   .scoring-matrix{border:1px solid rgba(247,212,125,.18);border-radius:24px;padding:14px;background:rgba(3,7,13,.28)}
 
   .scoring-data-band{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0 20px}
@@ -336,6 +335,14 @@
     .truth-grid { grid-template-columns:1fr; }
     .route-pill { min-width:100%; }
   }
+
+  html { scroll-behavior: smooth; }
+  [id] { scroll-margin-top: 96px; }
+  a.status-pill, a.badge { text-decoration:none; display:inline-flex; align-items:center; }
+  a.status-pill:hover, a.badge:hover { filter:brightness(1.12); }
+
+
+
 </style>
 </head>
 <body>
@@ -349,15 +356,15 @@
       <div><strong>Crypto-Astro</strong><span>Φ Service Surface</span></div>
     </div>
     <div class="status-row" aria-label="Current public status">
-      <span class="status-pill green">Public Page Live</span>
-      <span class="status-pill gold">Local Proof PASS</span>
-      <span class="status-pill blue">Read-Only Market Pilot</span>
-      <span class="status-pill">Backend Off</span>
+      <a class="status-pill green" href="#surface">Public Page Live</a>
+      <a class="status-pill gold" href="#proof">Local Proof PASS</a>
+      <a class="status-pill blue" href="#market">Read-Only Market Pilot</a>
+      <a class="status-pill" href="#boundary">Backend Off</a>
     </div>
   </div>
 </section>
 
-<section class="hero" aria-label="Crypto-Astro public-safe launch shell">
+<section id="surface" class="hero surface-anchor" aria-label="Crypto-Astro public-safe launch shell">
   <div class="kicker">BHRIGU / ORION · Manual service + fixture automation</div>
   <h1>Crypto-Astro Public Research Surface</h1>
   <p class="lead">
@@ -366,14 +373,14 @@
     auto-delivery, trading execution, and ORION core remain closed.
   </p>
   <div class="hero-badges" aria-label="Crypto-Astro boundary badges">
-    <span class="badge gold">Read-Only Market Pilot</span>
-    <span class="badge green">Proof Layer Visible</span>
-    <span class="badge blue">Scoring Loop Preview</span>
-    <span class="badge">Operator Review Path</span>
+    <a class="badge gold" href="#market">Read-Only Market Pilot</a>
+    <a class="badge green" href="#proof">Proof Layer Visible</a>
+    <a class="badge blue" href="#scoring">Scoring Loop Preview</a>
+    <a class="badge" href="#review">Operator Review Path</a>
   </div>
 </section>
 
-<section class="truth-grid" aria-label="Crypto-Astro verified truth layer">
+<section id="proof" class="truth-grid surface-anchor" aria-label="Crypto-Astro verified truth layer">
   <div class="truth-card"><div class="truth-value">9/9</div><div class="truth-label">Local modules found</div></div>
   <div class="truth-card"><div class="truth-value">PASS</div><div class="truth-label">SHA manifests verified</div></div>
   <div class="truth-card"><div class="truth-value">PASS</div><div class="truth-label">Integrated fixture dry-run</div></div>
@@ -419,7 +426,7 @@
   </div>
 </section>
 
-<section class="section" aria-labelledby="crypto-astro-service-flow-title">
+<section id="review" class="section surface-anchor" aria-labelledby="crypto-astro-service-flow-title">
   <div class="section-head">
     <div class="kicker">Service path · public-safe preview</div>
     <h2 id="crypto-astro-service-flow-title">Request to delivery stays operator-reviewed.</h2>
@@ -463,7 +470,7 @@
   </div>
 </section>
 
-<section class="section" aria-labelledby="crypto-astro-locked-title">
+<section id="boundary" class="section surface-anchor" aria-labelledby="crypto-astro-locked-title">
   <div class="section-head">
     <div class="kicker">Locked layers · quiet boundary</div>
     <h2 id="crypto-astro-locked-title">The public page keeps runtime systems closed while allowing a read-only market data pilot.</h2>
@@ -480,7 +487,7 @@
 </section>
 
 <!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:BEGIN -->
-<section class="section" aria-label="ORION BHRIGU verified event-window intelligence demo">
+<section id="market" class="section surface-anchor" aria-label="ORION BHRIGU verified event-window intelligence demo">
   <div class="section-head">
     <div class="kicker">Read-only market data · verified intelligence surface</div>
     <h2>ORION × BHRIGU · Verified Event-Window Intelligence Demo</h2>
@@ -518,7 +525,7 @@
 </section>
 <!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:END -->
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:BEGIN -->
-<section class="section phi-grid-plane" aria-label="ORION BHRIGU scoring loop preview">
+<section id="scoring" class="section surface-anchor" aria-label="ORION BHRIGU scoring loop preview">
   <div class="section-head">
     <div class="kicker">Market signal → Φ scoring → phase context → public output</div>
     <h2>ORION × BHRIGU · Scoring Loop Preview</h2>
