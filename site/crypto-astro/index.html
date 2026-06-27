@@ -263,6 +263,34 @@
     overflow-wrap:anywhere;
     word-break:break-word;
   }
+
+  .phi-grid-plane{position:relative;overflow:hidden}
+  .phi-grid-plane>*{position:relative}
+  .phi-grid-plane::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;background:linear-gradient(rgba(247,212,125,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(247,212,125,.08) 1px,transparent 1px),radial-gradient(circle at 38% 18%,rgba(247,212,125,.12),transparent 42%);background-size:34px 34px,55px 55px,100% 100%}
+  .scoring-matrix{border:1px solid rgba(247,212,125,.18);border-radius:24px;padding:14px;background:rgba(3,7,13,.28)}
+
+  .scoring-data-band{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0 20px}
+  .scoring-data{border:1px solid rgba(247,212,125,.22);border-radius:18px;padding:14px;background:rgba(247,212,125,.04)}
+  .scoring-data strong{display:block;color:var(--gold);margin-bottom:6px}
+
+  .scoring-matrix {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-top:18px;
+  }
+  .scoring-chip {
+    border:1px solid rgba(143,183,255,.18);
+    border-radius:18px;
+    padding:14px;
+    background:rgba(143,183,255,.035);
+  }
+  .scoring-chip strong {
+    display:block;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+
   .action {
     display:inline-flex;
     align-items:center;
@@ -321,27 +349,27 @@
       <div><strong>Crypto-Astro</strong><span>Φ Service Surface</span></div>
     </div>
     <div class="status-row" aria-label="Current public status">
-      <span class="status-pill green">Surface Live</span>
-      <span class="status-pill gold">Local Automation PASS</span>
-      <span class="status-pill blue">Public-Safe Locked</span>
-      <span class="status-pill">Runtime Off</span>
+      <span class="status-pill green">Public Page Live</span>
+      <span class="status-pill gold">Local Proof PASS</span>
+      <span class="status-pill blue">Read-Only Market Pilot</span>
+      <span class="status-pill">Backend Off</span>
     </div>
   </div>
 </section>
 
 <section class="hero" aria-label="Crypto-Astro public-safe launch shell">
   <div class="kicker">BHRIGU / ORION · Manual service + fixture automation</div>
-  <h1>Crypto-Astro Manual + Fixture Automation Surface</h1>
+  <h1>Crypto-Astro Public Research Surface</h1>
   <p class="lead">
-    A public-safe service showcase for Crypto-Astro research snapshots. The surface shows the request path,
-    local automation proof, boundary filter, evidence archive, and operator-reviewed delivery route without opening
-    backend/API, payment automation, live market data, trading signals, or ORION core exposure.
+    Crypto-Astro is a public research surface showing a read-only BTC market data pilot, local proof metrics,
+    scoring-loop preview, evidence archive, and operator-reviewed delivery route. Backend/API, payment automation,
+    auto-delivery, trading execution, and ORION core remain closed.
   </p>
   <div class="hero-badges" aria-label="Crypto-Astro boundary badges">
-    <span class="badge gold">Public-Safe Locked</span>
-    <span class="badge green">Fixture-Only Local PASS</span>
-    <span class="badge blue">Production Gate Locked</span>
-    <span class="badge">Runtime Not Active</span>
+    <span class="badge gold">Read-Only Market Pilot</span>
+    <span class="badge green">Proof Layer Visible</span>
+    <span class="badge blue">Scoring Loop Preview</span>
+    <span class="badge">Operator Review Path</span>
   </div>
 </section>
 
@@ -349,7 +377,7 @@
   <div class="truth-card"><div class="truth-value">9/9</div><div class="truth-label">Local modules found</div></div>
   <div class="truth-card"><div class="truth-value">PASS</div><div class="truth-label">SHA manifests verified</div></div>
   <div class="truth-card"><div class="truth-value">PASS</div><div class="truth-label">Integrated fixture dry-run</div></div>
-  <div class="truth-card"><div class="truth-value">0</div><div class="truth-label">Runtime / payment / live feed active</div></div>
+  <div class="truth-card"><div class="truth-value">0</div><div class="truth-label">Backend / payment automation active</div></div>
 </section>
 
 <nav class="route-strip" aria-label="Crypto-Astro service route">
@@ -438,14 +466,14 @@
 <section class="section" aria-labelledby="crypto-astro-locked-title">
   <div class="section-head">
     <div class="kicker">Locked layers · quiet boundary</div>
-    <h2 id="crypto-astro-locked-title">The public page does not open runtime systems.</h2>
+    <h2 id="crypto-astro-locked-title">The public page keeps runtime systems closed while allowing a read-only market data pilot.</h2>
     <p>
-      The public surface is a semantic navigation module, not a backend, trading tool, payment route, or client automation dashboard.
+      The surface can display selected read-only market data while backend/API, payments, auto-delivery, and protected ORION systems remain closed.
     </p>
   </div>
   <div class="module-grid">
-    <article class="module-card"><h3>Runtime / backend API</h3><p>Locked by default. No public endpoint is exposed from this page.</p></article>
-    <article class="module-card"><h3>Live market data</h3><p>Not active. The surface does not stream, fetch, or trade live market data.</p></article>
+    <article class="module-card"><h3>Backend/API</h3><p>Closed. No public backend endpoint is exposed from this page.</p></article>
+    <article class="module-card"><h3>Read-only market data</h3><p>BTC pilot only. The page may fetch read-only BTC market data; it does not trade or execute.</p></article>
     <article class="module-card"><h3>Payment automation</h3><p>On hold. No checkout, wallet, exchange, or automated payment route is opened.</p></article>
     <article class="module-card"><h3>ORION core</h3><p>Protected. The page exposes meaning and service boundaries, not protected internal mechanisms.</p></article>
   </div>
@@ -454,7 +482,7 @@
 <!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:BEGIN -->
 <section class="section" aria-label="ORION BHRIGU verified event-window intelligence demo">
   <div class="section-head">
-    <div class="kicker">Live market data · verified intelligence surface</div>
+    <div class="kicker">Read-only market data · verified intelligence surface</div>
     <h2>ORION × BHRIGU · Verified Event-Window Intelligence Demo</h2>
     <p>ORION × BHRIGU connects live BTC market data with verified local proof metrics and source-hash trace. This demo shows market movement, proof-chain status, payload gap state, and operator review in one public-safe analytics surface.</p>
   </div>
@@ -490,24 +518,37 @@
 </section>
 <!-- ORION_BHRIGU_VERIFIED_EVENT_WINDOW_DEMO_v0_1:END -->
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:BEGIN -->
-<section class="section" aria-label="ORION BHRIGU scoring loop preview">
+<section class="section phi-grid-plane" aria-label="ORION BHRIGU scoring loop preview">
   <div class="section-head">
     <div class="kicker">Market signal → Φ scoring → phase context → public report</div>
     <h2>ORION × BHRIGU · Scoring Loop Preview</h2>
     <p>A multi-asset intelligence loop combining market data, Φ-balance scoring, resonance state, and phase context.</p>
+  </div>
+  <div class="scoring-data-band" aria-label="ORION scoring snapshot data band">
+    <div class="scoring-data"><strong>Snapshot</strong><span>stored ORION sample</span></div>
+    <div class="scoring-data"><strong>Coverage</strong><span>3 assets</span></div>
+    <div class="scoring-data"><strong>Heartbeat</strong><span>300 sec target</span></div>
+    <div class="scoring-data"><strong>Source</strong><span>ORION scoring schema</span></div>
   </div>
   <div class="module-grid">
     <article class="module-card truth"><p class="eyebrow">BTC · active sample</p><h3>Φ balance: 0.299</h3><p>Snapshot state: stored ORION sample<br/>Market momentum: active sample<br/>Phase windows: w1 / w3 / w7</p></article>
     <article class="module-card"><p class="eyebrow">ETH · preview</p><h3>Φ balance: 0.658</h3><p>Preview state<br/>Resonance: pending<br/>Phase windows: w1 / w3 / w7</p></article>
     <article class="module-card"><p class="eyebrow">SOL · preview</p><h3>Φ balance: 0.658</h3><p>Preview state<br/>Resonance: pending<br/>Phase windows: w1 / w3 / w7</p></article>
   </div>
-  <p class="small">A = attention/activity · E = engagement signal · M = market momentum · Φ Balance = structural score · Φ Resonance = dynamic state · Sem Phase = phase window.</p>
+  <div class="scoring-matrix" aria-label="Scoring matrix">
+    <div class="scoring-chip"><strong>A</strong><span>Attention / activity</span></div>
+    <div class="scoring-chip"><strong>E</strong><span>Engagement signal</span></div>
+    <div class="scoring-chip"><strong>M</strong><span>Market momentum</span></div>
+    <div class="scoring-chip"><strong>Φ Balance</strong><span>Structural score</span></div>
+    <div class="scoring-chip"><strong>Φ Resonance</strong><span>Dynamic state</span></div>
+    <div class="scoring-chip"><strong>Sem Phase</strong><span>Phase window</span></div>
+  </div>
   <p class="small">Source: ORION scoring snapshot schema · CoinGecko adapter · public-safe preview.</p>
 </section>
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:END -->
 <section class="seal" aria-label="Crypto-Astro final boundary seal">
   <strong>Global Boundary Seal</strong>
-  <span>STATIC_PUBLIC_SAFE_RESEARCH_SURFACE · Local fixture automation PASS · Production gate locked · No backend/API · No payment automation · No live queue or client dashboard · No auto-delivery · No live market data · No trading signal · No price target · No financial advice · No ORION core exposure.</span>
+  <span>PUBLIC_SAFE_RESEARCH_SURFACE · Read-only BTC market data pilot · Local proof layer visible · Scoring loop preview visible · Backend/API closed · Payment automation closed · No trading execution · No price target · No investment recommendation · ORION core protected.</span>
 </section>
 
 <!-- VERIFY_MARKERS: Local Staging Proof · Batch Queue Proof · No backend/API -->
