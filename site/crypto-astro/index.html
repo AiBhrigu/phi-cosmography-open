@@ -544,19 +544,21 @@
     <div class="scoring-chip"><strong>Sem Phase</strong><span>Phase window</span></div>
   </div>
     <p class="eyebrow">Signal inputs</p>
+  <p class="small">A / E / M combines search attention, public discussion, and market movement into one normalized signal profile.</p>
   <div class="scoring-matrix" aria-label="A E M signal inputs">
-    <div class="scoring-chip"><strong>A · Attention</strong><span>Google/search interest<br/>what people are looking for</span></div>
-    <div class="scoring-chip"><strong>E · Engagement</strong><span>X.com + social discussion<br/>what people are talking about</span></div>
-    <div class="scoring-chip"><strong>M · Market Momentum</strong><span>CoinGecko market movement<br/>price · volume · 24h delta</span></div>
+    <div class="scoring-chip"><strong>A · Attention</strong><span>Search interest<br/>what people are actively looking for</span></div>
+    <div class="scoring-chip"><strong>E · Engagement</strong><span>Public discussion<br/>what people are actively discussing across X.com and similar social channels</span></div>
+    <div class="scoring-chip"><strong>M · Market Momentum</strong><span>Market movement<br/>price · volume · 24h change from CoinGecko</span></div>
   </div>
   <p class="eyebrow">How scoring is calculated</p>
+  <p class="small">The scoring flow starts with raw inputs, converts them into a normalized A / E / M signal profile, then derives structural balance, dynamic resonance, and phase context.</p>
   <div class="scoring-matrix" aria-label="How scoring is calculated">
-    <div class="scoring-chip"><strong>1 · Raw signals</strong><span>price · volume · attention · engagement · event context</span></div>
-    <div class="scoring-chip"><strong>2 · A/E/M vector</strong><span>A = Google/search attention<br/>E = X.com/social discussion<br/>M = CoinGecko market momentum</span></div>
-    <div class="scoring-chip"><strong>3 · Normalize</strong><span>A + E + M → proportional signal profile</span></div>
-    <div class="scoring-chip"><strong>4 · Φ Balance</strong><span>structural score from A/E/M proportions</span></div>
+    <div class="scoring-chip"><strong>1 · Raw signals</strong><span>search interest · public discussion · market movement · phase context</span></div>
+    <div class="scoring-chip"><strong>2 · A/E/M vector</strong><span>A = attention<br/>E = engagement<br/>M = market momentum</span></div>
+    <div class="scoring-chip"><strong>3 · Normalize</strong><span>inputs become one comparable signal profile</span></div>
+    <div class="scoring-chip"><strong>4 · Φ Balance</strong><span>structural score from the balance of A / E / M</span></div>
     <div class="scoring-chip"><strong>5 · Φ Resonance</strong><span>dynamic score from signal movement over time</span></div>
-    <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>event-window context from active phase feed</span></div>
+    <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>event-window context from the active phase layer</span></div>
   </div>
   <p class="small">Current state: market data is active. Search and social signal differentiation is in calibration.</p>
 <p class="small">Source: ORION scoring snapshot schema · CoinGecko adapter · public-safe preview.</p>
