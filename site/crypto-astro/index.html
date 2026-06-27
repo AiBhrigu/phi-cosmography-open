@@ -351,15 +351,15 @@
   .scoring-calc-intro { margin-bottom:20px; }
 
 
-  /* CRYPTO_ASTRO_TRUST_FOOTER_v0_1 */
-  .trust-seal { margin-top:56px; padding:30px; display:grid; gap:18px; }
+
+  /* CRYPTO_ASTRO_COMPACT_TRUST_SEAL_v0_2 */
+  .scoring-state-note { margin-top:26px; max-width:980px; color:var(--muted); line-height:1.6; }
+  .trust-seal { margin-top:62px; padding:24px 28px; display:grid; gap:12px; }
   .seal-title { display:flex; flex-wrap:wrap; gap:12px; align-items:baseline; }
   .seal-title span { color:var(--muted); letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
-  .trust-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
-  .trust-item { border:1px solid rgba(143,183,255,.18); border-radius:18px; padding:14px 16px; background:rgba(143,183,255,.035); }
-  .trust-item b { display:block; color:var(--gold); margin-bottom:4px; }
-  .trust-item span { color:var(--soft); line-height:1.45; }
-  .trust-line { margin:0; color:var(--soft); line-height:1.65; }
+  .trust-line { margin:0; color:var(--soft); line-height:1.6; }
+  .trust-line.primary { color:var(--gold); letter-spacing:.02em; }
+
 
 </style>
 </head>
@@ -585,8 +585,7 @@
     <div class="scoring-chip"><strong>5 · Φ Resonance</strong><span>dynamic score from signal movement over time</span></div>
     <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>event-window context from the active phase layer</span></div>
   </div>
-  <p class="small">Current state: market data is active. Search and social signal differentiation is in calibration.</p>
-<p class="small">Source: ORION scoring snapshot schema · CoinGecko adapter · public-safe preview.</p>
+  <p class="small scoring-state-note">Market data active · Search/social calibration pending · Source: ORION scoring schema + CoinGecko read-only adapter.</p>
 </section>
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:END -->
 <section class="seal trust-seal" aria-label="Crypto-Astro final boundary seal">
@@ -594,11 +593,7 @@
     <strong>Global Boundary Seal</strong>
     <span>Public-safe research surface</span>
   </div>
-  <div class="trust-grid" aria-label="Public-safe trust boundary">
-    <div class="trust-item"><b>Read-only</b><span>Market data only</span></div>
-    <div class="trust-item"><b>Proof visible</b><span>Local proof layer shown</span></div>
-    <div class="trust-item"><b>ORION protected</b><span>Core boundary remains closed</span></div>
-  </div>
+  <p class="trust-line primary">Read-only data · Proof visible · ORION protected</p>
   <p class="trust-line">No trading signal · No price target · No investment recommendation.</p>
 </section>
 
