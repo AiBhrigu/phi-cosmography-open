@@ -1,6 +1,6 @@
 {
   "schema_version": "crypto_astro_scoring_snapshot_public_v0_2",
-  "generated_at_utc": "2026-06-28T00:00:00Z",
+  "generated_at_utc": "2026-06-28T06:46:58Z",
   "source_label": "ORION scoring snapshot · public-safe market context",
   "source_mode": "static_public_artifact",
   "coverage": 3,
@@ -9,11 +9,11 @@
     {
       "symbol": "BTC",
       "label": "Bitcoin",
-      "price_usd": null,
-      "market_24h_change_pct": null,
+      "price_usd": 59896,
+      "market_24h_change_pct": -0.6970395771443619,
       "A": 0.0,
       "E": 0.0,
-      "M": 0.0,
+      "M": 0.0697,
       "phi_balance": 0.0,
       "phi_resonance": 0.0,
       "sem_phase": {
@@ -23,21 +23,21 @@
       },
       "state_label": "calibration",
       "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe scoring preview. Not a forecast or trading signal.",
+      "notes": "Public-safe market context. Not a forecast or trading signal.",
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
-      "M_state": "market_context_pending",
-      "visible_state_label": "A/E pending · market context template",
-      "market_context_label": "not_populated"
+      "M_state": "market_context_active",
+      "visible_state_label": "Market context active · A/E pending",
+      "market_context_label": "low_movement"
     },
     {
       "symbol": "ETH",
       "label": "Ethereum",
-      "price_usd": null,
-      "market_24h_change_pct": null,
+      "price_usd": 1565.63,
+      "market_24h_change_pct": -0.9476024062526509,
       "A": 0.0,
       "E": 0.0,
-      "M": 0.0,
+      "M": 0.0948,
       "phi_balance": 0.0,
       "phi_resonance": 0.0,
       "sem_phase": {
@@ -47,21 +47,21 @@
       },
       "state_label": "calibration",
       "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe scoring preview. Not a forecast or trading signal.",
+      "notes": "Public-safe market context. Not a forecast or trading signal.",
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
-      "M_state": "market_context_pending",
-      "visible_state_label": "A/E pending · market context template",
-      "market_context_label": "not_populated"
+      "M_state": "market_context_active",
+      "visible_state_label": "Market context active · A/E pending",
+      "market_context_label": "low_movement"
     },
     {
       "symbol": "SOL",
       "label": "Solana",
-      "price_usd": null,
-      "market_24h_change_pct": null,
+      "price_usd": 70.39,
+      "market_24h_change_pct": -2.3507596789583634,
       "A": 0.0,
       "E": 0.0,
-      "M": 0.0,
+      "M": 0.2351,
       "phi_balance": 0.0,
       "phi_resonance": 0.0,
       "sem_phase": {
@@ -71,12 +71,12 @@
       },
       "state_label": "calibration",
       "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe scoring preview. Not a forecast or trading signal.",
+      "notes": "Public-safe market context. Not a forecast or trading signal.",
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
-      "M_state": "market_context_pending",
-      "visible_state_label": "A/E pending · market context template",
-      "market_context_label": "not_populated"
+      "M_state": "market_context_active",
+      "visible_state_label": "Market context active · A/E pending",
+      "market_context_label": "active_movement"
     }
   ],
   "boundary": {
@@ -87,11 +87,11 @@
     "orion_core_protected": true
   },
   "public_copy": {
-    "state_line": "Static JSON v0.2 template · Market context fields prepared · A/E pending.",
-    "source_line": "Source: Static public JSON · CoinGecko market context path prepared."
+    "state_line": "Static JSON v0.2 · Market context active · A/E calibration pending.",
+    "source_line": "Source: Static public JSON · CoinGecko read-only market context."
   },
   "market_source": "CoinGecko",
   "market_source_mode": "read_only_adapter_or_manual_static_snapshot",
-  "market_generated_at_utc": null,
-  "public_state_label": "market_context_fields_prepared_a_e_pending"
+  "market_generated_at_utc": "2026-06-28T06:46:58Z",
+  "public_state_label": "market_context_active_a_e_pending"
 }
