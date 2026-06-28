@@ -1,0 +1,66 @@
+{
+  "schema_version": "crypto_astro_scoring_snapshot_public_v0_1",
+  "generated_at_utc": "2026-06-28T00:00:00Z",
+  "source_label": "ORION scoring snapshot · public-safe",
+  "source_mode": "static_public_artifact",
+  "coverage": 3,
+  "heartbeat_sec": 300,
+  "assets": [
+    {
+      "symbol": "BTC",
+      "label": "Bitcoin",
+      "price_usd": null,
+      "market_24h_change_pct": null,
+      "A": 0.0,
+      "E": 0.0,
+      "M": 0.0,
+      "phi_balance": 0.0,
+      "phi_resonance": 0.0,
+      "sem_phase": { "w1": 0.0, "w3": 0.0, "w7": 0.0 },
+      "state_label": "calibration",
+      "signal_state": "market_active_search_social_pending",
+      "notes": "Public-safe scoring preview. Not a forecast or trading signal."
+    },
+    {
+      "symbol": "ETH",
+      "label": "Ethereum",
+      "price_usd": null,
+      "market_24h_change_pct": null,
+      "A": 0.0,
+      "E": 0.0,
+      "M": 0.0,
+      "phi_balance": 0.0,
+      "phi_resonance": 0.0,
+      "sem_phase": { "w1": 0.0, "w3": 0.0, "w7": 0.0 },
+      "state_label": "calibration",
+      "signal_state": "market_active_search_social_pending",
+      "notes": "Public-safe scoring preview. Not a forecast or trading signal."
+    },
+    {
+      "symbol": "SOL",
+      "label": "Solana",
+      "price_usd": null,
+      "market_24h_change_pct": null,
+      "A": 0.0,
+      "E": 0.0,
+      "M": 0.0,
+      "phi_balance": 0.0,
+      "phi_resonance": 0.0,
+      "sem_phase": { "w1": 0.0, "w3": 0.0, "w7": 0.0 },
+      "state_label": "calibration",
+      "signal_state": "market_active_search_social_pending",
+      "notes": "Public-safe scoring preview. Not a forecast or trading signal."
+    }
+  ],
+  "boundary": {
+    "no_trading_signal": true,
+    "no_price_target": true,
+    "no_investment_recommendation": true,
+    "backend_api_closed": true,
+    "orion_core_protected": true
+  },
+  "public_copy": {
+    "state_line": "Market data active · Search/social calibration pending.",
+    "source_line": "Source: ORION scoring schema + CoinGecko read-only adapter."
+  }
+}

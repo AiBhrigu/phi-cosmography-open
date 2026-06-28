@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crypto_astro_scoring_snapshot_public_v0_1",
+  "title": "Crypto-Astro Public Scoring Snapshot",
+  "type": "object",
+  "required": ["schema_version", "generated_at_utc", "source_label", "source_mode", "coverage", "heartbeat_sec", "assets", "boundary", "public_copy"],
+  "properties": {
+    "schema_version": { "const": "crypto_astro_scoring_snapshot_public_v0_1" },
+    "generated_at_utc": { "type": "string" },
+    "source_label": { "type": "string" },
+    "source_mode": { "const": "static_public_artifact" },
+    "coverage": { "type": "integer", "minimum": 0 },
+    "heartbeat_sec": { "type": "integer", "minimum": 0 },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "label", "price_usd", "market_24h_change_pct", "A", "E", "M", "phi_balance", "phi_resonance", "sem_phase", "state_label", "signal_state", "notes"],
+        "properties": {
+          "symbol": { "type": "string" },
+          "label": { "type": "string" },
+          "price_usd": { "type": ["number", "null"] },
+          "market_24h_change_pct": { "type": ["number", "null"] },
+          "A": { "type": "number" },
+          "E": { "type": "number" },
+          "M": { "type": "number" },
+          "phi_balance": { "type": "number" },
+          "phi_resonance": { "type": "number" },
+          "sem_phase": {
+            "type": "object",
+            "required": ["w1", "w3", "w7"],
+            "properties": {
+              "w1": { "type": "number" },
+              "w3": { "type": "number" },
+              "w7": { "type": "number" }
+            }
+          },
+          "state_label": { "type": "string" },
+          "signal_state": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["no_trading_signal", "no_price_target", "no_investment_recommendation", "backend_api_closed", "orion_core_protected"],
+      "properties": {
+        "no_trading_signal": { "const": true },
+        "no_price_target": { "const": true },
+        "no_investment_recommendation": { "const": true },
+        "backend_api_closed": { "const": true },
+        "orion_core_protected": { "const": true }
+      }
+    },
+    "public_copy": {
+      "type": "object",
+      "required": ["state_line", "source_line"],
+      "properties": {
+        "state_line": { "type": "string" },
+        "source_line": { "type": "string" }
+      }
+    }
+  }
+}
