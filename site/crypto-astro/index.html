@@ -597,17 +597,39 @@
     function closed(b){
       return b && b.no_trading_signal && b.no_price_target && b.no_investment_recommendation && b.backend_api_closed && b.orion_core_protected;
     }
-    function phaseText(a){
-      var p=a.sem_phase || {};
-      return "Phase windows: w1 / w3 / w7";
+    function movementLabel(x){
+      if(x==="high_movement") return "high";
+      if(x==="active_movement") return "active";
+      return "low";
+    }
+    function usd(v){
+      if(typeof v!=="number") return "pending";
+      return "$"+v.toLocaleString("en-US", {maximumFractionDigits:2});
+    }
+    function pct(v){
+      if(typeof v!=="number") return "pending";
+      return (v>=0?"+":"")+v.toFixed(2)+"%";
     }
     function renderAsset(a){
       var card=document.getElementById("score-card-"+a.symbol);
       if(!card) return;
+      var eyebrow=card.querySelector(".eyebrow");
       var h=card.querySelector("h3");
-      var p=card.querySelector("p:last-child");
+      var body=card.querySelector("p:last-child");
+
+      if(a.M_state==="market_context_active"){
+        if(eyebrow) eyebrow.textContent=a.symbol+" · market context";
+        if(h) h.textContent="Market movement: "+movementLabel(a.market_context_label);
+        if(body) body.innerHTML=
+          "Price: "+usd(a.price_usd)+"<br/>"+
+          "24h change: "+pct(a.market_24h_change_pct)+"<br/>"+
+          "M context: "+Number(a.M || 0).toFixed(4)+"<br/>"+
+          "A/E pending · Not a trading signal";
+        return;
+      }
+
       if(h) h.textContent="Φ balance: Calibration";
-      if(p) p.innerHTML="Snapshot state: JSON-bound calibration<br/>A/E/M differentiation pending<br/>"+phaseText(a);
+      if(body) body.innerHTML="Snapshot state: JSON-bound calibration<br/>A/E/M differentiation pending<br/>Phase windows: w1 / w3 / w7";
     }
     fetch(url).then(function(r){return r.json()}).then(function(d){
       if(!closed(d.boundary)) return;
