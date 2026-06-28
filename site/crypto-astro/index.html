@@ -611,10 +611,10 @@
     }
     fetch(url).then(function(r){return r.json()}).then(function(d){
       if(!closed(d.boundary)) return;
-      setText("score-data-snapshot", d.source_label || "public-safe scoring snapshot");
+      setText("score-data-snapshot", "Public scoring snapshot");
       setText("score-data-coverage", String(d.coverage || 0)+" assets");
       setText("score-data-heartbeat", String(d.heartbeat_sec || 0)+" sec target");
-      setText("score-data-source", d.source_mode || "static public artifact");
+      setText("score-data-source", "Static public JSON");
       (d.assets || []).forEach(renderAsset);
       var note=document.querySelector(".scoring-state-note");
       if(note && d.public_copy){
