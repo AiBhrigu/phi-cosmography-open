@@ -133,17 +133,23 @@ Blocked connection:
 
 ### 6. TVL / Liquidity Context Layer
 
-State: plan only / not opened.
+State: plan artifact merged / implementation closed.
+
+Truth anchor:
+
+- site/crypto-astro/CRYPTO_ASTRO_TVL_LIQUIDITY_CONTEXT_LAYER_PLAN_v0_1.md
 
 Role:
 
 - future context layer for liquidity and capital environment
+- static public artifact first
+- context-only, separated from active scoring
 
 Allowed next connection:
 
-- semantics plan
 - schema separation plan
 - boundary review
+- static artifact design
 
 Blocked connection:
 
@@ -151,6 +157,9 @@ Blocked connection:
 - live adapter
 - investment signal
 - forecast
+- trading signal
+- backend/API
+- runtime
 
 ### 7. Historical Formula Validation
 
@@ -187,7 +196,7 @@ Blocked connection:
 1. Public surface only receives changes through governance PR route.
 2. A/E source semantics must close before A/E numeric activation can even be reviewed.
 3. A/E input schema remains static/public and pending until formula review.
-4. TVL/liquidity stays plan-only until a separate boundary and schema plan exists.
+4. TVL/liquidity has a merged plan artifact, but implementation, live adapters, runtime/backend/API, and financial signal language remain closed.
 5. Automation modules stay passive unless runtime authorization is explicit.
 6. Runtime/backend/API remain closed.
 7. No trading signal, forecast, price target, or investment recommendation language may enter public surface.
@@ -196,16 +205,16 @@ Blocked connection:
 ## Current parked threads
 
 - A/E source semantics exact patch: parked pending worker/local patch result.
-- TVL/liquidity context: plan-only.
+- TVL/liquidity context: plan artifact merged / implementation closed.
 - Historical formula validation: later.
 - Runtime/backend/API: closed.
 
 ## Next safe route
 
-After this artifact:
+After this refreshed artifact:
 
-1. Open draft PR for module connection map.
-2. Validate changed files.
+1. Validate changed files.
+2. Mark PR ready for review if tool route is available.
 3. Merge only if documentation-only and boundary clean.
 4. Return to A/E source semantics when worker/local atom result appears.
 
@@ -218,6 +227,7 @@ RUNTIME=NO
 BACKEND_API=NO
 A_E_ACTIVATION=NO
 TVL_IMPLEMENTATION=NO
+LIVE_ADAPTER=NO
 TRADING_SIGNAL=NO
 FORECAST=NO
 INVESTMENT_RECOMMENDATION=NO
