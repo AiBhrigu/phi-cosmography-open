@@ -64,17 +64,18 @@ State: parked.
 Truth anchor:
 
 - Issue #38
+- Issue #42 Codex route
 - Fresh branch: crypto-astro-a-e-source-semantics-fresh-v0-1
 - Local atompack handoff posted
 
 Current blocker:
 
 - exact patch-capable route required for site/crypto-astro/index.html
-- no confirmed worker result yet
+- no confirmed worker / Codex result yet
 
 Allowed next connection:
 
-- worker/local atom applies exact UI-copy patch on branch
+- worker/local/Codex atom applies exact UI-copy patch on branch
 - verify changed file count
 - draft PR only after patch result
 
@@ -87,23 +88,33 @@ Blocked connection:
 
 ### 4. A/E Input Source Schema
 
-State: local artifact closed / repo patch not opened.
+State: plan artifact merged / implementation closed.
+
+Truth anchor:
+
+- site/crypto-astro/CRYPTO_ASTRO_A_E_INPUT_SOURCE_SCHEMA_PLAN_v0_1.md
+- PR #43
+- merge: 89ed1730f9b65a8f184ca6bee6901f136062fe02
 
 Role:
 
 - define A input and E input as pending source classes
 - preserve source mode as static public artifact
 - keep calibration pending until formula review
+- keep A/E UI repair as a separate parked track
 
 Allowed next connection:
 
-- repo artifact branch only after A/E UI semantics is repaired or explicitly parked
+- formula validation discussion only after A/E UI semantics is clean
+- boundary review before any production schema or scoring change
 
 Blocked connection:
 
 - numeric A/E scoring
 - source adapter claims
 - runtime ingestion
+- production schema implementation
+- data feed creation
 
 ### 5. Module Automation Chain
 
@@ -195,7 +206,7 @@ Blocked connection:
 
 1. Public surface only receives changes through governance PR route.
 2. A/E source semantics must close before A/E numeric activation can even be reviewed.
-3. A/E input schema remains static/public and pending until formula review.
+3. A/E input schema plan is merged as a static/public plan-only artifact and remains pending/calibration-only until formula review.
 4. TVL/liquidity has a merged plan artifact, but implementation, live adapters, runtime/backend/API, and financial signal language remain closed.
 5. Automation modules stay passive unless runtime authorization is explicit.
 6. Runtime/backend/API remain closed.
@@ -204,7 +215,8 @@ Blocked connection:
 
 ## Current parked threads
 
-- A/E source semantics exact patch: parked pending worker/local patch result.
+- A/E source semantics exact patch: parked pending worker/Codex patch result.
+- A/E input source schema: plan artifact merged / implementation closed.
 - TVL/liquidity context: plan artifact merged / implementation closed.
 - Historical formula validation: later.
 - Runtime/backend/API: closed.
@@ -216,7 +228,7 @@ After this refreshed artifact:
 1. Validate changed files.
 2. Mark PR ready for review if tool route is available.
 3. Merge only if documentation-only and boundary clean.
-4. Return to A/E source semantics when worker/local atom result appears.
+4. Return to A/E source semantics when worker/Codex atom result appears.
 
 ## Boundary
 
