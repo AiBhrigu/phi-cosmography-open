@@ -550,15 +550,15 @@
     <p>A multi-asset intelligence loop combining market data, Φ-balance scoring, resonance state, and phase context.</p>
   </div>
   <div class="scoring-data-band" aria-label="ORION scoring snapshot data band">
-    <div class="scoring-data"><strong>Snapshot</strong><span>stored ORION sample</span></div>
-    <div class="scoring-data"><strong>Coverage</strong><span>3 assets</span></div>
-    <div class="scoring-data"><strong>Heartbeat</strong><span>300 sec target</span></div>
-    <div class="scoring-data"><strong>Source</strong><span>ORION scoring schema</span></div>
+    <div class="scoring-data" id="score-data-snapshot"><strong>Snapshot</strong><span>public-safe snapshot</span></div>
+    <div class="scoring-data" id="score-data-coverage"><strong>Coverage</strong><span>3 assets</span></div>
+    <div class="scoring-data" id="score-data-heartbeat"><strong>Heartbeat</strong><span>300 sec target</span></div>
+    <div class="scoring-data" id="score-data-source"><strong>Source</strong><span>ORION scoring schema</span></div>
   </div>
   <div class="module-grid">
-    <article class="module-card truth"><p class="eyebrow">BTC · active sample</p><h3>Φ balance: 0.299</h3><p>Snapshot state: stored ORION sample<br/>Market momentum: active sample<br/>Phase windows: w1 / w3 / w7</p></article>
-    <article class="module-card"><p class="eyebrow">ETH · preview</p><h3>Φ balance: 0.658</h3><p>Preview state<br/>Resonance: pending<br/>Phase windows: w1 / w3 / w7</p></article>
-    <article class="module-card"><p class="eyebrow">SOL · preview</p><h3>Φ balance: 0.658</h3><p>Preview state<br/>Resonance: pending<br/>Phase windows: w1 / w3 / w7</p></article>
+    <article class="module-card truth" id="score-card-BTC"><p class="eyebrow">BTC · calibration</p><h3>Φ balance: Calibration</h3><p>Snapshot state: public-safe snapshot<br/>Search/social differentiation pending<br/>Phase windows: w1 / w3 / w7</p></article>
+    <article class="module-card" id="score-card-ETH"><p class="eyebrow">ETH · calibration</p><h3>Φ balance: Calibration</h3><p>Snapshot state: calibration<br/>Search/social differentiation pending<br/>Phase windows: w1 / w3 / w7</p></article>
+    <article class="module-card" id="score-card-SOL"><p class="eyebrow">SOL · calibration</p><h3>Φ balance: Calibration</h3><p>Snapshot state: calibration<br/>Search/social differentiation pending<br/>Phase windows: w1 / w3 / w7</p></article>
   </div>
   <div class="scoring-matrix" aria-label="Scoring matrix">
     <div class="scoring-chip"><strong>A</strong><span>Attention / activity</span></div>
@@ -586,6 +586,44 @@
     <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>event-window context from the active phase layer</span></div>
   </div>
   <p class="small scoring-state-note">Market data active · Search/social calibration pending · Source: ORION scoring schema + CoinGecko read-only adapter.</p>
+
+  <script>
+  (function(){
+    var url="data/scoring_snapshot.public.json?v=9e0583f";
+    function setText(id, text){
+      var el=document.getElementById(id);
+      if(el) el.querySelector("span").textContent=text;
+    }
+    function closed(b){
+      return b && b.no_trading_signal && b.no_price_target && b.no_investment_recommendation && b.backend_api_closed && b.orion_core_protected;
+    }
+    function phaseText(a){
+      var p=a.sem_phase || {};
+      return "Phase windows: w1 / w3 / w7";
+    }
+    function renderAsset(a){
+      var card=document.getElementById("score-card-"+a.symbol);
+      if(!card) return;
+      var h=card.querySelector("h3");
+      var p=card.querySelector("p:last-child");
+      if(h) h.textContent="Φ balance: Calibration";
+      if(p) p.innerHTML="Snapshot state: calibration<br/>Search/social differentiation pending<br/>"+phaseText(a);
+    }
+    fetch(url).then(function(r){return r.json()}).then(function(d){
+      if(!closed(d.boundary)) return;
+      setText("score-data-snapshot", d.source_label || "public-safe scoring snapshot");
+      setText("score-data-coverage", String(d.coverage || 0)+" assets");
+      setText("score-data-heartbeat", String(d.heartbeat_sec || 0)+" sec target");
+      setText("score-data-source", d.source_mode || "static public artifact");
+      (d.assets || []).forEach(renderAsset);
+      var note=document.querySelector(".scoring-state-note");
+      if(note && d.public_copy){
+        note.textContent=(d.public_copy.state_line || "")+" "+(d.public_copy.source_line || "");
+      }
+    }).catch(function(){});
+  })();
+  </script>
+
 </section>
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:END -->
 <section class="seal trust-seal" aria-label="Crypto-Astro final boundary seal">
