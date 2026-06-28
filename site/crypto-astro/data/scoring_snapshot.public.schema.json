@@ -89,7 +89,9 @@
             "type": "number"
           },
           "M": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
           },
           "phi_balance": {
             "type": "number"
@@ -158,7 +160,11 @@
         "no_price_target",
         "no_investment_recommendation",
         "backend_api_closed",
-        "orion_core_protected"
+        "orion_core_protected",
+        "no_forecast",
+        "runtime_closed",
+        "no_live_search_adapter_claim",
+        "no_live_social_adapter_claim"
       ],
       "properties": {
         "no_trading_signal": {
@@ -174,6 +180,18 @@
           "const": true
         },
         "orion_core_protected": {
+          "const": true
+        },
+        "no_forecast": {
+          "const": true
+        },
+        "runtime_closed": {
+          "const": true
+        },
+        "no_live_search_adapter_claim": {
+          "const": true
+        },
+        "no_live_social_adapter_claim": {
           "const": true
         }
       }

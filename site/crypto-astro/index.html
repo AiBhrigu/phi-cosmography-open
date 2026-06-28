@@ -545,9 +545,9 @@
 <!-- ORION_SCORING_LOOP_PREVIEW_v0_1:BEGIN -->
 <section id="scoring" class="section surface-anchor" aria-label="ORION BHRIGU scoring loop preview">
   <div class="section-head">
-    <div class="kicker">Market signal → Φ scoring → phase context → public output</div>
+    <div class="kicker">Market context → calibration layer → public-safe output</div>
     <h2>ORION × BHRIGU · Scoring Loop Preview</h2>
-    <p>A multi-asset intelligence loop combining market data, Φ-balance scoring, resonance state, and phase context.</p>
+    <p>Read-only market context for BTC / ETH / SOL. A/E and Φ scoring layers remain in calibration.</p>
   </div>
   <div class="scoring-data-band" aria-label="ORION scoring snapshot data band">
     <div class="scoring-data" id="score-data-snapshot"><strong>Snapshot</strong><span>Public scoring snapshot</span></div>
@@ -569,33 +569,33 @@
     <div class="scoring-chip"><strong>Sem Phase</strong><span>Phase window</span></div>
   </div>
     <p class="eyebrow scoring-subhead">Signal inputs</p>
-  <p class="small">A / E / M combines search attention, public discussion, and market movement into one normalized signal profile.</p>
+  <p class="small">A/E are prepared source slots. M is the active read-only market context.</p>
   <div class="scoring-matrix scoring-input-grid" aria-label="A E M signal inputs">
-    <div class="scoring-chip"><strong>A · Attention</strong><span>Search interest<br/>what people are actively looking for</span></div>
-    <div class="scoring-chip"><strong>E · Engagement</strong><span>Public discussion<br/>what people are actively discussing across X.com and similar social channels</span></div>
-    <div class="scoring-chip"><strong>M · Market Momentum</strong><span>Market movement<br/>price · volume · 24h change from CoinGecko</span></div>
+    <div class="scoring-chip"><strong>A · Attention</strong><span>Attention source slot<br/>pending calibration</span></div>
+    <div class="scoring-chip"><strong>E · Engagement</strong><span>Public discussion source slot<br/>pending calibration</span></div>
+    <div class="scoring-chip"><strong>M · Market Momentum</strong><span>Market context<br/>price · 24h change from CoinGecko</span></div>
   </div>
-  <p class="eyebrow scoring-subhead scoring-calc-subhead">How scoring is calculated</p>
-  <p class="small scoring-calc-intro">The scoring flow starts with raw inputs, converts them into a normalized A / E / M signal profile, then derives structural balance, dynamic resonance, and phase context.</p>
-  <div class="scoring-matrix" aria-label="How scoring is calculated">
-    <div class="scoring-chip"><strong>1 · Raw signals</strong><span>search interest · public discussion · market movement · phase context</span></div>
-    <div class="scoring-chip"><strong>2 · A/E/M vector</strong><span>A = attention<br/>E = engagement<br/>M = market momentum</span></div>
-    <div class="scoring-chip"><strong>3 · Normalize</strong><span>inputs become one comparable signal profile</span></div>
-    <div class="scoring-chip"><strong>4 · Φ Balance</strong><span>structural score from the balance of A / E / M</span></div>
-    <div class="scoring-chip"><strong>5 · Φ Resonance</strong><span>dynamic score from signal movement over time</span></div>
-    <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>event-window context from the active phase layer</span></div>
+  <p class="eyebrow scoring-subhead scoring-calc-subhead">How context is prepared</p>
+  <p class="small scoring-calc-intro">The public layer prepares market context first. A/E, Φ Balance, Φ Resonance, and phase context remain calibration layers.</p>
+  <div class="scoring-matrix" aria-label="How context is prepared">
+    <div class="scoring-chip"><strong>1 · Raw signals</strong><span>prepared A/E slots · market context · calibration layers</span></div>
+    <div class="scoring-chip"><strong>2 · A/E/M vector</strong><span>A = attention slot<br/>E = engagement slot<br/>M = market context</span></div>
+    <div class="scoring-chip"><strong>3 · Normalize</strong><span>context fields stay separated until formula audit</span></div>
+    <div class="scoring-chip"><strong>4 · Φ Balance</strong><span>calibration layer · not active scoring</span></div>
+    <div class="scoring-chip"><strong>5 · Φ Resonance</strong><span>calibration layer · not active scoring</span></div>
+    <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>phase layer pending calibration</span></div>
   </div>
-  <p class="small scoring-state-note">Static JSON bound · Market data active · A/E/M calibration pending.</p>
+  <p class="small scoring-state-note">Market context active · A/E pending · Not a trading signal.</p>
 
   <script>
   (function(){
-    var url="data/scoring_snapshot.public.json?v=9e0583f";
+    var url="data/scoring_snapshot.public.json?v=11206e9";
     function setText(id, text){
       var el=document.getElementById(id);
       if(el) el.querySelector("span").textContent=text;
     }
     function closed(b){
-      return b && b.no_trading_signal && b.no_price_target && b.no_investment_recommendation && b.backend_api_closed && b.orion_core_protected;
+      return b && b.no_trading_signal && b.no_price_target && b.no_investment_recommendation && b.no_forecast && b.backend_api_closed && b.runtime_closed && b.no_live_search_adapter_claim && b.no_live_social_adapter_claim && b.orion_core_protected;
     }
     function movementLabel(x){
       if(x==="high_movement") return "high";
@@ -640,7 +640,7 @@
       (d.assets || []).forEach(renderAsset);
       var note=document.querySelector(".scoring-state-note");
       if(note && d.public_copy){
-        note.textContent="Static JSON bound · Market data active · A/E/M calibration pending.";
+        note.textContent="Market context active · A/E pending · Not a trading signal.";
       }
     }).catch(function(){});
   })();

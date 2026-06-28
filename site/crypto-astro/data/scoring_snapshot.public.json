@@ -84,11 +84,15 @@
     "no_price_target": true,
     "no_investment_recommendation": true,
     "backend_api_closed": true,
-    "orion_core_protected": true
+    "orion_core_protected": true,
+    "no_forecast": true,
+    "runtime_closed": true,
+    "no_live_search_adapter_claim": true,
+    "no_live_social_adapter_claim": true
   },
   "public_copy": {
-    "state_line": "Static JSON v0.2 · Market context active · A/E calibration pending.",
-    "source_line": "Source: Static public JSON · CoinGecko read-only market context."
+    "state_line": "Static JSON v0.2 · Market context active · A/E pending.",
+    "source_line": "Source: Static public JSON · CoinGecko read-only market context · no live search/social adapter claim."
   },
   "market_source": "CoinGecko",
   "market_source_mode": "read_only_adapter_or_manual_static_snapshot",
