@@ -561,9 +561,9 @@
     <article class="module-card" id="score-card-SOL"><p class="eyebrow">SOL · calibration</p><h3>Φ balance: Calibration</h3><p>Snapshot state: JSON-bound calibration<br/>A/E/M differentiation pending<br/>Phase windows: w1 / w3 / w7</p></article>
   </div>
   <div class="scoring-matrix" aria-label="Scoring matrix">
-    <div class="scoring-chip"><strong>A</strong><span>Attention / activity</span></div>
-    <div class="scoring-chip"><strong>E</strong><span>Engagement signal</span></div>
-    <div class="scoring-chip"><strong>M</strong><span>Market momentum</span></div>
+    <div class="scoring-chip"><strong>A</strong><span>Astro-context source class · pending</span></div>
+    <div class="scoring-chip"><strong>E</strong><span>Ephemerides / evidence source class · pending</span></div>
+    <div class="scoring-chip"><strong>M</strong><span>24h market movement context · active</span></div>
     <div class="scoring-chip"><strong>Φ Balance</strong><span>Structural score</span></div>
     <div class="scoring-chip"><strong>Φ Resonance</strong><span>Dynamic state</span></div>
     <div class="scoring-chip"><strong>Sem Phase</strong><span>Phase window</span></div>
@@ -571,8 +571,8 @@
     <p class="eyebrow scoring-subhead">Signal inputs</p>
   <p class="small">A/E are prepared source slots. M is the active read-only market context.</p>
   <div class="scoring-matrix scoring-input-grid" aria-label="A E M signal inputs">
-    <div class="scoring-chip"><strong>A · Attention</strong><span>Attention source slot<br/>pending calibration</span></div>
-    <div class="scoring-chip"><strong>E · Engagement</strong><span>Public discussion source slot<br/>pending calibration</span></div>
+    <div class="scoring-chip"><strong>A · Astro Context</strong><span>Attention source slot<br/>pending calibration</span></div>
+    <div class="scoring-chip"><strong>E · Ephemerides / Evidence Context</strong><span>Public discussion source slot<br/>pending calibration</span></div>
     <div class="scoring-chip"><strong>M · Market Momentum</strong><span>Market context<br/>price · 24h change from CoinGecko</span></div>
   </div>
   <p class="eyebrow scoring-subhead scoring-calc-subhead">How context is prepared</p>
@@ -585,7 +585,7 @@
     <div class="scoring-chip"><strong>5 · Φ Resonance</strong><span>calibration layer · not active scoring</span></div>
     <div class="scoring-chip"><strong>6 · Sem Phase</strong><span>phase layer pending calibration</span></div>
   </div>
-  <p class="small scoring-state-note">Market context active · A/E pending · Not a trading signal.</p>
+  <p class="small scoring-state-note">Market context active · A/E source classes pending · Not a trading signal.</p>
 
   <script>
   (function(){
@@ -624,7 +624,7 @@
           "Price: "+usd(a.price_usd)+"<br/>"+
           "24h change: "+pct(a.market_24h_change_pct)+"<br/>"+
           "M context: "+Number(a.M || 0).toFixed(4)+"<br/>"+
-          "A/E pending · Not a trading signal";
+          "A/E source classes pending · Not a trading signal";
         return;
       }
 
@@ -640,7 +640,7 @@
       (d.assets || []).forEach(renderAsset);
       var note=document.querySelector(".scoring-state-note");
       if(note && d.public_copy){
-        note.textContent="Market context active · A/E pending · Not a trading signal.";
+        note.textContent="Market context active · A/E source classes pending · Not a trading signal.";
       }
     }).catch(function(){});
   })();
