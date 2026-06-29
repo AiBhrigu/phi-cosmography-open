@@ -7,7 +7,7 @@ BOUNDARY: CLEAN
 
 ## Purpose
 
-Capture the current Cosmographer v7 router queue state as a repo-visible documentation artifact after governance repair, TVL/liquidity context, A/E input source schema, module connection map refresh tracks, router queue snapshot, and A/E source semantics patch were completed.
+Capture the current Cosmographer v7 router queue state as a repo-visible documentation artifact after governance repair, TVL/liquidity context, A/E input source schema, module connection map refresh tracks, A/E source semantics closure, public-surface light lock, Governance PR Validation Suite current public-surface note refresh, and Historical Formula Validation Readiness Plan closure were completed.
 
 This artifact reduces chat-memory drift by anchoring completed tracks, blocked tracks, next-action policy, production truth, and boundary state.
 
@@ -21,21 +21,31 @@ TVL / Liquidity Context Layer: plan artifact merged / implementation closed.
 
 Module Connection Map A/E Schema Refresh: complete.
 
-Router Queue State Snapshot: refreshed after A/E closure.
+Router Queue State Snapshot: refreshed after governance and formula-readiness state changes.
 
-Historical Formula Validation: later / not opened.
+Governance PR Validation Suite: refreshed / current public-surface note locked.
+
+Historical Formula Validation Readiness Plan: merged / plan-only repo truth anchored.
+
+Historical Formula Validation Execution: not opened.
+
+A/E numeric activation: blocked.
 
 Runtime / Backend / API: closed.
+
+Public UI cards: unchanged / visual-light locked.
 
 ## Completed tracks
 
 ### Governance Repair
 
-State: complete.
+State: complete / current public-surface note refreshed.
 
-Truth anchor:
+Truth anchors:
 
 - site/crypto-astro/GOVERNANCE_PR_VALIDATION_SUITE_v0_1.md
+- PR #50
+- merge: 565383e9ed3b821a72225969d11ddb8b89c847cc
 
 ### TVL / Liquidity Context Layer
 
@@ -67,13 +77,13 @@ Truth anchors:
 
 ### Router Queue State Snapshot
 
-State: complete / now refreshed after A/E source semantics closure.
+State: complete / refreshed after A/E source semantics closure and refreshed again after governance plus historical formula-readiness closure.
 
 Truth anchors:
 
 - site/crypto-astro/CRYPTO_ASTRO_ROUTER_QUEUE_STATE_SNAPSHOT_v0_1.md
-- prior snapshot state: A/E Source Semantics parked pending worker/Codex patch result
-- refreshed state: A/E Source Semantics closed / production verified
+- prior snapshot state: A/E Source Semantics closed / production verified
+- refreshed state: Governance current public note locked and Historical Formula Validation Readiness Plan anchored
 
 ### A/E Source Semantics UI Copy Patch
 
@@ -103,26 +113,74 @@ Public copy lock:
 - A/E state: A/E source classes pending
 - safety copy: Not a trading signal
 
+### Public Surface Light Lock
+
+State: closed / visual-light locked.
+
+Truth anchors:
+
+- PR #49
+- merge: 4929a34e9d33a813a96616292462e8b684d99e9d
+- public state: SCORING_V0_2_MARKET_CONTEXT_ACTIVE_UI_LIVE_A_E_SEMANTICS_VISUAL_LIGHT_LOCKED
+
+### Historical Formula Validation Readiness Plan
+
+State: plan-only repo truth anchored / execution not opened.
+
+Truth anchors:
+
+- site/crypto-astro/CRYPTO_ASTRO_HISTORICAL_FORMULA_VALIDATION_READINESS_PLAN_v0_1.md
+- PR #51
+- merge: 8fc0b09e962e9b2f2abe72816c1e54a9467c44c5
+
+Locked interpretation:
+
+- readiness plan is not formula execution
+- A/E numeric activation remains blocked
+- formula validation execution remains not opened
+- runtime/backend/API/live adapters remain closed
+
 ## Parked tracks
 
 None for A/E Source Semantics.
 
 ## Blocked tracks
 
-### Historical Formula Validation
+### Historical Formula Validation Execution
 
-State: later / not opened.
+State: not opened.
 
 Reason:
 
-- A/E source semantics is now clean, but numeric A/E activation still requires a separate scoped formula-validation route.
+- Historical Formula Validation Readiness Plan is now repo truth, but it only defines readiness scaffolding.
+- Formula execution requires a separate scoped execution plan, data/source boundary review, and explicit stop-gate authorization.
 
 Blocked:
 
+- formula execution
+- backtest runner
 - formula weight activation
 - active A/E scoring
 - live scoring change
 - public prediction claims
+
+### A/E Numeric Activation
+
+State: blocked.
+
+Reason:
+
+- A/E source classes remain pending and calibration-only.
+- A/E has no current scoring effect.
+- Public JSON keeps A=0.0 and E=0.0.
+- A/E cannot be folded into active score before separate authorization.
+
+Blocked:
+
+- A/E numeric score activation
+- A/E formula weights
+- A/E live source ingestion
+- A/E public signal language
 
 ### Runtime / Backend / API
 
@@ -155,13 +213,16 @@ Blocked:
 ## Next-action policy
 
 1. Do not reopen the A/E source semantics UI-copy patch.
-2. Do not open formula validation / A/E numeric activation without a separate scoped plan and boundary review.
-3. Do not open runtime/backend/API.
-4. Do not change schema/data JSON without a separate scoped plan and boundary review.
-5. Do not change public HTML unless the route explicitly authorizes the exact target patch.
-6. Keep public financial action language out of the public surface.
-7. Use repo artifacts and public verification as the truth chain for queue-state changes.
-8. Refresh this router snapshot only when a queue state materially changes.
+2. Do not treat Historical Formula Validation Readiness Plan as formula execution.
+3. Do not open formula execution without a separate scoped execution plan, data/source boundary review, and stop-gate authorization.
+4. Do not open A/E numeric activation without a separate scoped formula-review route and boundary review.
+5. Do not open runtime/backend/API.
+6. Do not change schema/data JSON without a separate scoped plan and boundary review.
+7. Do not change public HTML unless the route explicitly authorizes the exact target patch.
+8. Keep the public UI card layer unchanged unless a visual architecture scope explicitly opens a target card change.
+9. Keep public financial action language out of the public surface.
+10. Use repo artifacts and public verification as the truth chain for queue-state changes.
+11. Refresh this router snapshot only when a queue state materially changes.
 
 ## Production note
 
@@ -171,14 +232,18 @@ Production-visible public surface update for A/E source semantics is verified wi
 
 Plain public URL may remain cached briefly because GitHub Pages returned cache-control max-age=600 during verification. The cache-bust URL verified the production update.
 
+PR #50 and PR #51 changed repo-visible documentation artifacts only.
+
 ## Current boundary
 
-PUBLIC_HTML_CHANGE=YES_VERIFIED_FOR_A_E_SOURCE_SEMANTICS_ONLY
+PUBLIC_HTML_CHANGE=NO_FOR_THIS_REFRESH
+CARD_CHANGE=NO
 SCHEMA_CHANGE=NO
 DATA_CHANGE=NO
 RUNTIME=NO
 BACKEND_API=NO
 A_E_NUMERIC_ACTIVATION=NO
+FORMULA_EXECUTION=NO
 FORMULA_ACTIVATION=NO
 TVL_IMPLEMENTATION=NO
 LIVE_ADAPTER=NO
