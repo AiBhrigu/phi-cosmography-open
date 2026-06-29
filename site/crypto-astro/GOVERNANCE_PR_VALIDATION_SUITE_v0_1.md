@@ -88,6 +88,18 @@ After merge:
 - create closure report
 - store memory fixation
 
-## Current A/E branch note
+## Current public-surface note
 
-Branch `crypto-astro-a-e-source-semantics-v0-1` must not open PR until `site/crypto-astro/index.html` receives the exact UI-copy patch. A branch containing only a patch-plan artifact is not PR-ready.
+A/E source semantics is closed / production verified.
+
+Current public state:
+
+SCORING_V0_2_MARKET_CONTEXT_ACTIVE_UI_LIVE_A_E_SEMANTICS_VISUAL_LIGHT_LOCKED
+
+Public HTML changes still require the full PR route.
+
+No A/E numeric activation without a separate formula-review node.
+
+No public UI additions without a visual architecture plan.
+
+Do not create micro-PRs by default; batch small related UI/copy fixes when possible.
