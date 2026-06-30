@@ -105,13 +105,13 @@
   .hero {
     margin-top:22px;
     border:1px solid rgba(255,255,255,.14);
-    border-radius:32px;
-    padding:30px;
+    border-radius:30px;
+    padding:24px 26px;
     background:
-      radial-gradient(circle at top left, rgba(143,183,255,.12), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(247,212,125,.10), transparent 32%),
-      linear-gradient(180deg, rgba(255,255,255,.052), rgba(255,255,255,.022));
-    box-shadow:0 24px 72px rgba(0,0,0,.26);
+      radial-gradient(circle at top left, rgba(143,183,255,.10), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(247,212,125,.08), transparent 32%),
+      linear-gradient(180deg, rgba(255,255,255,.046), rgba(255,255,255,.020));
+    box-shadow:0 20px 64px rgba(0,0,0,.24);
   }
   .kicker {
     color:var(--blue);
@@ -122,20 +122,20 @@
   }
   h1 {
     max-width:960px;
-    margin:14px 0 0;
+    margin:12px 0 0;
     color:#f8fafc;
-    font-size:clamp(38px,6vw,68px);
-    line-height:.98;
-    letter-spacing:-.055em;
+    font-size:clamp(34px,5vw,58px);
+    line-height:1;
+    letter-spacing:-.05em;
   }
   .lead {
     max-width:840px;
-    margin:18px 0 0;
+    margin:14px 0 0;
     color:rgba(226,232,240,.78);
-    font-size:17px;
-    line-height:1.66;
+    font-size:16px;
+    line-height:1.58;
   }
-  .hero-badges { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+  .hero-badges { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
   .badge {
     border:1px solid rgba(255,255,255,.18);
     border-radius:999px;
@@ -295,9 +295,15 @@
     letter-spacing:.11em;
     text-transform:uppercase;
   }
-  .market-field-grid {
+  .market-first-screen {
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:1.1fr .9fr .9fr;
+    gap:16px;
+    align-items:stretch;
+  }
+  .market-lower-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
     gap:16px;
   }
   .market-card {
@@ -316,8 +322,60 @@
   }
   .market-card h3 { margin:0 0 12px; color:var(--gold); font-size:18px; }
   .market-card p { margin:0 0 12px; color:var(--soft); line-height:1.55; font-size:14px; }
-  .field-list { display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none; }
-  .field-list li {
+  .market-reality-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .market-metric {
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:18px;
+    padding:12px;
+    background:rgba(3,7,13,.24);
+  }
+  .market-metric span {
+    display:block;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:850;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .market-metric strong {
+    display:block;
+    margin-top:6px;
+    color:#f8fafc;
+    font-size:20px;
+    line-height:1.1;
+  }
+  .barometer-core {
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:16px;
+    align-items:center;
+  }
+  .score-orb {
+    width:116px;
+    height:116px;
+    border:1px solid rgba(247,212,125,.42);
+    border-radius:999px;
+    display:grid;
+    place-items:center;
+    color:var(--gold);
+    font-size:30px;
+    font-weight:950;
+    letter-spacing:-.05em;
+    background:radial-gradient(circle, rgba(247,212,125,.13), rgba(247,212,125,.035));
+  }
+  .state-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    margin-top:12px;
+  }
+  .state-grid span,
+  .field-list li,
+  .trend-memory span {
     border:1px solid rgba(255,255,255,.10);
     border-radius:14px;
     padding:9px 10px;
@@ -325,29 +383,18 @@
     background:rgba(3,7,13,.22);
     font-size:13px;
   }
-  .lane-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .lane-card {
+  .field-list { display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none; }
+  .source-lane-line {
+    display:grid;
+    gap:10px;
+  }
+  .source-lane-line div {
     border:1px solid rgba(143,183,255,.18);
     border-radius:18px;
     padding:14px;
     background:rgba(143,183,255,.035);
   }
-  .lane-card strong { display:block; color:var(--gold); margin-bottom:8px; }
-  .score-value {
-    color:var(--gold);
-    font-size:52px;
-    line-height:1;
-    font-weight:950;
-    letter-spacing:-.06em;
-  }
-  .score-label {
-    margin-top:8px;
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    font-weight:800;
-  }
+  .source-lane-line strong { display:block; color:var(--gold); margin-bottom:6px; }
   .prob-row {
     display:grid;
     grid-template-columns:1fr auto;
@@ -361,15 +408,10 @@
   .prob-row strong { color:var(--gold); }
   .trend-memory {
     display:grid;
-    grid-template-columns:repeat(6,minmax(0,1fr));
+    grid-template-columns:repeat(5,minmax(0,1fr));
     gap:10px;
   }
   .trend-memory span {
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:16px;
-    padding:10px;
-    color:var(--muted);
-    background:rgba(255,255,255,.022);
     font-size:11px;
     font-weight:800;
     letter-spacing:.1em;
@@ -433,22 +475,25 @@
   }
   .seal span { display:block; max-width:980px; color:var(--soft); line-height:1.65; }
   .phi-footer { max-width:80rem; margin:48px auto 0; padding:0 24px 44px; color:var(--muted); }
-  @media (max-width: 900px) {
-    .market-field-grid { grid-template-columns:1fr; }
+  @media (max-width: 980px) {
+    .market-first-screen,
+    .market-lower-grid { grid-template-columns:1fr; }
     .trend-memory { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .lane-grid { grid-template-columns:1fr; }
   }
   @media (max-width: 800px) {
     .page { padding:18px 18px 52px; }
-    .hero { padding:24px; border-radius:28px; }
+    .hero { padding:22px; border-radius:28px; }
     .truth-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .section { padding:22px; border-radius:28px; }
   }
   @media (max-width: 520px) {
-    h1 { font-size:40px; }
+    h1 { font-size:38px; }
     .truth-grid { grid-template-columns:1fr; }
     .route-pill { min-width:100%; }
-    .trend-memory { grid-template-columns:1fr; }
+    .trend-memory,
+    .market-reality-grid,
+    .state-grid { grid-template-columns:1fr; }
+    .barometer-core { grid-template-columns:1fr; }
   }
 
   html { scroll-behavior: smooth; }
@@ -491,15 +536,11 @@
   <div class="kicker">BHRIGU / ORION · Public-safe field reading</div>
   <h1>Crypto-Astro Market Field</h1>
   <p class="lead">Read the field. See the possibilities.</p>
-  <p class="lead">
-    A/E/M + C/T → Market Field Score → Regime → Continuation Path → Cosmographer Read.
-    This public surface is read-only, static, and boundary-first.
-  </p>
   <div class="hero-badges" aria-label="Crypto-Astro Market Field boundary badges">
-    <a class="badge gold" href="#market">A/E LANES PREPARED</a>
-    <a class="badge green" href="#market">M MARKET VECTOR ACTIVE</a>
-    <a class="badge blue" href="#market">C/T TEMPORAL LAYER BOUNDED</a>
-    <a class="badge" href="#boundary">NO TRADING SIGNAL</a>
+    <a class="badge gold" href="#market">A/E lanes prepared</a>
+    <a class="badge green" href="#market">M market vector active</a>
+    <a class="badge blue" href="#market">C/T temporal layer bounded</a>
+    <a class="badge" href="#boundary">read-only · no trading signal</a>
   </div>
 </section>
 
@@ -508,94 +549,66 @@
   <div class="section-head">
     <div class="kicker">Static public snapshot · field module</div>
     <h2>Crypto-Astro Market Field</h2>
-    <p>Read the field. See the possibilities. A/E lanes are prepared for calibration, M market vector is active, and C/T temporal layer remains bounded.</p>
+    <p>Read the field. See the possibilities. Public-safe A/E/M + C/T context only.</p>
   </div>
 
   <div class="market-field-shell">
     <div class="market-status-rail" aria-label="Crypto-Astro Market Field status rail">
       <strong>CRYPTO-ASTRO MARKET FIELD</strong>
-      <span>A/E LANES PREPARED</span>
-      <span>M MARKET VECTOR ACTIVE</span>
-      <span>C/T TEMPORAL LAYER BOUNDED</span>
-      <span>READ-ONLY</span>
-      <span>NO TRADING SIGNAL</span>
+      <span>A/E lanes prepared</span>
+      <span>M market vector active</span>
+      <span>C/T temporal layer bounded</span>
+      <span>read-only</span>
+      <span>no trading signal</span>
     </div>
 
-    <div class="market-field-grid" aria-label="A/E source lanes, field barometer, and probability continuation">
+    <div class="market-first-screen" aria-label="Market reality, field barometer, and continuation field">
       <article class="market-card blue">
-        <p class="eyebrow">A/E Source Lanes</p>
-        <div class="lane-grid">
-          <div class="lane-card">
-            <strong>A · Attention</strong>
-            <p>State: prepared / pending calibration<br/>Source class: search demand</p>
-            <ul class="field-list">
-              <li>Search Pressure</li>
-              <li>Query Acceleration</li>
-              <li>Topic Heat</li>
-              <li>Attention Divergence</li>
-            </ul>
-          </div>
-          <div class="lane-card">
-            <strong>E · Engagement</strong>
-            <p>State: prepared / pending calibration<br/>Source class: X.com / social discussion</p>
-            <ul class="field-list">
-              <li>Discussion Pressure</li>
-              <li>Narrative Velocity</li>
-              <li>Engagement Acceleration</li>
-              <li>Social Amplification</li>
-            </ul>
-          </div>
+        <p class="eyebrow">Market Reality</p>
+        <div class="market-reality-grid">
+          <div class="market-metric"><span>Market Cap</span><strong>$2.144T</strong></div>
+          <div class="market-metric"><span>24h Volume</span><strong>$81.83B</strong></div>
+          <div class="market-metric"><span>BTC Dominance</span><strong>55.5%</strong></div>
+          <div class="market-metric"><span>Stablecoin Share</span><strong>14.4%</strong></div>
         </div>
-        <p class="small">A/E source lanes are prepared for calibration. No live search or social adapter claim.</p>
+        <p class="small">Static public snapshot. No active adapter claim.</p>
       </article>
 
       <article class="market-card gold">
         <p class="eyebrow">A/E/M Field Barometer</p>
-        <div class="score-value">63 / 100</div>
-        <div class="score-label">Market Field Score</div>
-        <h3>Balanced Expansion</h3>
-        <p>Bias: Neutral → Bullish</p>
-        <ul class="field-list">
-          <li>A · Attention: prepared</li>
-          <li>E · Engagement: prepared</li>
-          <li>M · Market: active</li>
-          <li>C/T · Temporal: bounded</li>
-          <li>Market Momentum</li>
-          <li>Volume Pressure</li>
-          <li>Stablecoin Flow</li>
-          <li>DeFi TVL Depth</li>
-          <li>Search Attention Lane</li>
-          <li>Social Engagement Lane</li>
-          <li>Temporal Pressure</li>
-          <li>Structural Stability</li>
-        </ul>
+        <div class="barometer-core">
+          <div class="score-orb">63</div>
+          <div>
+            <h3>Balanced Expansion</h3>
+            <p>Market Field Score: 63 / 100<br/>Bias: Neutral → Bullish</p>
+            <div class="state-grid" aria-label="Vector states">
+              <span>A prepared</span>
+              <span>E prepared</span>
+              <span>M active</span>
+              <span>C/T bounded</span>
+            </div>
+          </div>
+        </div>
       </article>
 
       <article class="market-card">
-        <p class="eyebrow">Probability Continuation</p>
+        <p class="eyebrow">Continuation Field</p>
         <div class="prob-row"><span>Base Path</span><strong>62%</strong></div>
-        <div class="prob-row"><span>Expansion Path</span><strong>24%</strong></div>
+        <div class="prob-row"><span>Expansion</span><strong>24%</strong></div>
         <div class="prob-row"><span>Compression / Reversal</span><strong>14%</strong></div>
         <div class="prob-row"><span>Window</span><strong>7D</strong></div>
-        <div class="prob-row"><span>Confidence</span><strong>Moderate</strong></div>
         <p class="small">Scenario continuation only. Not a price forecast. Not a trading signal.</p>
       </article>
     </div>
 
-    <div class="market-field-grid" aria-label="Market inputs, Cosmographer Read, and liquidity depth">
+    <div class="market-lower-grid" aria-label="Source lanes, Cosmographer Read, and Liquidity TVL">
       <article class="market-card">
-        <p class="eyebrow">M Market Inputs</p>
-        <h3>M · Market Vector</h3>
-        <ul class="field-list">
-          <li>Total Market Cap</li>
-          <li>24h Volume</li>
-          <li>BTC Dominance</li>
-          <li>Stablecoin Share</li>
-          <li>DeFi TVL</li>
-          <li>DEX Volume</li>
-          <li>Market Breadth</li>
-          <li>Liquidity Health</li>
-        </ul>
+        <p class="eyebrow">Source Lanes</p>
+        <div class="source-lane-line">
+          <div><strong>A · Attention</strong><p>prepared / search demand</p></div>
+          <div><strong>E · Engagement</strong><p>prepared / X.com-social discussion</p></div>
+        </div>
+        <p class="small">No live search/social adapter claim.</p>
       </article>
 
       <article class="market-card gold">
@@ -609,24 +622,20 @@
       <article class="market-card">
         <p class="eyebrow">Liquidity / TVL</p>
         <ul class="field-list">
-          <li>DeFi TVL</li>
-          <li>Stablecoins Cap</li>
-          <li>DEX Volume 24h</li>
-          <li>Liquidity Health</li>
-          <li>Liquidity Fragmentation</li>
-          <li>Leverage Stress</li>
-          <li>Market Impact Risk</li>
+          <li>Stablecoins Cap: $309B</li>
+          <li>DeFi TVL: pending source</li>
+          <li>DEX Volume: pending source</li>
+          <li>Liquidity Health: calibration pending</li>
         </ul>
       </article>
     </div>
 
-    <div class="trend-memory" aria-label="Compact Trend Memory">
+    <div class="trend-memory" aria-label="Trend Memory">
       <span>Market Cap 7D</span>
       <span>BTC Dominance 7D</span>
-      <span>DeFi TVL 7D</span>
-      <span>Stablecoin Share 7D</span>
+      <span>TVL 7D</span>
+      <span>Stable Share 7D</span>
       <span>Volume 7D</span>
-      <span>Breadth 7D</span>
     </div>
   </div>
 </section>
@@ -702,7 +711,7 @@
     <article class="module-card" data-crypto-astro-step="boundary-filter">
       <p class="eyebrow">Step 3 · Boundary</p>
       <h3>Forbidden financial language is blocked.</h3>
-      <p>No trading signal, price target, financial advice, product-readiness claim, or protected mechanism exposure.</p>
+      <p>No trading signal, financial advice, product-readiness claim, or protected mechanism exposure.</p>
     </article>
     <article class="module-card" data-crypto-astro-step="snapshot-draft">
       <p class="eyebrow">Step 4 · Draft</p>
@@ -732,7 +741,7 @@
   </div>
   <div class="module-grid">
     <article class="module-card"><h3>Backend/API</h3><p>Closed. No public backend endpoint is exposed from this page.</p></article>
-    <article class="module-card"><h3>Static market snapshot</h3><p>Public-safe context only. No live adapter claim and no execution path.</p></article>
+    <article class="module-card"><h3>Static market snapshot</h3><p>Public-safe context only. No active adapter claim and no execution path.</p></article>
     <article class="module-card"><h3>Payment automation</h3><p>On hold. No checkout, wallet, exchange, or automated payment route is opened.</p></article>
     <article class="module-card"><h3>ORION core</h3><p>Protected. The page exposes meaning and service boundaries, not protected internal mechanisms.</p></article>
   </div>
