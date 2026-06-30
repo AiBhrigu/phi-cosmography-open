@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Crypto-Astro Market Field Public Snapshot v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_mode",
+    "updated_at_utc",
+    "source_mode",
+    "vectors",
+    "field_output",
+    "probability_continuation",
+    "cosmographer_read",
+    "boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "crypto_astro_market_field_public_v0_1"
+    },
+    "snapshot_mode": {
+      "type": "string"
+    },
+    "updated_at_utc": {
+      "type": "string"
+    },
+    "source_mode": {
+      "type": "string"
+    },
+    "vectors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "A_attention",
+        "E_engagement",
+        "M_market",
+        "CT_temporal"
+      ],
+      "properties": {
+        "A_attention": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "source_class",
+            "search_pressure",
+            "query_acceleration",
+            "topic_heat",
+            "attention_divergence",
+            "notes"
+          ],
+          "properties": {
+            "state": {
+              "type": "string"
+            },
+            "source_class": {
+              "type": "string"
+            },
+            "search_pressure": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "query_acceleration": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "topic_heat": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "attention_divergence": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "E_engagement": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "source_class",
+            "discussion_pressure",
+            "narrative_velocity",
+            "engagement_acceleration",
+            "social_amplification",
+            "notes"
+          ],
+          "properties": {
+            "state": {
+              "type": "string"
+            },
+            "source_class": {
+              "type": "string"
+            },
+            "discussion_pressure": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "narrative_velocity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "engagement_acceleration": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "social_amplification": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "M_market": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "source_class",
+            "total_market_cap_usd",
+            "market_cap_change_24h_pct",
+            "volume_24h_usd",
+            "btc_dominance_pct",
+            "stablecoin_share_pct",
+            "stablecoin_cap_usd",
+            "defi_tvl_usd",
+            "dex_volume_24h_usd",
+            "market_breadth_pct",
+            "liquidity_health"
+          ],
+          "properties": {
+            "state": {
+              "type": "string"
+            },
+            "source_class": {
+              "type": "string"
+            },
+            "total_market_cap_usd": {
+              "type": "number"
+            },
+            "market_cap_change_24h_pct": {
+              "type": "number"
+            },
+            "volume_24h_usd": {
+              "type": "number"
+            },
+            "btc_dominance_pct": {
+              "type": "number"
+            },
+            "stablecoin_share_pct": {
+              "type": "number"
+            },
+            "stablecoin_cap_usd": {
+              "type": "number"
+            },
+            "defi_tvl_usd": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "dex_volume_24h_usd": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "market_breadth_pct": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "liquidity_health": {
+              "type": "string"
+            }
+          }
+        },
+        "CT_temporal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "source_class",
+            "phase_density",
+            "harmonic_tension",
+            "resonance_level",
+            "eclipse_proximity",
+            "structural_stability",
+            "ephemerides_support"
+          ],
+          "properties": {
+            "state": {
+              "type": "string"
+            },
+            "source_class": {
+              "type": "string"
+            },
+            "phase_density": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "harmonic_tension": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "resonance_level": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "eclipse_proximity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "structural_stability": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "ephemerides_support": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "field_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "market_field_score",
+        "regime_label",
+        "direction_bias",
+        "continuation_label",
+        "confidence_label"
+      ],
+      "properties": {
+        "market_field_score": {
+          "type": "number"
+        },
+        "regime_label": {
+          "type": "string"
+        },
+        "direction_bias": {
+          "type": "string"
+        },
+        "continuation_label": {
+          "type": "string"
+        },
+        "confidence_label": {
+          "type": "string"
+        }
+      }
+    },
+    "probability_continuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_path_pct",
+        "expansion_path_pct",
+        "compression_reversal_pct",
+        "window_label",
+        "boundary"
+      ],
+      "properties": {
+        "base_path_pct": {
+          "type": "number"
+        },
+        "expansion_path_pct": {
+          "type": "number"
+        },
+        "compression_reversal_pct": {
+          "type": "number"
+        },
+        "window_label": {
+          "type": "string"
+        },
+        "boundary": {
+          "type": "string"
+        }
+      }
+    },
+    "cosmographer_read": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "meaning",
+        "direction",
+        "key_watch"
+      ],
+      "properties": {
+        "state": {
+          "type": "string"
+        },
+        "meaning": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string"
+        },
+        "key_watch": {
+          "type": "string"
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only",
+        "no_live_search_adapter_claim",
+        "no_live_social_adapter_claim",
+        "no_trading_signal",
+        "no_forecast",
+        "no_price_target",
+        "no_investment_recommendation",
+        "formula_weights_exposed",
+        "orion_core_protected"
+      ],
+      "properties": {
+        "read_only": {
+          "const": true
+        },
+        "no_live_search_adapter_claim": {
+          "const": true
+        },
+        "no_live_social_adapter_claim": {
+          "const": true
+        },
+        "no_trading_signal": {
+          "const": true
+        },
+        "no_forecast": {
+          "const": true
+        },
+        "no_price_target": {
+          "const": true
+        },
+        "no_investment_recommendation": {
+          "const": true
+        },
+        "formula_weights_exposed": {
+          "const": false
+        },
+        "orion_core_protected": {
+          "const": true
+        }
+      }
+    }
+  }
+}

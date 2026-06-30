@@ -1,0 +1,81 @@
+{
+  "schema_version": "crypto_astro_market_field_public_v0_1",
+  "snapshot_mode": "public_safe_market_field",
+  "updated_at_utc": "2026-06-29T00:00:00Z",
+  "source_mode": "static_public_snapshot",
+  "vectors": {
+    "A_attention": {
+      "state": "prepared_pending_calibration",
+      "source_class": "search_attention",
+      "search_pressure": null,
+      "query_acceleration": null,
+      "topic_heat": null,
+      "attention_divergence": null,
+      "notes": "Prepared source lane only. No live search adapter claim."
+    },
+    "E_engagement": {
+      "state": "prepared_pending_calibration",
+      "source_class": "x_social_engagement",
+      "discussion_pressure": null,
+      "narrative_velocity": null,
+      "engagement_acceleration": null,
+      "social_amplification": null,
+      "notes": "Prepared source lane only. No live X.com/social adapter claim."
+    },
+    "M_market": {
+      "state": "market_vector_active",
+      "source_class": "public_market_liquidity",
+      "total_market_cap_usd": 2144000000000,
+      "market_cap_change_24h_pct": 0.5,
+      "volume_24h_usd": 81830000000,
+      "btc_dominance_pct": 55.5,
+      "stablecoin_share_pct": 14.4,
+      "stablecoin_cap_usd": 309000000000,
+      "defi_tvl_usd": null,
+      "dex_volume_24h_usd": null,
+      "market_breadth_pct": null,
+      "liquidity_health": "calibration_pending"
+    },
+    "CT_temporal": {
+      "state": "bounded_validated",
+      "source_class": "cosmographic_temporal",
+      "phase_density": null,
+      "harmonic_tension": null,
+      "resonance_level": null,
+      "eclipse_proximity": null,
+      "structural_stability": null,
+      "ephemerides_support": "bounded_validated"
+    }
+  },
+  "field_output": {
+    "market_field_score": 63,
+    "regime_label": "Balanced Expansion",
+    "direction_bias": "Neutral → Bullish",
+    "continuation_label": "Base continuation",
+    "confidence_label": "moderate"
+  },
+  "probability_continuation": {
+    "base_path_pct": 62,
+    "expansion_path_pct": 24,
+    "compression_reversal_pct": 14,
+    "window_label": "7D",
+    "boundary": "Scenario continuation only. Not a price forecast."
+  },
+  "cosmographer_read": {
+    "state": "Balanced Expansion",
+    "meaning": "M-vector is active while A/E lanes remain prepared for calibration.",
+    "direction": "Watch liquidity depth, stablecoin flow, and future attention / engagement confirmation.",
+    "key_watch": "If attention rises without liquidity depth, noise risk increases."
+  },
+  "boundary": {
+    "read_only": true,
+    "no_live_search_adapter_claim": true,
+    "no_live_social_adapter_claim": true,
+    "no_trading_signal": true,
+    "no_forecast": true,
+    "no_price_target": true,
+    "no_investment_recommendation": true,
+    "formula_weights_exposed": false,
+    "orion_core_protected": true
+  }
+}
