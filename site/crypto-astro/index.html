@@ -20,14 +20,22 @@
     --muted:#94a3b8;
     --soft:#cbd5e1;
   }
-  * { box-sizing:border-box; }
+  html {
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+  *, *::before, *::after { box-sizing:border-box; }
   body {
+    width:100%;
+    max-width:100%;
     margin:0;
     background:var(--bg);
     color:var(--text);
     font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
     overflow-x:hidden;
   }
+  img, svg { max-width:100%; }
   body::before {
     content:"";
     position:fixed;
@@ -44,11 +52,13 @@
   }
   body > * { position:relative; z-index:1; }
   .page {
+    width:100%;
     max-width:80rem;
     margin:0 auto;
     padding:24px 24px 64px;
   }
   .surface-hub {
+    max-width:100%;
     border:1px solid var(--line);
     border-radius:28px;
     padding:16px;
@@ -60,9 +70,23 @@
     align-items:center;
     justify-content:space-between;
     gap:14px;
+    min-width:0;
   }
+  .surface-topline > *,
+  .brand-lockup,
+  .status-row,
+  .hero-badges,
+  .market-status-rail,
+  .market-first-screen > *,
+  .market-lower-grid > *,
+  .market-reality-grid > *,
+  .state-grid > *,
+  .trend-memory > *,
+  .module-grid > *,
+  .scoring-matrix > * { min-width:0; }
   .brand-lockup { display:flex; gap:12px; align-items:center; }
   .brand-mark {
+    flex:0 0 auto;
     width:38px;
     height:38px;
     border:1px solid rgba(247,212,125,.42);
@@ -87,8 +111,11 @@
     text-transform:uppercase;
     font-size:10px;
   }
-  .status-row { display:flex; flex-wrap:wrap; gap:8px; }
+  .status-row { display:flex; flex-wrap:wrap; gap:8px; max-width:100%; }
   .status-pill {
+    max-width:100%;
+    white-space:normal;
+    text-align:center;
     border:1px solid rgba(255,255,255,.16);
     border-radius:999px;
     padding:7px 10px;
@@ -103,6 +130,7 @@
   .status-pill.green { color:var(--green); border-color:rgba(134,239,172,.30); }
   .status-pill.blue { color:var(--blue); border-color:rgba(143,183,255,.34); }
   .hero {
+    max-width:100%;
     margin-top:22px;
     border:1px solid rgba(255,255,255,.14);
     border-radius:30px;
@@ -128,6 +156,10 @@
     line-height:1;
     letter-spacing:-.05em;
   }
+  h1, h2, h3, .kicker, .badge, .status-pill, .market-card, .market-metric strong, .market-status-rail strong, .market-status-rail span, .section-head p, .lead {
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
   .lead {
     max-width:840px;
     margin:14px 0 0;
@@ -135,8 +167,11 @@
     font-size:16px;
     line-height:1.58;
   }
-  .hero-badges { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .hero-badges { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; max-width:100%; }
   .badge {
+    max-width:100%;
+    white-space:normal;
+    text-align:center;
     border:1px solid rgba(255,255,255,.18);
     border-radius:999px;
     padding:8px 12px;
@@ -179,6 +214,7 @@
     line-height:1.45;
   }
   .route-strip {
+    max-width:100%;
     display:flex;
     flex-wrap:wrap;
     gap:10px;
@@ -204,6 +240,7 @@
     text-transform:uppercase;
   }
   .section {
+    max-width:100%;
     margin-top:24px;
     border:1px solid var(--line);
     border-radius:34px;
@@ -266,8 +303,9 @@
     word-break:break-word;
   }
 
-  .market-field-shell { display:grid; gap:18px; margin-top:22px; }
+  .market-field-shell { display:grid; gap:18px; margin-top:22px; max-width:100%; }
   .market-status-rail {
+    max-width:100%;
     display:flex;
     flex-wrap:wrap;
     gap:8px;
@@ -285,6 +323,8 @@
     margin-right:4px;
   }
   .market-status-rail span {
+    max-width:100%;
+    white-space:normal;
     border:1px solid rgba(255,255,255,.13);
     border-radius:999px;
     padding:7px 10px;
@@ -307,6 +347,7 @@
     gap:16px;
   }
   .market-card {
+    max-width:100%;
     border:1px solid rgba(255,255,255,.12);
     border-radius:26px;
     padding:20px;
@@ -357,6 +398,7 @@
   .score-orb {
     width:116px;
     height:116px;
+    max-width:100%;
     border:1px solid rgba(247,212,125,.42);
     border-radius:999px;
     display:grid;
@@ -382,6 +424,7 @@
     color:var(--soft);
     background:rgba(3,7,13,.22);
     font-size:13px;
+    overflow-wrap:anywhere;
   }
   .field-list { display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none; }
   .source-lane-line {
@@ -487,13 +530,50 @@
     .section { padding:22px; border-radius:28px; }
   }
   @media (max-width: 520px) {
-    h1 { font-size:38px; }
+    .page { padding:14px 12px 44px; }
+    .surface-hub { padding:12px; border-radius:22px; }
+    .surface-topline { align-items:stretch; }
+    .brand-lockup { flex:1 1 100%; }
+    .brand-lockup > div:last-child { min-width:0; }
+    .status-row { width:100%; }
+    .status-pill,
+    .badge {
+      flex:1 1 100%;
+      justify-content:center;
+      letter-spacing:.08em;
+      line-height:1.35;
+    }
+    .hero { padding:18px 14px; border-radius:24px; }
+    .hero-badges { gap:8px; }
+    .kicker { font-size:10px; letter-spacing:.14em; line-height:1.45; }
+    h1 { font-size:32px; letter-spacing:-.035em; line-height:1.06; }
+    .lead { font-size:15px; line-height:1.5; }
+    .section { padding:18px 14px; border-radius:24px; }
+    .section-head h2 { font-size:24px; letter-spacing:-.025em; line-height:1.12; }
+    .section-head p { font-size:14px; line-height:1.55; }
     .truth-grid { grid-template-columns:1fr; }
     .route-pill { min-width:100%; }
-    .trend-memory,
+    .market-status-rail { align-items:stretch; }
+    .market-status-rail strong,
+    .market-status-rail span {
+      width:100%;
+      margin-right:0;
+      text-align:center;
+      line-height:1.35;
+    }
+    .market-card { padding:16px 14px; border-radius:22px; }
     .market-reality-grid,
-    .state-grid { grid-template-columns:1fr; }
+    .state-grid,
+    .trend-memory { grid-template-columns:1fr; }
+    .market-metric { padding:10px; }
+    .market-metric strong { font-size:18px; }
     .barometer-core { grid-template-columns:1fr; }
+    .score-orb { width:96px; height:96px; font-size:26px; }
+    .prob-row { grid-template-columns:1fr; gap:4px; }
+    .trend-memory span { font-size:10px; }
+    .module-grid,
+    .scoring-matrix,
+    .scoring-data-band { grid-template-columns:1fr; }
   }
 
   html { scroll-behavior: smooth; }
