@@ -302,6 +302,17 @@
     overflow-wrap:anywhere;
     word-break:break-word;
   }
+  .sr-only {
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
 
   .market-field-shell { display:grid; gap:18px; margin-top:22px; max-width:100%; }
   .market-status-rail {
@@ -722,10 +733,10 @@
         <p class="eyebrow">Market Reality</p>
         <p>Core market structure: total market cap, 24h volume, BTC dominance, and stablecoin share.</p>
         <div class="market-reality-grid">
-          <div class="market-metric"><span>Market Cap</span><strong>$2.144T</strong><div class="metric-rail cap"><i></i></div></div>
-          <div class="market-metric"><span>24h Volume</span><strong>$81.83B</strong><div class="metric-rail volume"><i></i></div></div>
-          <div class="market-metric"><span>BTC Dominance</span><strong>55.5%</strong><div class="metric-rail dominance"><i></i></div></div>
-          <div class="market-metric"><span>Stablecoin Share</span><strong>14.4%</strong><div class="metric-rail stable"><i></i></div></div>
+          <div class="market-metric" aria-label="Market Cap $2.144T"><span>Market Cap</span><strong>$2.144T</strong><div class="metric-rail cap" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="24h Volume $81.83B"><span>24h Volume</span><strong>$81.83B</strong><div class="metric-rail volume" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="BTC Dominance 55.5%"><span>BTC Dominance</span><strong>55.5%</strong><div class="metric-rail dominance" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="Stablecoin Share 14.4%"><span>Stablecoin Share</span><strong>14.4%</strong><div class="metric-rail stable" aria-hidden="true"><i aria-hidden="true"></i></div></div>
         </div>
         <p class="small">Static public snapshot. No active adapter claim.</p>
       </article>
@@ -734,15 +745,15 @@
         <p class="eyebrow">A/E/M Field Barometer</p>
         <p>A compact field score showing how attention lanes, engagement lanes, market liquidity, and temporal context are positioned.</p>
         <div class="barometer-core">
-          <div class="score-orb field-gauge">63</div>
+          <div class="score-orb field-gauge" role="img" aria-label="Market Field Score 63 out of 100">63</div>
           <div>
             <h3>Balanced Expansion</h3>
             <p>Market Field Score: 63 / 100<br/>Bias: Neutral → Bullish</p>
             <div class="state-grid" aria-label="Vector states">
-              <span class="state-node prepared">A prepared</span>
-              <span class="state-node prepared">E prepared</span>
-              <span class="state-node active">M active</span>
-              <span class="state-node bounded">C/T bounded</span>
+              <span class="state-node prepared" aria-label="Attention lane prepared">A prepared</span>
+              <span class="state-node prepared" aria-label="Engagement lane prepared">E prepared</span>
+              <span class="state-node active" aria-label="Market vector active">M active</span>
+              <span class="state-node bounded" aria-label="Temporal context bounded">C/T bounded</span>
             </div>
           </div>
         </div>
@@ -751,9 +762,9 @@
       <article class="market-card">
         <p class="eyebrow">Continuation Field</p>
         <p>Scenario-only continuation map. It shows possible field paths, not a price forecast and not a trading signal.</p>
-        <div class="prob-row scenario-row"><span>Base Path</span><strong>62%</strong><div class="scenario-rail base"></div></div>
-        <div class="prob-row scenario-row"><span>Expansion</span><strong>24%</strong><div class="scenario-rail expansion"></div></div>
-        <div class="prob-row scenario-row"><span>Compression / Reversal</span><strong>14%</strong><div class="scenario-rail compression"></div></div>
+        <div class="prob-row scenario-row" aria-label="Base Path 62%"><span>Base Path</span><strong>62%</strong><div class="scenario-rail base" aria-hidden="true"></div></div>
+        <div class="prob-row scenario-row" aria-label="Expansion 24%"><span>Expansion</span><strong>24%</strong><div class="scenario-rail expansion" aria-hidden="true"></div></div>
+        <div class="prob-row scenario-row" aria-label="Compression or Reversal 14%"><span>Compression / Reversal</span><strong>14%</strong><div class="scenario-rail compression" aria-hidden="true"></div></div>
         <div class="prob-row"><span>Window</span><strong>7D</strong></div>
         <p class="small">Scenario continuation only. Not a price forecast. Not a trading signal.</p>
       </article>
@@ -764,8 +775,8 @@
         <p class="eyebrow">Source Lanes</p>
         <p>A and E are prepared source lanes. They are not live adapters yet.</p>
         <div class="source-lane-line">
-          <div><strong>A · Attention</strong><p>prepared / search demand</p><div class="lane-rail prepared"></div></div>
-          <div><strong>E · Engagement</strong><p>prepared / X.com-social discussion</p><div class="lane-rail prepared"></div></div>
+          <div><strong>A · Attention</strong><p>prepared / search demand</p><div class="lane-rail prepared" aria-hidden="true"></div></div>
+          <div><strong>E · Engagement</strong><p>prepared / X.com-social discussion</p><div class="lane-rail prepared" aria-hidden="true"></div></div>
         </div>
         <p class="small">No live search/social adapter claim.</p>
       </article>
@@ -797,7 +808,7 @@
       <p class="eyebrow">Private field note</p>
       <h3>Request a private Crypto-Astro field note</h3>
       <p>A manual, operator-reviewed research note for a named asset or market question, with market context, bounded temporal context, and public-safe source alignment.</p>
-      <a class="action" href="https://www.bhrigu.io/access">Request manual review</a>
+      <a class="action" href="https://www.bhrigu.io/access" aria-label="Request manual Crypto-Astro field note review">Request manual review</a>
       <p class="small">Read-only research. No trading signal. No financial advice.</p>
     </div>
     <!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->
