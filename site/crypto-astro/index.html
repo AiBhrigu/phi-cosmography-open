@@ -302,6 +302,17 @@
     overflow-wrap:anywhere;
     word-break:break-word;
   }
+  .sr-only {
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
 
   .market-field-shell { display:grid; gap:18px; margin-top:22px; max-width:100%; }
   .market-status-rail {
@@ -389,6 +400,24 @@
     font-size:20px;
     line-height:1.1;
   }
+  .metric-rail {
+    position:relative;
+    height:6px;
+    margin-top:10px;
+    border-radius:999px;
+    overflow:hidden;
+    background:rgba(255,255,255,.07);
+  }
+  .metric-rail i {
+    display:block;
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg, rgba(143,183,255,.40), rgba(247,212,125,.62));
+  }
+  .metric-rail.cap i { width:72%; }
+  .metric-rail.volume i { width:58%; }
+  .metric-rail.dominance i { width:55.5%; }
+  .metric-rail.stable i { width:44%; }
   .barometer-core {
     display:grid;
     grid-template-columns:auto 1fr;
@@ -409,6 +438,24 @@
     letter-spacing:-.05em;
     background:radial-gradient(circle, rgba(247,212,125,.13), rgba(247,212,125,.035));
   }
+  .score-orb.field-gauge {
+    position:relative;
+    box-shadow:0 0 0 8px rgba(247,212,125,.035), inset 0 0 22px rgba(247,212,125,.08);
+  }
+  .score-orb.field-gauge::before,
+  .score-orb.field-gauge::after {
+    content:"";
+    position:absolute;
+    inset:-8px;
+    border-radius:999px;
+    border:1px solid rgba(143,183,255,.20);
+    pointer-events:none;
+  }
+  .score-orb.field-gauge::after {
+    inset:-15px;
+    border-color:rgba(247,212,125,.18);
+    clip-path:polygon(0 0, 74% 0, 74% 100%, 0 100%);
+  }
   .state-grid {
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
@@ -426,7 +473,13 @@
     font-size:13px;
     overflow-wrap:anywhere;
   }
+  .state-node.prepared { border-color:rgba(143,183,255,.20); background:rgba(143,183,255,.045); }
+  .state-node.active { border-color:rgba(134,239,172,.28); background:rgba(134,239,172,.055); }
+  .state-node.bounded { border-color:rgba(247,212,125,.28); background:rgba(247,212,125,.055); }
   .field-list { display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none; }
+  .field-list li.source-ready { border-color:rgba(134,239,172,.26) !important; background:rgba(134,239,172,.045) !important; }
+  .field-list li.source-pending { border-color:rgba(143,183,255,.22) !important; background:rgba(143,183,255,.040) !important; }
+  .field-list li.source-calibration { border-color:rgba(247,212,125,.26) !important; background:rgba(247,212,125,.050) !important; }
   .source-lane-line {
     display:grid;
     gap:10px;
@@ -438,6 +491,12 @@
     background:rgba(143,183,255,.035);
   }
   .source-lane-line strong { display:block; color:var(--gold); margin-bottom:6px; }
+  .lane-rail.prepared {
+    height:5px;
+    margin-top:10px;
+    border-radius:999px;
+    background:linear-gradient(90deg, rgba(143,183,255,.44), rgba(143,183,255,.10));
+  }
   .prob-row {
     display:grid;
     grid-template-columns:1fr auto;
@@ -449,6 +508,24 @@
   }
   .prob-row:last-child { border-bottom:0; }
   .prob-row strong { color:var(--gold); }
+  .scenario-row { grid-template-columns:1fr auto; }
+  .scenario-rail {
+    grid-column:1 / -1;
+    height:5px;
+    border-radius:999px;
+    background:rgba(255,255,255,.07);
+    overflow:hidden;
+  }
+  .scenario-rail::before {
+    content:"";
+    display:block;
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg, rgba(247,212,125,.65), rgba(143,183,255,.34));
+  }
+  .scenario-rail.base::before { width:62%; }
+  .scenario-rail.expansion::before { width:24%; }
+  .scenario-rail.compression::before { width:14%; }
   .trend-memory {
     display:grid;
     grid-template-columns:repeat(5,minmax(0,1fr));
@@ -460,6 +537,14 @@
     letter-spacing:.1em;
     text-transform:uppercase;
     text-align:center;
+  }
+  .trend-memory span::after {
+    content:"";
+    display:block;
+    height:4px;
+    margin-top:8px;
+    border-radius:999px;
+    background:linear-gradient(90deg, rgba(143,183,255,.42), rgba(247,212,125,.18));
   }
 
   .scoring-matrix{border:1px solid rgba(247,212,125,.18);border-radius:24px;padding:14px;background:rgba(3,7,13,.28)}
@@ -648,10 +733,10 @@
         <p class="eyebrow">Market Reality</p>
         <p>Core market structure: total market cap, 24h volume, BTC dominance, and stablecoin share.</p>
         <div class="market-reality-grid">
-          <div class="market-metric"><span>Market Cap</span><strong>$2.144T</strong></div>
-          <div class="market-metric"><span>24h Volume</span><strong>$81.83B</strong></div>
-          <div class="market-metric"><span>BTC Dominance</span><strong>55.5%</strong></div>
-          <div class="market-metric"><span>Stablecoin Share</span><strong>14.4%</strong></div>
+          <div class="market-metric" aria-label="Market Cap $2.144T"><span>Market Cap</span><strong>$2.144T</strong><div class="metric-rail cap" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="24h Volume $81.83B"><span>24h Volume</span><strong>$81.83B</strong><div class="metric-rail volume" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="BTC Dominance 55.5%"><span>BTC Dominance</span><strong>55.5%</strong><div class="metric-rail dominance" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="Stablecoin Share 14.4%"><span>Stablecoin Share</span><strong>14.4%</strong><div class="metric-rail stable" aria-hidden="true"><i aria-hidden="true"></i></div></div>
         </div>
         <p class="small">Static public snapshot. No active adapter claim.</p>
       </article>
@@ -660,15 +745,15 @@
         <p class="eyebrow">A/E/M Field Barometer</p>
         <p>A compact field score showing how attention lanes, engagement lanes, market liquidity, and temporal context are positioned.</p>
         <div class="barometer-core">
-          <div class="score-orb">63</div>
+          <div class="score-orb field-gauge" role="img" aria-label="Market Field Score 63 out of 100">63</div>
           <div>
             <h3>Balanced Expansion</h3>
             <p>Market Field Score: 63 / 100<br/>Bias: Neutral → Bullish</p>
             <div class="state-grid" aria-label="Vector states">
-              <span>A prepared</span>
-              <span>E prepared</span>
-              <span>M active</span>
-              <span>C/T bounded</span>
+              <span class="state-node prepared" aria-label="Attention lane prepared">A prepared</span>
+              <span class="state-node prepared" aria-label="Engagement lane prepared">E prepared</span>
+              <span class="state-node active" aria-label="Market vector active">M active</span>
+              <span class="state-node bounded" aria-label="Temporal context bounded">C/T bounded</span>
             </div>
           </div>
         </div>
@@ -677,9 +762,9 @@
       <article class="market-card">
         <p class="eyebrow">Continuation Field</p>
         <p>Scenario-only continuation map. It shows possible field paths, not a price forecast and not a trading signal.</p>
-        <div class="prob-row"><span>Base Path</span><strong>62%</strong></div>
-        <div class="prob-row"><span>Expansion</span><strong>24%</strong></div>
-        <div class="prob-row"><span>Compression / Reversal</span><strong>14%</strong></div>
+        <div class="prob-row scenario-row" aria-label="Base Path 62%"><span>Base Path</span><strong>62%</strong><div class="scenario-rail base" aria-hidden="true"></div></div>
+        <div class="prob-row scenario-row" aria-label="Expansion 24%"><span>Expansion</span><strong>24%</strong><div class="scenario-rail expansion" aria-hidden="true"></div></div>
+        <div class="prob-row scenario-row" aria-label="Compression or Reversal 14%"><span>Compression / Reversal</span><strong>14%</strong><div class="scenario-rail compression" aria-hidden="true"></div></div>
         <div class="prob-row"><span>Window</span><strong>7D</strong></div>
         <p class="small">Scenario continuation only. Not a price forecast. Not a trading signal.</p>
       </article>
@@ -690,8 +775,8 @@
         <p class="eyebrow">Source Lanes</p>
         <p>A and E are prepared source lanes. They are not live adapters yet.</p>
         <div class="source-lane-line">
-          <div><strong>A · Attention</strong><p>prepared / search demand</p></div>
-          <div><strong>E · Engagement</strong><p>prepared / X.com-social discussion</p></div>
+          <div><strong>A · Attention</strong><p>prepared / search demand</p><div class="lane-rail prepared" aria-hidden="true"></div></div>
+          <div><strong>E · Engagement</strong><p>prepared / X.com-social discussion</p><div class="lane-rail prepared" aria-hidden="true"></div></div>
         </div>
         <p class="small">No live search/social adapter claim.</p>
       </article>
@@ -709,10 +794,10 @@
         <p class="eyebrow">Liquidity / TVL</p>
         <p>Liquidity context layer: stablecoin cap, DeFi TVL, DEX volume, and liquidity health after source alignment.</p>
         <ul class="field-list">
-          <li>Stablecoins Cap: $309B</li>
-          <li>DeFi TVL: pending source</li>
-          <li>DEX Volume: pending source</li>
-          <li>Liquidity Health: calibration pending</li>
+          <li class="source-ready">Stablecoins Cap: $309B</li>
+          <li class="source-pending">DeFi TVL: pending source</li>
+          <li class="source-pending">DEX Volume: pending source</li>
+          <li class="source-calibration">Liquidity Health: calibration pending</li>
         </ul>
         <p class="small">Source alignment planned: CoinGecko for global market and asset market data. DefiLlama for TVL, stablecoins, and DEX volume context. A/E attention and engagement lanes remain prepared until source policy and calibration are reviewed. C/T temporal context remains bounded and does not expose protected formulas.</p>
       </article>
@@ -723,7 +808,7 @@
       <p class="eyebrow">Private field note</p>
       <h3>Request a private Crypto-Astro field note</h3>
       <p>A manual, operator-reviewed research note for a named asset or market question, with market context, bounded temporal context, and public-safe source alignment.</p>
-      <a class="action" href="https://www.bhrigu.io/access">Request manual review</a>
+      <a class="action" href="https://www.bhrigu.io/access" aria-label="Request manual Crypto-Astro field note review">Request manual review</a>
       <p class="small">Read-only research. No trading signal. No financial advice.</p>
     </div>
     <!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->
