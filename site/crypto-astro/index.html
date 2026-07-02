@@ -741,6 +741,94 @@
   .state-node.prepared { border-color:rgba(143,183,255,.20); background:rgba(143,183,255,.045); }
   .state-node.active { border-color:rgba(134,239,172,.28); background:rgba(134,239,172,.055); }
   .state-node.bounded { border-color:rgba(247,212,125,.28); background:rgba(247,212,125,.055); }
+  .barometer-semantic-core { grid-template-columns:1fr; gap:14px; }
+  .barometer-visual {
+    position:relative;
+    min-height:190px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:24px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(247,212,125,.11), transparent 14%),
+      radial-gradient(circle at 50% 50%, rgba(134,239,172,.055), transparent 34%),
+      radial-gradient(circle at 50% 50%, rgba(143,183,255,.075), transparent 49%),
+      linear-gradient(180deg, rgba(255,255,255,.032), rgba(255,255,255,.012));
+  }
+  .barometer-ring,
+  .barometer-arc {
+    position:absolute;
+    left:50%;
+    top:50%;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .barometer-ring.temporal {
+    width:86%;
+    height:86%;
+    border:1px solid rgba(247,212,125,.24);
+    box-shadow:inset 0 0 26px rgba(247,212,125,.035);
+  }
+  .barometer-arc.market {
+    width:68%;
+    height:68%;
+    border:7px solid rgba(134,239,172,.12);
+    border-right-color:rgba(134,239,172,.40);
+    border-bottom-color:rgba(247,212,125,.22);
+    clip-path:polygon(0 0, 63% 0, 63% 100%, 0 100%);
+  }
+  .barometer-visual .score-orb {
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:92px;
+    height:92px;
+    transform:translate(-50%,-50%);
+    font-size:28px;
+    z-index:4;
+  }
+  .barometer-lane {
+    position:absolute;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    min-width:58px;
+    min-height:42px;
+    padding:6px 8px;
+    border:1px solid rgba(143,183,255,.20);
+    border-radius:16px;
+    color:var(--soft);
+    background:rgba(3,7,13,.58);
+    font-size:12px;
+    font-weight:900;
+    line-height:1.15;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    z-index:5;
+  }
+  .barometer-lane span {
+    color:var(--muted);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.09em;
+  }
+  .barometer-lane.attention { left:9%; top:18%; color:var(--blue); }
+  .barometer-lane.engagement { right:9%; top:18%; color:var(--blue); }
+  .barometer-lane.market {
+    right:10%;
+    bottom:14%;
+    color:rgba(134,239,172,.92);
+    border-color:rgba(134,239,172,.32);
+    background:rgba(134,239,172,.065);
+  }
+  .barometer-lane.temporal {
+    left:10%;
+    bottom:14%;
+    color:var(--gold);
+    border-color:rgba(247,212,125,.30);
+    background:rgba(247,212,125,.06);
+  }
+
   .field-list { display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none; }
   .field-list li.source-ready { border-color:rgba(134,239,172,.26) !important; background:rgba(134,239,172,.045) !important; }
   .field-list li.source-pending { border-color:rgba(143,183,255,.22) !important; background:rgba(143,183,255,.040) !important; }
@@ -918,7 +1006,8 @@
     .trend-memory { grid-template-columns:1fr; }
     .market-metric { padding:10px; }
     .market-metric strong { font-size:18px; }
-    .barometer-core { grid-template-columns:1fr; }
+    .barometer-core,
+    .barometer-semantic-core { grid-template-columns:1fr; }
     .score-orb { width:96px; height:96px; font-size:26px; }
     .prob-row { grid-template-columns:1fr; gap:4px; }
     .trend-memory span { font-size:10px; }
@@ -1028,17 +1117,20 @@
       <article class="market-card gold">
         <p class="eyebrow">A/E/M Field Barometer</p>
         <p>A compact field score showing how attention lanes, engagement lanes, market liquidity, and temporal context are positioned.</p>
-        <div class="barometer-core">
-          <div class="score-orb field-gauge" role="img" aria-label="Market Field Score 63 out of 100">63</div>
+        <div class="barometer-core barometer-semantic-core">
+          <div class="barometer-visual" aria-label="A/E/M Field Barometer visual state">
+            <div class="barometer-ring temporal" aria-hidden="true"></div>
+            <div class="barometer-arc market" aria-hidden="true"></div>
+            <div class="score-orb field-gauge" role="img" aria-label="Market Field Score 63 out of 100">63</div>
+            <div class="barometer-lane attention" aria-label="Attention lane prepared">A<br/><span>prepared</span></div>
+            <div class="barometer-lane engagement" aria-label="Engagement lane prepared">E<br/><span>prepared</span></div>
+            <div class="barometer-lane market" aria-label="Market vector active">M<br/><span>active</span></div>
+            <div class="barometer-lane temporal" aria-label="Temporal context bounded">C/T<br/><span>bounded</span></div>
+          </div>
           <div>
             <h3>Balanced Expansion</h3>
             <p>Market Field Score: 63 / 100<br/>Bias: Neutral → Bullish</p>
-            <div class="state-grid" aria-label="Vector states">
-              <span class="state-node prepared" aria-label="Attention lane prepared">A prepared</span>
-              <span class="state-node prepared" aria-label="Engagement lane prepared">E prepared</span>
-              <span class="state-node active" aria-label="Market vector active">M active</span>
-              <span class="state-node bounded" aria-label="Temporal context bounded">C/T bounded</span>
-            </div>
+            <p class="small">Market-led field. Attention and engagement lanes are prepared; temporal context remains bounded.</p>
           </div>
         </div>
       </article>
