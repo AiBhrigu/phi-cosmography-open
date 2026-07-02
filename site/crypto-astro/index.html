@@ -422,6 +422,117 @@
   .metric-rail.alt-7d i { width:53.1%; }
   .metric-rail.eth-anchor i { width:9%; }
   .metric-rail.volume-concentration i { width:87.5%; }
+  .market-composition-map {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+    align-items:center;
+    margin-top:16px;
+    border:1px solid rgba(143,183,255,.16);
+    border-radius:22px;
+    padding:14px;
+    background:
+      radial-gradient(circle at 26% 42%, rgba(247,212,125,.08), transparent 34%),
+      radial-gradient(circle at 72% 58%, rgba(143,183,255,.08), transparent 38%),
+      rgba(3,7,13,.22);
+  }
+  .composition-screen {
+    position:relative;
+    min-height:168px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:24px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(247,212,125,.12), transparent 13%),
+      radial-gradient(circle at 50% 50%, rgba(143,183,255,.08), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,.032), rgba(255,255,255,.012));
+  }
+  .composition-ring,
+  .composition-flow {
+    position:absolute;
+    left:50%;
+    top:50%;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .composition-ring.stable {
+    width:58%;
+    height:58%;
+    border:1px solid rgba(143,183,255,.28);
+    box-shadow:0 0 28px rgba(143,183,255,.045);
+  }
+  .composition-ring.alt {
+    width:82%;
+    height:82%;
+    border:1px solid rgba(247,212,125,.18);
+    clip-path:polygon(0 0, 76.6% 0, 76.6% 100%, 0 100%);
+  }
+  .composition-flow {
+    width:66%;
+    height:66%;
+    border:7px solid rgba(247,212,125,.10);
+    border-right-color:rgba(247,212,125,.36);
+    border-bottom-color:rgba(143,183,255,.18);
+  }
+  .composition-core {
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:68px;
+    height:68px;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    display:grid;
+    place-items:center;
+    text-align:center;
+    color:var(--gold);
+    border:1px solid rgba(247,212,125,.38);
+    background:radial-gradient(circle, rgba(247,212,125,.14), rgba(3,7,13,.72));
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    z-index:3;
+  }
+  .composition-node {
+    position:absolute;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    min-width:52px;
+    min-height:38px;
+    padding:5px 7px;
+    border:1px solid rgba(143,183,255,.20);
+    border-radius:16px;
+    color:var(--soft);
+    background:rgba(3,7,13,.58);
+    font-size:11px;
+    font-weight:800;
+    line-height:1.2;
+    z-index:4;
+  }
+  .composition-node.stable { left:8%; top:16%; color:var(--blue); }
+  .composition-node.eth { right:8%; top:18%; color:var(--gold); }
+  .composition-node.alt { right:9%; bottom:15%; color:var(--soft); }
+  .composition-labels {
+    display:grid;
+    gap:8px;
+  }
+  .composition-label {
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:10px;
+    align-items:center;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:9px 10px;
+    color:var(--soft);
+    background:rgba(3,7,13,.20);
+    font-size:11px;
+  }
+  .composition-label strong { color:var(--gold); }
+
   .alt-rotation-module {
     display:grid;
     gap:18px;
@@ -802,6 +913,7 @@
     }
     .market-card { padding:16px 14px; border-radius:22px; }
     .market-reality-grid,
+    .market-composition-map,
     .state-grid,
     .trend-memory { grid-template-columns:1fr; }
     .market-metric { padding:10px; }
@@ -891,6 +1003,24 @@
           <div class="market-metric" aria-label="24h Volume $82.71B"><span>24h Volume</span><strong>$82.71B</strong><div class="metric-rail volume" aria-hidden="true"><i aria-hidden="true"></i></div></div>
           <div class="market-metric" aria-label="BTC Dominance 55.6%"><span>BTC Dominance</span><strong>55.6%</strong><div class="metric-rail dominance" aria-hidden="true"><i aria-hidden="true"></i></div></div>
           <div class="market-metric" aria-label="Stablecoin Share 14.4%"><span>Stablecoin Share</span><strong>14.4%</strong><div class="metric-rail stable" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+        </div>
+        <div class="market-composition-map" aria-label="Market Composition Map">
+          <div class="composition-screen" aria-label="Market composition visual field">
+            <div class="composition-ring stable" aria-hidden="true"></div>
+            <div class="composition-ring alt" aria-hidden="true"></div>
+            <div class="composition-flow" aria-hidden="true"></div>
+            <div class="composition-core">BTC<br>55.6%</div>
+            <div class="composition-node stable">Stable<br>14.4%</div>
+            <div class="composition-node eth">ETH<br>9.0%</div>
+            <div class="composition-node alt">Alt<br>76.6 / 53.1</div>
+          </div>
+          <div class="composition-labels">
+            <div class="composition-label"><span>BTC Gravity</span><strong>55.6%</strong></div>
+            <div class="composition-label"><span>Stablecoin Membrane</span><strong>14.4%</strong></div>
+            <div class="composition-label"><span>ETH Anchor</span><strong>9.0%</strong></div>
+            <div class="composition-label"><span>Alt Field</span><strong>24h 76.6% / 7d 53.1%</strong></div>
+            <div class="composition-label"><span>Top-10 Flow</span><strong>87.5%</strong></div>
+          </div>
         </div>
         <p class="small">Static public snapshot. No active adapter claim.</p>
       </article>
