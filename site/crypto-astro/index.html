@@ -422,6 +422,156 @@
   .metric-rail.alt-7d i { width:53.1%; }
   .metric-rail.eth-anchor i { width:9%; }
   .metric-rail.volume-concentration i { width:87.5%; }
+  .alt-rotation-module {
+    display:grid;
+    gap:18px;
+  }
+  .alt-rotation-map {
+    display:grid;
+    grid-template-columns:minmax(220px,.9fr) minmax(260px,1.1fr);
+    gap:16px;
+    align-items:center;
+    border:1px solid rgba(143,183,255,.18);
+    border-radius:24px;
+    padding:16px;
+    background:
+      radial-gradient(circle at 62% 48%, rgba(143,183,255,.10), transparent 42%),
+      radial-gradient(circle at 30% 30%, rgba(247,212,125,.08), transparent 36%),
+      rgba(3,7,13,.28);
+  }
+  .alt-rotation-screen {
+    position:relative;
+    min-height:260px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:28px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(247,212,125,.12), transparent 11%),
+      radial-gradient(circle at 50% 50%, rgba(143,183,255,.08), transparent 31%),
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+  }
+  .alt-orbit,
+  .alt-flow-band {
+    position:absolute;
+    left:50%;
+    top:50%;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .alt-orbit.inner {
+    width:42%;
+    height:42%;
+    border:1px solid rgba(247,212,125,.28);
+    box-shadow:0 0 32px rgba(247,212,125,.06);
+  }
+  .alt-orbit.middle {
+    width:68%;
+    height:68%;
+    border:1px solid rgba(143,183,255,.36);
+    clip-path:polygon(0 0, 76.6% 0, 76.6% 100%, 0 100%);
+  }
+  .alt-orbit.outer {
+    width:86%;
+    height:86%;
+    border:1px solid rgba(143,183,255,.20);
+    clip-path:polygon(0 0, 53.1% 0, 53.1% 100%, 0 100%);
+  }
+  .alt-flow-band {
+    width:54%;
+    height:54%;
+    border:8px solid rgba(247,212,125,.13);
+    border-right-color:rgba(247,212,125,.42);
+    border-bottom-color:rgba(143,183,255,.20);
+  }
+  .alt-center-node {
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:82px;
+    height:82px;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    display:grid;
+    place-items:center;
+    text-align:center;
+    border:1px solid rgba(247,212,125,.38);
+    color:var(--gold);
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    background:radial-gradient(circle, rgba(247,212,125,.14), rgba(3,7,13,.72));
+    z-index:3;
+  }
+  .alt-tail-field {
+    position:absolute;
+    inset:18px;
+    border-radius:26px;
+    pointer-events:none;
+  }
+  .alt-tail-dot,
+  .alt-l6-seed {
+    position:absolute;
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:rgba(143,183,255,.38);
+  }
+  .alt-tail-dot:nth-child(1) { left:15%; top:18%; opacity:.42; }
+  .alt-tail-dot:nth-child(2) { right:18%; top:22%; opacity:.28; }
+  .alt-tail-dot:nth-child(3) { left:22%; bottom:20%; opacity:.32; }
+  .alt-tail-dot:nth-child(4) { right:13%; bottom:24%; opacity:.46; }
+  .alt-l6-seed {
+    width:8px;
+    height:8px;
+    background:rgba(247,212,125,.34);
+    box-shadow:0 0 18px rgba(247,212,125,.14);
+  }
+  .alt-l6-seed.one { left:31%; top:13%; }
+  .alt-l6-seed.two { right:25%; bottom:16%; }
+  .alt-map-labels {
+    display:grid;
+    gap:8px;
+  }
+  .alt-map-label {
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:10px;
+    align-items:center;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:9px 10px;
+    color:var(--soft);
+    background:rgba(3,7,13,.22);
+    font-size:12px;
+  }
+  .alt-map-label strong { color:var(--gold); }
+  .alt-read-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .alt-read-node {
+    border:1px solid rgba(143,183,255,.16);
+    border-radius:16px;
+    padding:12px;
+    background:rgba(143,183,255,.035);
+    color:var(--soft);
+  }
+  .alt-read-node strong {
+    display:block;
+    color:var(--gold);
+    margin-bottom:6px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-size:11px;
+  }
+  @media (max-width: 760px) {
+    .alt-rotation-map,
+    .alt-read-grid { grid-template-columns:1fr; }
+  }
+
   .barometer-core {
     display:grid;
     grid-template-columns:auto 1fr;
@@ -807,19 +957,56 @@
       </article>
     </div>
 
-    <div class="market-card blue" aria-label="Altcoin Rotation Field">
+    <div class="market-card blue alt-rotation-module" aria-label="Altcoin Rotation Field">
       <p class="eyebrow">Altcoin Rotation</p>
       <h3>Altcoin Rotation Field</h3>
-      <p>Tracks how activity spreads across non-stable top-250 crypto assets. Rotation context only, not a trading signal.</p>
+      <p>Tracks how non-stable top-250 crypto activity spreads through short-term breadth, weekly persistence, ETH anchoring, and liquidity concentration.</p>
+
       <div class="market-reality-grid">
         <div class="market-metric" aria-label="Alt Breadth 24h 76.6%"><span>Alt Breadth 24h</span><strong>76.6%</strong><div class="metric-rail alt-24h" aria-hidden="true"><i aria-hidden="true"></i></div></div>
         <div class="market-metric" aria-label="Alt Breadth 7d 53.1%"><span>Alt Breadth 7d</span><strong>53.1%</strong><div class="metric-rail alt-7d" aria-hidden="true"><i aria-hidden="true"></i></div></div>
         <div class="market-metric" aria-label="ETH Rotation Anchor 9.0%"><span>ETH Rotation Anchor</span><strong>9.0%</strong><div class="metric-rail eth-anchor" aria-hidden="true"><i aria-hidden="true"></i></div></div>
-        <div class="market-metric" aria-label="Top-10 Volume Concentration 87.5%"><span>Top-10 Volume Concentration</span><strong>87.5%</strong><div class="metric-rail volume-concentration" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+        <div class="market-metric" aria-label="Top-10 Flow Concentration 87.5%"><span>Top-10 Flow Concentration</span><strong>87.5%</strong><div class="metric-rail volume-concentration" aria-hidden="true"><i aria-hidden="true"></i></div></div>
       </div>
-      <p class="small">Non-stable Top-250: 239 assets. Stablecoins excluded: 11.</p>
-      <p class="small">Short-term alt rotation is broad, while the 7D layer is closer to the middle of the field. Volume remains highly concentrated in top non-stable assets.</p>
-      <p class="small">Rotation context only. Not a forecast. Not a trading signal. Not investment advice.</p>
+
+      <div class="alt-rotation-map" aria-label="Altcoin Rotation Map">
+        <div>
+          <p class="eyebrow">Altcoin Rotation Map</p>
+          <p>A field-view of altcoin movement: short-term breadth, weekly persistence, ETH anchoring, top-flow concentration, and peripheral tail activity.</p>
+          <div class="alt-map-labels">
+            <div class="alt-map-label"><span>24h Breadth</span><strong>76.6%</strong></div>
+            <div class="alt-map-label"><span>7D Persistence</span><strong>53.1%</strong></div>
+            <div class="alt-map-label"><span>ETH Anchor</span><strong>9.0%</strong></div>
+            <div class="alt-map-label"><span>Top-10 Flow</span><strong>87.5%</strong></div>
+          </div>
+        </div>
+        <div class="alt-rotation-screen" aria-label="Altcoin Rotation Map visual field">
+          <div class="alt-orbit outer" aria-hidden="true"></div>
+          <div class="alt-orbit middle" aria-hidden="true"></div>
+          <div class="alt-orbit inner" aria-hidden="true"></div>
+          <div class="alt-flow-band" aria-hidden="true"></div>
+          <div class="alt-tail-field" aria-hidden="true">
+            <span class="alt-tail-dot"></span>
+            <span class="alt-tail-dot"></span>
+            <span class="alt-tail-dot"></span>
+            <span class="alt-tail-dot"></span>
+            <span class="alt-l6-seed one"></span>
+            <span class="alt-l6-seed two"></span>
+          </div>
+          <div class="alt-center-node">ETH<br>9.0%</div>
+        </div>
+      </div>
+
+      <div class="alt-read-grid" aria-label="Altcoin Rotation Read">
+        <div class="alt-read-node"><strong>State</strong><span>Broad short-term rotation with concentrated liquidity.</span></div>
+        <div class="alt-read-node"><strong>Meaning</strong><span>The 24h field is active, but 7D persistence is only moderate.</span></div>
+        <div class="alt-read-node"><strong>Direction</strong><span>Watch whether 7D breadth expands while top-10 concentration falls.</span></div>
+        <div class="alt-read-node"><strong>Key watch</strong><span>If breadth rises while liquidity stays concentrated, peripheral noise risk remains elevated.</span></div>
+      </div>
+
+      <p class="small">Universe: non-stable top-250 crypto assets. Stablecoins are excluded because they belong to the liquidity membrane, not the altcoin rotation field.</p>
+      <p class="small">Future layer: L6 cluster mapping after source review.</p>
+      <p class="small">Static rotation context. No live adapter.</p>
     </div>
 
     <!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:BEGIN -->
