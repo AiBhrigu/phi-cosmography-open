@@ -418,6 +418,10 @@
   .metric-rail.volume i { width:58%; }
   .metric-rail.dominance i { width:55.6%; }
   .metric-rail.stable i { width:44%; }
+  .metric-rail.alt-24h i { width:76.6%; }
+  .metric-rail.alt-7d i { width:53.1%; }
+  .metric-rail.eth-anchor i { width:9%; }
+  .metric-rail.volume-concentration i { width:87.5%; }
   .barometer-core {
     display:grid;
     grid-template-columns:auto 1fr;
@@ -801,6 +805,21 @@
         </ul>
         <p class="small">Source alignment: CoinGecko is planned for static global market cap, 24h volume, BTC dominance, and global market context. DefiLlama is planned for stablecoins cap, DeFi TVL, DEX volume, and liquidity context. A/E attention and engagement lanes remain prepared until source policy and calibration are reviewed. C/T temporal context remains bounded and does not expose protected formulas. This is a static public snapshot, not a live adapter.</p>
       </article>
+    </div>
+
+    <div class="market-card blue" aria-label="Altcoin Rotation Field">
+      <p class="eyebrow">Altcoin Rotation</p>
+      <h3>Altcoin Rotation Field</h3>
+      <p>Tracks how activity spreads across non-stable top-250 crypto assets. Rotation context only, not a trading signal.</p>
+      <div class="market-reality-grid">
+        <div class="market-metric" aria-label="Alt Breadth 24h 76.6%"><span>Alt Breadth 24h</span><strong>76.6%</strong><div class="metric-rail alt-24h" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+        <div class="market-metric" aria-label="Alt Breadth 7d 53.1%"><span>Alt Breadth 7d</span><strong>53.1%</strong><div class="metric-rail alt-7d" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+        <div class="market-metric" aria-label="ETH Rotation Anchor 9.0%"><span>ETH Rotation Anchor</span><strong>9.0%</strong><div class="metric-rail eth-anchor" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+        <div class="market-metric" aria-label="Top-10 Volume Concentration 87.5%"><span>Top-10 Volume Concentration</span><strong>87.5%</strong><div class="metric-rail volume-concentration" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+      </div>
+      <p class="small">Non-stable Top-250: 239 assets. Stablecoins excluded: 11.</p>
+      <p class="small">Short-term alt rotation is broad, while the 7D layer is closer to the middle of the field. Volume remains highly concentrated in top non-stable assets.</p>
+      <p class="small">Rotation context only. Not a forecast. Not a trading signal. Not investment advice.</p>
     </div>
 
     <!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:BEGIN -->
