@@ -113,7 +113,7 @@ Recommended structure:
 
 1. Request summary
 2. Asset context
-3. Temporal / event-window context
+3. Temporal / event-window context, including C/T Temporal · Ephemerides Support when available
 4. Market context
 5. Pattern synthesis
 6. What to watch
@@ -123,6 +123,8 @@ Recommended structure:
 10. No financial advice seal
 
 This is a private research note, not a trading signal.
+
+C/T Temporal context may be included as a bounded research-note block for observation-window framing, cycle context, ephemerides support state, and provenance. It must remain context-only and must not produce forecasts, trading signals, price targets, or investment advice.
 
 ## Archive / proof trail
 
