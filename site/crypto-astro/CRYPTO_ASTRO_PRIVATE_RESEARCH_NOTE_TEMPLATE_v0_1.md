@@ -136,21 +136,28 @@ Guidance:
 
 ## 6. Temporal / astro-cycle context
 
-Use this section for temporal or astro-cycle context.
+Use this section for C/T Temporal · Ephemerides Support context.
 
 ```text
-Relevant cycle / timing context:
-Phase / rhythm note:
-Interpretation boundary:
-Non-deterministic research context only.
+C/T Temporal Context:
+Observation window:
+Cycle context:
+Ephemerides support state:
+Provenance anchor:
+Interpretive effect:
+Boundary:
+Context only. No forecast, no trading signal, no price target, no investment advice.
 ```
 
 Guidance:
 
-* do not claim deterministic prediction
+* use watch-window / timing-sensitivity language only
+* keep cycle context non-deterministic
+* require a provenance anchor for ephemerides support state
 * do not expose protected formulas
 * do not expose hidden weights
 * do not expose ORION reasoning
+* do not expose runtime-derived alpha
 
 ## 7. Pattern synthesis
 

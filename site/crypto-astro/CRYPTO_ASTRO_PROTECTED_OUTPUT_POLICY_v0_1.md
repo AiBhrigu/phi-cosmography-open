@@ -86,6 +86,28 @@ The following must remain protected:
 - paid/manual synthesis logic
 - future protected calculation core
 
+## C/T Temporal output boundary
+
+C/T Temporal · Ephemerides Support may use public-safe language such as:
+
+- observation window
+- context layer
+- provenance
+- bounded_validated
+- timing sensitivity
+- non-deterministic research context
+
+C/T Temporal must not expose:
+
+- runtime ephemeris calculation
+- deterministic cycle predictions
+- actionable timing instructions
+- public trading signals
+- price targets
+- ORION reasoning
+- hidden weights
+- validation datasets
+
 ## Governance
 
 Public HTML changes require a scoped PR route.
