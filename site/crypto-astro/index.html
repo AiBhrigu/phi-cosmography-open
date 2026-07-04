@@ -1163,50 +1163,244 @@
         <p class="small">Static support layer only. No runtime, no live adapter, no data fetch, no forecast, no trading signal.</p>
       </article>
 
-        <article class="market-card gold astromodule-card" id="astromodule-surface-bridge" aria-label="Astromodule Astrobarometer">
-          <p class="eyebrow">Astromodule · Astrobarometer</p>
-          <h3>Core timing-scenario axis</h3>
-          <p>The astromodule is the timing layer of Crypto-Astro. It reads ephemerides context, AstroPatterns memory, market state, observation windows, and source provenance to shape scenario and forecast corridors across the whole analytical surface.</p>
+                <article class="market-card gold astromodule-card astromodule-wide-panel-v0-1" id="astromodule-surface-bridge" aria-label="Astromodule Astrobarometer">
+          <style>
+            .astromodule-wide-panel-v0-1 {
+              grid-column: 1 / -1;
+              display: grid;
+              gap: 1rem;
+              overflow: hidden;
+            }
 
-          <div class="surface-grid mini-grid" aria-label="Astrobarometer public state">
-            <div>
-              <strong>Astrobarometer</strong>
-              <span>Score band: MEDIUM · 63 / 100</span>
+            .astromodule-wide-panel-v0-1 .astromodule-top-v0-1 {
+              display: grid;
+              grid-template-columns: minmax(0, 1.08fr) minmax(17rem, 0.92fr);
+              gap: 1rem;
+              align-items: stretch;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-identity-v0-1 {
+              border: 1px solid rgba(245, 199, 105, 0.28);
+              border-radius: 18px;
+              padding: 1rem;
+              background:
+                radial-gradient(circle at 12% 0%, rgba(245, 199, 105, 0.18), transparent 34%),
+                linear-gradient(135deg, rgba(245, 199, 105, 0.08), rgba(255, 255, 255, 0.035));
+            }
+
+            .astromodule-wide-panel-v0-1 .eyebrow {
+              margin-bottom: 0.38rem;
+            }
+
+            .astromodule-wide-panel-v0-1 h3 {
+              margin: 0;
+              color: #ffd978;
+              font-size: 1.28rem;
+              line-height: 1.2;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-brief-v0-1 {
+              max-width: 62rem;
+              margin: 0.62rem 0 0;
+              color: rgba(244, 247, 255, 0.82);
+              line-height: 1.52;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-score-box-v0-1 {
+              border: 1px solid rgba(245, 199, 105, 0.24);
+              border-radius: 18px;
+              padding: 1rem;
+              background: rgba(245, 199, 105, 0.07);
+              display: grid;
+              gap: 0.72rem;
+              align-content: center;
+            }
+
+            .astromodule-wide-panel-v0-1 .score-main-v0-1 {
+              display: flex;
+              flex-wrap: wrap;
+              align-items: baseline;
+              gap: 0.55rem;
+              color: #ffd978;
+              font-size: 1.25rem;
+              font-weight: 900;
+            }
+
+            .astromodule-wide-panel-v0-1 .score-main-v0-1 span {
+              color: rgba(244, 247, 255, 0.86);
+              font-size: 0.92rem;
+              font-weight: 800;
+            }
+
+            .astromodule-wide-panel-v0-1 .chip-row-v0-1 {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.46rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .state-chip-v0-1 {
+              border: 1px solid rgba(255, 255, 255, 0.13);
+              border-radius: 999px;
+              padding: 0.38rem 0.58rem;
+              background: rgba(255, 255, 255, 0.055);
+              color: rgba(244, 247, 255, 0.82);
+              font-size: 0.74rem;
+              font-weight: 780;
+              letter-spacing: 0.04em;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1,
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1,
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 {
+              border: 1px solid rgba(255, 255, 255, 0.10);
+              border-radius: 15px;
+              background: rgba(255, 255, 255, 0.045);
+              padding: 0.78rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1 strong,
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1 strong,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1 strong {
+              display: block;
+              color: rgba(244, 247, 255, 0.62);
+              font-size: 0.7rem;
+              letter-spacing: 0.11em;
+              text-transform: uppercase;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1 span {
+              display: block;
+              margin-top: 0.28rem;
+              color: #f4f7ff;
+              font-size: 0.92rem;
+              font-weight: 850;
+            }
+
+            .astromodule-wide-panel-v0-1 .flow-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1 p,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1 p,
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 p {
+              margin: 0.32rem 0 0;
+              color: rgba(244, 247, 255, 0.82);
+              line-height: 1.46;
+            }
+
+            .astromodule-wide-panel-v0-1 .access-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 {
+              border-color: rgba(245, 199, 105, 0.23);
+              background: rgba(245, 199, 105, 0.065);
+            }
+
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 p {
+              margin: 0;
+              color: rgba(255, 226, 160, 0.92);
+              font-weight: 720;
+            }
+
+            @media (max-width: 900px) {
+              .astromodule-wide-panel-v0-1 .astromodule-top-v0-1,
+              .astromodule-wide-panel-v0-1 .flow-grid-v0-1,
+              .astromodule-wide-panel-v0-1 .access-grid-v0-1 {
+                grid-template-columns: 1fr;
+              }
+
+              .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+              }
+            }
+
+            @media (max-width: 560px) {
+              .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+                grid-template-columns: 1fr;
+              }
+            }
+          </style>
+
+          <div class="astromodule-top-v0-1">
+            <div class="astromodule-identity-v0-1">
+              <p class="eyebrow">Astromodule · Astrobarometer</p>
+              <h3>Core timing-scenario axis</h3>
+              <p class="astromodule-brief-v0-1">
+                Reads ephemerides context, AstroPatterns memory, market state, observation windows,
+                and source provenance to shape scenario and forecast corridors across the Crypto-Astro surface.
+              </p>
             </div>
-            <div>
-              <strong>Field pressure</strong>
-              <span>Temporal pressure: MEDIUM · Phase density: ACTIVE</span>
+
+            <div class="astromodule-score-box-v0-1" aria-label="Astrobarometer public state">
+              <div class="score-main-v0-1">MEDIUM <span>63 / 100</span></div>
+              <div class="chip-row-v0-1">
+                <span class="state-chip-v0-1">STATIC PROOF</span>
+                <span class="state-chip-v0-1">MEDIUM CONFIDENCE</span>
+                <span class="state-chip-v0-1">HUMAN DECISION EXTERNAL</span>
+              </div>
             </div>
-            <div>
+          </div>
+
+          <div class="metric-grid-v0-1" aria-label="Astromodule metric grid">
+            <div class="metric-v0-1">
+              <strong>Temporal pressure</strong>
+              <span>MEDIUM</span>
+            </div>
+            <div class="metric-v0-1">
+              <strong>Phase density</strong>
+              <span>ACTIVE</span>
+            </div>
+            <div class="metric-v0-1">
               <strong>Resonance</strong>
-              <span>MODERATE-HIGH · Structural stability: TRANSITIONAL-STABLE</span>
+              <span>MODERATE-HIGH</span>
             </div>
-            <div>
-              <strong>Proof state</strong>
-              <span>STATIC / MEDIUM · Provenance required for deeper output</span>
+            <div class="metric-v0-1">
+              <strong>Structural stability</strong>
+              <span>TRANSITIONAL-STABLE</span>
             </div>
           </div>
 
-          <div class="surface-grid mini-grid" aria-label="Astromodule system influence">
-            <div>
+          <div class="flow-grid-v0-1" aria-label="Astromodule field flow">
+            <div class="flow-line-v0-1">
               <strong>Input field</strong>
-              <span>Market context · Ephemerides · AstroPatterns · Observation window · Provenance</span>
+              <p>Market context · Ephemerides · AstroPatterns · Observation window · Provenance</p>
             </div>
-            <div>
+            <div class="flow-line-v0-1">
               <strong>Influence field</strong>
-              <span>Market Field · Probability Continuation · Capital Rotation · Cosmographer Read · Research Packet</span>
-            </div>
-            <div>
-              <strong>Access depth</strong>
-              <span>Public: score + corridor · Subscription: asset windows + pattern comparison</span>
-            </div>
-            <div>
-              <strong>Protected layer</strong>
-              <span>Operator: raw ephemerides · weights · ORION reasoning · internal verification</span>
+              <p>Market Field · Probability Continuation · Capital Rotation · Cosmographer Read · Research Packet</p>
             </div>
           </div>
 
-          <p class="small">Forecast layer is presented as bounded scenario corridors, not as auto-trading or buy/sell instructions. The human decision stays outside the system.</p>
+          <div class="access-grid-v0-1" aria-label="Astromodule access depth">
+            <div class="access-cell-v0-1">
+              <strong>Public</strong>
+              <p>Score band + basic corridor.</p>
+            </div>
+            <div class="access-cell-v0-1">
+              <strong>Depth research</strong>
+              <p>Asset windows + pattern comparison.</p>
+            </div>
+            <div class="access-cell-v0-1">
+              <strong>Operator</strong>
+              <p>Raw ephemerides · weights · verification.</p>
+            </div>
+          </div>
+
+          <div class="boundary-strip-v0-1">
+            <p>Forecast corridor only · no automated execution · human decision remains outside the system.</p>
+          </div>
         </article>
 
       <article class="market-card gold">
