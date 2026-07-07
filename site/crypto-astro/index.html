@@ -1337,9 +1337,43 @@
             <div class="astromodule-identity-v0-1">
               <p class="eyebrow">Astromodule · Astrobarometer</p>
               <h3>Core timing-scenario axis</h3>
+
+<!-- CRYPTO_ASTRO_ASTROMODULE_VISUAL_POLISH_v0_1:BEGIN -->
+<div class="astromodule-polish-shell" aria-label="Astromodule visual timing-scenario instrument">
+  <div class="astromodule-polish-grid">
+    <div class="astromodule-polish-card">
+      <!-- CRYPTO_ASTRO_ASTROMODULE_DEDUP_REPAIR_v0_1:BEGIN -->
+      <p class="astromodule-polish-kicker">Input layer</p>
+      <h3 class="astromodule-polish-title">Field reader</h3>
+      <p class="astromodule-polish-note">Reads ephemerides context, AstroPatterns memory, market state, observation windows, and source provenance.</p>
+      <!-- CRYPTO_ASTRO_ASTROMODULE_DEDUP_REPAIR_v0_1:END -->
+    </div>
+    <div class="astromodule-polish-card astromodule-axis-core">
+      <div class="astromodule-axis-ring">
+        <div class="astromodule-axis-label">
+          <strong>Timing pressure field</strong>
+          <span>static public context</span>
+        </div>
+      </div>
+    </div>
+    <div class="astromodule-polish-card">
+      <p class="astromodule-polish-kicker">Scenario components</p>
+      <div class="astromodule-polish-rails" aria-label="Astromodule scenario component rails">
+        <div class="astromodule-polish-rail"><span>Timing</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 72%"></span></span></div>
+        <div class="astromodule-polish-rail"><span>Stability</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 58%"></span></span></div>
+        <div class="astromodule-polish-rail"><span>Corridor</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 64%"></span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="astromodule-polish-footer">
+    Astromodule is the main timing-scenario axis. Public Sample Panel remains an applied example layer. Static research context only — not live feed, not financial advice, no buy/sell signal.
+  </div>
+</div>
+<!-- CRYPTO_ASTRO_ASTROMODULE_VISUAL_POLISH_v0_1:END -->
+
+
               <p class="astromodule-brief-v0-1">
-                Reads ephemerides context, AstroPatterns memory, market state, observation windows,
-                and source provenance to shape scenario and forecast corridors across the Crypto-Astro surface.
+                Public context layer for reading pressure, phase, resonance, and structural stability across the Crypto-Astro surface.
               </p>
             </div>
 
@@ -1350,6 +1384,28 @@
                 <span class="state-chip-v0-1">MEDIUM CONFIDENCE</span>
                 <span class="state-chip-v0-1">MANUAL REVIEW</span>
               </div>
+
+<!-- CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:BEGIN -->
+<div class="astromodule-right-balance" aria-label="Astrobarometer read balance">
+  <h3 class="astromodule-right-balance__title">Astrobarometer read</h3>
+  <div class="astromodule-right-balance__score">
+    <div class="astromodule-right-balance__number">63</div>
+    <div>
+      <div class="astromodule-right-balance__track"><span class="astromodule-right-balance__fill"></span></div>
+      <div class="astromodule-right-balance__meta">medium pressure band · static proof</div>
+    </div>
+  </div>
+  <div class="astromodule-right-balance__grid">
+    <div class="astromodule-right-balance__cell"><span class="astromodule-right-balance__label">Pressure</span><span class="astromodule-right-balance__value">Medium</span></div>
+    <div class="astromodule-right-balance__cell"><span class="astromodule-right-balance__label">Confidence</span><span class="astromodule-right-balance__value">Medium</span></div>
+    <div class="astromodule-right-balance__cell"><span class="astromodule-right-balance__label">Evidence</span><span class="astromodule-right-balance__value">Static proof</span></div>
+    <div class="astromodule-right-balance__cell"><span class="astromodule-right-balance__label">Route</span><span class="astromodule-right-balance__value">Manual review</span></div>
+  </div>
+  <p class="astromodule-right-balance__note">Static context only — no automated execution.</p>
+</div>
+<!-- CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:END -->
+
+
             </div>
           </div>
 
@@ -1399,7 +1455,7 @@
           </div>
 
           <div class="boundary-strip-v0-1">
-            <p>Scenario corridor only · no automated execution.</p>
+            <p>Research corridor only · no automated execution.</p>
           </div>
         </article>
 
@@ -1447,7 +1503,101 @@
               color: rgba(255, 226, 160, 0.88);
               font-weight: 700;
             }
-          </style>
+          
+/* CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:BEGIN */
+.astromodule-right-balance {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.astromodule-right-balance__title {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.5vw, 1.24rem);
+  color: rgba(246, 252, 255, 0.95);
+}
+
+.astromodule-right-balance__score {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  background: rgba(4, 10, 18, 0.46);
+}
+
+.astromodule-right-balance__number {
+  font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+  line-height: 0.95;
+  color: rgba(255, 219, 120, 0.98);
+  font-weight: 800;
+}
+
+.astromodule-right-balance__track {
+  height: 9px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.09);
+  overflow: hidden;
+}
+
+.astromodule-right-balance__fill {
+  display: block;
+  height: 100%;
+  width: 63%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(145,231,255,0.44), rgba(255,219,120,0.84));
+}
+
+.astromodule-right-balance__meta {
+  margin-top: 6px;
+  color: rgba(225, 238, 245, 0.68);
+  font-size: 0.82rem;
+}
+
+.astromodule-right-balance__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.astromodule-right-balance__cell {
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 15px;
+  background: rgba(255,255,255,0.035);
+}
+
+.astromodule-right-balance__label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(190, 210, 222, 0.74);
+}
+
+.astromodule-right-balance__value {
+  display: block;
+  color: rgba(245, 250, 255, 0.94);
+  font-weight: 780;
+}
+
+.astromodule-right-balance__note {
+  margin: 4px 0 0;
+  color: rgba(218, 235, 244, 0.70);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .astromodule-right-balance__grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:END */
+</style>
           <div class="depth-note-head-v0-1">
             <h3>Depth Research · manual request</h3>
             <a class="depth-note-link-v0-1" href="https://www.bhrigu.io/access">Access route</a>
@@ -1750,6 +1900,180 @@
       grid-template-columns:82px 1fr 46px;
     }
   }
+
+
+/* CRYPTO_ASTRO_ASTROMODULE_VISUAL_POLISH_v0_1:BEGIN */
+.astromodule-polish-shell {
+  position: relative;
+  overflow: hidden;
+  margin: 18px 0 20px;
+  padding: 20px;
+  border: 1px solid rgba(145, 231, 255, 0.18);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(145, 231, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 78% 22%, rgba(189, 255, 219, 0.11), transparent 34%),
+    linear-gradient(135deg, rgba(8, 16, 28, 0.92), rgba(6, 10, 18, 0.78));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.035),
+    0 20px 60px rgba(0, 0, 0, 0.22);
+}
+
+.astromodule-polish-shell::before {
+  content: "";
+  position: absolute;
+  inset: -35% -18%;
+  background:
+    linear-gradient(90deg, transparent, rgba(145, 231, 255, 0.08), transparent),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 54px);
+  transform: rotate(-8deg);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.astromodule-polish-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.25fr) minmax(220px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.astromodule-polish-card {
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(4, 10, 18, 0.52);
+  backdrop-filter: blur(10px);
+}
+
+.astromodule-polish-kicker {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(195, 238, 255, 0.72);
+}
+
+.astromodule-polish-title {
+  margin: 0 0 10px;
+  font-size: clamp(1.08rem, 2vw, 1.42rem);
+  line-height: 1.12;
+  color: rgba(245, 252, 255, 0.96);
+}
+
+.astromodule-polish-note {
+  margin: 0;
+  color: rgba(230, 244, 255, 0.72);
+  line-height: 1.58;
+  font-size: 0.92rem;
+}
+
+.astromodule-axis-core {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.astromodule-axis-ring {
+  width: min(240px, 72vw);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background:
+    radial-gradient(circle, rgba(145,231,255,0.20) 0 18%, transparent 19% 28%, rgba(255,255,255,0.05) 29% 30%, transparent 31%),
+    conic-gradient(from 215deg, rgba(145,231,255,0.88), rgba(189,255,219,0.70), rgba(255,210,137,0.54), rgba(145,231,255,0.88));
+  box-shadow:
+    0 0 42px rgba(145,231,255,0.12),
+    inset 0 0 28px rgba(0,0,0,0.42);
+}
+
+.astromodule-axis-ring::before {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  border-radius: inherit;
+  background: rgba(3, 8, 15, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.astromodule-axis-label {
+  position: relative;
+  z-index: 1;
+  max-width: 150px;
+}
+
+.astromodule-axis-label strong {
+  display: block;
+  color: rgba(250,252,255,0.97);
+  font-size: 1.02rem;
+  line-height: 1.18;
+}
+
+.astromodule-axis-label span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(210,235,245,0.70);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.astromodule-polish-rails {
+  display: grid;
+  gap: 10px;
+}
+
+.astromodule-polish-rail {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.82rem;
+  color: rgba(235,245,255,0.80);
+}
+
+.astromodule-polish-track {
+  height: 7px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+}
+
+.astromodule-polish-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(145,231,255,0.32), rgba(189,255,219,0.86));
+}
+
+.astromodule-polish-footer {
+  position: relative;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.09);
+  color: rgba(214,235,246,0.70);
+  font-size: 0.82rem;
+  line-height: 1.48;
+}
+
+@media (max-width: 860px) {
+  .astromodule-polish-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .astromodule-axis-core {
+    min-height: 190px;
+  }
+}
+/* CRYPTO_ASTRO_ASTROMODULE_VISUAL_POLISH_v0_1:END */
+
+
+
+
+
 </style>
 <!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_VISUAL_LOGIC_DISTRIBUTION_v0_1:END -->
   <div class="sample-grid">
