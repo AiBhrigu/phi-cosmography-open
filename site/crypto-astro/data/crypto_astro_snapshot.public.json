@@ -1,0 +1,147 @@
+{
+  "schema_version": "crypto_astro_snapshot_public_v0_1",
+  "generated_at_utc": "2026-07-08T18:57:45Z",
+  "source_mode": "static_public_snapshot",
+  "freshness_status": "FRESH",
+  "market_reality": {
+    "total_market_cap_usd": 2228655527793.212,
+    "volume_24h_usd": 72706039393.90811,
+    "market_cap_change_24h_pct": -2.1929600640687252,
+    "btc_dominance_pct": 55.964048418353684,
+    "eth_dominance_pct": 9.408701449028909,
+    "stablecoin_cap_usd": 309780800383.52155,
+    "stablecoin_share_pct": 13.89989599201375
+  },
+  "field_output": {
+    "market_field_score": 70.0,
+    "regime_label": "Balanced Expansion",
+    "direction_bias": "Neutral → Bullish",
+    "continuation_label": "Scenario-only continuation map",
+    "confidence_label": "static public context"
+  },
+  "probability_continuation": {
+    "base_path_pct": 64,
+    "expansion_path_pct": 20,
+    "compression_reversal_pct": 16,
+    "window_label": "7D",
+    "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
+  },
+  "liquidity_tvl": {
+    "stablecoin_cap_usd": 309780800383.52155,
+    "defi_tvl_usd": 471300430274.9157,
+    "dex_volume_24h_usd": 7450174727,
+    "liquidity_context_state": "context fresh",
+    "calibration_state": "context_only"
+  },
+  "altcoin_rotation": {
+    "universe": "non-stable top-250 crypto assets",
+    "alt_breadth_24h_pct": 28.2,
+    "alt_breadth_7d_pct": 58.8,
+    "eth_rotation_anchor_pct": 9.408701449028909,
+    "top_10_flow_concentration_pct": 65.9
+  },
+  "public_samples": {
+    "assets": {
+      "BTC": {
+        "id": "bitcoin",
+        "symbol": "BTC",
+        "label": "Bitcoin",
+        "price_usd": 62123,
+        "market_cap_rank": 1,
+        "market_24h_change_pct": -2.4127563115551447,
+        "market_7d_change_pct": 3.3091192140927177,
+        "market_30d_change_pct": -2.148562130318157,
+        "M": 0.2413,
+        "A_state": "calibration_pending",
+        "E_state": "calibration_pending",
+        "M_state": "market_context_active",
+        "visible_state_label": "Market context active · A/E pending",
+        "market_context_label": "active_movement",
+        "score": 60.13
+      },
+      "ETH": {
+        "id": "ethereum",
+        "symbol": "ETH",
+        "label": "Ethereum",
+        "price_usd": 1735.62,
+        "market_cap_rank": 2,
+        "market_24h_change_pct": -2.826463892071957,
+        "market_7d_change_pct": 7.034619669989437,
+        "market_30d_change_pct": 3.0521624515680847,
+        "M": 0.2826,
+        "A_state": "calibration_pending",
+        "E_state": "calibration_pending",
+        "M_state": "market_context_active",
+        "visible_state_label": "Market context active · A/E pending",
+        "market_context_label": "active_movement",
+        "score": 61.4
+      },
+      "SOL": {
+        "id": "solana",
+        "symbol": "SOL",
+        "label": "Solana",
+        "price_usd": 77.09,
+        "market_cap_rank": 7,
+        "market_24h_change_pct": -5.297570424638593,
+        "market_7d_change_pct": 0.04710587751319272,
+        "market_30d_change_pct": 14.812527770992789,
+        "M": 0.5298,
+        "A_state": "calibration_pending",
+        "E_state": "calibration_pending",
+        "M_state": "market_context_active",
+        "visible_state_label": "Market context active · A/E pending",
+        "market_context_label": "active_movement",
+        "score": 59.33
+      },
+      "TON": {
+        "id": "the-open-network",
+        "symbol": "TON",
+        "label": "Gram (prev. Toncoin)",
+        "price_usd": 1.59,
+        "market_cap_rank": 26,
+        "market_24h_change_pct": -3.861061179728721,
+        "market_7d_change_pct": 2.407968063564355,
+        "market_30d_change_pct": -11.201010806554637,
+        "M": 0.3861,
+        "A_state": "calibration_pending",
+        "E_state": "calibration_pending",
+        "M_state": "market_context_active",
+        "visible_state_label": "Market context active · A/E pending",
+        "market_context_label": "active_movement",
+        "score": 55.81
+      },
+      "ICP": {
+        "id": "internet-computer",
+        "symbol": "ICP",
+        "label": "Internet Computer",
+        "price_usd": 2.19,
+        "market_cap_rank": 60,
+        "market_24h_change_pct": -0.4911429316979308,
+        "market_7d_change_pct": 1.3398370693088353,
+        "market_30d_change_pct": -8.080574894285567,
+        "M": 0.0491,
+        "A_state": "calibration_pending",
+        "E_state": "calibration_pending",
+        "M_state": "market_context_active",
+        "visible_state_label": "Market context active · A/E pending",
+        "market_context_label": "low_movement",
+        "score": 54.02
+      }
+    }
+  },
+  "boundary": {
+    "read_only": true,
+    "static_public_snapshot": true,
+    "no_live_adapter_claim": true,
+    "no_true_live_feed_claim": true,
+    "no_trading_signal": true,
+    "no_forecast": true,
+    "no_price_target": true,
+    "no_investment_recommendation": true,
+    "backend_api_closed": true,
+    "runtime_closed": true,
+    "payment_closed": true,
+    "orion_core_protected": true,
+    "formula_weights_exposed": false
+  }
+}

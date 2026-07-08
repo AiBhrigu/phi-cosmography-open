@@ -1,0 +1,67 @@
+{
+  "schema_version": "crypto_astro_public_module_bindings_v0_1",
+  "generated_at_utc": "2026-07-08T18:57:45Z",
+  "source_mode": "static_public_snapshot",
+  "freshness_status": "FRESH",
+  "modules": {
+    "market_reality": {
+      "source": "market_reality",
+      "anchor": "Market Reality"
+    },
+    "aem_barometer": {
+      "source": "field_output",
+      "anchor": "A/E/M Field Barometer"
+    },
+    "continuation_field": {
+      "source": "probability_continuation",
+      "anchor": "Continuation Field"
+    },
+    "astromodule": {
+      "source": "static_public_context",
+      "anchor": "astromodule-surface-bridge"
+    },
+    "support_lanes": {
+      "source": "static_public_context",
+      "anchor": "CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1"
+    },
+    "cosmographer_read": {
+      "source": "field_output + liquidity_tvl",
+      "anchor": "Cosmographer Read"
+    },
+    "liquidity_tvl": {
+      "source": "liquidity_tvl",
+      "anchor": "Liquidity / TVL"
+    },
+    "altcoin_rotation": {
+      "source": "altcoin_rotation",
+      "anchor": "alt-rotation-module"
+    },
+    "public_sample_ton_icp": {
+      "source": "public_samples.TON + public_samples.ICP",
+      "anchor": "CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1"
+    },
+    "btc_eth_sol_sample": {
+      "source": "public_samples.BTC + public_samples.ETH + public_samples.SOL",
+      "anchor": "crypto_astro_snapshot.public.json"
+    },
+    "trend_memory": {
+      "source": "available 7d/30d fields only",
+      "anchor": "trend-memory"
+    }
+  },
+  "boundary": {
+    "read_only": true,
+    "static_public_snapshot": true,
+    "no_live_adapter_claim": true,
+    "no_true_live_feed_claim": true,
+    "no_trading_signal": true,
+    "no_forecast": true,
+    "no_price_target": true,
+    "no_investment_recommendation": true,
+    "backend_api_closed": true,
+    "runtime_closed": true,
+    "payment_closed": true,
+    "orion_core_protected": true,
+    "formula_weights_exposed": false
+  }
+}

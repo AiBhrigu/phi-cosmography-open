@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Crypto-Astro Public Module Bindings v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "source_mode",
+    "freshness_status",
+    "modules",
+    "boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "crypto_astro_public_module_bindings_v0_1"
+    },
+    "generated_at_utc": {
+      "type": "string"
+    },
+    "source_mode": {
+      "const": "static_public_snapshot"
+    },
+    "freshness_status": {
+      "enum": [
+        "FRESH",
+        "STALE",
+        "ARCHIVE",
+        "UNKNOWN"
+      ]
+    },
+    "modules": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "object"
+    }
+  }
+}
