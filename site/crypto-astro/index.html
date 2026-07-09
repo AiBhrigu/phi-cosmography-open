@@ -1031,6 +1031,204 @@
   .seal-title span { color:var(--muted); letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
   .trust-line { margin:0; color:var(--soft); line-height:1.6; }
   .trust-line.primary { color:var(--gold); letter-spacing:.02em; }
+
+  /* CRYPTO_ASTRO_MOBILE_ROUTE_AIR_LIGHTFIELD_PATCH_v0_1:BEGIN */
+  .mobile-route-layer-v0-1 {
+    display: none;
+  }
+
+  .mobile-route-layer-v0-1 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  @media (max-width: 760px) {
+    .page {
+      padding: 14px 10px 56px;
+    }
+
+    .surface-hub {
+      border-radius: 22px;
+      padding: 12px;
+    }
+
+    .surface-hub + .hero {
+      margin-top: 18px;
+    }
+
+    .hero {
+      margin-bottom: 0;
+    }
+
+    .mobile-route-layer-v0-1 {
+      display: grid;
+      gap: 12px;
+      margin: 22px 0 34px;
+      border: 1px solid rgba(143,183,255,.22);
+      border-radius: 24px;
+      padding: 14px;
+      background:
+        radial-gradient(circle at top left, rgba(143,183,255,.12), transparent 42%),
+        rgba(143,183,255,.040);
+    }
+
+    .mobile-route-title-v0-1 {
+      margin: 0;
+      color: var(--blue);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .18em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .mobile-route-grid-v0-1 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mobile-route-pill-v0-1 {
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 999px;
+      padding: 10px 9px;
+      text-align: center;
+      color: var(--soft);
+      background: rgba(255,255,255,.028);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+
+    .mobile-route-pill-v0-1.gold {
+      color: var(--gold);
+      border-color: rgba(247,212,125,.32);
+      background: rgba(247,212,125,.055);
+    }
+
+    .mobile-route-pill-v0-1.blue {
+      color: var(--blue);
+      border-color: rgba(143,183,255,.32);
+      background: rgba(143,183,255,.055);
+    }
+
+    .section {
+      margin-top: 36px;
+    }
+
+    .section + .section,
+    .market-field-shell > .market-card,
+    .market-field-shell > .alt-rotation-module,
+    .market-lower-grid > .market-card,
+    .market-first-screen > .market-card,
+    .astromodule-wide-panel-v0-1,
+    .cosmographer-console-v0-2,
+    .crypto-astro-access-path-v0-1 {
+      margin-top: 18px;
+    }
+
+    .market-field-shell {
+      gap: 24px;
+    }
+
+    .market-first-screen,
+    .market-lower-grid,
+    .module-grid,
+    .scoring-matrix,
+    .scoring-data-band {
+      gap: 18px;
+    }
+
+    .crypto-astro-access-path-v0-1 {
+      border-color: rgba(143,183,255,.34);
+      box-shadow: 0 18px 46px rgba(0,0,0,.20), inset 0 0 0 1px rgba(143,183,255,.045);
+    }
+
+    .astromodule-wide-panel-v0-1::before,
+    .cosmographer-console-v0-2::before,
+    .crypto-astro-access-path-v0-1::before,
+    .alt-rotation-module::before {
+      display: block;
+      margin: 0 0 12px;
+      color: rgba(143,183,255,.76);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .16em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .astromodule-wide-panel-v0-1::before { content: "Detail layer · Astromodule"; }
+    .cosmographer-console-v0-2::before { content: "Core read · Field synthesis"; }
+    .crypto-astro-access-path-v0-1::before { content: "Access route · reviewed by request"; }
+    .alt-rotation-module::before { content: "Detail layer · Rotation field"; }
+
+    .cosmographer-field-canvas-v0-2 {
+      min-height: 430px;
+      height: auto;
+      padding-bottom: 76px;
+      overflow: hidden;
+      border: 1px solid rgba(143,183,255,.12);
+    }
+
+    .cosmographer-field-thread-v0-2 {
+      left: 5%;
+      right: 5%;
+      top: 47%;
+      height: 96px;
+    }
+
+    .cosmographer-field-node-v0-2 {
+      font-size: .68rem;
+      padding: .34rem .46rem;
+      line-height: 1.1;
+      max-width: 108px;
+      white-space: normal;
+    }
+
+    .cosmographer-field-node-v0-2[data-node="stable"] { left: 6%; top: 18%; }
+    .cosmographer-field-node-v0-2[data-node="btc"] { left: 50%; top: 12%; transform: translateX(-50%); }
+    .cosmographer-field-node-v0-2[data-node="freshness"] { right: 6%; top: 20%; }
+    .cosmographer-field-node-v0-2[data-node="rotation"] { left: 6%; top: 62%; }
+    .cosmographer-field-node-v0-2[data-node="liquidity"] { left: 50%; top: 68%; transform: translateX(-50%); }
+    .cosmographer-field-node-v0-2[data-node="timing"] { right: 6%; top: 62%; }
+
+    .cosmographer-field-legend-v0-2 {
+      left: 12px;
+      right: 12px;
+      bottom: 14px;
+      display: block;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(3, 10, 18, .72);
+      color: rgba(225,238,246,.66);
+      font-size: .62rem;
+      line-height: 1.45;
+      letter-spacing: .075em;
+      text-align: center;
+    }
+
+    #proof::before,
+    #boundary::before {
+      display: block;
+      margin: 0 0 12px;
+      color: rgba(247,212,125,.76);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .16em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    #proof::before { content: "Proof layer · source-bound"; }
+    #boundary::before { content: "Boundary · systems closed"; }
+  }
+  /* CRYPTO_ASTRO_MOBILE_ROUTE_AIR_LIGHTFIELD_PATCH_v0_1:END */
+
 </style>
 </head>
 <body>
@@ -1064,6 +1262,20 @@
     <a class="badge" href="#boundary">source-bound orientation</a>
   </div>
 </section>
+
+<!-- CRYPTO_ASTRO_MOBILE_ROUTE_LAYER_v0_1:BEGIN -->
+<nav class="mobile-route-layer-v0-1" aria-label="Mobile Crypto-Astro route">
+  <p class="mobile-route-title-v0-1">Mobile route · source-bound surface</p>
+  <div class="mobile-route-grid-v0-1">
+    <a class="mobile-route-pill-v0-1 gold" href="#market">Snapshot</a>
+    <a class="mobile-route-pill-v0-1 blue" href="#read">Read</a>
+    <a class="mobile-route-pill-v0-1 gold" href="#access">Access</a>
+    <a class="mobile-route-pill-v0-1" href="#astromodule-surface-bridge">Details</a>
+    <a class="mobile-route-pill-v0-1" href="#proof">Proof</a>
+    <a class="mobile-route-pill-v0-1" href="#boundary">Boundary</a>
+  </div>
+</nav>
+<!-- CRYPTO_ASTRO_MOBILE_ROUTE_LAYER_v0_1:END -->
 
 <!-- CRYPTO_ASTRO_MARKET_FIELD_MODULE_v0_1:BEGIN -->
 <section id="market" class="section surface-anchor" aria-label="Crypto-Astro Market Field">
@@ -1637,7 +1849,7 @@
           </p>
         </article>
 
-      <article class="cosmographer-console-v0-2 cosmographer-field--balanced-expansion" aria-label="Cosmographer Read field synthesis console" data-cosmographer-copy-version="v0_2_snapshot_bound" data-copy-mode="static_snapshot_bound" data-field-mode="balanced_expansion" data-btc-gravity="strong" data-stablecoin-pressure="moderate" data-alt-rotation="selective" data-liquidity-depth="supportive" data-timing-context="neutral-plus" data-source-freshness="fresh">
+      <article id="read" data-mobile-route-anchor="CRYPTO_ASTRO_MOBILE_ROUTE_ANCHOR_READ_v0_1" class="cosmographer-console-v0-2 cosmographer-field--balanced-expansion" aria-label="Cosmographer Read field synthesis console" data-cosmographer-copy-version="v0_2_snapshot_bound" data-copy-mode="static_snapshot_bound" data-field-mode="balanced_expansion" data-btc-gravity="strong" data-stablecoin-pressure="moderate" data-alt-rotation="selective" data-liquidity-depth="supportive" data-timing-context="neutral-plus" data-source-freshness="fresh">
         <style>
           /* CRYPTO_ASTRO_COSMOGRAPHER_READ_REACTIVE_FIELD_v0_2:BEGIN */
           .cosmographer-console-v0-2 {
@@ -2321,7 +2533,7 @@
       </article>
 
         <!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:BEGIN -->
-        <article class="market-card blue crypto-astro-access-path-v0-1" aria-label="Crypto-Astro deeper access path">
+        <article id="access" data-mobile-route-anchor="CRYPTO_ASTRO_MOBILE_ROUTE_ANCHOR_ACCESS_v0_1" class="market-card blue crypto-astro-access-path-v0-1" aria-label="Crypto-Astro deeper access path">
           <p class="eyebrow">Access Path · by request</p>
           <h3>Deeper financial field intelligence can be reviewed by request.</h3>
           <p>Extended snapshots, field notes, custom platform or protocol analysis, and API access can be prepared for approved research, product, and institutional use.</p>
