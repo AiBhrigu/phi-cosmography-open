@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-07-10T08:00:11Z",
+  "updated_at_utc": "2026-07-10T10:07:15Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -27,15 +27,15 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2275033563401.1533,
-      "market_cap_change_24h_pct": 1.1590919994907658,
-      "volume_24h_usd": 63756033406.91071,
-      "btc_dominance_pct": 56.362197895167085,
-      "stablecoin_share_pct": 13.65373013667573,
-      "stablecoin_cap_usd": 310626943265.591,
-      "defi_tvl_usd": 480025813782.3754,
+      "total_market_cap_usd": 2288169729929.9395,
+      "market_cap_change_24h_pct": 1.7846210191474796,
+      "volume_24h_usd": 63971828763.33342,
+      "btc_dominance_pct": 56.401105604329786,
+      "stablecoin_share_pct": 13.567929442435837,
+      "stablecoin_cap_usd": 310457254480.0688,
+      "defi_tvl_usd": 480212015080.796,
       "dex_volume_24h_usd": 6813211481,
-      "market_breadth_pct": 58.8,
+      "market_breadth_pct": 66.8,
       "liquidity_health": "context fresh"
     },
     "CT_temporal": {
@@ -50,16 +50,16 @@
     }
   },
   "field_output": {
-    "market_field_score": 75.0,
+    "market_field_score": 77.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",
     "confidence_label": "static public context"
   },
   "probability_continuation": {
-    "base_path_pct": 61,
-    "expansion_path_pct": 26,
-    "compression_reversal_pct": 13,
+    "base_path_pct": 60,
+    "expansion_path_pct": 28,
+    "compression_reversal_pct": 12,
     "window_label": "7D",
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },
