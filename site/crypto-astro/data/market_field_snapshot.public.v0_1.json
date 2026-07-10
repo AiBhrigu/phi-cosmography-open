@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-07-10T06:40:44Z",
+  "updated_at_utc": "2026-07-10T08:00:11Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -27,15 +27,15 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2274447740723.2866,
-      "market_cap_change_24h_pct": 1.1980437774153043,
-      "volume_24h_usd": 64556975654.31449,
-      "btc_dominance_pct": 56.32839292948599,
-      "stablecoin_share_pct": 13.658566678352324,
-      "stablecoin_cap_usd": 310656961230.9681,
-      "defi_tvl_usd": 479973506862.36725,
+      "total_market_cap_usd": 2275033563401.1533,
+      "market_cap_change_24h_pct": 1.1590919994907658,
+      "volume_24h_usd": 63756033406.91071,
+      "btc_dominance_pct": 56.362197895167085,
+      "stablecoin_share_pct": 13.65373013667573,
+      "stablecoin_cap_usd": 310626943265.591,
+      "defi_tvl_usd": 480025813782.3754,
       "dex_volume_24h_usd": 6813211481,
-      "market_breadth_pct": 59.2,
+      "market_breadth_pct": 58.8,
       "liquidity_health": "context fresh"
     },
     "CT_temporal": {
