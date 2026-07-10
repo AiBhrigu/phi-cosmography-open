@@ -1521,6 +1521,83 @@
   .btc-aspect-cycle-ray-v0-1 { display: none; }
 }
 /* BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:END */
+/* BTC_ASPECT_CYCLE_CORE_PUBLIC_ANALYTIC_BRIDGE_REPAIR_v0_1_1:BEGIN */
+.btc-aspect-cycle-method-bridge-v0-1 {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.05rem;
+  border: 1px solid rgba(245, 199, 106, 0.28);
+  border-radius: 28px;
+  padding: clamp(1rem, 2.6vw, 1.55rem);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(245, 199, 106, 0.22), transparent 30%),
+    radial-gradient(circle at 90% 12%, rgba(91, 157, 255, 0.2), transparent 32%),
+    linear-gradient(135deg, rgba(245, 199, 106, 0.075), rgba(91, 157, 255, 0.075));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.055), 0 22px 70px rgba(0,0,0,0.28);
+}
+.btc-aspect-cycle-analytic-repair-v0-1 {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(245, 199, 106, 0.24), transparent 30%),
+    radial-gradient(circle at 86% 14%, rgba(91, 157, 255, 0.22), transparent 35%),
+    linear-gradient(135deg, rgba(245, 199, 106, 0.095), rgba(91, 157, 255, 0.085));
+}
+.btc-aspect-cycle-method-head-v0-1 { max-width: 58rem; }
+.btc-aspect-cycle-proof-strip-v0-1 {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0.95rem 0 1rem;
+}
+.btc-aspect-cycle-proof-strip-v0-1 div {
+  border: 1px solid rgba(245, 199, 106, 0.17);
+  border-radius: 18px;
+  padding: 0.78rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+.btc-aspect-cycle-proof-strip-v0-1 span,
+.btc-aspect-cycle-output-panel-v0-1 > span {
+  display: block;
+  color: rgba(245, 199, 106, 0.82);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.btc-aspect-cycle-proof-strip-v0-1 strong {
+  display: block;
+  margin-top: 0.24rem;
+  color: rgba(238, 244, 255, 0.94);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.btc-aspect-cycle-output-panel-v0-1 {
+  position: relative;
+  margin-top: 0.85rem;
+  border: 1px solid rgba(91, 157, 255, 0.18);
+  border-radius: 20px;
+  padding: 0.9rem;
+  background: rgba(91, 157, 255, 0.065);
+}
+.btc-aspect-cycle-output-panel-v0-1 div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  margin-top: 0.55rem;
+}
+.btc-aspect-cycle-output-panel-v0-1 strong {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 0.38rem 0.58rem;
+  color: rgba(238,244,255,0.92);
+  background: rgba(0,0,0,0.16);
+  font-size: 0.78rem;
+}
+.btc-aspect-cycle-satellite-v0-1 { width: min(15rem, 39%); }
+.btc-aspect-cycle-method-grid-v0-1 strong { line-height: 1.42; }
+@media (max-width: 860px) {
+  .btc-aspect-cycle-proof-strip-v0-1 { grid-template-columns: 1fr; }
+}
+/* BTC_ASPECT_CYCLE_CORE_PUBLIC_ANALYTIC_BRIDGE_REPAIR_v0_1_1:END */
 /* BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END */
 
 </style>
@@ -1605,16 +1682,24 @@
     <div class="btc-phi-cycle-lane-v0-1"><span>Proof posture</span><strong>Static snapshot with source trail.</strong></div>
     <div class="btc-phi-cycle-lane-v0-1"><span>Route</span><strong>Operator-reviewed depth only.</strong></div>
   </div>
-<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:BEGIN -->
-  <div class="btc-aspect-cycle-method-bridge-v0-1" aria-label="BTC Aspect-Cycle protected method stack">
+<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_ANALYTIC_BRIDGE_REPAIR_v0_1_1:BEGIN -->
+  <div class="btc-aspect-cycle-method-bridge-v0-1 btc-aspect-cycle-analytic-repair-v0-1" aria-label="BTC Aspect-Cycle protected analytic method stack">
     <div class="btc-aspect-cycle-aurora-v0-1" aria-hidden="true"></div>
+
     <div class="btc-aspect-cycle-method-head-v0-1">
       <span>Protected method stack</span>
       <strong>Aspect-Cycle Core</strong>
-      <p>Planetary aspects, Semenko phase scoring, crypto-events overlay, and BTC gravity are organized as one private operator-reviewed research stack.</p>
+      <p>Planetary aspects, Semenko phase scoring, crypto-events overlay, and BTC gravity are organized as one operator-reviewed research stack.</p>
     </div>
 
-    <div class="btc-aspect-cycle-constellation-v0-1" aria-label="BTC Aspect-Cycle method constellation">
+    <div class="btc-aspect-cycle-proof-strip-v0-1" aria-label="Aspect-Cycle Core method proof strip">
+      <div><span>Aspect Engine</span><strong>Sun–Pluto · 5 major aspects · report layer</strong></div>
+      <div><span>Semenko Phase</span><strong>pairs · orbs · weights · ranked hits</strong></div>
+      <div><span>Crypto-events Overlay</span><strong>historical events · aspect pressure comparison</strong></div>
+      <div><span>BTC Gravity</span><strong>dominance · liquidity context · confirmation layer</strong></div>
+    </div>
+
+    <div class="btc-aspect-cycle-constellation-v0-1" aria-label="BTC Aspect-Cycle analytic constellation">
       <div class="btc-aspect-cycle-core-node-v0-1">
         <span>BTC</span>
         <strong>Gravity</strong>
@@ -1625,22 +1710,34 @@
       <div class="btc-aspect-cycle-ray-v0-1 r2"></div>
       <div class="btc-aspect-cycle-ray-v0-1 r3"></div>
       <div class="btc-aspect-cycle-ray-v0-1 r4"></div>
-      <div class="btc-aspect-cycle-satellite-v0-1 s1"><span>Aspect density</span><strong>hits · pressure</strong></div>
-      <div class="btc-aspect-cycle-satellite-v0-1 s2"><span>Semenko phase</span><strong>pairs · weights</strong></div>
-      <div class="btc-aspect-cycle-satellite-v0-1 s3"><span>Crypto-events</span><strong>history · overlay</strong></div>
-      <div class="btc-aspect-cycle-satellite-v0-1 s4"><span>Scenario corridor</span><strong>timing · review</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s1"><span>Aspect density</span><strong>clustered pressure hits</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s2"><span>Semenko phase</span><strong>weighted ranked hits</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s3"><span>Crypto-events</span><strong>historical pattern overlay</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s4"><span>Scenario corridor</span><strong>expansion · stress · relief</strong></div>
     </div>
 
-    <div class="btc-aspect-cycle-method-grid-v0-1">
-      <div><span>Aspect density</span><strong>Planetary aspect hits and pressure map.</strong></div>
-      <div><span>Semenko phase</span><strong>Weighted pair scoring and ranked hits.</strong></div>
-      <div><span>Crypto-events</span><strong>Historical overlay for pattern comparison.</strong></div>
-      <div><span>BTC gravity</span><strong>Market-field context and confirmation layer.</strong></div>
-      <div><span>Scenario corridor</span><strong>Private timing context with invalidation notes.</strong></div>
-      <div><span>Operator review</span><strong>Human review before private delivery.</strong></div>
+    <div class="btc-aspect-cycle-method-grid-v0-1 btc-aspect-cycle-method-grid-analytic-v0-1" aria-label="Aspect-Cycle analytic method cards">
+      <div><span>Aspect density</span><strong>Counts major planetary aspect hits and pressure clustering inside an observation window.</strong></div>
+      <div><span>Semenko phase</span><strong>Scores planetary pairs by aspect, orb, phase strength, and ranked effective weight.</strong></div>
+      <div><span>Crypto-events</span><strong>Compares current pressure with historical launch, hack, regulation, crisis, and rotation windows.</strong></div>
+      <div><span>BTC gravity</span><strong>Checks whether BTC dominance and market structure confirm or reject timing pressure.</strong></div>
+      <div><span>Scenario corridor</span><strong>Frames expansion, compression, stress, and relief windows for operator review.</strong></div>
+      <div><span>Operator review</span><strong>Human synthesis before any private research delivery.</strong></div>
+    </div>
+
+    <div class="btc-aspect-cycle-output-panel-v0-1" aria-label="Aspect-Cycle private packet output classes">
+      <span>Private packet can include</span>
+      <div>
+        <strong>aspect density map</strong>
+        <strong>top Semenko phase hits</strong>
+        <strong>historical crypto-event comparison</strong>
+        <strong>BTC gravity context</strong>
+        <strong>scenario corridor</strong>
+        <strong>confirmation / invalidation notes</strong>
+      </div>
     </div>
   </div>
-<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:END -->
+<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_ANALYTIC_BRIDGE_REPAIR_v0_1_1:END -->
   <div class="btc-phi-cycle-boundary-v0-1">
     Context only. No trading signal. No forecast. No price target. Not investment advice. No active adapter claim.
   </div>
@@ -1658,11 +1755,11 @@
   <div class="market-field-shell">
     <div class="market-status-rail" aria-label="Crypto-Astro Market Field status rail">
       <strong>CRYPTO-ASTRO MARKET FIELD</strong>
-      <span>A/E lanes prepared</span>
-      <span>M market vector active</span>
-      <span>C/T temporal layer bounded</span>
-      <span>source-bound</span>
-      <span>research orientation</span>
+      <span>Asset / Event lanes · BTC · ETH · SOL · market events</span>
+      <span>Market vector · dominance · liquidity · rotation</span>
+      <span>Cycle / Time layer · bounded timing context</span>
+      <span>Static snapshot · source-bound</span>
+      <span>Research route · operator-reviewed depth</span>
     </div>
 
     <div class="market-first-screen" aria-label="Market reality, field barometer, and continuation field">
