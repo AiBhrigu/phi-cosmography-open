@@ -1229,6 +1229,148 @@
   }
   /* CRYPTO_ASTRO_MOBILE_ROUTE_AIR_LIGHTFIELD_PATCH_v0_1:END */
 
+/* BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN */
+.btc-phi-cycle-hub-v0-1 {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(245, 199, 106, 0.24);
+  border-radius: 30px;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  background:
+    radial-gradient(circle at 16% 14%, rgba(245, 199, 106, 0.22), transparent 32%),
+    radial-gradient(circle at 80% 24%, rgba(91, 157, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(12, 18, 35, 0.94), rgba(5, 8, 18, 0.96));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+}
+.btc-phi-cycle-hub-v0-1::before {
+  content: "BTC φ-Cycle · public bridge";
+  position: absolute;
+  top: 0.9rem;
+  right: 1rem;
+  color: rgba(245, 199, 106, 0.58);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.btc-phi-cycle-grid-v0-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(18rem, 1.08fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+.btc-phi-cycle-lead-v0-1,
+.btc-phi-cycle-map-v0-1,
+.btc-phi-cycle-boundary-v0-1 {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 1rem;
+}
+.btc-phi-cycle-lead-v0-1 h2 {
+  margin: 0.2rem 0 0.55rem;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+}
+.btc-phi-cycle-lead-v0-1 p { max-width: 58rem; }
+.btc-phi-cycle-metrics-v0-1 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.btc-phi-cycle-metric-v0-1 {
+  border: 1px solid rgba(245, 199, 106, 0.18);
+  border-radius: 18px;
+  padding: 0.78rem;
+  background: rgba(0, 0, 0, 0.16);
+}
+.btc-phi-cycle-metric-v0-1 span,
+.btc-phi-cycle-lane-v0-1 span {
+  display: block;
+  color: rgba(226, 233, 255, 0.68);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.btc-phi-cycle-metric-v0-1 strong {
+  display: block;
+  color: #f5c76a;
+  font-size: 1.08rem;
+  margin-top: 0.24rem;
+}
+.btc-phi-cycle-map-v0-1 {
+  min-height: 20rem;
+  display: grid;
+  place-items: center;
+}
+.btc-phi-cycle-orbit-v0-1 {
+  position: relative;
+  width: min(28rem, 100%);
+  aspect-ratio: 1;
+  border: 1px solid rgba(245, 199, 106, 0.28);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(245, 199, 106, 0.18) 0 12%, transparent 13%),
+    repeating-conic-gradient(from 20deg, rgba(245, 199, 106, 0.16) 0deg 10deg, transparent 10deg 28deg);
+}
+.btc-phi-cycle-core-v0-1 {
+  position: absolute;
+  inset: 35%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(245, 199, 106, 0.95), rgba(255, 255, 255, 0.7));
+  color: #10131f;
+  text-align: center;
+  font-weight: 800;
+  box-shadow: 0 0 38px rgba(245, 199, 106, 0.4);
+}
+.btc-phi-cycle-node-v0-1 {
+  position: absolute;
+  width: 8.5rem;
+  max-width: 42%;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 16px;
+  padding: 0.58rem;
+  color: rgba(240, 245, 255, 0.92);
+  background: rgba(6, 10, 23, 0.82);
+  font-size: 0.8rem;
+}
+.btc-phi-cycle-node-v0-1.one { top: 6%; left: 50%; transform: translateX(-50%); }
+.btc-phi-cycle-node-v0-1.two { top: 46%; right: -2%; }
+.btc-phi-cycle-node-v0-1.three { bottom: 6%; left: 50%; transform: translateX(-50%); }
+.btc-phi-cycle-node-v0-1.four { top: 46%; left: -2%; }
+.btc-phi-cycle-lanes-v0-1 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+.btc-phi-cycle-lane-v0-1 {
+  border: 1px solid rgba(91, 157, 255, 0.18);
+  border-radius: 18px;
+  padding: 0.8rem;
+  background: rgba(91, 157, 255, 0.07);
+}
+.btc-phi-cycle-lane-v0-1 strong {
+  display: block;
+  color: rgba(255, 255, 255, 0.94);
+  margin-top: 0.22rem;
+}
+.btc-phi-cycle-boundary-v0-1 {
+  margin-top: 1rem;
+  border-color: rgba(255, 255, 255, 0.13);
+  color: rgba(232, 238, 255, 0.78);
+}
+@media (max-width: 860px) {
+  .btc-phi-cycle-grid-v0-1,
+  .btc-phi-cycle-lanes-v0-1,
+  .btc-phi-cycle-metrics-v0-1 { grid-template-columns: 1fr; }
+  .btc-phi-cycle-hub-v0-1::before { position: static; display: block; margin-bottom: 0.8rem; }
+  .btc-phi-cycle-node-v0-1 { width: 7.4rem; font-size: 0.72rem; }
+}
+/* BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END */
+
 </style>
 </head>
 <body>
@@ -1243,6 +1385,7 @@
     </a>
     <div class="status-row" aria-label="Current public status">
       <a class="status-pill green" href="#surface">Public Page Live</a>
+      <a class="status-pill gold" href="#btc-phi-cycle-hub">BTC φ-Cycle Hub</a>
       <a class="status-pill gold" href="#market">Market Field</a>
       <a class="status-pill blue" href="#proof">Proof Layer Visible</a>
       <a class="status-pill" href="#boundary">Research Boundary</a>
@@ -1268,6 +1411,7 @@
   <p class="mobile-route-title-v0-1">Mobile route · source-bound surface</p>
   <div class="mobile-route-grid-v0-1">
     <a class="mobile-route-pill-v0-1 gold" href="#market">Snapshot</a>
+    <a class="mobile-route-pill-v0-1 gold" href="#btc-phi-cycle-hub">BTC Hub</a>
     <a class="mobile-route-pill-v0-1 blue" href="#read">Read</a>
     <a class="mobile-route-pill-v0-1 gold" href="#access">Access</a>
     <a class="mobile-route-pill-v0-1" href="#astromodule-surface-bridge">Details</a>
@@ -1276,6 +1420,45 @@
   </div>
 </nav>
 <!-- CRYPTO_ASTRO_MOBILE_ROUTE_LAYER_v0_1:END -->
+
+<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->
+<section id="btc-phi-cycle-hub" class="section surface-anchor btc-phi-cycle-hub-v0-1" aria-label="BTC Phi Cycle Hub public-safe bridge">
+  <div class="btc-phi-cycle-grid-v0-1">
+    <article class="btc-phi-cycle-lead-v0-1">
+      <p class="eyebrow">BTC φ-Cycle Hub</p>
+      <h2>BTC gravity · cycle context</h2>
+      <p>A public-safe bridge for reading Bitcoin as the primary market gravity inside the static Crypto-Astro field. It connects dominance, stablecoin membrane, timing context, Astrobarometer posture, and manual review route.</p>
+      <div class="btc-phi-cycle-metrics-v0-1" aria-label="BTC Phi Cycle Hub static metrics">
+        <div class="btc-phi-cycle-metric-v0-1"><span>BTC Gravity</span><strong>56.4%</strong></div>
+        <div class="btc-phi-cycle-metric-v0-1"><span>Stablecoin Membrane</span><strong>13.6%</strong></div>
+        <div class="btc-phi-cycle-metric-v0-1"><span>Field Score</span><strong>76 / 100</strong></div>
+        <div class="btc-phi-cycle-metric-v0-1"><span>Snapshot</span><strong>2026-07-10T13:08:34Z</strong></div>
+      </div>
+    </article>
+
+    <article class="btc-phi-cycle-map-v0-1" aria-label="BTC Phi Cycle context map">
+      <div class="btc-phi-cycle-orbit-v0-1" aria-hidden="true">
+        <div class="btc-phi-cycle-core-v0-1">BTC<br/>Gravity</div>
+        <div class="btc-phi-cycle-node-v0-1 one">Static market field</div>
+        <div class="btc-phi-cycle-node-v0-1 two">Cycle context</div>
+        <div class="btc-phi-cycle-node-v0-1 three">Manual review</div>
+        <div class="btc-phi-cycle-node-v0-1 four">Astrobarometer</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="btc-phi-cycle-lanes-v0-1" aria-label="BTC Phi Cycle public-safe lanes">
+    <div class="btc-phi-cycle-lane-v0-1"><span>Market gravity</span><strong>BTC dominance anchors the field.</strong></div>
+    <div class="btc-phi-cycle-lane-v0-1"><span>Cycle context</span><strong>Timing is observational and bounded.</strong></div>
+    <div class="btc-phi-cycle-lane-v0-1"><span>Proof posture</span><strong>Static snapshot with source trail.</strong></div>
+    <div class="btc-phi-cycle-lane-v0-1"><span>Route</span><strong>Operator-reviewed depth only.</strong></div>
+  </div>
+
+  <div class="btc-phi-cycle-boundary-v0-1">
+    Context only. No trading signal. No forecast. No price target. Not investment advice. No active adapter claim.
+  </div>
+</section>
+<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->
 
 <!-- CRYPTO_ASTRO_MARKET_FIELD_MODULE_v0_1:BEGIN -->
 <section id="market" class="section surface-anchor" aria-label="Crypto-Astro Market Field">
