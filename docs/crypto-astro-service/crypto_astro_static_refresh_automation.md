@@ -45,3 +45,92 @@ It is not a live adapter, backend service, API, payment system, trading signal, 
 - No forecast.
 - No price target.
 - No investment advice.
+
+---
+
+## v0.6.3 operating state · 2026-07-10
+
+### Verified state
+
+Node: `CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATION_V0_6_3_CLOSURE_SCOPE`
+
+Current verified public surface:
+
+- URL: `https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html`
+- Live timestamp: `2026-07-10T10:07:15Z`
+- Live boundary text: `No active adapter claim`
+- Live adapter label: `No live adapter`
+
+Repository anchor:
+
+- Repo: `AiBhrigu/phi-cosmography-open`
+- PR #85: `Crypto-Astro: automated static market snapshot refresh`
+- Merge commit: `14c3fda42ba7011d4bd197d34709f6efcac9b33e`
+- Manual workflow run: `29085295397`
+- Required check run after operator retrigger: `29086075402`
+
+### Current operating procedure
+
+1. Operator manually starts GitHub Action:
+   `Crypto-Astro Static Refresh Manual`.
+
+2. Workflow performs the static refresh only:
+   - fetch public market sources
+   - update static JSON / proof JSON / bindings
+   - update Crypto-Astro static HTML values
+   - update operator summary/review docs
+   - create an automation branch
+   - open a review PR
+
+3. Operator reviews the auto-created PR.
+
+4. Expected changed files are limited to:
+
+   - `site/crypto-astro/index.html`
+   - `site/crypto-astro/data/crypto_astro_snapshot.public.json`
+   - `site/crypto-astro/data/crypto_astro_snapshot_proof.public.json`
+   - `site/crypto-astro/data/crypto_astro_module_bindings.public.json`
+   - `site/crypto-astro/data/market_field_snapshot.public.v0_1.json`
+   - `site/crypto-astro/data/scoring_snapshot.public.json`
+   - `docs/crypto-astro-service/crypto_astro_operator_review.md`
+   - `docs/crypto-astro-service/crypto_astro_snapshot_summary.md`
+
+5. If required checks do not complete because the PR was created by `github-actions[bot]`, operator may push an empty commit to the same automation branch to retrigger the validator.
+
+6. Merge is manual only.
+
+### Boundary
+
+The workflow does not:
+
+- enable scheduled cron
+- auto-merge PRs
+- deploy by command
+- activate backend/API/payment
+- publish trading signals
+- publish forecasts
+- publish price targets
+- provide investment advice
+
+### CoinGecko API posture
+
+Current route remains static public refresh without a paid API key.
+
+Source anchors:
+
+- CoinGecko API docs: `https://docs.coingecko.com/`
+- CoinGecko API pricing: `https://www.coingecko.com/en/api/pricing`
+
+Observed future options:
+
+- Demo/keyless public API for prototype/static refresh
+- Basic/Analyst/Lite paid plans for higher call credits, rate limits, historical data, REST/WebSocket/Webhook access
+- Enterprise only if custom limits/SLA are required
+
+Decision:
+
+- Do not add CoinGecko paid API key in v0.6.3.
+- Do not add secrets in v0.6.3.
+- Do not open WebSocket/Webhook integration in v0.6.3.
+- Open a separate bounded source-and-secret review before any paid/API-key route.
+
