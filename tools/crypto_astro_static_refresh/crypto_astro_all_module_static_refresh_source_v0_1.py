@@ -43,6 +43,8 @@ ASSET_IDS = {
 }
 STABLE_SYMBOLS = {"usdt","usdc","dai","usde","usds","fdusd","pyusd","tusd","usdd","usdb","frax","lusd","crvusd","usdp"}
 
+COINGECKO_DEMO_API_KEY = os.environ.get("COINGECKO_DEMO_API_KEY", "").strip()
+
 def now_iso():
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00","Z")
 
@@ -60,7 +62,10 @@ def run(cmd, cwd, check=True):
     return p.stdout.strip()
 
 def fetch_json(url, timeout=25):
-    req = urllib.request.Request(url, headers={"User-Agent":"ORION-CryptoAstro-StaticSnapshot/0.1"})
+    headers = {"User-Agent":"ORION-CryptoAstro-StaticSnapshot/0.1"}
+    if COINGECKO_DEMO_API_KEY and "api.coingecko.com" in url:
+        headers["x-cg-demo-api-key"] = COINGECKO_DEMO_API_KEY
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 

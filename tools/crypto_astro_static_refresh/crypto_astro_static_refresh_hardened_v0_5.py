@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 
 NODE = "CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATED_RUNNER_v0_5"
 PRIMARY_RUNNER_DEFAULT = Path(os.environ.get('CRYPTO_ASTRO_PRIMARY_RUNNER', str(Path(__file__).resolve().parent / 'crypto_astro_all_module_static_refresh_source_v0_1.py')))
-EXPECTED_PRIMARY_SHA256 = "c60f653235c113f52a8662491dee96b552f03fc17e4a305561251682e4c75e01"
+EXPECTED_PRIMARY_SHA256 = "60173876e69a30aaeace38f31ae9968f34008ed79bf39ef5cf275b5d75b99a6e"
 OLD_BRANCH = 'feature/crypto-astro-all-module-static-refresh-v0-1'
 NEW_BRANCH = os.environ.get('CRYPTO_ASTRO_REFRESH_BRANCH', 'automation/crypto-astro-static-refresh-manual-v0-5')
 BASE_BRANCH = 'main'
