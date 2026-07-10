@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CRYPTO_ASTRO_REFRESH_BRANCH: automation/crypto-astro-static-refresh-${{ github.run_id }}
-      CRYPTO_ASTRO_REFRESH_OUT: ${{ runner.temp }}/crypto_astro_static_refresh_output
+      CRYPTO_ASTRO_REFRESH_OUT: /tmp/crypto_astro_static_refresh_output
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,9 +32,9 @@ jobs:
 
       - name: Run hardened static refresh
         run: |
-          python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
-            "$GITHUB_WORKSPACE" \
-            "$CRYPTO_ASTRO_REFRESH_OUT"
+          rm -rf "$CRYPTO_ASTRO_REFRESH_OUT"
+          mkdir -p "$CRYPTO_ASTRO_REFRESH_OUT"
+          python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py             "$GITHUB_WORKSPACE"             "$CRYPTO_ASTRO_REFRESH_OUT"
 
       - name: Detect changes
         id: changes
@@ -51,16 +51,7 @@ jobs:
       - name: Commit and push refresh branch
         if: steps.changes.outputs.changed == 'true'
         run: |
-          git add \
-            site/crypto-astro/index.html \
-            site/crypto-astro/data/crypto_astro_snapshot.public.json \
-            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
-            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
-            site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json \
-            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
-            site/crypto-astro/data/scoring_snapshot.public.json \
-            docs/crypto-astro-service/crypto_astro_snapshot_summary.md \
-            docs/crypto-astro-service/crypto_astro_operator_review.md
+          git add             site/crypto-astro/index.html             site/crypto-astro/data/crypto_astro_snapshot.public.json             site/crypto-astro/data/crypto_astro_snapshot_proof.public.json             site/crypto-astro/data/crypto_astro_module_bindings.public.json             site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json             site/crypto-astro/data/market_field_snapshot.public.v0_1.json             site/crypto-astro/data/scoring_snapshot.public.json             docs/crypto-astro-service/crypto_astro_snapshot_summary.md             docs/crypto-astro-service/crypto_astro_operator_review.md
           git commit -m "Crypto-Astro: automated static market snapshot refresh"
           git push -u origin "$CRYPTO_ASTRO_REFRESH_BRANCH"
 
@@ -92,13 +83,9 @@ jobs:
           Review gate:
           - this workflow opens a PR only
           - no auto-merge
-          - no scheduled cron in v0.6
+          - no scheduled cron in v0.6.2
           BODY
-          gh pr create \
-            --base main \
-            --head "$CRYPTO_ASTRO_REFRESH_BRANCH" \
-            --title "Crypto-Astro: automated static market snapshot refresh" \
-            --body-file /tmp/crypto_astro_refresh_pr_body.md
+          gh pr create             --base main             --head "$CRYPTO_ASTRO_REFRESH_BRANCH"             --title "Crypto-Astro: automated static market snapshot refresh"             --body-file /tmp/crypto_astro_refresh_pr_body.md
 
       - name: Upload refresh report artifact
         if: always()
