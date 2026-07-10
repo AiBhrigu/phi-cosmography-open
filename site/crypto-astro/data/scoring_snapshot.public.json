@@ -1,101 +1,132 @@
 {
   "schema_version": "crypto_astro_scoring_snapshot_public_v0_2",
-  "generated_at_utc": "2026-06-28T06:46:58Z",
-  "source_label": "ORION scoring snapshot · public-safe market context",
-  "source_mode": "static_public_artifact",
-  "coverage": 3,
-  "heartbeat_sec": 300,
-  "assets": [
-    {
+  "generated_at_utc": "2026-07-10T06:40:44Z",
+  "source_label": "Static public JSON · derived from canonical Crypto-Astro snapshot",
+  "source_mode": "static_public_snapshot",
+  "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+  "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
+  "coverage": {
+    "assets": [
+      "BTC",
+      "ETH",
+      "ICP",
+      "SOL",
+      "TON"
+    ],
+    "sample_count": 5,
+    "A_lane": "calibration_pending",
+    "E_lane": "calibration_pending",
+    "M_lane": "market_context_active"
+  },
+  "heartbeat_sec": null,
+  "assets": {
+    "BTC": {
+      "id": "bitcoin",
       "symbol": "BTC",
       "label": "Bitcoin",
-      "price_usd": 59896,
-      "market_24h_change_pct": -0.6970395771443619,
-      "A": 0.0,
-      "E": 0.0,
-      "M": 0.0697,
-      "phi_balance": 0.0,
-      "phi_resonance": 0.0,
-      "sem_phase": {
-        "w1": 0.0,
-        "w3": 0.0,
-        "w7": 0.0
-      },
-      "state_label": "calibration",
-      "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe market context. Not a forecast or trading signal.",
+      "price_usd": 63868,
+      "market_cap_rank": 1,
+      "market_24h_change_pct": 1.7555761757650519,
+      "market_7d_change_pct": 4.034580738761442,
+      "market_30d_change_pct": 4.183560012255446,
+      "M": 0.1756,
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
       "M_state": "market_context_active",
       "visible_state_label": "Market context active · A/E pending",
-      "market_context_label": "low_movement"
+      "market_context_label": "low_movement",
+      "score": 63.99
     },
-    {
+    "ETH": {
+      "id": "ethereum",
       "symbol": "ETH",
       "label": "Ethereum",
-      "price_usd": 1565.63,
-      "market_24h_change_pct": -0.9476024062526509,
-      "A": 0.0,
-      "E": 0.0,
-      "M": 0.0948,
-      "phi_balance": 0.0,
-      "phi_resonance": 0.0,
-      "sem_phase": {
-        "w1": 0.0,
-        "w3": 0.0,
-        "w7": 0.0
-      },
-      "state_label": "calibration",
-      "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe market context. Not a forecast or trading signal.",
+      "price_usd": 1770.71,
+      "market_cap_rank": 2,
+      "market_24h_change_pct": 1.0242003617985258,
+      "market_7d_change_pct": 3.3322597542806127,
+      "market_30d_change_pct": 8.825054833584291,
+      "M": 0.1024,
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
       "M_state": "market_context_active",
       "visible_state_label": "Market context active · A/E pending",
-      "market_context_label": "low_movement"
+      "market_context_label": "low_movement",
+      "score": 63.86
     },
-    {
+    "SOL": {
+      "id": "solana",
       "symbol": "SOL",
       "label": "Solana",
-      "price_usd": 70.39,
-      "market_24h_change_pct": -2.3507596789583634,
-      "A": 0.0,
-      "E": 0.0,
-      "M": 0.2351,
-      "phi_balance": 0.0,
-      "phi_resonance": 0.0,
-      "sem_phase": {
-        "w1": 0.0,
-        "w3": 0.0,
-        "w7": 0.0
-      },
-      "state_label": "calibration",
-      "signal_state": "market_active_search_social_pending",
-      "notes": "Public-safe market context. Not a forecast or trading signal.",
+      "price_usd": 78.92,
+      "market_cap_rank": 7,
+      "market_24h_change_pct": 0.7294060747112815,
+      "market_7d_change_pct": -1.933305035751513,
+      "market_30d_change_pct": 23.250921124593315,
+      "M": 0.0729,
       "A_state": "calibration_pending",
       "E_state": "calibration_pending",
       "M_state": "market_context_active",
       "visible_state_label": "Market context active · A/E pending",
-      "market_context_label": "active_movement"
+      "market_context_label": "low_movement",
+      "score": 64.07
+    },
+    "TON": {
+      "id": "the-open-network",
+      "symbol": "TON",
+      "label": "Gram (prev. Toncoin)",
+      "price_usd": 1.67,
+      "market_cap_rank": 24,
+      "market_24h_change_pct": 5.291059064269028,
+      "market_7d_change_pct": 2.4925830515325287,
+      "market_30d_change_pct": 0.6708974500926587,
+      "M": 0.5291,
+      "A_state": "calibration_pending",
+      "E_state": "calibration_pending",
+      "M_state": "market_context_active",
+      "visible_state_label": "Market context active · A/E pending",
+      "market_context_label": "active_movement",
+      "score": 63.91
+    },
+    "ICP": {
+      "id": "internet-computer",
+      "symbol": "ICP",
+      "label": "Internet Computer",
+      "price_usd": 2.31,
+      "market_cap_rank": 60,
+      "market_24h_change_pct": 3.2520819887684724,
+      "market_7d_change_pct": 4.634576715462267,
+      "market_30d_change_pct": 2.2999973151524236,
+      "M": 0.3252,
+      "A_state": "calibration_pending",
+      "E_state": "calibration_pending",
+      "M_state": "market_context_active",
+      "visible_state_label": "Market context active · A/E pending",
+      "market_context_label": "active_movement",
+      "score": 58.71
     }
-  ],
+  },
   "boundary": {
+    "read_only": true,
+    "static_public_snapshot": true,
+    "no_live_adapter_claim": true,
+    "no_true_live_feed_claim": true,
     "no_trading_signal": true,
+    "no_forecast": true,
     "no_price_target": true,
     "no_investment_recommendation": true,
     "backend_api_closed": true,
-    "orion_core_protected": true,
-    "no_forecast": true,
     "runtime_closed": true,
-    "no_live_search_adapter_claim": true,
-    "no_live_social_adapter_claim": true
+    "payment_closed": true,
+    "orion_core_protected": true,
+    "formula_weights_exposed": false
   },
   "public_copy": {
-    "state_line": "Static JSON v0.2 · Market context active · A/E pending.",
-    "source_line": "Source: Static public JSON · CoinGecko read-only market context · no live search/social adapter claim."
+    "state": "Static public scoring snapshot derived from canonical Crypto-Astro snapshot.",
+    "boundary": "No trading signal. No forecast. No price target. Not investment advice."
   },
-  "market_source": "CoinGecko",
-  "market_source_mode": "read_only_adapter_or_manual_static_snapshot",
-  "market_generated_at_utc": "2026-06-28T06:46:58Z",
-  "public_state_label": "market_context_active_a_e_pending"
+  "market_source": "CoinGecko + reviewed DeFi/TVL sources where available",
+  "market_source_mode": "static_public_snapshot",
+  "market_generated_at_utc": "2026-07-10T06:40:44Z",
+  "public_state_label": "Static public context · A/E pending · M active"
 }

@@ -1,8 +1,10 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-06-29T00:00:00Z",
+  "updated_at_utc": "2026-07-10T06:40:44Z",
   "source_mode": "static_public_snapshot",
+  "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+  "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
   "vectors": {
     "A_attention": {
       "state": "prepared_pending_calibration",
@@ -25,16 +27,16 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2144000000000,
-      "market_cap_change_24h_pct": 0.5,
-      "volume_24h_usd": 81830000000,
-      "btc_dominance_pct": 55.5,
-      "stablecoin_share_pct": 14.4,
-      "stablecoin_cap_usd": 309000000000,
-      "defi_tvl_usd": null,
-      "dex_volume_24h_usd": null,
-      "market_breadth_pct": null,
-      "liquidity_health": "calibration_pending"
+      "total_market_cap_usd": 2274447740723.2866,
+      "market_cap_change_24h_pct": 1.1980437774153043,
+      "volume_24h_usd": 64556975654.31449,
+      "btc_dominance_pct": 56.32839292948599,
+      "stablecoin_share_pct": 13.658566678352324,
+      "stablecoin_cap_usd": 310656961230.9681,
+      "defi_tvl_usd": 479973506862.36725,
+      "dex_volume_24h_usd": 6813211481,
+      "market_breadth_pct": 59.2,
+      "liquidity_health": "context fresh"
     },
     "CT_temporal": {
       "state": "bounded_validated",
@@ -48,34 +50,39 @@
     }
   },
   "field_output": {
-    "market_field_score": 63,
+    "market_field_score": 75.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
-    "continuation_label": "Base continuation",
-    "confidence_label": "moderate"
+    "continuation_label": "Scenario-only continuation map",
+    "confidence_label": "static public context"
   },
   "probability_continuation": {
-    "base_path_pct": 62,
-    "expansion_path_pct": 24,
-    "compression_reversal_pct": 14,
+    "base_path_pct": 61,
+    "expansion_path_pct": 26,
+    "compression_reversal_pct": 13,
     "window_label": "7D",
-    "boundary": "Scenario continuation only. Not a price forecast."
+    "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },
   "cosmographer_read": {
     "state": "Balanced Expansion",
     "meaning": "M-vector is active while A/E lanes remain prepared for calibration.",
     "direction": "Watch liquidity depth, stablecoin flow, and future attention / engagement confirmation.",
-    "key_watch": "If attention rises without liquidity depth, noise risk increases."
+    "key_watch": "If attention rises without liquidity depth, noise risk increases.",
+    "boundary": "Scenario-only context. Not a price forecast. Not a trading signal."
   },
   "boundary": {
     "read_only": true,
-    "no_live_search_adapter_claim": true,
-    "no_live_social_adapter_claim": true,
+    "static_public_snapshot": true,
+    "no_live_adapter_claim": true,
+    "no_true_live_feed_claim": true,
     "no_trading_signal": true,
     "no_forecast": true,
     "no_price_target": true,
     "no_investment_recommendation": true,
-    "formula_weights_exposed": false,
-    "orion_core_protected": true
+    "backend_api_closed": true,
+    "runtime_closed": true,
+    "payment_closed": true,
+    "orion_core_protected": true,
+    "formula_weights_exposed": false
   }
 }
