@@ -18,6 +18,7 @@ jobs:
     env:
       CRYPTO_ASTRO_REFRESH_BRANCH: automation/crypto-astro-static-refresh-${{ github.run_id }}
       CRYPTO_ASTRO_REFRESH_OUT: /tmp/crypto_astro_static_refresh_output
+      COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

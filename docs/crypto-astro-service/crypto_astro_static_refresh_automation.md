@@ -134,3 +134,30 @@ Decision:
 - Do not open WebSocket/Webhook integration in v0.6.3.
 - Open a separate bounded source-and-secret review before any paid/API-key route.
 
+---
+
+## v0.6.5 CoinGecko Demo API key route
+
+Status: prepared for manual workflow testing.
+
+Secret:
+
+- Repository secret: `COINGECKO_DEMO_API_KEY`
+- Secret value is not stored in repository files.
+- CoinGecko requests use header auth: `x-cg-demo-api-key`.
+- Query-string key usage is not used.
+
+Boundary:
+
+- No scheduled cron in v0.6.5.
+- No auto-merge.
+- No backend/API/payment activation.
+- No trading signal, forecast, price target, or investment advice.
+
+Next validation:
+
+1. Run manual workflow dispatch.
+2. Confirm source statuses PASS.
+3. Confirm auto PR creation.
+4. Review PR manually before merge.
+
