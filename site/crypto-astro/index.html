@@ -1369,6 +1369,158 @@
   .btc-phi-cycle-hub-v0-1::before { position: static; display: block; margin-bottom: 0.8rem; }
   .btc-phi-cycle-node-v0-1 { width: 7.4rem; font-size: 0.72rem; }
 }
+/* BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:BEGIN */
+.btc-aspect-cycle-method-bridge-v0-1 {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.05rem;
+  border: 1px solid rgba(245, 199, 106, 0.28);
+  border-radius: 28px;
+  padding: clamp(1rem, 2.6vw, 1.55rem);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(245, 199, 106, 0.22), transparent 30%),
+    radial-gradient(circle at 90% 12%, rgba(91, 157, 255, 0.2), transparent 32%),
+    linear-gradient(135deg, rgba(245, 199, 106, 0.075), rgba(91, 157, 255, 0.075));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.055), 0 22px 70px rgba(0,0,0,0.28);
+}
+.btc-aspect-cycle-aurora-v0-1 {
+  position: absolute;
+  inset: -45% -18% auto auto;
+  width: 30rem;
+  height: 30rem;
+  border-radius: 50%;
+  background: conic-gradient(from 120deg, rgba(245,199,106,0), rgba(245,199,106,0.28), rgba(91,157,255,0.22), rgba(245,199,106,0));
+  filter: blur(22px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.btc-aspect-cycle-method-head-v0-1 {
+  position: relative;
+  display: grid;
+  gap: 0.28rem;
+  max-width: 56rem;
+  margin-bottom: 1rem;
+}
+.btc-aspect-cycle-method-head-v0-1 span,
+.btc-aspect-cycle-method-grid-v0-1 span,
+.btc-aspect-cycle-satellite-v0-1 span {
+  display: block;
+  color: rgba(245, 199, 106, 0.82);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.btc-aspect-cycle-method-head-v0-1 strong {
+  color: rgba(255, 255, 255, 0.98);
+  font-size: clamp(1.55rem, 4vw, 2.65rem);
+  line-height: 1;
+}
+.btc-aspect-cycle-method-head-v0-1 p {
+  margin: 0;
+  color: rgba(231,238,255,0.8);
+  max-width: 48rem;
+}
+.btc-aspect-cycle-constellation-v0-1 {
+  position: relative;
+  min-height: 22rem;
+  margin: 0.85rem 0 1rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(245,199,106,0.16), transparent 13%),
+    radial-gradient(circle at 50% 50%, rgba(91,157,255,0.10), transparent 42%),
+    rgba(0,0,0,0.14);
+}
+.btc-aspect-cycle-core-node-v0-1 {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8.4rem;
+  height: 8.4rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(245,199,106,0.98), rgba(255,255,255,0.76));
+  color: #10131f;
+  box-shadow: 0 0 42px rgba(245,199,106,0.48), 0 0 120px rgba(91,157,255,0.18);
+}
+.btc-aspect-cycle-core-node-v0-1 span { font-size: 1.35rem; font-weight: 900; letter-spacing: 0.08em; }
+.btc-aspect-cycle-core-node-v0-1 strong { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.14em; }
+.btc-aspect-cycle-ring-v0-1 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(245,199,106,0.22);
+  pointer-events: none;
+}
+.btc-aspect-cycle-ring-v0-1.ring-one { width: min(22rem, 72%); aspect-ratio: 1; }
+.btc-aspect-cycle-ring-v0-1.ring-two { width: min(30rem, 92%); aspect-ratio: 1; border-color: rgba(91,157,255,0.18); }
+.btc-aspect-cycle-ray-v0-1 {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: min(33rem, 84%);
+  height: 1px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(245,199,106,0.42), transparent);
+}
+.btc-aspect-cycle-ray-v0-1.r1 { transform: rotate(0deg); }
+.btc-aspect-cycle-ray-v0-1.r2 { transform: rotate(60deg); }
+.btc-aspect-cycle-ray-v0-1.r3 { transform: rotate(120deg); }
+.btc-aspect-cycle-ray-v0-1.r4 { transform: rotate(180deg); }
+.btc-aspect-cycle-satellite-v0-1 {
+  position: absolute;
+  z-index: 2;
+  width: min(14rem, 38%);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 18px;
+  padding: 0.76rem;
+  background: rgba(6,10,23,0.78);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+.btc-aspect-cycle-satellite-v0-1 strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(255,255,255,0.95);
+}
+.btc-aspect-cycle-satellite-v0-1.s1 { top: 9%; left: 9%; }
+.btc-aspect-cycle-satellite-v0-1.s2 { top: 9%; right: 9%; }
+.btc-aspect-cycle-satellite-v0-1.s3 { bottom: 9%; left: 9%; }
+.btc-aspect-cycle-satellite-v0-1.s4 { bottom: 9%; right: 9%; }
+.btc-aspect-cycle-method-grid-v0-1 {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+.btc-aspect-cycle-method-grid-v0-1 div {
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 18px;
+  padding: 0.84rem;
+  background: rgba(0, 0, 0, 0.16);
+}
+.btc-aspect-cycle-method-grid-v0-1 strong {
+  display: block;
+  color: rgba(236, 242, 255, 0.94);
+  margin-top: 0.24rem;
+  font-size: 0.88rem;
+}
+@media (max-width: 860px) {
+  .btc-aspect-cycle-method-grid-v0-1 { grid-template-columns: 1fr; }
+  .btc-aspect-cycle-constellation-v0-1 { min-height: auto; display: grid; gap: 0.7rem; padding: 1rem; }
+  .btc-aspect-cycle-core-node-v0-1,
+  .btc-aspect-cycle-satellite-v0-1 { position: relative; left: auto; right: auto; top: auto; bottom: auto; transform: none; width: auto; height: auto; border-radius: 18px; }
+  .btc-aspect-cycle-ring-v0-1,
+  .btc-aspect-cycle-ray-v0-1 { display: none; }
+}
+/* BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:END */
 /* BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END */
 
 </style>
@@ -1453,7 +1605,42 @@
     <div class="btc-phi-cycle-lane-v0-1"><span>Proof posture</span><strong>Static snapshot with source trail.</strong></div>
     <div class="btc-phi-cycle-lane-v0-1"><span>Route</span><strong>Operator-reviewed depth only.</strong></div>
   </div>
+<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:BEGIN -->
+  <div class="btc-aspect-cycle-method-bridge-v0-1" aria-label="BTC Aspect-Cycle protected method stack">
+    <div class="btc-aspect-cycle-aurora-v0-1" aria-hidden="true"></div>
+    <div class="btc-aspect-cycle-method-head-v0-1">
+      <span>Protected method stack</span>
+      <strong>Aspect-Cycle Core</strong>
+      <p>Planetary aspects, Semenko phase scoring, crypto-events overlay, and BTC gravity are organized as one private operator-reviewed research stack.</p>
+    </div>
 
+    <div class="btc-aspect-cycle-constellation-v0-1" aria-label="BTC Aspect-Cycle method constellation">
+      <div class="btc-aspect-cycle-core-node-v0-1">
+        <span>BTC</span>
+        <strong>Gravity</strong>
+      </div>
+      <div class="btc-aspect-cycle-ring-v0-1 ring-one"></div>
+      <div class="btc-aspect-cycle-ring-v0-1 ring-two"></div>
+      <div class="btc-aspect-cycle-ray-v0-1 r1"></div>
+      <div class="btc-aspect-cycle-ray-v0-1 r2"></div>
+      <div class="btc-aspect-cycle-ray-v0-1 r3"></div>
+      <div class="btc-aspect-cycle-ray-v0-1 r4"></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s1"><span>Aspect density</span><strong>hits · pressure</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s2"><span>Semenko phase</span><strong>pairs · weights</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s3"><span>Crypto-events</span><strong>history · overlay</strong></div>
+      <div class="btc-aspect-cycle-satellite-v0-1 s4"><span>Scenario corridor</span><strong>timing · review</strong></div>
+    </div>
+
+    <div class="btc-aspect-cycle-method-grid-v0-1">
+      <div><span>Aspect density</span><strong>Planetary aspect hits and pressure map.</strong></div>
+      <div><span>Semenko phase</span><strong>Weighted pair scoring and ranked hits.</strong></div>
+      <div><span>Crypto-events</span><strong>Historical overlay for pattern comparison.</strong></div>
+      <div><span>BTC gravity</span><strong>Market-field context and confirmation layer.</strong></div>
+      <div><span>Scenario corridor</span><strong>Private timing context with invalidation notes.</strong></div>
+      <div><span>Operator review</span><strong>Human review before private delivery.</strong></div>
+    </div>
+  </div>
+<!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_MICRO_BRIDGE_v0_1_2:END -->
   <div class="btc-phi-cycle-boundary-v0-1">
     Context only. No trading signal. No forecast. No price target. Not investment advice. No active adapter claim.
   </div>
