@@ -1,16 +1,16 @@
 {
   "schema_version": "crypto_astro_snapshot_public_v0_1",
-  "generated_at_utc": "2026-07-10T06:40:44Z",
+  "generated_at_utc": "2026-07-10T08:00:11Z",
   "source_mode": "static_public_snapshot",
   "freshness_status": "FRESH",
   "market_reality": {
-    "total_market_cap_usd": 2274447740723.2866,
-    "volume_24h_usd": 64556975654.31449,
-    "market_cap_change_24h_pct": 1.1980437774153043,
-    "btc_dominance_pct": 56.32839292948599,
-    "eth_dominance_pct": 9.395310029054388,
-    "stablecoin_cap_usd": 310656961230.9681,
-    "stablecoin_share_pct": 13.658566678352324
+    "total_market_cap_usd": 2275033563401.1533,
+    "volume_24h_usd": 63756033406.91071,
+    "market_cap_change_24h_pct": 1.1590919994907658,
+    "btc_dominance_pct": 56.362197895167085,
+    "eth_dominance_pct": 9.397325243474505,
+    "stablecoin_cap_usd": 310626943265.591,
+    "stablecoin_share_pct": 13.65373013667573
   },
   "field_output": {
     "market_field_score": 75.0,
@@ -27,18 +27,18 @@
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },
   "liquidity_tvl": {
-    "stablecoin_cap_usd": 310656961230.9681,
-    "defi_tvl_usd": 479973506862.36725,
+    "stablecoin_cap_usd": 310626943265.591,
+    "defi_tvl_usd": 480025813782.3754,
     "dex_volume_24h_usd": 6813211481,
     "liquidity_context_state": "context fresh",
     "calibration_state": "context_only"
   },
   "altcoin_rotation": {
     "universe": "non-stable top-250 crypto assets",
-    "alt_breadth_24h_pct": 59.2,
-    "alt_breadth_7d_pct": 55.9,
-    "eth_rotation_anchor_pct": 9.395310029054388,
-    "top_10_flow_concentration_pct": 60.9
+    "alt_breadth_24h_pct": 58.8,
+    "alt_breadth_7d_pct": 49.6,
+    "eth_rotation_anchor_pct": 9.397325243474505,
+    "top_10_flow_concentration_pct": 60.8
   },
   "public_samples": {
     "assets": {
@@ -46,69 +46,69 @@
         "id": "bitcoin",
         "symbol": "BTC",
         "label": "Bitcoin",
-        "price_usd": 63868,
+        "price_usd": 63951,
         "market_cap_rank": 1,
-        "market_24h_change_pct": 1.7555761757650519,
-        "market_7d_change_pct": 4.034580738761442,
-        "market_30d_change_pct": 4.183560012255446,
-        "M": 0.1756,
+        "market_24h_change_pct": 1.6261703232744336,
+        "market_7d_change_pct": 3.7614035892913162,
+        "market_30d_change_pct": 4.111240481636261,
+        "M": 0.1626,
         "A_state": "calibration_pending",
         "E_state": "calibration_pending",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · A/E pending",
         "market_context_label": "low_movement",
-        "score": 63.99
+        "score": 63.82
       },
       "ETH": {
         "id": "ethereum",
         "symbol": "ETH",
         "label": "Ethereum",
-        "price_usd": 1770.71,
+        "price_usd": 1771.95,
         "market_cap_rank": 2,
-        "market_24h_change_pct": 1.0242003617985258,
-        "market_7d_change_pct": 3.3322597542806127,
-        "market_30d_change_pct": 8.825054833584291,
-        "M": 0.1024,
+        "market_24h_change_pct": 1.1476355505685156,
+        "market_7d_change_pct": 3.4048071713455386,
+        "market_30d_change_pct": 8.648005820231646,
+        "M": 0.1148,
         "A_state": "calibration_pending",
         "E_state": "calibration_pending",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · A/E pending",
         "market_context_label": "low_movement",
-        "score": 63.86
+        "score": 63.94
       },
       "SOL": {
         "id": "solana",
         "symbol": "SOL",
         "label": "Solana",
-        "price_usd": 78.92,
+        "price_usd": 78.78,
         "market_cap_rank": 7,
-        "market_24h_change_pct": 0.7294060747112815,
-        "market_7d_change_pct": -1.933305035751513,
-        "market_30d_change_pct": 23.250921124593315,
-        "M": 0.0729,
+        "market_24h_change_pct": 0.8025091208059507,
+        "market_7d_change_pct": -2.83386182568486,
+        "market_30d_change_pct": 22.694315162593153,
+        "M": 0.0803,
         "A_state": "calibration_pending",
         "E_state": "calibration_pending",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · A/E pending",
         "market_context_label": "low_movement",
-        "score": 64.07
+        "score": 63.83
       },
       "TON": {
         "id": "the-open-network",
         "symbol": "TON",
         "label": "Gram (prev. Toncoin)",
-        "price_usd": 1.67,
+        "price_usd": 1.68,
         "market_cap_rank": 24,
-        "market_24h_change_pct": 5.291059064269028,
-        "market_7d_change_pct": 2.4925830515325287,
-        "market_30d_change_pct": 0.6708974500926587,
-        "M": 0.5291,
+        "market_24h_change_pct": 5.544784543076496,
+        "market_7d_change_pct": 1.6785697682786327,
+        "market_30d_change_pct": 0.9807095282822214,
+        "M": 0.5545,
         "A_state": "calibration_pending",
         "E_state": "calibration_pending",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · A/E pending",
         "market_context_label": "active_movement",
-        "score": 63.91
+        "score": 63.92
       },
       "ICP": {
         "id": "internet-computer",
@@ -116,16 +116,16 @@
         "label": "Internet Computer",
         "price_usd": 2.31,
         "market_cap_rank": 60,
-        "market_24h_change_pct": 3.2520819887684724,
-        "market_7d_change_pct": 4.634576715462267,
-        "market_30d_change_pct": 2.2999973151524236,
-        "M": 0.3252,
+        "market_24h_change_pct": 2.972082334024714,
+        "market_7d_change_pct": 4.763997686617492,
+        "market_30d_change_pct": 2.501849746395618,
+        "M": 0.2972,
         "A_state": "calibration_pending",
         "E_state": "calibration_pending",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · A/E pending",
         "market_context_label": "active_movement",
-        "score": 58.71
+        "score": 58.57
       }
     }
   },
