@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-07-10T13:08:34Z",
+  "updated_at_utc": "2026-07-12T22:05:46Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -27,15 +27,15 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2284722397437.269,
-      "market_cap_change_24h_pct": 1.6315700501362587,
-      "volume_24h_usd": 62235769658.43677,
-      "btc_dominance_pct": 56.392220787412086,
-      "stablecoin_share_pct": 13.586631866050853,
-      "stablecoin_cap_usd": 310416821301.013,
-      "defi_tvl_usd": 482478635642.6197,
-      "dex_volume_24h_usd": 6777099617,
-      "market_breadth_pct": 65.1,
+      "total_market_cap_usd": 2277899133239.1006,
+      "market_cap_change_24h_pct": -0.43613500670648214,
+      "volume_24h_usd": 45010057924.04504,
+      "btc_dominance_pct": 56.21621132126818,
+      "stablecoin_share_pct": 13.683691685333388,
+      "stablecoin_cap_usd": 311700694295.3201,
+      "defi_tvl_usd": 483272549277.112,
+      "dex_volume_24h_usd": 5425506417,
+      "market_breadth_pct": 26.5,
       "liquidity_health": "context fresh"
     },
     "CT_temporal": {
@@ -50,16 +50,16 @@
     }
   },
   "field_output": {
-    "market_field_score": 76.0,
+    "market_field_score": 60.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",
     "confidence_label": "static public context"
   },
   "probability_continuation": {
-    "base_path_pct": 61,
-    "expansion_path_pct": 27,
-    "compression_reversal_pct": 12,
+    "base_path_pct": 63,
+    "expansion_path_pct": 23,
+    "compression_reversal_pct": 14,
     "window_label": "7D",
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },

@@ -220,6 +220,27 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     html = replace_metric_card(html, 'Market Cap', vals['market_cap'], counts)
     html = replace_metric_card(html, '24h Volume', vals['volume'], counts)
     html = replace_metric_card(html, 'BTC Dominance', vals['btc_dom'], counts)
+    # CRYPTO_ASTRO_V10_BTC_HUB_BINDING_MICROPATCH_v0_1
+    html = replace_counted(
+        html,
+        r'(<div class="btc-phi-cycle-metric-v0-1"><span>BTC Gravity</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+        'btc_hub:gravity',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="btc-phi-cycle-metric-v0-1"><span>Snapshot</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{generated_at}{m.group(2)}",
+        'btc_hub:snapshot',
+        counts,
+    )
+    for required_binding in ('btc_hub:gravity', 'btc_hub:snapshot'):
+        if counts.get(required_binding) != 1:
+            raise RuntimeError(
+                f"BTC Hub binding count mismatch: "
+                f"{required_binding}={counts.get(required_binding, 0)}"
+            )
     html = replace_metric_card(html, 'Stablecoin Share', vals['stable_share'], counts)
     html = replace_metric_card(html, 'Alt Breadth 24h', vals['alt24'], counts)
     html = replace_metric_card(html, 'Alt Breadth 7d', vals['alt7'], counts)
