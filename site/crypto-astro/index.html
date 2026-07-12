@@ -2458,6 +2458,157 @@
   }
 }
 /* BTC_PHI_CYCLE_HUB_QUIET_PHI_MODULE_v0_3:END */
+
+/* CRYPTO_ASTRO_PHI_FIELD_WAVE_PATCH_1_v0_1_2:BEGIN */
+.btc-phi-cycle-metrics-focused-v0-1 {
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+}
+.btc-phi-cycle-market-transition-v0-1 {
+  display: grid;
+  gap: 0.16rem;
+  margin-top: 0.76rem;
+  padding: 0.72rem 0.84rem;
+  border-top: 1px solid rgba(245,199,106,0.16);
+  color: rgba(226,233,255,0.74);
+  text-decoration: none;
+}
+.btc-phi-cycle-market-transition-v0-1 span {
+  color: rgba(245,199,106,0.90);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.btc-phi-cycle-market-transition-v0-1 strong {
+  font-size: 0.82rem;
+  line-height: 1.42;
+  font-weight: 650;
+}
+.btc-aspect-cycle-method-depth-v0-1 {
+  margin-top: 0.74rem;
+  border-top: 1px solid rgba(255,255,255,0.09);
+}
+.btc-aspect-cycle-method-depth-v0-1 > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.72rem 0.12rem 0.54rem;
+  cursor: pointer;
+  list-style: none;
+}
+.btc-aspect-cycle-method-depth-v0-1 > summary::-webkit-details-marker { display: none; }
+.btc-aspect-cycle-method-depth-v0-1 > summary span {
+  color: rgba(245,199,106,0.84);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.btc-aspect-cycle-method-depth-v0-1 > summary strong {
+  color: rgba(226,233,255,0.72);
+  font-size: 0.76rem;
+  font-weight: 650;
+  text-align: right;
+}
+.btc-aspect-cycle-method-depth-v0-1:not([open]) .btc-aspect-cycle-method-grid-v0-1 { display: none; }
+.btc-private-gateway-v0-1 {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(245,199,106,0.18), transparent 20%),
+    radial-gradient(circle at 50% 58%, rgba(91,157,255,0.10), transparent 48%),
+    rgba(6,10,23,0.44);
+}
+.btc-private-gateway-axis-v0-1 { opacity: 0.46; }
+.btc-private-gateway-axis-v0-1 span {
+  box-shadow: 0 0 34px rgba(245,199,106,0.22), 0 0 88px rgba(91,157,255,0.10);
+}
+.btc-private-gateway-band-v0-1 {
+  background: rgba(6,10,23,0.64);
+  backdrop-filter: blur(4px);
+}
+.btc-private-gateway-source-v0-1 { cursor: pointer; }
+.btc-private-gateway-source-v0-1 summary {
+  color: rgba(226,233,255,0.76);
+  list-style: none;
+  font-weight: 700;
+}
+.btc-private-gateway-source-v0-1 summary::-webkit-details-marker { display: none; }
+.btc-private-gateway-source-v0-1 span {
+  display: block;
+  margin-top: 0.18rem;
+  color: rgba(226,233,255,0.58);
+  font-size: 0.68rem;
+}
+@media (max-width: 720px) {
+  .btc-phi-cycle-metrics-focused-v0-1 { grid-template-columns: 1fr; }
+  .btc-aspect-cycle-method-depth-v0-1 > summary { display: grid; }
+  .btc-aspect-cycle-method-depth-v0-1 > summary strong { text-align: left; }
+}
+
+/* CRYPTO_ASTRO_PHI_GATEWAY_FIELD_VISIBILITY_MICROPATCH_v0_1:BEGIN */
+.btc-private-gateway-v0-1::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: min(46rem, 92%);
+  height: 82%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(245,199,106,0.16) 0%,
+      rgba(245,199,106,0.09) 24%,
+      rgba(91,157,255,0.07) 48%,
+      transparent 74%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(245,199,106,0.07),
+    0 0 72px rgba(245,199,106,0.08);
+}
+
+.btc-private-gateway-axis-v0-1 {
+  opacity: 0.68;
+}
+
+.btc-private-gateway-axis-v0-1::before {
+  width: 2px;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(245,199,106,0.22) 18%,
+      rgba(245,199,106,0.72) 50%,
+      rgba(91,157,255,0.28) 82%,
+      transparent 100%
+    );
+  box-shadow: 0 0 24px rgba(245,199,106,0.18);
+}
+
+.btc-private-gateway-axis-v0-1 span {
+  opacity: 0.70;
+  border-color: rgba(245,199,106,0.34);
+  background: rgba(6,10,23,0.48);
+  box-shadow:
+    0 0 42px rgba(245,199,106,0.26),
+    0 0 110px rgba(91,157,255,0.14);
+}
+
+@media (max-width: 720px) {
+  .btc-private-gateway-v0-1::after {
+    width: 112%;
+    height: 76%;
+    opacity: 0.76;
+  }
+
+  .btc-private-gateway-axis-v0-1 {
+    opacity: 0.58;
+  }
+}
+/* CRYPTO_ASTRO_PHI_GATEWAY_FIELD_VISIBILITY_MICROPATCH_v0_1:END */
+
+/* CRYPTO_ASTRO_PHI_FIELD_WAVE_PATCH_1_v0_1_2:END */
+
 /* BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END */
 
 </style>
@@ -2517,12 +2668,14 @@
       <p class="eyebrow">BTC φ-Cycle Hub</p>
       <h2>BTC gravity · cycle context</h2>
       <p>A public-safe bridge for reading Bitcoin as the primary market gravity inside the static Crypto-Astro field. It connects dominance, stablecoin membrane, timing context, Astrobarometer posture, and manual review route.</p>
-      <div class="btc-phi-cycle-metrics-v0-1" aria-label="BTC Phi Cycle Hub static metrics">
+      <div class="btc-phi-cycle-metrics-v0-1 btc-phi-cycle-metrics-focused-v0-1" aria-label="BTC Phi Cycle Hub orientation metrics">
         <div class="btc-phi-cycle-metric-v0-1"><span>BTC Gravity</span><strong>56.4%</strong></div>
-        <div class="btc-phi-cycle-metric-v0-1"><span>Stablecoin Membrane</span><strong>13.6%</strong></div>
-        <div class="btc-phi-cycle-metric-v0-1"><span>Field Score</span><strong>76 / 100</strong></div>
         <div class="btc-phi-cycle-metric-v0-1"><span>Snapshot</span><strong>2026-07-10T13:08:34Z</strong></div>
       </div>
+      <a class="btc-phi-cycle-market-transition-v0-1" href="#market">
+        <span>BTC sets the gravity.</span>
+        <strong>The Market Field shows whether the wider structure confirms it.</strong>
+      </a>
     </article>
 
             <article class="btc-phi-cycle-map-v0-1 btc-quiet-phi-map-v0-3" aria-label="BTC quiet Phi analytic map">
@@ -2593,7 +2746,12 @@
       <div class="btc-aspect-cycle-satellite-v0-1 s4"><span>Scenario corridor</span><strong>expansion · stress · relief</strong></div>
     </div>
 
-    <div class="btc-aspect-cycle-method-grid-v0-1 btc-aspect-cycle-method-grid-analytic-v0-1" aria-label="Aspect-Cycle analytic method cards">
+    <details class="btc-aspect-cycle-method-depth-v0-1">
+      <summary>
+        <span>Method depth</span>
+        <strong>Open the six operator-reviewed research layers</strong>
+      </summary>
+      <div class="btc-aspect-cycle-method-grid-v0-1 btc-aspect-cycle-method-grid-analytic-v0-1" aria-label="Aspect-Cycle analytic method cards">
       <div><span>Aspect density</span><strong>Counts major planetary aspect hits and pressure clustering inside an observation window.</strong></div>
       <div><span>Semenko phase</span><strong>Scores planetary pairs by aspect, orb, phase strength, and ranked effective weight.</strong></div>
       <div><span>Crypto-events</span><strong>Compares current pressure with historical launch, hack, regulation, crisis, and rotation windows.</strong></div>
@@ -2601,6 +2759,9 @@
       <div><span>Scenario corridor</span><strong>Frames expansion, compression, stress, and relief windows for operator review.</strong></div>
       <div><span>Operator review</span><strong>Human synthesis before any private research delivery.</strong></div>
     </div>
+
+      </div>
+    </details>
 
     <div class="btc-aspect-cycle-output-panel-v0-1" aria-label="Aspect-Cycle private packet output classes">
       <span>Private packet can include</span>
@@ -2615,6 +2776,34 @@
     </div>
   </div>
 <!-- BTC_ASPECT_CYCLE_CORE_PUBLIC_ANALYTIC_BRIDGE_REPAIR_v0_1_1:END -->
+<!-- BTC_ASPECT_CYCLE_PUBLIC_PRIVATE_GATEWAY_v0_1:BEGIN -->
+<div class="btc-private-gateway-v0-1" aria-label="BTC Aspect-Cycle private packet route">
+  <div class="btc-private-gateway-axis-v0-1" aria-hidden="true">
+    <span>Φ</span>
+  </div>
+
+  <div class="btc-private-gateway-band-v0-1 public">
+    <span>Public context</span>
+    <strong>BTC gravity → aspect pressure → timing corridor</strong>
+  </div>
+
+  <div class="btc-private-gateway-band-v0-1 private">
+    <span>Private packet route</span>
+    <strong>source-bound · operator-reviewed · context-only</strong>
+    <em>No trading signal. No price target.</em>
+  </div>
+
+  <a class="btc-private-gateway-cta-v0-1" href="#access">Request private review</a>
+
+  <details class="btc-private-gateway-proof-v0-1 btc-private-gateway-source-v0-1">
+    <summary>Verified source foundation</summary>
+    <span>BTC Hub base · PR #92</span>
+    <span>Gateway · local feature commit d74aac6</span>
+    <span>Static artifact · operator review required</span>
+  </details>
+</div>
+<!-- BTC_ASPECT_CYCLE_PUBLIC_PRIVATE_GATEWAY_v0_1:END -->
+
   <div class="btc-phi-cycle-boundary-v0-1">
     Context only. No trading signal. No forecast. No price target. Not investment advice. No active adapter claim.
   </div>
@@ -4340,6 +4529,191 @@
 
 
 
+
+/* BTC_ASPECT_CYCLE_PUBLIC_PRIVATE_GATEWAY_v0_1:BEGIN */
+.btc-private-gateway-v0-1 {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.72rem;
+  margin: 1rem 0 0;
+  padding: 1.1rem;
+  border: 1px solid rgba(245, 199, 106, 0.20);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(245,199,106,0.14), transparent 28%),
+    radial-gradient(circle at 50% 56%, rgba(91,157,255,0.10), transparent 44%),
+    rgba(6,10,23,0.52);
+}
+
+.btc-private-gateway-v0-1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(245,199,106,0.055), transparent);
+}
+
+.btc-private-gateway-axis-v0-1 {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0.28;
+}
+
+.btc-private-gateway-axis-v0-1::before {
+  content: "";
+  position: absolute;
+  top: 13%;
+  bottom: 13%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(245,199,106,0.55), transparent);
+}
+
+.btc-private-gateway-axis-v0-1 span {
+  z-index: 1;
+  width: 4.8rem;
+  height: 4.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(245,199,106,0.92);
+  border: 1px solid rgba(245,199,106,0.24);
+  background: rgba(6,10,23,0.66);
+  font-family: Georgia, serif;
+  font-size: 2.8rem;
+  line-height: 1;
+  box-shadow: 0 0 48px rgba(245,199,106,0.16);
+}
+
+.btc-private-gateway-band-v0-1,
+.btc-private-gateway-proof-v0-1,
+.btc-private-gateway-cta-v0-1 {
+  position: relative;
+  z-index: 2;
+}
+
+.btc-private-gateway-band-v0-1 {
+  width: min(38rem, 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 0.76rem 0.88rem;
+  background: rgba(6,10,23,0.78);
+  text-align: center;
+}
+
+.btc-private-gateway-band-v0-1.public {
+  border-color: rgba(245,199,106,0.24);
+}
+
+.btc-private-gateway-band-v0-1.private {
+  border-color: rgba(91,157,255,0.23);
+  background: rgba(91,157,255,0.065);
+}
+
+.btc-private-gateway-band-v0-1 span {
+  display: block;
+  color: rgba(245,199,106,0.84);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.btc-private-gateway-band-v0-1 strong {
+  display: block;
+  margin-top: 0.24rem;
+  color: rgba(240,245,255,0.95);
+  font-size: 0.88rem;
+  line-height: 1.34;
+}
+
+.btc-private-gateway-band-v0-1 em {
+  display: block;
+  margin-top: 0.22rem;
+  color: rgba(226,233,255,0.70);
+  font-style: normal;
+  font-size: 0.76rem;
+}
+
+.btc-private-gateway-cta-v0-1 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3rem;
+  padding: 0 1rem;
+  border: 1px solid rgba(245,199,106,0.26);
+  border-radius: 999px;
+  color: rgba(245,199,106,0.92);
+  background: rgba(245,199,106,0.07);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.btc-private-gateway-proof-v0-1 {
+  width: min(36rem, 100%);
+  border: 1px solid rgba(91,157,255,0.18);
+  border-radius: 16px;
+  padding: 0.62rem 0.74rem;
+  background: rgba(91,157,255,0.055);
+  color: rgba(226,233,255,0.72);
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.34;
+}
+
+@media (max-width: 720px) {
+  .btc-private-gateway-v0-1 {
+    gap: 0.55rem;
+    padding: 0.76rem;
+    border-radius: 20px;
+  }
+
+  .btc-private-gateway-axis-v0-1 {
+    position: relative;
+    opacity: 1;
+    height: auto;
+  }
+
+  .btc-private-gateway-axis-v0-1::before {
+    display: none;
+  }
+
+  .btc-private-gateway-axis-v0-1 span {
+    width: 3.2rem;
+    height: 3.2rem;
+    font-size: 1.9rem;
+    background: rgba(245,199,106,0.10);
+  }
+
+  .btc-private-gateway-band-v0-1 {
+    text-align: left;
+    padding: 0.68rem;
+    border-radius: 16px;
+  }
+
+  .btc-private-gateway-band-v0-1 span {
+    font-size: 0.62rem;
+  }
+
+  .btc-private-gateway-band-v0-1 strong {
+    font-size: 0.80rem;
+  }
+
+  .btc-private-gateway-band-v0-1 em,
+  .btc-private-gateway-proof-v0-1 {
+    font-size: 0.72rem;
+  }
+
+  .btc-private-gateway-cta-v0-1 {
+    width: 100%;
+  }
+}
+/* BTC_ASPECT_CYCLE_PUBLIC_PRIVATE_GATEWAY_v0_1:END */
 
 </style>
 <!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_VISUAL_LOGIC_DISTRIBUTION_v0_1:END -->
