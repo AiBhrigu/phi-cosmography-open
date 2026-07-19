@@ -208,7 +208,7 @@ jobs:
               raw = Path(f"artifacts/{mode}-contact-sheet.jpg").read_bytes()
               result = post(
                   f"/repos/{repository}/git/blobs",
-                  {"content": base64.b64encode(raw).decode(), "encoding": "base64"},
+                  {"content": base64.b64encode(raw).decode(), "encoding": "utf-8"},
               )
               blobs[mode] = result["sha"]
 
