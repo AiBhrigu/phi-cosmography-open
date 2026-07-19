@@ -47,3 +47,22 @@ html, body {
   }
 }
 /* BTC_DEEP_NODE_MOBILE_CORE_COMPAT_v0_1:END */
+
+/* BTC_DEEP_NODE_VISUAL_REVIEW_POLISH_v0_1:BEGIN
+   Keeps the primary corridor on one row and prevents semantic trajectory
+   labels from colliding with the field boundary. */
+.btc-deep-v1 .btc-t-v1.time,
+.btc-deep-v1 .btc-t-v1.reviewed {
+  bottom: 15%;
+}
+
+@media (min-width: 621px) {
+  .btc-deep-v1 .btc-entry-v1 {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+
+  .btc-deep-v1 .btc-entry-v1 em {
+    justify-self: end;
+  }
+}
+/* BTC_DEEP_NODE_VISUAL_REVIEW_POLISH_v0_1:END */
