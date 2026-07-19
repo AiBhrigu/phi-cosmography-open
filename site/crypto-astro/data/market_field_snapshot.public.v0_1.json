@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-07-19T18:26:56Z",
+  "updated_at_utc": "2026-07-19T18:40:50Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -27,11 +27,11 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2287417777937.722,
-      "market_cap_change_24h_pct": -0.0231330130495394,
-      "volume_24h_usd": 40712299730.51023,
-      "btc_dominance_pct": 56.50010249230421,
-      "stablecoin_share_pct": 13.500433230542436,
+      "total_market_cap_usd": 2283746053505.6187,
+      "market_cap_change_24h_pct": -0.18361419348880073,
+      "volume_24h_usd": 40279969850.8856,
+      "btc_dominance_pct": 56.495919881450305,
+      "stablecoin_share_pct": 13.52213873955053,
       "stablecoin_cap_usd": 308811309814.0396,
       "defi_tvl_usd": 75551199898.0,
       "defi_tvl_source_label": "defillama_global_tvl_ex_double_count",
@@ -42,7 +42,7 @@
       "defi_tvl_excludes_liquid_staking": true,
       "defi_tvl_excludes_double_counted": true,
       "dex_volume_24h_usd": 4649966028,
-      "market_breadth_pct": 34.5,
+      "market_breadth_pct": 30.7,
       "liquidity_health": "context fresh"
     },
     "CT_temporal": {
@@ -57,7 +57,7 @@
     }
   },
   "field_output": {
-    "market_field_score": 61.0,
+    "market_field_score": 60.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",

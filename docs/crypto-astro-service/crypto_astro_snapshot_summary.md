@@ -2,13 +2,13 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS
-GENERATED_AT_UTC=2026-07-19T18:26:56Z
+GENERATED_AT_UTC=2026-07-19T18:40:50Z
 SOURCE_MODE=static_public_snapshot
 
 ## Market Reality
 
-- Market Cap: $2.287T
-- 24h Volume: $40.71B
+- Market Cap: $2.284T
+- 24h Volume: $40.28B
 - BTC Dominance: 56.5%
 - ETH Dominance: 9.8%
 - Stablecoin Share: 13.5%
@@ -24,9 +24,9 @@ SOURCE_MODE=static_public_snapshot
 
 ## Altcoin Rotation
 
-- Alt Breadth 24h: 34.5%
-- Alt Breadth 7d: 39.9%
-- Top-10 Flow Concentration: 66.3%
+- Alt Breadth 24h: 30.7%
+- Alt Breadth 7d: 37.0%
+- Top-10 Flow Concentration: 68.1%
 
 ## Boundary
 
