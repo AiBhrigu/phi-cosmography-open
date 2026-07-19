@@ -10,7 +10,7 @@ Purpose:
 - No commit, no push, no deploy.
 
 Usage:
-  python3 scripts/crypto_astro_static_refresh_hardened_v0_4.py REPO_PATH OUT_DIR
+  python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py REPO_PATH OUT_DIR
 
 Default paths are tuned for the operator's ORION_ATOMS workspace.
 """
@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 
 NODE = "CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATED_RUNNER_v0_5"
 PRIMARY_RUNNER_DEFAULT = Path(os.environ.get('CRYPTO_ASTRO_PRIMARY_RUNNER', str(Path(__file__).resolve().parent / 'crypto_astro_all_module_static_refresh_source_v0_1.py')))
-EXPECTED_PRIMARY_SHA256 = "60173876e69a30aaeace38f31ae9968f34008ed79bf39ef5cf275b5d75b99a6e"
+EXPECTED_PRIMARY_SHA256 = "b844b18faa65d10abe2b9fb12be177f8a21705fede1fe6a1352d8abdda33f531"
 OLD_BRANCH = 'feature/crypto-astro-all-module-static-refresh-v0-1'
 NEW_BRANCH = os.environ.get('CRYPTO_ASTRO_REFRESH_BRANCH', 'automation/crypto-astro-static-refresh-manual-v0-5')
 BASE_BRANCH = 'main'
@@ -38,13 +38,27 @@ CRITICAL_SOURCES = {
     'coingecko_global',
     'coingecko_asset_markets_btc_eth_sol_ton_icp',
     'coingecko_top250_markets',
+    'defillama_global_tvl_ex_double_count',
 }
 OPTIONAL_SOURCES = {
     'coingecko_stablecoin_sample',
-    'defillama_protocols',
     'defillama_dex_overview',
     'defillama_stablecoins',
 }
+DEFI_TVL_SOURCE_LABEL = 'defillama_global_tvl_ex_double_count'
+DEFI_TVL_SOURCE_URL = 'https://api.llama.fi/v2/historicalChainTvl'
+DEFI_TVL_METHODOLOGY_ID = 'defillama_historical_chain_tvl_ex_double_count_v0_1'
+DEFI_TVL_METHODOLOGY = (
+    'DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking '
+    'and double-counted TVL.'
+)
+DEFI_TVL_PUBLIC_COPY = (
+    'Source foundation: CoinGecko is the current public market-data anchor for global market cap, '
+    '24h volume, BTC dominance, and market context. DeFi TVL uses the latest DefiLlama '
+    '/v2/historicalChainTvl point, excluding liquid staking and double-counted TVL. Stablecoin '
+    'and DEX context use reviewed DefiLlama sources. A/E lanes remain prepared until source policy '
+    'and calibration are reviewed. This is a static public snapshot, not a live adapter.'
+)
 AFFECTED_FILES = [
     'site/crypto-astro/index.html',
     'site/crypto-astro/data/crypto_astro_snapshot.public.json',
@@ -57,8 +71,8 @@ AFFECTED_FILES = [
     'docs/crypto-astro-service/crypto_astro_operator_review.md',
 ]
 FORBIDDEN_POSITIVE_CLAIMS = [
-    r'(?i)live adapter\s+(is\s+)?active',
-    r'(?i)true live feed\s+(is\s+)?active',
+    r'(?i)(?<!no )(?<!not )live adapter\s+(is\s+)?active',
+    r'(?i)(?<!no )(?<!not )true live feed\s+(is\s+)?active',
     r'(?i)payment\s+(is\s+)?active',
     r'(?i)api access\s+(is\s+)?active',
     r'(?i)backend runtime\s+(is\s+)?active',
@@ -92,6 +106,7 @@ def append_validation_summary(report: dict):
     validation = report.setdefault('validation', {})
     validation['summary'] = {
         'critical_sources_ok': not validation.get('critical_missing') and not validation.get('critical_failed'),
+        'defi_tvl_methodology_ok': validation.get('defi_tvl_methodology') == 'PASS',
         'html_anchors_ok': not validation.get('html_required_missing'),
         'stale_timestamps_ok': not validation.get('stale_timestamp_hits'),
         'forbidden_claims_ok': not validation.get('forbidden_positive_claim_hits'),
@@ -272,6 +287,14 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     html = replace_counted(html, r'<li class="source-ready">Stablecoins Cap: [^<]+</li>', f'<li class="source-ready">Stablecoins Cap: {vals["stable_cap"]}</li>', 'liquidity:stable_cap', counts)
     html = replace_counted(html, r'<li class="source-ready">DeFi TVL: [^<]+</li>', f'<li class="source-ready">DeFi TVL: {vals["defi_tvl"]}</li>', 'liquidity:defi_tvl', counts)
     html = replace_counted(html, r'<li class="source-ready">DEX Volume 24h: [^<]+</li>', f'<li class="source-ready">DEX Volume 24h: {vals["dex_volume"]}</li>', 'liquidity:dex_volume', counts)
+    html = replace_counted(
+        html,
+        r'<p class="small">Source foundation:.*?This is a static public snapshot, not a live adapter\.</p>',
+        f'<p class="small">{DEFI_TVL_PUBLIC_COPY}</p>',
+        'liquidity:defi_tvl_methodology_copy',
+        counts,
+        flags=re.S,
+    )
     html = replace_counted(html, r'(<div class="alt-map-label"><span>24h Breadth</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['alt24']}{m.group(2)}", 'alt_map:24h', counts)
     html = replace_counted(html, r'(<div class="alt-map-label"><span>7D Persistence</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['alt7']}{m.group(2)}", 'alt_map:7d', counts)
     html = replace_counted(html, r'(<div class="alt-map-label"><span>Top-10 Flow</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['top10']}{m.group(2)}", 'alt_map:top10', counts)
@@ -555,6 +578,12 @@ def update_bindings(repo: Path, snapshot: dict) -> dict:
     data['generated_at_utc'] = snapshot.get('generated_at_utc') or now_iso()
     data['source_mode'] = 'static_public_snapshot'
     data['freshness_status'] = snapshot.get('freshness_status') or 'FRESH'
+    data.setdefault('modules', {})['liquidity_tvl'] = {
+        'source': 'liquidity_tvl.defi_tvl_usd',
+        'anchor': 'Liquidity / TVL',
+        'methodology_id': DEFI_TVL_METHODOLOGY_ID,
+        'proof_source': DEFI_TVL_SOURCE_LABEL,
+    }
     data.setdefault('boundary', {}).update(BOUNDARY)
     write_json(path, data)
     return data
@@ -603,6 +632,13 @@ def update_market_field(repo: Path, snapshot: dict) -> dict:
                 'stablecoin_share_pct': mr.get('stablecoin_share_pct'),
                 'stablecoin_cap_usd': liq.get('stablecoin_cap_usd') or mr.get('stablecoin_cap_usd'),
                 'defi_tvl_usd': liq.get('defi_tvl_usd'),
+                'defi_tvl_source_label': liq.get('defi_tvl_source_label'),
+                'defi_tvl_source_url': liq.get('defi_tvl_source_url'),
+                'defi_tvl_source_timestamp_utc': liq.get('defi_tvl_source_timestamp_utc'),
+                'defi_tvl_methodology_id': liq.get('defi_tvl_methodology_id'),
+                'defi_tvl_methodology': liq.get('defi_tvl_methodology'),
+                'defi_tvl_excludes_liquid_staking': liq.get('defi_tvl_excludes_liquid_staking'),
+                'defi_tvl_excludes_double_counted': liq.get('defi_tvl_excludes_double_counted'),
                 'dex_volume_24h_usd': liq.get('dex_volume_24h_usd'),
                 'market_breadth_pct': (snapshot.get('altcoin_rotation') or {}).get('alt_breadth_24h_pct'),
                 'liquidity_health': liq.get('liquidity_context_state') or 'context_only'
@@ -681,6 +717,82 @@ def validate_sources(repo: Path, report: dict) -> bool:
     return not missing and not failed
 
 
+def validate_defi_tvl_methodology(repo: Path, report: dict) -> bool:
+    errors = []
+    try:
+        snapshot = load_json(repo / 'site/crypto-astro/data/crypto_astro_snapshot.public.json')
+        proof = load_json(repo / 'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json')
+        bindings = load_json(repo / 'site/crypto-astro/data/crypto_astro_module_bindings.public.json')
+        market_field = load_json(repo / 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json')
+        html = read_text(repo / 'site/crypto-astro/index.html')
+    except Exception as exc:
+        errors.append(f'load_failure:{exc}')
+        set_validation(report, 'defi_tvl_methodology_errors', errors)
+        set_validation(report, 'defi_tvl_methodology', 'FAIL')
+        return False
+
+    liquidity = snapshot.get('liquidity_tvl') or {}
+    expected_fields = {
+        'defi_tvl_source_label': DEFI_TVL_SOURCE_LABEL,
+        'defi_tvl_source_url': DEFI_TVL_SOURCE_URL,
+        'defi_tvl_methodology_id': DEFI_TVL_METHODOLOGY_ID,
+        'defi_tvl_methodology': DEFI_TVL_METHODOLOGY,
+        'defi_tvl_excludes_liquid_staking': True,
+        'defi_tvl_excludes_double_counted': True,
+    }
+    for key, expected in expected_fields.items():
+        if liquidity.get(key) != expected:
+            errors.append(f'snapshot:{key}')
+
+    try:
+        snapshot_tvl = float(liquidity.get('defi_tvl_usd'))
+        if snapshot_tvl <= 0:
+            errors.append('snapshot:defi_tvl_usd_nonpositive')
+    except (TypeError, ValueError):
+        snapshot_tvl = None
+        errors.append('snapshot:defi_tvl_usd_invalid')
+
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(liquidity.get('defi_tvl_source_timestamp_utc') or '')):
+        errors.append('snapshot:defi_tvl_source_timestamp_utc')
+
+    proof_sources = proof.get('sources') or []
+    methodology_sources = [source for source in proof_sources if source.get('label') == DEFI_TVL_SOURCE_LABEL]
+    if len(methodology_sources) != 1:
+        errors.append(f'proof:methodology_source_count={len(methodology_sources)}')
+    else:
+        source = methodology_sources[0]
+        if source.get('url') != DEFI_TVL_SOURCE_URL or source.get('status') != 'PASS':
+            errors.append('proof:methodology_source_contract')
+        if not re.fullmatch(r'[0-9a-f]{64}', str(source.get('sha256') or '')):
+            errors.append('proof:methodology_source_sha256')
+    if any(source.get('label') == 'defillama_protocols' for source in proof_sources):
+        errors.append('proof:legacy_protocol_sum_source_present')
+
+    binding = ((bindings.get('modules') or {}).get('liquidity_tvl') or {})
+    if binding.get('methodology_id') != DEFI_TVL_METHODOLOGY_ID:
+        errors.append('bindings:methodology_id')
+    if binding.get('proof_source') != DEFI_TVL_SOURCE_LABEL:
+        errors.append('bindings:proof_source')
+
+    market_liquidity = (((market_field.get('vectors') or {}).get('M_market')) or {})
+    if market_liquidity.get('defi_tvl_methodology_id') != DEFI_TVL_METHODOLOGY_ID:
+        errors.append('market_field:methodology_id')
+    if market_liquidity.get('defi_tvl_excludes_double_counted') is not True:
+        errors.append('market_field:excludes_double_counted')
+    try:
+        if snapshot_tvl is None or abs(float(market_liquidity.get('defi_tvl_usd')) - snapshot_tvl) > 0.01:
+            errors.append('market_field:defi_tvl_usd_drift')
+    except (TypeError, ValueError):
+        errors.append('market_field:defi_tvl_usd_invalid')
+
+    if DEFI_TVL_PUBLIC_COPY not in html:
+        errors.append('html:methodology_copy')
+
+    set_validation(report, 'defi_tvl_methodology_errors', errors)
+    set_validation(report, 'defi_tvl_methodology', 'PASS' if not errors else 'FAIL')
+    return not errors
+
+
 def validate_active_outputs(repo: Path, report: dict) -> bool:
     stale_hits = []
     forbidden_hits = []
@@ -706,6 +818,7 @@ def validate_html_counts(patch_report: dict, report: dict) -> bool:
         'composition:btc', 'composition:stable', 'composition:alt', 'label:btc_gravity',
         'label:stable_membrane', 'label:alt_field', 'label:top10_flow', 'timestamp:market_note',
         'liquidity:stable_cap', 'liquidity:defi_tvl', 'liquidity:dex_volume',
+        'liquidity:defi_tvl_methodology_copy',
         'metric:Alt Breadth 24h', 'metric:Alt Breadth 7d', 'metric:Top-10 Flow Concentration',
         'alt_map:24h', 'alt_map:7d', 'alt_map:top10', 'timestamp:coingecko_snapshot',
         'btc_hub:gravity', 'btc_hub:snapshot', 'btc_hub:quiet_gravity',
@@ -854,8 +967,9 @@ def main():
         update_market_field(repo, snapshot)
         update_scoring(repo, snapshot)
         html_ok = validate_html_counts(patch_report, report)
+        methodology_ok = validate_defi_tvl_methodology(repo, report)
         active_ok = validate_active_outputs(repo, report)
-        if not html_ok or not active_ok:
+        if not html_ok or not methodology_ok or not active_ok:
             restore_files(repo, backup_dir)
             raise RuntimeError('post-patch validation failed; restored backup')
         changed = run(['git','status','--short'], repo, check=True).stdout.strip().splitlines()
@@ -904,6 +1018,21 @@ def main():
         md += ["", "## Source statuses"]
         for k, v in (report.get('validation', {}).get('source_statuses') or report.get('source_statuses') or {}).items():
             md.append(f"- {k}: {v}")
+        md += [
+            "",
+            "## DeFi TVL methodology",
+            f"- status: {report.get('validation', {}).get('defi_tvl_methodology', 'NOT_RUN')}",
+            f"- methodology_id: {DEFI_TVL_METHODOLOGY_ID}",
+            f"- source: {DEFI_TVL_SOURCE_URL}",
+        ]
+        if report.get('validation', {}).get('defi_tvl_methodology_errors'):
+            md.append(
+                json.dumps(
+                    report['validation']['defi_tvl_methodology_errors'],
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
         if report.get('validation', {}).get('critical_missing'):
             md += ["", "## Critical missing", json.dumps(report['validation']['critical_missing'], ensure_ascii=False, indent=2)]
         if report.get('validation', {}).get('critical_failed'):
