@@ -79,7 +79,7 @@ jobs:
               "            )",
           ]
           geometry_value = "\n".join(geometry_lines) + "\n"
-          replacement = "geometry = " + repr(geometry_value) + "\n          "
+          replacement = "geometry = " + repr(geometry_value) + "\n"
           script = script[:start] + replacement + script[end:]
           compile(script, "<btc-deep-node-indent-repair>", "exec")
           exec(script, {"__name__": "__btc_deep_node_indent_repair__"})
