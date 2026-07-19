@@ -64,7 +64,13 @@ jobs:
           options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
 
           driver = webdriver.Chrome(options=options)
-          report = {"generated_at_utc": generated, "viewports": {}, "assertions": {}}
+          report = {
+              "generated_at_utc": generated,
+              "viewports": {},
+              "assertions": {},
+              "checks": {},
+              "failures": [],
+          }
           try:
               driver.set_window_size(1440, 1000)
               driver.get("http://127.0.0.1:4173/crypto-astro/index.html")
@@ -73,29 +79,35 @@ jobs:
               )
 
               orb = driver.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge")
-              report["assertions"]["field_score"] = orb.text.strip()
-              assert orb.text.strip() == field_score
-              assert orb.get_attribute("aria-label") == f"Market Field Score {field_score} out of 100"
-
               btc_hub = driver.find_element(By.CSS_SELECTOR, "#btc-phi-cycle-hub").text
+              btc_hub_lower = btc_hub.lower()
               sample_panel = driver.find_element(
                   By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]'
               ).text
               scoring = driver.find_element(By.CSS_SELECTOR, "#scoring").text
-              assert generated in btc_hub
-              assert expected_ton in sample_panel
-              assert expected_icp in sample_panel
-              assert expected_coverage in scoring
-              assert "static · no schedule" in scoring
-
               deep_node_present = bool(driver.find_elements(By.CSS_SELECTOR, ".btc-deep-v1"))
-              if deep_node_present:
-                  assert "Aspect pressure" in btc_hub
-                  assert "Phase condition" in btc_hub
-                  assert "Event memory" in btc_hub
-                  assert "Private research depth" in btc_hub
 
+              checks = {
+                  "field_score_text": orb.text.strip() == field_score,
+                  "field_score_aria": orb.get_attribute("aria-label") == f"Market Field Score {field_score} out of 100",
+                  "btc_timestamp": generated in btc_hub,
+                  "ton_score": expected_ton in sample_panel,
+                  "icp_score": expected_icp in sample_panel,
+                  "scoring_coverage": expected_coverage in scoring,
+                  "heartbeat": "static · no schedule" in scoring,
+              }
+              if deep_node_present:
+                  checks.update({
+                      "aspect_pressure": "aspect pressure" in btc_hub_lower,
+                      "phase_condition": "phase condition" in btc_hub_lower,
+                      "event_memory": "event memory" in btc_hub_lower,
+                      "private_research_depth": "private research depth" in btc_hub_lower,
+                  })
+
+              report["checks"] = checks
               report["assertions"].update({
+                  "field_score": orb.text.strip(),
+                  "field_score_aria": orb.get_attribute("aria-label"),
                   "btc_timestamp": generated,
                   "btc_deep_node": "present" if deep_node_present else "not_in_scope",
                   "aspect_cycle_core": "present" if deep_node_present else "not_in_scope",
@@ -129,15 +141,14 @@ jobs:
                   )
                   scroll_width = driver.execute_script("return document.documentElement.scrollWidth")
                   inner_width = driver.execute_script("return window.innerWidth")
+                  overflow_ok = scroll_width <= inner_width + 1
+                  checks[f"{mode}_horizontal_overflow"] = overflow_ok
                   report["viewports"][mode] = {
                       "requested": [width, height],
                       "inner_width": inner_width,
                       "scroll_width": scroll_width,
                       "screenshots": [],
                   }
-                  assert scroll_width <= inner_width + 1, (
-                      f"{mode} horizontal overflow: scroll={scroll_width}, inner={inner_width}"
-                  )
                   for label, selector in targets.items():
                       element = driver.find_element(By.CSS_SELECTOR, selector)
                       target_y = driver.execute_script(
@@ -158,7 +169,9 @@ jobs:
                   and "favicon" not in entry.get("message", "").lower()
               ]
               report["browser_severe"] = severe
-              assert not severe, severe
+              checks["browser_severe"] = not severe
+              report["failures"] = [name for name, passed in checks.items() if not passed]
+              assert not report["failures"], report["failures"]
           finally:
               driver.quit()
               Path("artifacts/visual-report.json").write_text(
@@ -179,6 +192,8 @@ jobs:
                   label for label in candidate_labels
                   if Path(f"artifacts/{mode}-{label}.png").exists()
               ]
+              if not labels:
+                  return
               rows = (len(labels) + columns - 1) // columns
               canvas = Image.new("RGB", (cell_width * columns, cell_height * rows), "#050914")
               draw = ImageDraw.Draw(canvas)
