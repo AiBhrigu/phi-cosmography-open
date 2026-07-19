@@ -276,6 +276,275 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     html = replace_counted(html, r'(<div class="alt-map-label"><span>7D Persistence</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['alt7']}{m.group(2)}", 'alt_map:7d', counts)
     html = replace_counted(html, r'(<div class="alt-map-label"><span>Top-10 Flow</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['top10']}{m.group(2)}", 'alt_map:top10', counts)
     html = replace_counted(html, r'(<span>CoinGecko snapshot</span>\s*<span>)[^<]+(</span>)', lambda m: f"{m.group(1)}{generated_at}{m.group(2)}", 'timestamp:coingecko_snapshot', counts)
+    # CRYPTO_ASTRO_V11_VISIBLE_COHERENCE_BINDINGS_v0_1
+    field = snapshot.get('field_output') or {}
+    samples = ((snapshot.get('public_samples') or {}).get('assets') or {})
+    eth_dom = pct(mr.get('eth_dominance_pct'), 1)
+    raw_field_score = field.get('market_field_score')
+    field_score = 'pending' if raw_field_score is None else str(int(round(float(raw_field_score))))
+
+    def number2(value):
+        return 'pending' if value is None else f"{float(value):.2f}"
+
+    def percent2(value):
+        return 'pending' if value is None else f"{float(value):.2f}%"
+
+    def sample(symbol):
+        return samples.get(symbol) or {}
+
+    html = replace_counted(
+        html,
+        r'(<div class="btc-quiet-phi-core-v0-3">\s*<span>BTC</span>\s*<strong>)[^<]+(</strong>)',
+        lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+        'btc_hub:quiet_gravity',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(\.metric-rail\.eth-anchor i \{ width:)[^;]+(; \})',
+        lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+        'rail:eth-anchor',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="composition-node eth">ETH<br>)[^<]+(</div>)',
+        lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+        'composition:eth',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="composition-label"><span>ETH Anchor</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+        'label:eth_anchor',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="alt-map-label"><span>ETH Anchor</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+        'alt_map:eth',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="alt-center-node">ETH<br>)[^<]+(</div>)',
+        lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+        'alt_map:eth_center',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="score-orb field-gauge" role="img" aria-label="Market Field Score )[^"]+( out of 100">)[^<]+(</div>)',
+        lambda m: f"{m.group(1)}{field_score}{m.group(2)}{field_score}{m.group(3)}",
+        'field:score_orb',
+        counts,
+    )
+
+    def replace_copy_slot(source, slot, value, label):
+        pattern = rf'(<(?P<tag>[a-z0-9]+)[^>]*data-copy-slot="{re.escape(slot)}"[^>]*>).*?(</(?P=tag)>)'
+        return replace_counted(
+            source,
+            pattern,
+            lambda m: f"{m.group(1)}{value}{m.group(3)}",
+            label,
+            counts,
+            flags=re.S | re.I,
+        )
+
+    slot_values = {
+        'field_state_title': field.get('regime_label') or 'Static public context',
+        'field_state_badge': 'M active · A/E pending · static context',
+        'field_state_body_1': (
+            f"Public market context is active. BTC dominance is {vals['btc_dom']}; "
+            f"stablecoin share is {vals['stable_share']}."
+        ),
+        'field_state_body_2': (
+            f"Alt breadth is {vals['alt24']} over 24h and {vals['alt7']} over 7d. "
+            "A/E lanes remain pending calibration."
+        ),
+        'state_structure_status': 'M active',
+        'state_pressure_status': 'A/E pending',
+        'state_breadth_status': f"{vals['alt24']} / {vals['alt7']}",
+        'field_synthesis_lead': 'Static context is bounded; A/E confirmation is not available.',
+        'field_synthesis_body_1': (
+            f"Market cap is {vals['market_cap']} with {vals['volume']} in 24h volume. "
+            f"DeFi TVL is {vals['defi_tvl']}."
+        ),
+        'field_synthesis_body_2': (
+            f"Alt breadth is {vals['alt24']} over 24h and {vals['alt7']} over 7d; "
+            f"top-10 flow concentration is {vals['top10']}."
+        ),
+        'field_synthesis_body_3': (
+            f"Temporal context is bounded. Source snapshot generated {generated_at}; "
+            "no live adapter is active."
+        ),
+        'btc_gravity_status': vals['btc_dom'],
+        'stablecoin_pressure_status': f"{vals['stable_share']} share",
+        'alt_rotation_status': f"{vals['alt24']} / {vals['alt7']}",
+        'liquidity_depth_status': f"{vals['defi_tvl']} TVL",
+        'timing_context_status': 'Bounded',
+        'source_freshness_status': f"Fresh · {generated_at[:10]}",
+        'method_market_reality': 'M active',
+        'method_liquidity_tvl': 'Context fresh',
+        'method_altcoin_rotation': f"{vals['alt24']} / {vals['alt7']}",
+        'method_aem_barometer': f"{field_score} / 100",
+        'method_continuation': 'Scenario only',
+        'method_astromodule': 'Bounded',
+        'method_source_freshness': 'Fresh',
+    }
+    for slot, value in slot_values.items():
+        html = replace_copy_slot(html, slot, value, f'copy_slot:{slot}')
+
+    alt_read = f'''<div class="alt-read-grid" aria-label="Altcoin Rotation Read">
+        <div class="alt-read-node"><strong>State</strong><span>Selective short-term rotation with concentrated liquidity.</span></div>
+        <div class="alt-read-node"><strong>Meaning</strong><span>24h breadth is {vals['alt24']}; 7D persistence is {vals['alt7']} and remains limited.</span></div>
+        <div class="alt-read-node"><strong>Direction</strong><span>Watch whether 7D breadth expands while top-10 concentration falls.</span></div>
+        <div class="alt-read-node"><strong>Key watch</strong><span>If breadth rises while liquidity stays concentrated, peripheral noise risk remains elevated.</span></div>
+      </div>'''
+    html = replace_counted(
+        html,
+        r'<div class="alt-read-grid" aria-label="Altcoin Rotation Read">.*?</div>\s*(?=\n\s*<p class="small">Universe:)',
+        alt_read,
+        'alt_read:data_bound',
+        counts,
+        flags=re.S,
+    )
+
+    ton = sample('TON')
+    icp = sample('ICP')
+    ton_score = number2(ton.get('score'))
+    icp_score = number2(icp.get('score'))
+    ton_score_width = width_num(ton.get('score'))
+    icp_score_width = width_num(icp.get('score'))
+
+    def replace_visual_score(source, label, score_value, score_width, key):
+        pattern = (
+            rf'(<div class="visual-row-v0-1"><span>{re.escape(label)}</span>'
+            rf'<div class="visual-rail-v0-1"><i style="width:)[^%]+'
+            rf'(%;?"></i></div><span class="visual-value-v0-1">)[^<]+(</span></div>)'
+        )
+        return replace_counted(
+            source,
+            pattern,
+            lambda m: f"{m.group(1)}{score_width}{m.group(2)}{score_value}{m.group(3)}",
+            key,
+            counts,
+        )
+
+    def replace_visual_value(source, label, value, key):
+        pattern = (
+            rf'(<div class="visual-row-v0-1"><span>{re.escape(label)}</span>'
+            rf'<div class="visual-rail-v0-1"><i style="width:[^"]+"></i></div>'
+            rf'<span class="visual-value-v0-1">)[^<]+(</span></div>)'
+        )
+        return replace_counted(
+            source,
+            pattern,
+            lambda m: f"{m.group(1)}{value}{m.group(2)}",
+            key,
+            counts,
+        )
+
+    html = replace_visual_score(html, 'Gram (prev. Toncoin)', ton_score, ton_score_width, 'sample:ton_visual_score')
+    html = replace_visual_score(html, 'Internet Computer', icp_score, icp_score_width, 'sample:icp_visual_score')
+    html = replace_visual_value(html, '24h TON', percent2(ton.get('market_24h_change_pct')), 'sample:ton_visual_24h')
+    html = replace_visual_value(html, '24h ICP', percent2(icp.get('market_24h_change_pct')), 'sample:icp_visual_24h')
+    html = replace_counted(
+        html,
+        r'(<div class="visual-gauge-row-v0-1">\s*<div class="visual-gauge-v0-1"><strong>)[^<]+(</strong>.*?<div class="visual-gauge-v0-1"><strong>)[^<]+(</strong>)',
+        lambda m: f"{m.group(1)}{ton_score}{m.group(2)}{icp_score}{m.group(3)}",
+        'sample:dual_visual_gauge',
+        counts,
+        flags=re.S,
+    )
+
+    def replace_distributed_value(source, aria_label, row_label, value, key, width=None):
+        if width is None:
+            pattern = (
+                rf'(<div class="distributed-rail-v0-1" aria-label="{re.escape(aria_label)}">.*?'
+                rf'<span>{re.escape(row_label)}</span><div class="distributed-track-v0-1">'
+                rf'<i style="width:[^"]+"></i></div><span class="distributed-value-v0-1">)'
+                rf'[^<]+(</span>)'
+            )
+            repl = lambda m: f"{m.group(1)}{value}{m.group(2)}"
+        else:
+            pattern = (
+                rf'(<div class="distributed-rail-v0-1" aria-label="{re.escape(aria_label)}">.*?'
+                rf'<span>{re.escape(row_label)}</span><div class="distributed-track-v0-1">'
+                rf'<i style="width:)[^%]+(%"></i></div><span class="distributed-value-v0-1">)'
+                rf'[^<]+(</span>)'
+            )
+            repl = lambda m: f"{m.group(1)}{width}{m.group(2)}{value}{m.group(3)}"
+        return replace_counted(source, pattern, repl, key, counts, flags=re.S)
+
+    ton_aria = 'Gram source sample distributed visual metrics'
+    icp_aria = 'ICP comparison sample distributed visual metrics'
+    for aria_label, asset, score_value, score_width, prefix in (
+        (ton_aria, ton, ton_score, ton_score_width, 'ton'),
+        (icp_aria, icp, icp_score, icp_score_width, 'icp'),
+    ):
+        html = replace_distributed_value(html, aria_label, 'Score', score_value, f'sample:{prefix}_score', score_width)
+        html = replace_distributed_value(html, aria_label, '24h', percent2(asset.get('market_24h_change_pct')), f'sample:{prefix}_24h')
+        html = replace_distributed_value(html, aria_label, '30d', percent2(asset.get('market_30d_change_pct')), f'sample:{prefix}_30d')
+        html = replace_distributed_value(html, aria_label, 'Rank', str(asset.get('market_cap_rank')), f'sample:{prefix}_rank')
+
+    html = replace_counted(
+        html,
+        r'(<div class="sample-metric"><span>TON barometer</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{ton_score}{m.group(2)}",
+        'sample:ton_barometer',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="sample-metric"><span>ICP barometer</span><strong>)[^<]+(</strong></div>)',
+        lambda m: f"{m.group(1)}{icp_score}{m.group(2)}",
+        'sample:icp_barometer',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="distributed-dual-gauge-v0-1"[^>]*>\s*<div class="distributed-gauge-v0-1"><strong>)[^<]+(</strong>.*?<div class="distributed-gauge-v0-1"><strong>)[^<]+(</strong>)',
+        lambda m: f"{m.group(1)}{ton_score}{m.group(2)}{icp_score}{m.group(3)}",
+        'sample:dual_distributed_gauge',
+        counts,
+        flags=re.S,
+    )
+    html = replace_counted(
+        html,
+        r'(<h2>ORION × BHRIGU · Scoring Loop Preview</h2>\s*<p>).*?(</p>)',
+        (
+            r'\1Read-only market context for BTC / ETH / SOL; snapshot coverage also includes '
+            r'TON / ICP. A/E and Φ scoring lanes remain in calibration.\2'
+        ),
+        'scoring:intro',
+        counts,
+        flags=re.S,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="scoring-data" id="score-data-snapshot"><strong>Snapshot</strong><span>)[^<]+(</span></div>)',
+        lambda m: f"{m.group(1)}Generated {generated_at}{m.group(2)}",
+        'scoring:snapshot',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="scoring-data" id="score-data-coverage"><strong>Coverage</strong><span>)[^<]+(</span></div>)',
+        lambda m: f"{m.group(1)}{len(samples)} assets · 3 displayed{m.group(2)}",
+        'scoring:coverage',
+        counts,
+    )
+    html = replace_counted(
+        html,
+        r'(<div class="scoring-data" id="score-data-heartbeat"><strong>Heartbeat</strong><span>)[^<]+(</span></div>)',
+        r'\1static · no schedule\2',
+        'scoring:heartbeat',
+        counts,
+    )
+
     write_text(path, html)
     return {'values': vals, 'replace_counts': counts}
 
@@ -438,7 +707,29 @@ def validate_html_counts(patch_report: dict, report: dict) -> bool:
         'label:stable_membrane', 'label:alt_field', 'label:top10_flow', 'timestamp:market_note',
         'liquidity:stable_cap', 'liquidity:defi_tvl', 'liquidity:dex_volume',
         'metric:Alt Breadth 24h', 'metric:Alt Breadth 7d', 'metric:Top-10 Flow Concentration',
-        'alt_map:24h', 'alt_map:7d', 'alt_map:top10', 'timestamp:coingecko_snapshot'
+        'alt_map:24h', 'alt_map:7d', 'alt_map:top10', 'timestamp:coingecko_snapshot',
+        'btc_hub:gravity', 'btc_hub:snapshot', 'btc_hub:quiet_gravity',
+        'rail:eth-anchor', 'composition:eth', 'label:eth_anchor', 'alt_map:eth', 'alt_map:eth_center',
+        'field:score_orb', 'alt_read:data_bound',
+        'copy_slot:field_state_title', 'copy_slot:field_state_badge',
+        'copy_slot:field_state_body_1', 'copy_slot:field_state_body_2',
+        'copy_slot:state_structure_status', 'copy_slot:state_pressure_status',
+        'copy_slot:state_breadth_status', 'copy_slot:field_synthesis_lead',
+        'copy_slot:field_synthesis_body_1', 'copy_slot:field_synthesis_body_2',
+        'copy_slot:field_synthesis_body_3', 'copy_slot:btc_gravity_status',
+        'copy_slot:stablecoin_pressure_status', 'copy_slot:alt_rotation_status',
+        'copy_slot:liquidity_depth_status', 'copy_slot:timing_context_status',
+        'copy_slot:source_freshness_status', 'copy_slot:method_market_reality',
+        'copy_slot:method_liquidity_tvl', 'copy_slot:method_altcoin_rotation',
+        'copy_slot:method_aem_barometer', 'copy_slot:method_continuation',
+        'copy_slot:method_astromodule', 'copy_slot:method_source_freshness',
+        'sample:ton_visual_score', 'sample:icp_visual_score',
+        'sample:ton_visual_24h', 'sample:icp_visual_24h',
+        'sample:dual_visual_gauge', 'sample:ton_score', 'sample:ton_24h',
+        'sample:ton_30d', 'sample:ton_rank', 'sample:icp_score',
+        'sample:icp_24h', 'sample:icp_30d', 'sample:icp_rank',
+        'sample:ton_barometer', 'sample:icp_barometer', 'sample:dual_distributed_gauge',
+        'scoring:intro', 'scoring:snapshot', 'scoring:coverage', 'scoring:heartbeat'
     ]
     counts = patch_report.get('replace_counts') or {}
     missing = [k for k in required_positive if int(counts.get(k, 0)) <= 0]
