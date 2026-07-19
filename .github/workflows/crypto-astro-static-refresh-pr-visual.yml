@@ -8,8 +8,7 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   visual:
@@ -172,62 +171,6 @@ jobs:
 
           sheet("desktop", 720, 520)
           sheet("mobile", 390, 872)
-          PY
-
-      - name: Publish ephemeral visual blob references
-        if: github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          python3 - <<'PY'
-          import base64
-          import json
-          import os
-          import urllib.request
-          from pathlib import Path
-
-          repository = os.environ["GITHUB_REPOSITORY"]
-          token = os.environ["GH_TOKEN"]
-          pr_number = os.environ["PR_NUMBER"]
-          api = "https://api.github.com"
-          headers = {
-              "Accept": "application/vnd.github+json",
-              "Authorization": f"Bearer {token}",
-              "X-GitHub-Api-Version": "2022-11-28",
-              "Content-Type": "application/json",
-          }
-
-          def post(path, payload):
-              request = urllib.request.Request(
-                  api + path,
-                  data=json.dumps(payload).encode(),
-                  headers=headers,
-                  method="POST",
-              )
-              with urllib.request.urlopen(request, timeout=30) as response:
-                  return json.load(response)
-
-          blobs = {}
-          for mode in ("desktop", "mobile"):
-              raw = Path(f"artifacts/{mode}-contact-sheet.jpg").read_bytes()
-              result = post(
-                  f"/repos/{repository}/git/blobs",
-                  {"content": base64.b64encode(raw).decode(), "encoding": "utf-8"},
-              )
-              blobs[mode] = result["sha"]
-
-          marker = "<!-- CRYPTO_ASTRO_VISUAL_BLOBS_v0_1 -->"
-          body = "\n".join([
-              marker,
-              "Automated Crypto-Astro visual evidence is ready.",
-              f"RUN_ID={os.environ['GITHUB_RUN_ID']}",
-              f"HEAD_SHA={os.environ['GITHUB_SHA']}",
-              f"DESKTOP_BLOB_SHA={blobs['desktop']}",
-              f"MOBILE_BLOB_SHA={blobs['mobile']}",
-              "Scope: desktop/mobile contact sheets for BTC Hub, Market, TON/ICP, and Scoring.",
-          ])
-          post(f"/repos/{repository}/issues/{pr_number}/comments", {"body": body})
           PY
 
       - name: Upload visual evidence
