@@ -1,0 +1,99 @@
+name: Crypto-Astro BTC Deep Node Recovery Once
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/crypto-astro-btc-deep-node-recovery-once.yml"
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: crypto-astro-btc-deep-node-recovery-once
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: automation/crypto-astro-btc-deep-node-closure-recovery-${{ github.run_id }}
+      HTML: site/crypto-astro/index.html
+      RUNNER: tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py
+      ORIGINAL: .github/workflows/crypto-astro-btc-deep-node-closure-once.yml
+      SELF: .github/workflows/crypto-astro-btc-deep-node-recovery-once.yml
+      HTML_BLOB: 3a7a64f7a953a56596c02310ea9b3aa4afde80fe
+      RUNNER_BLOB: 556a364dcda3bd4909c8aa15a00104fd2e574915
+      ORIGINAL_BLOB: b38ebdd955cb6070aac07143f8b16235a5f89f6f
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          test "$(git rev-parse HEAD:$HTML)" = "$HTML_BLOB"
+          test "$(git rev-parse HEAD:$RUNNER)" = "$RUNNER_BLOB"
+          test "$(git rev-parse HEAD:$ORIGINAL)" = "$ORIGINAL_BLOB"
+      - name: Recover and execute bounded implementation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,re,textwrap
+          source=Path(".github/workflows/crypto-astro-btc-deep-node-closure-once.yml").read_text(encoding="utf-8")
+          m=re.search(r'- name: Apply bounded patch\s+run: \|\s+python3 - <<\'PY\'\n(.*?)\n          PY',source,re.S)
+          if not m: raise SystemExit("embedded implementation script not found")
+          script=textwrap.dedent(m.group(1))
+          a=script.index("old=r'''")
+          b=script.index("r=r.replace('# CRYPTO_ASTRO_V11_VISIBLE_COHERENCE_BINDINGS_v0_1'",a)
+          repair=base64.b64decode("cXVpZXRfb2xkID0gcidycCcoPGRpdiBjbGFzcz0iYnRjLXF1aWV0LXBoaS1jb3JlLXYwLTMiPlxzKjxzcGFuPkJUQzwvc3Bhbj5ccyo8c3Ryb25nPiknJycKcXVpZXRfbmV3ID0gcicnJ3InKDxkaXYgY2xhc3M9ImJ0Yy1xdWlldC1waGktY29yZS12MC0zIiBzdHlsZT0iLS1idGMtZG9taW5hbmNlOlteIl0rIj5ccyo8c3Bhbj5CVEM8L3NwYW4+XHMqPHN0cm9uZz4pJycnCmlmIHIuY291bnQocXVpZXRfb2xkKSAhPSAxOgogICAgcmFpc2UgU3lzdGVtRXhpdChmInF1aWV0IGJpbmRpbmcgcGF0dGVybiBtaXNtYXRjaDoge3IuY291bnQocXVpZXRfb2xkKX0iKQpyID0gci5yZXBsYWNlKHF1aWV0X29sZCwgcXVpZXRfbmV3LCAxKQpldGhfYW5jaG9yID0gIiIiICAgIGh0bWwgPSByZXBsYWNlX2NvdW50ZWQoCiAgICAgICAgaHRtbCwKICAgICAgICByJyhcdC5tZXRyaWMtcmFpbFxldGgtYW5jaG9yIGkgXFx7IHdpZHRoOilbXjtdKyg7IFxcfSknLCIiIgppZiByLmNvdW50KGV0aF9hbmNob3IpICE9IDE6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYiRVRIGBhbmNob3IgbWlzbWF0Y2g6IHtyLmNvdW50KGV0aF9hbmNob3IpfSIpCmdlb21ldHJ5ID0gIiIiICAgIGh0bWwgPSByZXBsYWNlX2NvdW50ZWQoCiAgICAgICAgaHRtbCwKICAgICAgICByJyg8ZGl2IGNsYXNzPSJidGMtcXVpZXQtcGhpLWNvcmUtdjAtMyIgc3R5bGU9Ii0tYnRjLWRvbWluYW5jZTopW147Il0rKDsiPiksCiAgICAgICAgbGFtYmRhIG06IGYie20uZ3JvdXAoMSl9e3ZhbHNbJ2J0Y19kb20nXX17bS5ncm91cCgyKX0iLAogICAgICAgICdidGNfaHViOmdyYXZpdHlfZ2VvbWV0cnknLAogICAgICAgIGNvdW50cywKICAgICApCiAgICBmb3IgcmVxdWlyZWRfYmluZGluZyBpbiAoJ2J0Y19odWI6cXVpZXRfZ3Jhdml0eScsICdidGNfaHViOmdyYXZpdHlfZ2VvbWV0cnknKToKICAgICAgICBpZiBjb3VudHMuZ2V0KHJlcXVpcmVkX2JpbmRpbmcpICE9IDE6CiAgICAgICAgICAgIHJhaXNlIFJ1bnRpbWVFcnJvcigKICAgICAgICAgICAgICAgIGYiQlRDIGRlZXAtbm9kZSBiaW5kaW5nIG1pc21hdGNoOiAiCiAgICAgICAgICAgICAgICBmIntyZXF1aXJlZF9iaW5kaW5nfT17Y291bnRzLmdldChyZXF1aXJlZF9iaW5kaW5nLCAwKX0iCiAgICAgICAgICAgICkKIiIiCnIgPSByLnJlcGxhY2UoZXRoX2FuY2hvciwgZ2VvbWV0cnkgKyBldGhfYW5jaG9yLCAxKQo=").decode()
+          script=script[:a]+repair+script[b:]
+          compile(script,"<btc-deep-node-recovered>","exec")
+          exec(script,{"__name__":"__btc_deep_node_recovery__"})
+          PY
+      - name: Validate and simulate refresh binding
+        run: |
+          python3 -m py_compile "$RUNNER"
+          git diff --check
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = "2"
+          git diff --name-only | grep -Fx "$HTML"
+          git diff --name-only | grep -Fx "$RUNNER"
+          grep -F "'btc_hub:gravity_geometry'" "$RUNNER"
+          test "$(grep -Foc 'href=\"https://www.bhrigu.io/crypto-astro/btc\"' "$HTML")" = "1"
+          python3 - <<'PY'
+          from pathlib import Path
+          import importlib.util,json,shutil,tempfile
+          root=Path.cwd();repo=Path(tempfile.mkdtemp())/"repo";(repo/"site/crypto-astro").mkdir(parents=True)
+          shutil.copy2(root/"site/crypto-astro/index.html",repo/"site/crypto-astro/index.html")
+          p=root/"tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py"
+          s=importlib.util.spec_from_file_location("r",p);mod=importlib.util.module_from_spec(s);s.loader.exec_module(mod)
+          snap=json.loads((root/"site/crypto-astro/data/crypto_astro_snapshot.public.json").read_text())
+          mod.patch_html(repo,snap)
+          out=(repo/"site/crypto-astro/index.html").read_text()
+          assert 'style="--btc-dominance:' in out
+          assert out.count('href="https://www.bhrigu.io/crypto-astro/btc"')==1
+          PY
+      - name: Open recovered implementation PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git checkout -b "$BRANCH"
+          git add "$HTML" "$RUNNER"
+          git rm "$ORIGINAL" "$SELF"
+          git commit -m "Crypto-Astro: close BTC deep visual and IP node"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" --title "Crypto-Astro: close BTC deep visual and IP node" --body "$(cat <<'BODY'
+          Recovered one-pass BTC deep-node closure after a fail-closed bootstrap indentation mismatch.
+
+          Includes:
+          - data-bound BTC dominance arc
+          - direct BTC Field Read as primary action
+          - duplicate flow strip removal
+          - asymmetric Aspect-Cycle relational field
+          - public IP vocabulary reduction
+          - three-family private research aperture
+          - fixture-only gravity geometry refresh binding
+          - removal of both one-time workflows
+
+          No data/proof refresh, A/E or C/T activation, backend, API, payment, runtime, forecast, trading signal, or ORION-core change.
+          BODY
+          )"
