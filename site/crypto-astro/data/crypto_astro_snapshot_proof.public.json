@@ -44,6 +44,16 @@
       "bytes": 132273
     },
     {
+      "label": "defillama_protocols",
+      "url": "https://api.llama.fi/v2/historicalChainTvl",
+      "status": "PASS",
+      "fetched_at_utc": "2026-07-19T18:27:10Z",
+      "sha256": "ca9e11e5a465ddbd8922ff6efd749e1764d94a7123cd6af806a450fca2ea42be",
+      "bytes": 132273,
+      "compatibility_alias_of": "defillama_global_tvl_ex_double_count",
+      "methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1"
+    },
+    {
       "label": "defillama_dex_overview",
       "url": "https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true",
       "status": "PASS",

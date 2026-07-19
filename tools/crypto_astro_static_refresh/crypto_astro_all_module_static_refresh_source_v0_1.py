@@ -46,6 +46,8 @@ STABLE_SYMBOLS = {"usdt","usdc","dai","usde","usds","fdusd","pyusd","tusd","usdd
 COINGECKO_DEMO_API_KEY = os.environ.get("COINGECKO_DEMO_API_KEY", "").strip()
 DEFI_TVL_SOURCE_LABEL = "defillama_global_tvl_ex_double_count"
 DEFI_TVL_SOURCE_URL = "https://api.llama.fi/v2/historicalChainTvl"
+DEFI_TVL_COMPATIBILITY_LABEL = "defillama_protocols"
+LEGACY_DEFI_TVL_SOURCE_URL = "https://api.llama.fi/protocols"
 DEFI_TVL_METHODOLOGY_ID = "defillama_historical_chain_tvl_ex_double_count_v0_1"
 DEFI_TVL_METHODOLOGY = (
     "DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking "
@@ -99,6 +101,27 @@ def safe_fetch(label, url, proof, timeout=25):
             "error": str(e)[:400]
         })
         return None
+
+def append_defi_tvl_compatibility_alias(proof):
+    """Expose the stable BTC-corridor proof label without reviving /protocols.
+
+    The alias is a byte-identical reference to the new historicalChainTvl
+    proof record. It is not another fetch and cannot participate in the TVL
+    calculation.
+    """
+    sources = [
+        source for source in proof.get("sources", [])
+        if source.get("label") == DEFI_TVL_SOURCE_LABEL
+    ]
+    if len(sources) != 1:
+        raise ValueError("expected one canonical DefiLlama TVL proof source")
+    alias = dict(sources[0])
+    alias.update({
+        "label": DEFI_TVL_COMPATIBILITY_LABEL,
+        "compatibility_alias_of": DEFI_TVL_SOURCE_LABEL,
+        "methodology_id": DEFI_TVL_METHODOLOGY_ID,
+    })
+    proof["sources"].append(alias)
 
 def latest_non_double_counted_tvl(history):
     """Return the newest valid DefiLlama global TVL point.
@@ -253,6 +276,7 @@ def main():
             proof,
             timeout=35,
         )
+        append_defi_tvl_compatibility_alias(proof)
         dexs = safe_fetch("defillama_dex_overview", "https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true", proof, timeout=35)
         stables_llama = safe_fetch("defillama_stablecoins", "https://stablecoins.llama.fi/stablecoins?includePrices=true", proof, timeout=35)
 
@@ -653,8 +677,16 @@ No push, no PR, no deploy.
                 and source.get("status") == "PASS"
                 for source in proof.get("sources", [])
             )
+            and any(
+                source.get("label") == DEFI_TVL_COMPATIBILITY_LABEL
+                and source.get("url") == DEFI_TVL_SOURCE_URL
+                and source.get("status") == "PASS"
+                and source.get("compatibility_alias_of") == DEFI_TVL_SOURCE_LABEL
+                and source.get("methodology_id") == DEFI_TVL_METHODOLOGY_ID
+                for source in proof.get("sources", [])
+            )
             and not any(
-                source.get("label") == "defillama_protocols"
+                source.get("url") == LEGACY_DEFI_TVL_SOURCE_URL
                 for source in proof.get("sources", [])
             )
         )

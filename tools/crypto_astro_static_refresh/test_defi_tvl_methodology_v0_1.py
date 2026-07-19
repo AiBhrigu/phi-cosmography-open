@@ -57,6 +57,18 @@ def build_fixture(repo):
                     "url": wrapper.DEFI_TVL_SOURCE_URL,
                     "status": "PASS",
                     "sha256": "a" * 64,
+                    "fetched_at_utc": "2026-07-19T00:00:00Z",
+                    "bytes": 100,
+                },
+                {
+                    "label": wrapper.DEFI_TVL_COMPATIBILITY_LABEL,
+                    "url": wrapper.DEFI_TVL_SOURCE_URL,
+                    "status": "PASS",
+                    "sha256": "a" * 64,
+                    "fetched_at_utc": "2026-07-19T00:00:00Z",
+                    "bytes": 100,
+                    "compatibility_alias_of": wrapper.DEFI_TVL_SOURCE_LABEL,
+                    "methodology_id": wrapper.DEFI_TVL_METHODOLOGY_ID,
                 }
             ]
         },
@@ -92,6 +104,7 @@ def build_fixture(repo):
 def main():
     assert primary.DEFI_TVL_SOURCE_URL == "https://api.llama.fi/v2/historicalChainTvl"
     assert primary.DEFI_TVL_SOURCE_LABEL == wrapper.DEFI_TVL_SOURCE_LABEL
+    assert primary.DEFI_TVL_COMPATIBILITY_LABEL == wrapper.DEFI_TVL_COMPATIBILITY_LABEL
     assert primary.DEFI_TVL_METHODOLOGY_ID == wrapper.DEFI_TVL_METHODOLOGY_ID
 
     value, timestamp = primary.latest_non_double_counted_tvl(
@@ -115,7 +128,8 @@ def main():
         ROOT / "crypto_astro_all_module_static_refresh_source_v0_1.py"
     ).read_text(encoding="utf-8")
     assert 'safe_fetch("defillama_protocols"' not in primary_source
-    assert '"https://api.llama.fi/protocols"' not in primary_source
+    assert "safe_fetch(DEFI_TVL_COMPATIBILITY_LABEL" not in primary_source
+    assert "fetch_json(LEGACY_DEFI_TVL_SOURCE_URL" not in primary_source
 
     with tempfile.TemporaryDirectory() as tmp:
         repo = Path(tmp)
@@ -126,13 +140,15 @@ def main():
 
         proof_path = repo / "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
         proof = json.loads(proof_path.read_text(encoding="utf-8"))
-        proof["sources"].append(
-            {"label": "defillama_protocols", "url": "legacy", "status": "PASS"}
+        compatibility = next(
+            source for source in proof["sources"]
+            if source["label"] == wrapper.DEFI_TVL_COMPATIBILITY_LABEL
         )
+        compatibility["url"] = wrapper.LEGACY_DEFI_TVL_SOURCE_URL
         write_json(proof_path, proof)
         report = {}
         assert not wrapper.validate_defi_tvl_methodology(repo, report)
-        assert "proof:legacy_protocol_sum_source_present" in report["validation"][
+        assert "proof:legacy_protocol_sum_url_present" in report["validation"][
             "defi_tvl_methodology_errors"
         ]
 
