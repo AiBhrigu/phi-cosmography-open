@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 
 NODE = "CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATED_RUNNER_v0_5"
 PRIMARY_RUNNER_DEFAULT = Path(os.environ.get('CRYPTO_ASTRO_PRIMARY_RUNNER', str(Path(__file__).resolve().parent / 'crypto_astro_all_module_static_refresh_source_v0_1.py')))
-EXPECTED_PRIMARY_SHA256 = "b844b18faa65d10abe2b9fb12be177f8a21705fede1fe6a1352d8abdda33f531"
+EXPECTED_PRIMARY_SHA256 = "b4f3ae13c154bd85d3a53af0b0df65fd9b89c391815f73b06b43cd499441d23b"
 OLD_BRANCH = 'feature/crypto-astro-all-module-static-refresh-v0-1'
 NEW_BRANCH = os.environ.get('CRYPTO_ASTRO_REFRESH_BRANCH', 'automation/crypto-astro-static-refresh-manual-v0-5')
 BASE_BRANCH = 'main'
@@ -47,6 +47,8 @@ OPTIONAL_SOURCES = {
 }
 DEFI_TVL_SOURCE_LABEL = 'defillama_global_tvl_ex_double_count'
 DEFI_TVL_SOURCE_URL = 'https://api.llama.fi/v2/historicalChainTvl'
+DEFI_TVL_COMPATIBILITY_LABEL = 'defillama_protocols'
+LEGACY_DEFI_TVL_SOURCE_URL = 'https://api.llama.fi/protocols'
 DEFI_TVL_METHODOLOGY_ID = 'defillama_historical_chain_tvl_ex_double_count_v0_1'
 DEFI_TVL_METHODOLOGY = (
     'DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking '
@@ -445,8 +447,8 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     def replace_visual_score(source, label, score_value, score_width, key):
         pattern = (
             rf'(<div class="visual-row-v0-1"><span>{re.escape(label)}</span>'
-            rf'<div class="visual-rail-v0-1"><i style="width:)[^%]+'
-            rf'(%;?"></i></div><span class="visual-value-v0-1">)[^<]+(</span></div>)'
+            rf'<div class="visual-rail-v0-1"><i style="width:)[^"]+'
+            rf'("></i></div><span class="visual-value-v0-1">)[^<]+(</span></div>)'
         )
         return replace_counted(
             source,
@@ -496,7 +498,7 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
             pattern = (
                 rf'(<div class="distributed-rail-v0-1" aria-label="{re.escape(aria_label)}">.*?'
                 rf'<span>{re.escape(row_label)}</span><div class="distributed-track-v0-1">'
-                rf'<i style="width:)[^%]+(%"></i></div><span class="distributed-value-v0-1">)'
+                rf'<i style="width:)[^"]+("></i></div><span class="distributed-value-v0-1">)'
                 rf'[^<]+(</span>)'
             )
             repl = lambda m: f"{m.group(1)}{width}{m.group(2)}{value}{m.group(3)}"
@@ -765,8 +767,24 @@ def validate_defi_tvl_methodology(repo: Path, report: dict) -> bool:
             errors.append('proof:methodology_source_contract')
         if not re.fullmatch(r'[0-9a-f]{64}', str(source.get('sha256') or '')):
             errors.append('proof:methodology_source_sha256')
-    if any(source.get('label') == 'defillama_protocols' for source in proof_sources):
-        errors.append('proof:legacy_protocol_sum_source_present')
+    compatibility_sources = [
+        source for source in proof_sources
+        if source.get('label') == DEFI_TVL_COMPATIBILITY_LABEL
+    ]
+    if len(compatibility_sources) != 1:
+        errors.append(f'proof:compatibility_alias_count={len(compatibility_sources)}')
+    elif len(methodology_sources) == 1:
+        canonical = methodology_sources[0]
+        compatibility = compatibility_sources[0]
+        matching_fields = ('url', 'status', 'fetched_at_utc', 'sha256', 'bytes')
+        if (
+            any(compatibility.get(key) != canonical.get(key) for key in matching_fields)
+            or compatibility.get('compatibility_alias_of') != DEFI_TVL_SOURCE_LABEL
+            or compatibility.get('methodology_id') != DEFI_TVL_METHODOLOGY_ID
+        ):
+            errors.append('proof:compatibility_alias_contract')
+    if any(source.get('url') == LEGACY_DEFI_TVL_SOURCE_URL for source in proof_sources):
+        errors.append('proof:legacy_protocol_sum_url_present')
 
     binding = ((bindings.get('modules') or {}).get('liquidity_tvl') or {})
     if binding.get('methodology_id') != DEFI_TVL_METHODOLOGY_ID:
