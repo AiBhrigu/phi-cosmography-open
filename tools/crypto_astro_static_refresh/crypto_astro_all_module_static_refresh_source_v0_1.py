@@ -44,6 +44,13 @@ ASSET_IDS = {
 STABLE_SYMBOLS = {"usdt","usdc","dai","usde","usds","fdusd","pyusd","tusd","usdd","usdb","frax","lusd","crvusd","usdp"}
 
 COINGECKO_DEMO_API_KEY = os.environ.get("COINGECKO_DEMO_API_KEY", "").strip()
+DEFI_TVL_SOURCE_LABEL = "defillama_global_tvl_ex_double_count"
+DEFI_TVL_SOURCE_URL = "https://api.llama.fi/v2/historicalChainTvl"
+DEFI_TVL_METHODOLOGY_ID = "defillama_historical_chain_tvl_ex_double_count_v0_1"
+DEFI_TVL_METHODOLOGY = (
+    "DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking "
+    "and double-counted TVL."
+)
 
 def now_iso():
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00","Z")
@@ -92,6 +99,34 @@ def safe_fetch(label, url, proof, timeout=25):
             "error": str(e)[:400]
         })
         return None
+
+def latest_non_double_counted_tvl(history):
+    """Return the newest valid DefiLlama global TVL point.
+
+    The historicalChainTvl endpoint is the documented global series that
+    excludes liquid staking and double-counted TVL. Never rebuild this value
+    by summing the per-protocol `/protocols` response.
+    """
+    if not isinstance(history, list):
+        raise ValueError("DefiLlama historicalChainTvl response is not a list")
+    points = []
+    for item in history:
+        if not isinstance(item, dict):
+            continue
+        try:
+            timestamp = int(item.get("date"))
+            tvl = float(item.get("tvl"))
+        except (TypeError, ValueError):
+            continue
+        if timestamp > 0 and tvl > 0 and math.isfinite(tvl):
+            points.append((timestamp, tvl))
+    if not points:
+        raise ValueError("DefiLlama historicalChainTvl has no positive points")
+    timestamp, tvl = max(points, key=lambda point: point[0])
+    source_timestamp = datetime.fromtimestamp(timestamp, timezone.utc).replace(
+        microsecond=0
+    ).isoformat().replace("+00:00", "Z")
+    return tvl, source_timestamp
 
 def usd_compact(n):
     if n is None:
@@ -211,8 +246,13 @@ def main():
         })
         stable_markets = safe_fetch("coingecko_stablecoin_sample", stable_url, proof)
 
-        # DefiLlama optional
-        protocols = safe_fetch("defillama_protocols", "https://api.llama.fi/protocols", proof, timeout=35)
+        # DefiLlama global TVL uses the documented non-double-counted series.
+        tvl_history = safe_fetch(
+            DEFI_TVL_SOURCE_LABEL,
+            DEFI_TVL_SOURCE_URL,
+            proof,
+            timeout=35,
+        )
         dexs = safe_fetch("defillama_dex_overview", "https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true", proof, timeout=35)
         stables_llama = safe_fetch("defillama_stablecoins", "https://stablecoins.llama.fi/stablecoins?includePrices=true", proof, timeout=35)
 
@@ -235,9 +275,7 @@ def main():
         stable_cap = stable_cap_llama or stable_cap_cg
         stable_share = (stable_cap / total_market_cap * 100) if (stable_cap and total_market_cap) else None
 
-        tvl = None
-        if isinstance(protocols, list):
-            tvl = sum(float(p.get("tvl") or 0) for p in protocols if p.get("tvl") is not None)
+        tvl, tvl_source_timestamp = latest_non_double_counted_tvl(tvl_history)
         dex_volume = None
         if isinstance(dexs, dict):
             dex_volume = dexs.get("total24h") or dexs.get("totalVolume24h")
@@ -348,6 +386,13 @@ def main():
             "liquidity_tvl": {
                 "stablecoin_cap_usd": stable_cap,
                 "defi_tvl_usd": tvl,
+                "defi_tvl_source_label": DEFI_TVL_SOURCE_LABEL,
+                "defi_tvl_source_url": DEFI_TVL_SOURCE_URL,
+                "defi_tvl_source_timestamp_utc": tvl_source_timestamp,
+                "defi_tvl_methodology_id": DEFI_TVL_METHODOLOGY_ID,
+                "defi_tvl_methodology": DEFI_TVL_METHODOLOGY,
+                "defi_tvl_excludes_liquid_staking": True,
+                "defi_tvl_excludes_double_counted": True,
                 "dex_volume_24h_usd": dex_volume,
                 "liquidity_context_state": liq_state,
                 "calibration_state": "context_only"
@@ -377,7 +422,12 @@ def main():
                 "astromodule": {"source": "static_public_context", "anchor": "astromodule-surface-bridge"},
                 "support_lanes": {"source": "static_public_context", "anchor": "CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1"},
                 "cosmographer_read": {"source": "field_output + liquidity_tvl", "anchor": "Cosmographer Read"},
-                "liquidity_tvl": {"source": "liquidity_tvl", "anchor": "Liquidity / TVL"},
+                "liquidity_tvl": {
+                    "source": "liquidity_tvl.defi_tvl_usd",
+                    "anchor": "Liquidity / TVL",
+                    "methodology_id": DEFI_TVL_METHODOLOGY_ID,
+                    "proof_source": DEFI_TVL_SOURCE_LABEL,
+                },
                 "altcoin_rotation": {"source": "altcoin_rotation", "anchor": "alt-rotation-module"},
                 "public_sample_ton_icp": {"source": "public_samples.TON + public_samples.ICP", "anchor": "CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1"},
                 "btc_eth_sol_sample": {"source": "public_samples.BTC + public_samples.ETH + public_samples.SOL", "anchor": "crypto_astro_snapshot.public.json"},
@@ -406,6 +456,10 @@ def main():
             report["status"] = "HOLD"
             report["reason"] = "CRITICAL_MARKET_SOURCE_FIELDS_MISSING"
             raise RuntimeError("critical CoinGecko fields missing")
+        if not tvl or not tvl_source_timestamp:
+            report["status"] = "HOLD"
+            report["reason"] = "CRITICAL_DEFI_TVL_SOURCE_FIELDS_MISSING"
+            raise RuntimeError("critical non-double-counted DefiLlama TVL missing")
 
         # Patch HTML exact known anchors / literals.
         replacements = []
@@ -534,6 +588,8 @@ SOURCE_MODE=static_public_snapshot
 
 - Stablecoin Cap: {usd_compact(stable_cap)}
 - DeFi TVL: {usd_compact(tvl)}
+- DeFi TVL Source Date: {tvl_source_timestamp}
+- DeFi TVL Methodology: {DEFI_TVL_METHODOLOGY}
 - DEX Volume 24h: {usd_compact(dex_volume)}
 - Liquidity Health: {liq_state}
 
@@ -586,6 +642,23 @@ No push, no PR, no deploy.
             json.loads(p.read_text(encoding="utf-8"))
         report["validation"]["JSON_PARSE"] = "PASS"
         report["validation"]["SCHEMA_VALIDATION"] = "PASS" if bindings.get("schema_version") == "crypto_astro_public_module_bindings_v0_1" else "FAIL"
+        tvl_methodology_ok = (
+            snapshot["liquidity_tvl"].get("defi_tvl_methodology_id") == DEFI_TVL_METHODOLOGY_ID
+            and snapshot["liquidity_tvl"].get("defi_tvl_source_url") == DEFI_TVL_SOURCE_URL
+            and snapshot["liquidity_tvl"].get("defi_tvl_excludes_liquid_staking") is True
+            and snapshot["liquidity_tvl"].get("defi_tvl_excludes_double_counted") is True
+            and any(
+                source.get("label") == DEFI_TVL_SOURCE_LABEL
+                and source.get("url") == DEFI_TVL_SOURCE_URL
+                and source.get("status") == "PASS"
+                for source in proof.get("sources", [])
+            )
+            and not any(
+                source.get("label") == "defillama_protocols"
+                for source in proof.get("sources", [])
+            )
+        )
+        report["validation"]["DEFI_TVL_METHODOLOGY"] = "PASS" if tvl_methodology_ok else "FAIL"
 
         changed = run(["git","status","--porcelain"], repo, check=False).splitlines()
         changed_files = []
@@ -680,7 +753,7 @@ No push, no PR, no deploy.
         print(f"VALIDATION_REPORT_PATH={rel(report_path)}")
         print(f"VALIDATION_REPORT_SHA256={validation_sha}")
         print("VALIDATION:")
-        for k in ["JSON_PARSE","SCHEMA_VALIDATION","EXACT_FILE_ALLOWLIST","FORBIDDEN_SCAN","BOUNDARY_SCAN","OLD_LITERAL_CHECK"]:
+        for k in ["JSON_PARSE","SCHEMA_VALIDATION","DEFI_TVL_METHODOLOGY","EXACT_FILE_ALLOWLIST","FORBIDDEN_SCAN","BOUNDARY_SCAN","OLD_LITERAL_CHECK"]:
             print(f"{k}={report['validation'].get(k,'HOLD')}")
         print(f"LOCAL_PREVIEW_READY={report.get('local_preview_ready','NO')}")
         print("PUSH=NO")
@@ -721,6 +794,7 @@ No push, no PR, no deploy.
         print("VALIDATION:")
         print(f"JSON_PARSE={report['validation'].get('JSON_PARSE','HOLD')}")
         print(f"SCHEMA_VALIDATION={report['validation'].get('SCHEMA_VALIDATION','HOLD')}")
+        print(f"DEFI_TVL_METHODOLOGY={report['validation'].get('DEFI_TVL_METHODOLOGY','HOLD')}")
         print(f"EXACT_FILE_ALLOWLIST={report['validation'].get('EXACT_FILE_ALLOWLIST','HOLD')}")
         print(f"FORBIDDEN_SCAN={report['validation'].get('FORBIDDEN_SCAN','HOLD')}")
         print(f"BOUNDARY_SCAN={report['validation'].get('BOUNDARY_SCAN','HOLD')}")
