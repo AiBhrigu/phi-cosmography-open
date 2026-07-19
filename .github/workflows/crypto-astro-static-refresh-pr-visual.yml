@@ -8,7 +8,8 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   visual:
@@ -20,7 +21,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install browser driver
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
 
       - name: Start static preview
         run: |
@@ -139,6 +140,89 @@ jobs:
               Path("artifacts/visual-report.json").write_text(
                   json.dumps(report, ensure_ascii=False, indent=2) + "\n"
               )
+          PY
+
+      - name: Create visual contact sheets
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+
+          def sheet(mode, cell_width, cell_height, columns=2):
+              labels = ("btc-hub", "market", "sample", "scoring")
+              rows = (len(labels) + columns - 1) // columns
+              canvas = Image.new("RGB", (cell_width * columns, cell_height * rows), "#050914")
+              draw = ImageDraw.Draw(canvas)
+              for index, label in enumerate(labels):
+                  path = Path(f"artifacts/{mode}-{label}.png")
+                  image = Image.open(path).convert("RGB")
+                  image.thumbnail((cell_width, cell_height - 28))
+                  x = (index % columns) * cell_width
+                  y = (index // columns) * cell_height
+                  canvas.paste(image, (x, y + 28))
+                  draw.text((x + 10, y + 8), f"{mode} · {label}", fill="#f7d47d")
+              output = Path(f"artifacts/{mode}-contact-sheet.jpg")
+              canvas.save(output, quality=72, optimize=True)
+
+          sheet("desktop", 720, 520)
+          sheet("mobile", 390, 872)
+          PY
+
+      - name: Publish ephemeral visual blob references
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.request
+          from pathlib import Path
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          pr_number = os.environ["PR_NUMBER"]
+          api = "https://api.github.com"
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "Content-Type": "application/json",
+          }
+
+          def post(path, payload):
+              request = urllib.request.Request(
+                  api + path,
+                  data=json.dumps(payload).encode(),
+                  headers=headers,
+                  method="POST",
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          blobs = {}
+          for mode in ("desktop", "mobile"):
+              raw = Path(f"artifacts/{mode}-contact-sheet.jpg").read_bytes()
+              result = post(
+                  f"/repos/{repository}/git/blobs",
+                  {"content": base64.b64encode(raw).decode(), "encoding": "base64"},
+              )
+              blobs[mode] = result["sha"]
+
+          marker = "<!-- CRYPTO_ASTRO_VISUAL_BLOBS_v0_1 -->"
+          body = "\n".join([
+              marker,
+              "Automated Crypto-Astro visual evidence is ready.",
+              f"RUN_ID={os.environ['GITHUB_RUN_ID']}",
+              f"HEAD_SHA={os.environ['GITHUB_SHA']}",
+              f"DESKTOP_BLOB_SHA={blobs['desktop']}",
+              f"MOBILE_BLOB_SHA={blobs['mobile']}",
+              "Scope: desktop/mobile contact sheets for BTC Hub, Market, TON/ICP, and Scoring.",
+          ])
+          post(f"/repos/{repository}/issues/{pr_number}/comments", {"body": body})
           PY
 
       - name: Upload visual evidence
