@@ -32,7 +32,8 @@
       "source": "liquidity_tvl.defi_tvl_usd",
       "anchor": "Liquidity / TVL",
       "methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
-      "proof_source": "defillama_global_tvl_ex_double_count"
+      "proof_source": "defillama_protocols",
+      "canonical_source_id": "defillama_global_tvl_ex_double_count"
     },
     "altcoin_rotation": {
       "source": "altcoin_rotation",

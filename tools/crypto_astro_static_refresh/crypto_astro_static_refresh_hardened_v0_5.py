@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 
 NODE = "CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATED_RUNNER_v0_5"
 PRIMARY_RUNNER_DEFAULT = Path(os.environ.get('CRYPTO_ASTRO_PRIMARY_RUNNER', str(Path(__file__).resolve().parent / 'crypto_astro_all_module_static_refresh_source_v0_1.py')))
-EXPECTED_PRIMARY_SHA256 = "b4f3ae13c154bd85d3a53af0b0df65fd9b89c391815f73b06b43cd499441d23b"
+EXPECTED_PRIMARY_SHA256 = "97912567f9d04b3d5daa80dcd327dc40950c43629d309a83da09ab53cb2a943b"
 OLD_BRANCH = 'feature/crypto-astro-all-module-static-refresh-v0-1'
 NEW_BRANCH = os.environ.get('CRYPTO_ASTRO_REFRESH_BRANCH', 'automation/crypto-astro-static-refresh-manual-v0-5')
 BASE_BRANCH = 'main'
@@ -38,16 +38,16 @@ CRITICAL_SOURCES = {
     'coingecko_global',
     'coingecko_asset_markets_btc_eth_sol_ton_icp',
     'coingecko_top250_markets',
-    'defillama_global_tvl_ex_double_count',
+    'defillama_protocols',
 }
 OPTIONAL_SOURCES = {
     'coingecko_stablecoin_sample',
     'defillama_dex_overview',
     'defillama_stablecoins',
 }
-DEFI_TVL_SOURCE_LABEL = 'defillama_global_tvl_ex_double_count'
+DEFI_TVL_SOURCE_LABEL = 'defillama_protocols'
+DEFI_TVL_CANONICAL_SOURCE_ID = 'defillama_global_tvl_ex_double_count'
 DEFI_TVL_SOURCE_URL = 'https://api.llama.fi/v2/historicalChainTvl'
-DEFI_TVL_COMPATIBILITY_LABEL = 'defillama_protocols'
 LEGACY_DEFI_TVL_SOURCE_URL = 'https://api.llama.fi/protocols'
 DEFI_TVL_METHODOLOGY_ID = 'defillama_historical_chain_tvl_ex_double_count_v0_1'
 DEFI_TVL_METHODOLOGY = (
@@ -585,6 +585,7 @@ def update_bindings(repo: Path, snapshot: dict) -> dict:
         'anchor': 'Liquidity / TVL',
         'methodology_id': DEFI_TVL_METHODOLOGY_ID,
         'proof_source': DEFI_TVL_SOURCE_LABEL,
+        'canonical_source_id': DEFI_TVL_CANONICAL_SOURCE_ID,
     }
     data.setdefault('boundary', {}).update(BOUNDARY)
     write_json(path, data)
@@ -635,6 +636,7 @@ def update_market_field(repo: Path, snapshot: dict) -> dict:
                 'stablecoin_cap_usd': liq.get('stablecoin_cap_usd') or mr.get('stablecoin_cap_usd'),
                 'defi_tvl_usd': liq.get('defi_tvl_usd'),
                 'defi_tvl_source_label': liq.get('defi_tvl_source_label'),
+                'defi_tvl_canonical_source_id': liq.get('defi_tvl_canonical_source_id'),
                 'defi_tvl_source_url': liq.get('defi_tvl_source_url'),
                 'defi_tvl_source_timestamp_utc': liq.get('defi_tvl_source_timestamp_utc'),
                 'defi_tvl_methodology_id': liq.get('defi_tvl_methodology_id'),
@@ -736,6 +738,7 @@ def validate_defi_tvl_methodology(repo: Path, report: dict) -> bool:
     liquidity = snapshot.get('liquidity_tvl') or {}
     expected_fields = {
         'defi_tvl_source_label': DEFI_TVL_SOURCE_LABEL,
+        'defi_tvl_canonical_source_id': DEFI_TVL_CANONICAL_SOURCE_ID,
         'defi_tvl_source_url': DEFI_TVL_SOURCE_URL,
         'defi_tvl_methodology_id': DEFI_TVL_METHODOLOGY_ID,
         'defi_tvl_methodology': DEFI_TVL_METHODOLOGY,
@@ -767,22 +770,6 @@ def validate_defi_tvl_methodology(repo: Path, report: dict) -> bool:
             errors.append('proof:methodology_source_contract')
         if not re.fullmatch(r'[0-9a-f]{64}', str(source.get('sha256') or '')):
             errors.append('proof:methodology_source_sha256')
-    compatibility_sources = [
-        source for source in proof_sources
-        if source.get('label') == DEFI_TVL_COMPATIBILITY_LABEL
-    ]
-    if len(compatibility_sources) != 1:
-        errors.append(f'proof:compatibility_alias_count={len(compatibility_sources)}')
-    elif len(methodology_sources) == 1:
-        canonical = methodology_sources[0]
-        compatibility = compatibility_sources[0]
-        matching_fields = ('url', 'status', 'fetched_at_utc', 'sha256', 'bytes')
-        if (
-            any(compatibility.get(key) != canonical.get(key) for key in matching_fields)
-            or compatibility.get('compatibility_alias_of') != DEFI_TVL_SOURCE_LABEL
-            or compatibility.get('methodology_id') != DEFI_TVL_METHODOLOGY_ID
-        ):
-            errors.append('proof:compatibility_alias_contract')
     if any(source.get('url') == LEGACY_DEFI_TVL_SOURCE_URL for source in proof_sources):
         errors.append('proof:legacy_protocol_sum_url_present')
 
@@ -791,10 +778,14 @@ def validate_defi_tvl_methodology(repo: Path, report: dict) -> bool:
         errors.append('bindings:methodology_id')
     if binding.get('proof_source') != DEFI_TVL_SOURCE_LABEL:
         errors.append('bindings:proof_source')
+    if binding.get('canonical_source_id') != DEFI_TVL_CANONICAL_SOURCE_ID:
+        errors.append('bindings:canonical_source_id')
 
     market_liquidity = (((market_field.get('vectors') or {}).get('M_market')) or {})
     if market_liquidity.get('defi_tvl_methodology_id') != DEFI_TVL_METHODOLOGY_ID:
         errors.append('market_field:methodology_id')
+    if market_liquidity.get('defi_tvl_canonical_source_id') != DEFI_TVL_CANONICAL_SOURCE_ID:
+        errors.append('market_field:canonical_source_id')
     if market_liquidity.get('defi_tvl_excludes_double_counted') is not True:
         errors.append('market_field:excludes_double_counted')
     try:
