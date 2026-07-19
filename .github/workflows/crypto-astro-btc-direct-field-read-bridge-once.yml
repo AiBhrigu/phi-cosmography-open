@@ -45,6 +45,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("site/crypto-astro/index.html")
           text = path.read_text(encoding="utf-8")
@@ -151,24 +152,40 @@ jobs:
           '''
           text = text.replace(css_anchor, css + "\n" + css_anchor, 1)
 
-          html_anchor = '''  <div class="btc-phi-cycle-read-strip-v0-3" aria-label="BTC Phi Cycle compact analytic read">
-            <span>Market gravity</span>
-            <span>Aspect pressure</span>
-            <span>Timing corridor</span>
-            <span>Operator review</span>
-          </div>'''
-          if text.count(html_anchor) != 1:
-              raise SystemExit(f"HTML anchor count mismatch: {text.count(html_anchor)}")
+          pattern = re.compile(
+              r'(?P<indent>^[ \t]*)<div class="btc-phi-cycle-read-strip-v0-3" aria-label="BTC Phi Cycle compact analytic read">\s*'
+              r'<span>Market gravity</span>\s*'
+              r'<span>Aspect pressure</span>\s*'
+              r'<span>Timing corridor</span>\s*'
+              r'<span>Operator review</span>\s*'
+              r'</div>',
+              re.MULTILINE,
+          )
+          matches = list(pattern.finditer(text))
+          if len(matches) != 1:
+              raise SystemExit(f"HTML anchor count mismatch: {len(matches)}")
 
-          bridge = html_anchor + r'''
-          <!-- CRYPTO_ASTRO_BTC_GRAVITY_DIRECT_FIELD_READ_BRIDGE_v0_1:BEGIN -->
-          <a class="btc-field-read-entry-v0-1" href="https://www.bhrigu.io/crypto-astro/btc" aria-label="Enter BTC Field Read and ask one BTC field question">
-            <span class="btc-field-read-entry-glyph-v0-1" aria-hidden="true">Φ</span>
-            <strong>Enter BTC Field Read</strong>
-            <em>Ask one BTC field question</em>
-          </a>
-          <!-- CRYPTO_ASTRO_BTC_GRAVITY_DIRECT_FIELD_READ_BRIDGE_v0_1:END -->'''
-          text = text.replace(html_anchor, bridge, 1)
+          match = matches[0]
+          indent = match.group("indent")
+          direct_bridge = (
+              match.group(0)
+              + "\n"
+              + indent
+              + "<!-- CRYPTO_ASTRO_BTC_GRAVITY_DIRECT_FIELD_READ_BRIDGE_v0_1:BEGIN -->\n"
+              + indent
+              + '<a class="btc-field-read-entry-v0-1" href="https://www.bhrigu.io/crypto-astro/btc" aria-label="Enter BTC Field Read and ask one BTC field question">\n'
+              + indent
+              + '  <span class="btc-field-read-entry-glyph-v0-1" aria-hidden="true">Φ</span>\n'
+              + indent
+              + '  <strong>Enter BTC Field Read</strong>\n'
+              + indent
+              + '  <em>Ask one BTC field question</em>\n'
+              + indent
+              + '</a>\n'
+              + indent
+              + "<!-- CRYPTO_ASTRO_BTC_GRAVITY_DIRECT_FIELD_READ_BRIDGE_v0_1:END -->"
+          )
+          text = text[:match.start()] + direct_bridge + text[match.end():]
 
           required = [
               "https://www.bhrigu.io/crypto-astro/btc",
