@@ -301,6 +301,7 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     html = replace_counted(html, r'(<div class="alt-map-label"><span>7D Persistence</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['alt7']}{m.group(2)}", 'alt_map:7d', counts)
     html = replace_counted(html, r'(<div class="alt-map-label"><span>Top-10 Flow</span><strong>)[^<]+(</strong></div>)', lambda m: f"{m.group(1)}{vals['top10']}{m.group(2)}", 'alt_map:top10', counts)
     html = replace_counted(html, r'(<span>CoinGecko snapshot</span>\s*<span>)[^<]+(</span>)', lambda m: f"{m.group(1)}{generated_at}{m.group(2)}", 'timestamp:coingecko_snapshot', counts)
+    # BTC_DEEP_NODE_VISUAL_IP_CLOSURE_v0_1
     # CRYPTO_ASTRO_V11_VISIBLE_COHERENCE_BINDINGS_v0_1
     field = snapshot.get('field_output') or {}
     samples = ((snapshot.get('public_samples') or {}).get('assets') or {})
@@ -319,11 +320,24 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
 
     html = replace_counted(
         html,
-        r'(<div class="btc-quiet-phi-core-v0-3">\s*<span>BTC</span>\s*<strong>)[^<]+(</strong>)',
+        r'(<div class="btc-quiet-phi-core-v0-3" style="--btc-dominance:[^"]+">\s*<span>BTC</span>\s*<strong>)[^<]+(</strong>)',
         lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
         'btc_hub:quiet_gravity',
         counts,
     )
+    html = replace_counted(
+        html,
+        r'(<div class="btc-quiet-phi-core-v0-3" style="--btc-dominance:)[^;"]+(;">)',
+        lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+        'btc_hub:gravity_geometry',
+        counts,
+    )
+    for required_binding in ('btc_hub:quiet_gravity', 'btc_hub:gravity_geometry'):
+        if counts.get(required_binding) != 1:
+            raise RuntimeError(
+                f"BTC deep-node binding mismatch: "
+                f"{required_binding}={counts.get(required_binding, 0)}"
+            )
     html = replace_counted(
         html,
         r'(\.metric-rail\.eth-anchor i \{ width:)[^;]+(; \})',
