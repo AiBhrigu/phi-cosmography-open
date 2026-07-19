@@ -1,0 +1,239 @@
+name: Crypto-Astro Static Refresh PR Visual
+
+on:
+  pull_request:
+    paths:
+      - "site/crypto-astro/**"
+      - "tools/crypto_astro_static_refresh/**"
+      - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  visual:
+    name: Render desktop and mobile evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install browser driver
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Start static preview
+        run: |
+          python3 -m http.server 4173 --directory site >/tmp/crypto-astro-preview.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat /tmp/crypto-astro-preview.log
+          exit 1
+
+      - name: Render and verify snapshot bindings
+        run: |
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import json
+          import time
+          from pathlib import Path
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.support.ui import WebDriverWait
+
+          snapshot = json.loads(Path("site/crypto-astro/data/crypto_astro_snapshot.public.json").read_text())
+          generated = snapshot["generated_at_utc"]
+          field_score = str(round(float(snapshot["field_output"]["market_field_score"])))
+          assets = snapshot["public_samples"]["assets"]
+          expected_ton = f'{float(assets["TON"]["score"]):.2f}'
+          expected_icp = f'{float(assets["ICP"]["score"]):.2f}'
+          expected_coverage = f'{len(assets)} assets · 3 displayed'
+
+          options = webdriver.ChromeOptions()
+          options.add_argument("--headless=new")
+          options.add_argument("--no-sandbox")
+          options.add_argument("--disable-dev-shm-usage")
+          options.add_argument("--hide-scrollbars")
+          options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
+
+          driver = webdriver.Chrome(options=options)
+          report = {"generated_at_utc": generated, "viewports": {}, "assertions": {}}
+          try:
+              driver.set_window_size(1440, 1000)
+              driver.get("http://127.0.0.1:4173/crypto-astro/index.html")
+              WebDriverWait(driver, 20).until(
+                  lambda d: d.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge").text.strip()
+              )
+
+              orb = driver.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge")
+              report["assertions"]["field_score"] = orb.text.strip()
+              assert orb.text.strip() == field_score
+              assert orb.get_attribute("aria-label") == f"Market Field Score {field_score} out of 100"
+
+              btc_hub = driver.find_element(By.CSS_SELECTOR, "#btc-phi-cycle-hub").text
+              sample_panel = driver.find_element(
+                  By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]'
+              ).text
+              scoring = driver.find_element(By.CSS_SELECTOR, "#scoring").text
+              assert generated in btc_hub
+              assert expected_ton in sample_panel
+              assert expected_icp in sample_panel
+              assert expected_coverage in scoring
+              assert "static · no schedule" in scoring
+              report["assertions"].update({
+                  "btc_timestamp": generated,
+                  "ton_score": expected_ton,
+                  "icp_score": expected_icp,
+                  "scoring_coverage": expected_coverage,
+                  "heartbeat": "static · no schedule",
+              })
+
+              targets = {
+                  "btc-hub": "#btc-phi-cycle-hub",
+                  "market": "#market",
+                  "sample": '[aria-label="Crypto-Astro Public Sample Web Panel"]',
+                  "scoring": "#scoring",
+              }
+              for mode, width, height in (
+                  ("desktop", 1440, 1000),
+                  ("mobile", 390, 844),
+              ):
+                  driver.set_window_size(width, height)
+                  driver.refresh()
+                  WebDriverWait(driver, 20).until(
+                      lambda d: d.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge").text.strip()
+                  )
+                  scroll_width = driver.execute_script("return document.documentElement.scrollWidth")
+                  inner_width = driver.execute_script("return window.innerWidth")
+                  report["viewports"][mode] = {
+                      "requested": [width, height],
+                      "inner_width": inner_width,
+                      "scroll_width": scroll_width,
+                      "screenshots": [],
+                  }
+                  assert scroll_width <= inner_width + 1, (
+                      f"{mode} horizontal overflow: scroll={scroll_width}, inner={inner_width}"
+                  )
+                  for label, selector in targets.items():
+                      element = driver.find_element(By.CSS_SELECTOR, selector)
+                      target_y = driver.execute_script(
+                          "document.documentElement.style.scrollBehavior='auto';"
+                          "document.body.style.scrollBehavior='auto';"
+                          "return arguments[0].getBoundingClientRect().top + window.scrollY;",
+                          element,
+                      )
+                      driver.execute_script("window.scrollTo(0, arguments[0]);", max(0, target_y - 8))
+                      time.sleep(0.35)
+                      output = f"artifacts/{mode}-{label}.png"
+                      driver.save_screenshot(output)
+                      report["viewports"][mode]["screenshots"].append(output)
+
+              severe = [
+                  entry for entry in driver.get_log("browser")
+                  if entry.get("level") == "SEVERE"
+                  and "favicon" not in entry.get("message", "").lower()
+              ]
+              report["browser_severe"] = severe
+              assert not severe, severe
+          finally:
+              driver.quit()
+              Path("artifacts/visual-report.json").write_text(
+                  json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+              )
+          PY
+
+      - name: Create visual contact sheets
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+
+          def sheet(mode, cell_width, cell_height, columns=2):
+              labels = ("btc-hub", "market", "sample", "scoring")
+              rows = (len(labels) + columns - 1) // columns
+              canvas = Image.new("RGB", (cell_width * columns, cell_height * rows), "#050914")
+              draw = ImageDraw.Draw(canvas)
+              for index, label in enumerate(labels):
+                  path = Path(f"artifacts/{mode}-{label}.png")
+                  image = Image.open(path).convert("RGB")
+                  image.thumbnail((cell_width, cell_height - 28))
+                  x = (index % columns) * cell_width
+                  y = (index // columns) * cell_height
+                  canvas.paste(image, (x, y + 28))
+                  draw.text((x + 10, y + 8), f"{mode} · {label}", fill="#f7d47d")
+              output = Path(f"artifacts/{mode}-contact-sheet.jpg")
+              canvas.save(output, quality=72, optimize=True)
+
+          sheet("desktop", 720, 520)
+          sheet("mobile", 390, 872)
+          PY
+
+      - name: Publish ephemeral visual blob references
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.request
+          from pathlib import Path
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          pr_number = os.environ["PR_NUMBER"]
+          api = "https://api.github.com"
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "Content-Type": "application/json",
+          }
+
+          def post(path, payload):
+              request = urllib.request.Request(
+                  api + path,
+                  data=json.dumps(payload).encode(),
+                  headers=headers,
+                  method="POST",
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          blobs = {}
+          for mode in ("desktop", "mobile"):
+              raw = Path(f"artifacts/{mode}-contact-sheet.jpg").read_bytes()
+              result = post(
+                  f"/repos/{repository}/git/blobs",
+                  {"content": base64.b64encode(raw).decode(), "encoding": "utf-8"},
+              )
+              blobs[mode] = result["sha"]
+
+          marker = "<!-- CRYPTO_ASTRO_VISUAL_BLOBS_v0_1 -->"
+          body = "\n".join([
+              marker,
+              "Automated Crypto-Astro visual evidence is ready.",
+              f"RUN_ID={os.environ['GITHUB_RUN_ID']}",
+              f"HEAD_SHA={os.environ['GITHUB_SHA']}",
+              f"DESKTOP_BLOB_SHA={blobs['desktop']}",
+              f"MOBILE_BLOB_SHA={blobs['mobile']}",
+              "Scope: desktop/mobile contact sheets for BTC Hub, Market, TON/ICP, and Scoring.",
+          ])
+          post(f"/repos/{repository}/issues/{pr_number}/comments", {"body": body})
+          PY
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-pr-visual-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

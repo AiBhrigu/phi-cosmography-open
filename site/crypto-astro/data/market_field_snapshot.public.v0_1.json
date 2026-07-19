@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_1",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-07-12T22:05:46Z",
+  "updated_at_utc": "2026-07-19T17:08:08Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -27,15 +27,15 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2277899133239.1006,
-      "market_cap_change_24h_pct": -0.43613500670648214,
-      "volume_24h_usd": 45010057924.04504,
-      "btc_dominance_pct": 56.21621132126818,
-      "stablecoin_share_pct": 13.683691685333388,
-      "stablecoin_cap_usd": 311700694295.3201,
-      "defi_tvl_usd": 483272549277.112,
-      "dex_volume_24h_usd": 5425506417,
-      "market_breadth_pct": 26.5,
+      "total_market_cap_usd": 2289691286817.646,
+      "market_cap_change_24h_pct": 0.144765165670916,
+      "volume_24h_usd": 40442729435.46828,
+      "btc_dominance_pct": 56.49276695482429,
+      "stablecoin_share_pct": 13.485977733613113,
+      "stablecoin_cap_usd": 308787257108.70734,
+      "defi_tvl_usd": 484595166075.36224,
+      "dex_volume_24h_usd": 4649966028,
+      "market_breadth_pct": 39.9,
       "liquidity_health": "context fresh"
     },
     "CT_temporal": {
@@ -50,15 +50,15 @@
     }
   },
   "field_output": {
-    "market_field_score": 60.0,
+    "market_field_score": 62.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",
     "confidence_label": "static public context"
   },
   "probability_continuation": {
-    "base_path_pct": 63,
-    "expansion_path_pct": 23,
+    "base_path_pct": 62,
+    "expansion_path_pct": 24,
     "compression_reversal_pct": 14,
     "window_label": "7D",
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
