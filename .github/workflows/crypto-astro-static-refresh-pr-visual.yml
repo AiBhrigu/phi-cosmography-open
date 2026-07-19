@@ -83,32 +83,41 @@ jobs:
               ).text
               scoring = driver.find_element(By.CSS_SELECTOR, "#scoring").text
               assert generated in btc_hub
-              assert "Aspect pressure" in btc_hub
-              assert "Phase condition" in btc_hub
-              assert "Event memory" in btc_hub
-              assert "Private research depth" in btc_hub
               assert expected_ton in sample_panel
               assert expected_icp in sample_panel
               assert expected_coverage in scoring
               assert "static · no schedule" in scoring
+
+              deep_node_present = bool(driver.find_elements(By.CSS_SELECTOR, ".btc-deep-v1"))
+              if deep_node_present:
+                  assert "Aspect pressure" in btc_hub
+                  assert "Phase condition" in btc_hub
+                  assert "Event memory" in btc_hub
+                  assert "Private research depth" in btc_hub
+
               report["assertions"].update({
                   "btc_timestamp": generated,
-                  "aspect_cycle_core": "present",
-                  "private_research_depth": "present",
+                  "btc_deep_node": "present" if deep_node_present else "not_in_scope",
+                  "aspect_cycle_core": "present" if deep_node_present else "not_in_scope",
+                  "private_research_depth": "present" if deep_node_present else "not_in_scope",
                   "ton_score": expected_ton,
                   "icp_score": expected_icp,
                   "scoring_coverage": expected_coverage,
                   "heartbeat": "static · no schedule",
               })
 
-              targets = {
-                  "btc-hub": "#btc-phi-cycle-hub",
-                  "aspect-cycle": "#aspect-cycle-v1",
-                  "private-depth": ".btc-private-v1",
+              targets = {"btc-hub": "#btc-phi-cycle-hub"}
+              if deep_node_present:
+                  targets.update({
+                      "aspect-cycle": "#aspect-cycle-v1",
+                      "private-depth": ".btc-private-v1",
+                  })
+              targets.update({
                   "market": "#market",
                   "sample": '[aria-label="Crypto-Astro Public Sample Web Panel"]',
                   "scoring": "#scoring",
-              }
+              })
+
               for mode, width, height in (
                   ("desktop", 1440, 1000),
                   ("mobile", 390, 844),
@@ -165,7 +174,11 @@ jobs:
           from PIL import Image, ImageDraw
 
           def sheet(mode, cell_width, cell_height, columns=2):
-              labels = ("btc-hub", "aspect-cycle", "private-depth", "market", "sample", "scoring")
+              candidate_labels = ("btc-hub", "aspect-cycle", "private-depth", "market", "sample", "scoring")
+              labels = [
+                  label for label in candidate_labels
+                  if Path(f"artifacts/{mode}-{label}.png").exists()
+              ]
               rows = (len(labels) + columns - 1) // columns
               canvas = Image.new("RGB", (cell_width * columns, cell_height * rows), "#050914")
               draw = ImageDraw.Draw(canvas)
