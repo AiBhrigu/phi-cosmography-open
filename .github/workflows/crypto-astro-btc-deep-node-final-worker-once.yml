@@ -1,0 +1,266 @@
+name: Crypto-Astro BTC Deep Node Final Worker Once
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/crypto-astro-btc-deep-node-final-worker-once.yml"
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+concurrency:
+  group: crypto-astro-btc-deep-node-final-worker-once
+  cancel-in-progress: false
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: automation/crypto-astro-btc-deep-node-final-${{ github.run_id }}
+      HTML: site/crypto-astro/index.html
+      RUNNER: tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py
+      ORIGINAL: .github/workflows/crypto-astro-btc-deep-node-closure-once.yml
+      RECOVERY: .github/workflows/crypto-astro-btc-deep-node-recovery-once.yml
+      SELF: .github/workflows/crypto-astro-btc-deep-node-final-worker-once.yml
+      HTML_BLOB: 3a7a64f7a953a56596c02310ea9b3aa4afde80fe
+      RUNNER_BLOB: 556a364dcda3bd4909c8aa15a00104fd2e574915
+      DIAGNOSTIC_PR: "108"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify immutable source anchors
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          test "$(git rev-parse HEAD:$HTML)" = "$HTML_BLOB"
+          test "$(git rev-parse HEAD:$RUNNER)" = "$RUNNER_BLOB"
+          test -f "$ORIGINAL"
+          test -f "$RECOVERY"
+
+      - name: Execute separated HTML and binding patch
+        id: execute
+        run: |
+          set +e
+          python3 - <<'PY' > /tmp/btc_execute.log 2>&1
+          from pathlib import Path
+          import re, textwrap
+
+          html_path = Path("site/crypto-astro/index.html")
+          runner_path = Path("tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py")
+          source = Path(".github/workflows/crypto-astro-btc-deep-node-closure-once.yml").read_text(encoding="utf-8")
+
+          match = re.search(
+              r'- name: Apply bounded patch\s+run: \|\s+python3 - <<\'PY\'\n(.*?)\n          PY',
+              source,
+              re.S,
+          )
+          if not match:
+              raise SystemExit("original visual payload not found")
+
+          script = textwrap.dedent(match.group(1))
+          runner_start = script.index("old=r'''")
+          combined_write = 'hp.write_text(h,encoding="utf-8");rp.write_text(r,encoding="utf-8")'
+          runner_end = script.index(combined_write, runner_start)
+          script = (
+              script[:runner_start]
+              + 'hp.write_text(h,encoding="utf-8")\n'
+              + script[runner_end + len(combined_write):]
+          )
+          compile(script, "<btc-deep-node-html>", "exec")
+          exec(script, {"__name__": "__btc_deep_node_html__"})
+
+          runner = runner_path.read_text(encoding="utf-8")
+          quiet_old = '''    html = replace_counted(
+              html,
+              r'(<div class="btc-quiet-phi-core-v0-3">\\s*<span>BTC</span>\\s*<strong>)[^<]+(</strong>)',
+              lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+              'btc_hub:quiet_gravity',
+              counts,
+          )'''
+          quiet_new = '''    html = replace_counted(
+              html,
+              r'(<div class="btc-quiet-phi-core-v0-3" style="--btc-dominance:[^"]+">\\s*<span>BTC</span>\\s*<strong>)[^<]+(</strong>)',
+              lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+              'btc_hub:quiet_gravity',
+              counts,
+          )'''
+          if runner.count(quiet_old) != 1:
+              raise SystemExit(f"quiet binding anchor mismatch: {runner.count(quiet_old)}")
+          runner = runner.replace(quiet_old, quiet_new, 1)
+
+          eth_anchor = '''    html = replace_counted(
+              html,
+              r'(\\.metric-rail\\.eth-anchor i \\{ width:)[^;]+(; \\})',
+              lambda m: f"{m.group(1)}{eth_dom}{m.group(2)}",
+              'rail:eth-anchor',
+              counts,
+          )'''
+          geometry = '''    html = replace_counted(
+              html,
+              r'(<div class="btc-quiet-phi-core-v0-3" style="--btc-dominance:)[^;"]+(;">)',
+              lambda m: f"{m.group(1)}{vals['btc_dom']}{m.group(2)}",
+              'btc_hub:gravity_geometry',
+              counts,
+          )
+          for required_binding in ('btc_hub:quiet_gravity', 'btc_hub:gravity_geometry'):
+              if counts.get(required_binding) != 1:
+                  raise RuntimeError(
+                      f"BTC deep-node binding mismatch: "
+                      f"{required_binding}={counts.get(required_binding, 0)}"
+                  )
+          '''
+          if runner.count(eth_anchor) != 1:
+              raise SystemExit(f"ETH anchor mismatch: {runner.count(eth_anchor)}")
+          runner = runner.replace(eth_anchor, geometry + eth_anchor, 1)
+
+          marker = '# CRYPTO_ASTRO_V11_VISIBLE_COHERENCE_BINDINGS_v0_1'
+          if runner.count(marker) != 1:
+              raise SystemExit(f"runner marker mismatch: {runner.count(marker)}")
+          runner = runner.replace(
+              marker,
+              '# BTC_DEEP_NODE_VISUAL_IP_CLOSURE_v0_1\n    ' + marker,
+              1,
+          )
+          runner_path.write_text(runner, encoding="utf-8")
+
+          html = html_path.read_text(encoding="utf-8")
+          section_match = re.search(
+              r'<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->.*?<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->',
+              html,
+              re.S,
+          )
+          if not section_match:
+              raise SystemExit("new BTC section not found")
+          section = section_match.group(0)
+          forbidden = [
+              "Sun–Pluto", "5 major aspects", "pairs · orbs · weights",
+              "ranked hits", "Semenko phase scoring", "Private packet can include",
+              "Open the six operator-reviewed research layers", "local feature commit",
+              "btc-phi-cycle-read-strip-v0-3",
+          ]
+          remaining = [term for term in forbidden if term in section]
+          if remaining:
+              raise SystemExit(f"protected or duplicate public vocabulary remains: {remaining}")
+          required = [
+              "BTC current field", "Aspect pressure", "Phase condition", "Event memory",
+              "BTC confirmation", "Field map", "Cycle memory", "Review notes",
+              'style="--btc-dominance:56.5%;"', "prefers-reduced-motion",
+          ]
+          missing = [term for term in required if term not in html]
+          if missing:
+              raise SystemExit(f"required deep-node tokens missing: {missing}")
+          if html.count('href="https://www.bhrigu.io/crypto-astro/btc"') != 1:
+              raise SystemExit("direct BTC URL count mismatch")
+          print("EXECUTION_PASS")
+          PY
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          tail -n 160 /tmp/btc_execute.log
+          exit 0
+
+      - name: Report execution diagnostic
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "### BTC deep-node final worker · execution"
+            echo
+            echo "Exit code: \`${{ steps.execute.outputs.rc }}\`"
+            echo '```text'
+            tail -n 120 /tmp/btc_execute.log 2>/dev/null || true
+            echo '```'
+          } > /tmp/btc_execute_comment.md
+          gh issue comment "$DIAGNOSTIC_PR" --body-file /tmp/btc_execute_comment.md
+
+      - name: Stop after execution failure
+        if: steps.execute.outputs.rc != '0'
+        run: exit 1
+
+      - name: Validate scope and fixture refresh binding
+        id: validate
+        run: |
+          set +e
+          {
+            python3 -m py_compile "$RUNNER"
+            git diff --check
+            test "$(git diff --name-only | wc -l | tr -d ' ')" = "2"
+            git diff --name-only | grep -Fx "$HTML"
+            git diff --name-only | grep -Fx "$RUNNER"
+            grep -F "'btc_hub:gravity_geometry'" "$RUNNER"
+            test "$(grep -Foc 'href=\"https://www.bhrigu.io/crypto-astro/btc\"' "$HTML")" = "1"
+            python3 - <<'PY'
+          from pathlib import Path
+          import importlib.util, json, shutil, tempfile
+          root = Path.cwd()
+          repo = Path(tempfile.mkdtemp()) / "repo"
+          (repo / "site/crypto-astro").mkdir(parents=True)
+          shutil.copy2(root / "site/crypto-astro/index.html", repo / "site/crypto-astro/index.html")
+          runner_path = root / "tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py"
+          spec = importlib.util.spec_from_file_location("btc_refresh", runner_path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          snapshot = json.loads((root / "site/crypto-astro/data/crypto_astro_snapshot.public.json").read_text())
+          result = module.patch_html(repo, snapshot)
+          output = (repo / "site/crypto-astro/index.html").read_text()
+          assert result["replace_counts"]["btc_hub:gravity"] == 1
+          assert result["replace_counts"]["btc_hub:snapshot"] == 1
+          assert result["replace_counts"]["btc_hub:quiet_gravity"] == 1
+          assert result["replace_counts"]["btc_hub:gravity_geometry"] == 1
+          assert output.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 1
+          print("FIXTURE_BINDING_PASS")
+          PY
+          } > /tmp/btc_validate.log 2>&1
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          tail -n 160 /tmp/btc_validate.log
+          exit 0
+
+      - name: Report validation diagnostic
+        if: always() && steps.execute.outputs.rc == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "### BTC deep-node final worker · validation"
+            echo
+            echo "Exit code: \`${{ steps.validate.outputs.rc }}\`"
+            echo '```text'
+            tail -n 120 /tmp/btc_validate.log 2>/dev/null || true
+            echo '```'
+          } > /tmp/btc_validate_comment.md
+          gh issue comment "$DIAGNOSTIC_PR" --body-file /tmp/btc_validate_comment.md
+
+      - name: Stop after validation failure
+        if: steps.execute.outputs.rc == '0' && steps.validate.outputs.rc != '0'
+        run: exit 1
+
+      - name: Open implementation PR and remove temporary workers
+        if: steps.execute.outputs.rc == '0' && steps.validate.outputs.rc == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git checkout -b "$BRANCH"
+          git add "$HTML" "$RUNNER"
+          git rm "$ORIGINAL" "$RECOVERY" "$SELF"
+          git commit -m "Crypto-Astro: close BTC deep visual and IP node"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Crypto-Astro: close BTC deep visual and IP node" \
+            --body "$(cat <<'BODY'
+          One-pass BTC deep-node closure:
+          - data-bound BTC dominance geometry
+          - direct BTC Field Read remains primary
+          - duplicated flow strip and boxed read removed
+          - asymmetric Aspect-Cycle relational field
+          - protected method vocabulary sealed
+          - private depth compressed to Field Map, Cycle Memory, Review Notes
+          - fixture-only refresh binding adds btc_hub:gravity_geometry
+          - all temporary workers remove themselves
+
+          Scope: HTML + hardened refresh wrapper only. No data/proof refresh, A/E, C/T activation, backend, API, payment, runtime, forecast, trading signal, or ORION exposure.
+          BODY
+          )"
