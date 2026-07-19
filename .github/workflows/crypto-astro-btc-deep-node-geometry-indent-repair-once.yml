@@ -1,4 +1,4 @@
-name: Crypto-Astro BTC Deep Node Geometry Indent Repair Once
+name: Crypto-Astro BTC Deep Node Mobile Visual Repair Once
 on:
   push:
     branches: [main]
@@ -9,135 +9,91 @@ permissions:
   pull-requests: write
   issues: write
 concurrency:
-  group: crypto-astro-btc-deep-node-geometry-indent-repair-once
+  group: crypto-astro-btc-deep-node-mobile-visual-repair-once
   cancel-in-progress: false
 
 jobs:
   repair:
     runs-on: ubuntu-latest
     env:
-      BRANCH: automation/crypto-astro-btc-deep-node-geometry-indent-repair-${{ github.run_id }}
-      HTML: site/crypto-astro/index.html
-      RUNNER: tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py
-      ORIGINAL: .github/workflows/crypto-astro-btc-deep-node-closure-once.yml
-      RECOVERY: .github/workflows/crypto-astro-btc-deep-node-recovery-once.yml
-      FINAL: .github/workflows/crypto-astro-btc-deep-node-final-worker-once.yml
-      ANCHOR: .github/workflows/crypto-astro-btc-deep-node-anchor-repair-once.yml
-      SELF: .github/workflows/crypto-astro-btc-deep-node-geometry-indent-repair-once.yml
-      HTML_BLOB: 3a7a64f7a953a56596c02310ea9b3aa4afde80fe
-      RUNNER_BLOB: 556a364dcda3bd4909c8aa15a00104fd2e574915
-      DIAGNOSTIC_PR: "108"
+      TARGET_BRANCH: automation/crypto-astro-btc-deep-node-geometry-indent-repair-29705234961
+      EXPECTED_HEAD: 22211ad6da9d438eca0c68ca18805811f468eb61
+      TARGET_FILE: site/crypto-astro/index.html
+      TARGET_PR: "113"
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout implementation branch
+        uses: actions/checkout@v5
         with:
+          ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify source anchors
+      - name: Verify implementation head
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          grep -F "BTC_DEEP_NODE_VISUAL_IP_CLOSURE_v0_1:BEGIN" "$TARGET_FILE"
+          test "$(grep -Foc 'href=\"https://www.bhrigu.io/crypto-astro/btc\"' "$TARGET_FILE")" = "1"
+
+      - name: Apply mobile core compatibility override
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("site/crypto-astro/index.html")
+          text = path.read_text(encoding="utf-8")
+          marker = "/* BTC_DEEP_NODE_MOBILE_CORE_COMPAT_v0_1:BEGIN */"
+          if marker in text:
+              raise SystemExit("mobile compatibility marker already present")
+          anchor = "/* BTC_DEEP_NODE_VISUAL_IP_CLOSURE_v0_1:END */"
+          if text.count(anchor) != 1:
+              raise SystemExit(f"deep-node CSS end anchor mismatch: {text.count(anchor)}")
+          css = r'''
+          /* BTC_DEEP_NODE_MOBILE_CORE_COMPAT_v0_1:BEGIN */
+          @media (max-width:980px) {
+            .btc-deep-v1 .btc-quiet-phi-core-v0-3 {
+              position:absolute!important;
+              z-index:5!important;
+              left:50%!important;
+              right:auto!important;
+              top:50%!important;
+              bottom:auto!important;
+              width:clamp(8.5rem,16vw,11rem)!important;
+              height:auto!important;
+              max-width:none!important;
+              aspect-ratio:1!important;
+              transform:translate(-50%,-50%)!important;
+              border-radius:50%!important;
+              padding:0!important;
+              text-align:center!important;
+              display:grid!important;
+              place-items:center!important;
+              align-content:center!important;
+            }
+          }
+          @media (max-width:620px) {
+            .btc-deep-v1 .btc-quiet-phi-core-v0-3 {
+              width:8.3rem!important;
+            }
+          }
+          /* BTC_DEEP_NODE_MOBILE_CORE_COMPAT_v0_1:END */
+          '''
+          text = text.replace(anchor, css + "\n" + anchor, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+          git diff --check
+          test "$(git diff --name-only)" = "$TARGET_FILE"
+          grep -F "BTC_DEEP_NODE_MOBILE_CORE_COMPAT_v0_1:BEGIN" "$TARGET_FILE"
+
+      - name: Commit mobile visual repair
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          test "$(git rev-parse HEAD:$HTML)" = "$HTML_BLOB"
-          test "$(git rev-parse HEAD:$RUNNER)" = "$RUNNER_BLOB"
-          test -f "$ANCHOR"
+          git add "$TARGET_FILE"
+          git commit -m "Crypto-Astro: repair BTC mobile core geometry"
+          git push origin HEAD:"$TARGET_BRANCH"
 
-      - name: Execute indentation-independent repair
-        id: apply
-        run: |
-          set +e
-          {
-            python3 - <<'PY'
-          from pathlib import Path
-          import re, textwrap
-
-          source = Path(".github/workflows/crypto-astro-btc-deep-node-anchor-repair-once.yml").read_text(encoding="utf-8")
-          match = re.search(
-              r'- name: Apply visual payload and anchor-safe binding.*?python3 - <<\'PY\'\n(.*?)\n          PY',
-              source,
-              re.S,
-          )
-          if not match:
-              raise SystemExit("anchor-repair Python payload not found")
-          script = textwrap.dedent(match.group(1))
-
-          start = script.index("geometry = '''")
-          insertion_line = "runner = runner[:eth_start] + geometry + runner[eth_start:]"
-          end = script.index(insertion_line, start)
-          geometry_lines = [
-              "    html = replace_counted(",
-              "        html,",
-              "        r'(<div class=\"btc-quiet-phi-core-v0-3\" style=\"--btc-dominance:)[^;\"]+(;\">)',",
-              "        lambda m: f\"{m.group(1)}{vals['btc_dom']}{m.group(2)}\",",
-              "        'btc_hub:gravity_geometry',",
-              "        counts,",
-              "    )",
-              "    for required_binding in ('btc_hub:quiet_gravity', 'btc_hub:gravity_geometry'):",
-              "        if counts.get(required_binding) != 1:",
-              "            raise RuntimeError(",
-              "                f\"BTC deep-node binding mismatch: \"",
-              "                f\"{required_binding}={counts.get(required_binding, 0)}\"",
-              "            )",
-          ]
-          geometry_value = "\n".join(geometry_lines) + "\n"
-          replacement = "geometry = " + repr(geometry_value) + "\n"
-          script = script[:start] + replacement + script[end:]
-          compile(script, "<btc-deep-node-indent-repair>", "exec")
-          exec(script, {"__name__": "__btc_deep_node_indent_repair__"})
-          print("GEOMETRY_INDENT_REPAIR_PASS")
-          PY
-            python3 -m py_compile "$RUNNER"
-            git diff --check
-            test "$(git diff --name-only | wc -l | tr -d ' ')" = "2"
-            git diff --name-only | grep -Fx "$HTML"
-            git diff --name-only | grep -Fx "$RUNNER"
-          } > /tmp/btc_geometry_indent.log 2>&1
-          rc=$?
-          echo "rc=$rc" >> "$GITHUB_OUTPUT"
-          tail -n 180 /tmp/btc_geometry_indent.log
-          exit 0
-
-      - name: Publish geometry-indent report
-        if: always()
+      - name: Report repair to implementation PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          {
-            echo "### BTC deep-node geometry-indent repair"
-            echo
-            echo "Exit code: \`${{ steps.apply.outputs.rc }}\`"
-            echo '```text'
-            tail -n 150 /tmp/btc_geometry_indent.log 2>/dev/null || true
-            echo '```'
-          } > /tmp/btc_geometry_indent_comment.md
-          gh issue comment "$DIAGNOSTIC_PR" --body-file /tmp/btc_geometry_indent_comment.md
-
-      - name: Stop after fail-closed report
-        if: steps.apply.outputs.rc != '0'
-        run: exit 1
-
-      - name: Open implementation PR and remove temporary workers
-        if: steps.apply.outputs.rc == '0'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git checkout -b "$BRANCH"
-          git add "$HTML" "$RUNNER"
-          git rm "$ORIGINAL" "$RECOVERY" "$FINAL" "$ANCHOR" "$SELF"
-          git commit -m "Crypto-Astro: close BTC deep visual and IP node"
-          git push -u origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" \
-            --title "Crypto-Astro: close BTC deep visual and IP node" \
-            --body "$(cat <<'BODY'
-          One-pass BTC deep-node closure:
-          - data-bound BTC dominance geometry
-          - direct BTC Field Read remains primary
-          - duplicated flow strip and boxed read removed
-          - asymmetric Aspect-Cycle relational field
-          - protected method vocabulary sealed
-          - private depth compressed to Field Map, Cycle Memory, Review Notes
-          - fixture-only refresh binding adds btc_hub:gravity_geometry
-          - all temporary workers remove themselves
-
-          Scope: HTML + hardened refresh wrapper only. No data/proof refresh, A/E, C/T activation, backend, API, payment, runtime, forecast, trading signal, or ORION exposure.
-          BODY
-          )"
+          gh issue comment "$TARGET_PR" --body "Mobile visual review repair applied: legacy responsive \\`!important\\` positioning is now overridden only inside the new BTC deep node. Desktop geometry, data bindings, CTA route, and protected boundaries are unchanged. CI and expanded visual evidence must pass before merge."
