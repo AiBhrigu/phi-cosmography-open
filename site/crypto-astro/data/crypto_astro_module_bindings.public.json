@@ -1,6 +1,6 @@
 {
   "schema_version": "crypto_astro_public_module_bindings_v0_1",
-  "generated_at_utc": "2026-07-19T17:08:08Z",
+  "generated_at_utc": "2026-07-19T18:26:56Z",
   "source_mode": "static_public_snapshot",
   "freshness_status": "FRESH",
   "modules": {
@@ -29,8 +29,10 @@
       "anchor": "Cosmographer Read"
     },
     "liquidity_tvl": {
-      "source": "liquidity_tvl",
-      "anchor": "Liquidity / TVL"
+      "source": "liquidity_tvl.defi_tvl_usd",
+      "anchor": "Liquidity / TVL",
+      "methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
+      "proof_source": "defillama_global_tvl_ex_double_count"
     },
     "altcoin_rotation": {
       "source": "altcoin_rotation",
