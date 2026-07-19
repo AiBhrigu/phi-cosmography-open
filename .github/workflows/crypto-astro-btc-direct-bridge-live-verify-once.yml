@@ -1,0 +1,73 @@
+name: Crypto-Astro BTC Direct Bridge Live Verify Once
+
+on:
+  push:
+    branches:
+      - automation/crypto-astro-btc-direct-field-read-bridge-29701993278
+    paths:
+      - ".github/workflows/crypto-astro-btc-direct-bridge-live-verify-once.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      SHOWCASE_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
+      BTC_URL: https://www.bhrigu.io/crypto-astro/btc
+      PR_NUMBER: "106"
+    steps:
+      - name: Poll Pages and BTC corridor
+        id: live
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 30); do
+            nonce="${GITHUB_RUN_ID}-${attempt}-$(date +%s)"
+            showcase="$(curl --fail --silent --show-error --location --retry 2 --max-time 40 "${SHOWCASE_URL}?verify=${nonce}" || true)"
+            btc="$(curl --fail --silent --show-error --location --retry 2 --max-time 40 "${BTC_URL}?verify=${nonce}" || true)"
+            if printf '%s' "$showcase" | grep -Fq 'CRYPTO_ASTRO_BTC_GRAVITY_DIRECT_FIELD_READ_BRIDGE_v0_1:BEGIN' \
+              && printf '%s' "$showcase" | grep -Fq 'https://www.bhrigu.io/crypto-astro/btc' \
+              && printf '%s' "$showcase" | grep -Fq 'Enter BTC Field Read' \
+              && printf '%s' "$btc" | grep -Fq 'Ask one BTC field question'; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"
+          echo "verified_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          if [ "$ok" != "1" ]; then
+            exit 1
+          fi
+
+      - name: Record PASS on PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "LIVE_VERIFY=PASS
+
+- showcase marker: present
+- direct URL: present
+- entry copy: present
+- BTC question form: present
+- verified_at_utc: ${{ steps.live.outputs.verified_at_utc }}
+- main_sha: ab49cc4287a635ac51d1b57b071fc98b99614599
+- verification_run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: Record FAIL on PR
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "LIVE_VERIFY=FAIL
+
+The public cache-busted route did not expose all required anchors within the bounded polling window.
+
+- verified_at_utc: ${{ steps.live.outputs.verified_at_utc }}
+- main_sha: ab49cc4287a635ac51d1b57b071fc98b99614599
+- verification_run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
