@@ -80,6 +80,7 @@ jobs:
 
               orb = driver.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge")
               btc_hub = driver.find_element(By.CSS_SELECTOR, "#btc-phi-cycle-hub").text
+              btc_hub_lower = btc_hub.lower()
               sample_panel = driver.find_element(
                   By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]'
               ).text
@@ -97,10 +98,10 @@ jobs:
               }
               if deep_node_present:
                   checks.update({
-                      "aspect_pressure": "Aspect pressure" in btc_hub,
-                      "phase_condition": "Phase condition" in btc_hub,
-                      "event_memory": "Event memory" in btc_hub,
-                      "private_research_depth": "Private research depth" in btc_hub,
+                      "aspect_pressure": "aspect pressure" in btc_hub_lower,
+                      "phase_condition": "phase condition" in btc_hub_lower,
+                      "event_memory": "event memory" in btc_hub_lower,
+                      "private_research_depth": "private research depth" in btc_hub_lower,
                   })
 
               report["checks"] = checks
