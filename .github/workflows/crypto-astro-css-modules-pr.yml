@@ -29,6 +29,7 @@ jobs:
           python-version: "3.11"
 
       - name: Enforce PR-03 path scope
+        if: github.head_ref == 'feature/crypto-astro-deterministic-css-modules-v0-1'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
