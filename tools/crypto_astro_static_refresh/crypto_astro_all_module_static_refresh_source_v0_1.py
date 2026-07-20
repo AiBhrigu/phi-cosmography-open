@@ -349,10 +349,9 @@ def main():
                 "market_7d_change_pct": a.get("price_change_percentage_7d_in_currency"),
                 "market_30d_change_pct": a.get("price_change_percentage_30d_in_currency"),
                 "M": round(abs(float(a.get("price_change_percentage_24h_in_currency") or a.get("price_change_percentage_24h") or 0)) / 10, 4),
-                "A_state": "calibration_pending",
-                "E_state": "calibration_pending",
+                "membrane_state": "prepared_inactive",
                 "M_state": "market_context_active",
-                "visible_state_label": "Market context active · A/E pending",
+                "visible_state_label": "Market context active · prepared membranes inactive",
                 "market_context_label": "active_movement" if abs(float(a.get("price_change_percentage_24h_in_currency") or a.get("price_change_percentage_24h") or 0)) >= 2 else "low_movement",
                 "score": sample_score(a),
             }
@@ -420,7 +419,7 @@ def main():
             "freshness_status": "FRESH",
             "modules": {
                 "market_reality": {"source": "market_reality", "anchor": "Market Reality"},
-                "aem_barometer": {"source": "field_output", "anchor": "A/E/M Field Barometer"},
+                "aem_barometer": {"source": "field_output", "anchor": "Field Membrane Barometer"},
                 "continuation_field": {"source": "probability_continuation", "anchor": "Continuation Field"},
                 "astromodule": {"source": "static_public_context", "anchor": "astromodule-surface-bridge"},
                 "support_lanes": {"source": "static_public_context", "anchor": "CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1"},
@@ -618,7 +617,7 @@ GENERATED_AT_UTC={generated_at}
 ## Changed modules
 
 - Market Reality / Market Field
-- A/E/M Field Barometer
+- Field Membrane Barometer
 - Continuation Field
 - Liquidity / TVL
 - Altcoin Rotation Field

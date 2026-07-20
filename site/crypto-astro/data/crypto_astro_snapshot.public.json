@@ -60,12 +60,11 @@
         "market_7d_change_pct": 0.6140243096065037,
         "market_30d_change_pct": 2.3764984366054653,
         "M": 0.0119,
-        "A_state": "calibration_pending",
-        "E_state": "calibration_pending",
         "M_state": "market_context_active",
-        "visible_state_label": "Market context active · A/E pending",
+        "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 61.61
+        "score": 61.61,
+        "membrane_state": "prepared_inactive"
       },
       "ETH": {
         "id": "ethereum",
@@ -77,12 +76,11 @@
         "market_7d_change_pct": 2.3864119685976264,
         "market_30d_change_pct": 9.260687381166818,
         "M": 0.0165,
-        "A_state": "calibration_pending",
-        "E_state": "calibration_pending",
         "M_state": "market_context_active",
-        "visible_state_label": "Market context active · A/E pending",
+        "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 63.07
+        "score": 63.07,
+        "membrane_state": "prepared_inactive"
       },
       "SOL": {
         "id": "solana",
@@ -94,12 +92,11 @@
         "market_7d_change_pct": -2.2500436703935915,
         "market_30d_change_pct": 9.562732516619237,
         "M": 0.0403,
-        "A_state": "calibration_pending",
-        "E_state": "calibration_pending",
         "M_state": "market_context_active",
-        "visible_state_label": "Market context active · A/E pending",
+        "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 62.12
+        "score": 62.12,
+        "membrane_state": "prepared_inactive"
       },
       "TON": {
         "id": "the-open-network",
@@ -111,12 +108,11 @@
         "market_7d_change_pct": -12.724639549767117,
         "market_30d_change_pct": -9.933212254990533,
         "M": 0.2667,
-        "A_state": "calibration_pending",
-        "E_state": "calibration_pending",
         "M_state": "market_context_active",
-        "visible_state_label": "Market context active · A/E pending",
+        "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "active_movement",
-        "score": 53.01
+        "score": 53.01,
+        "membrane_state": "prepared_inactive"
       },
       "ICP": {
         "id": "internet-computer",
@@ -128,12 +124,11 @@
         "market_7d_change_pct": -5.128180726827196,
         "market_30d_change_pct": -4.631175714273058,
         "M": 0.1009,
-        "A_state": "calibration_pending",
-        "E_state": "calibration_pending",
         "M_state": "market_context_active",
-        "visible_state_label": "Market context active · A/E pending",
+        "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 52.46
+        "score": 52.46,
+        "membrane_state": "prepared_inactive"
       }
     }
   },
