@@ -1,0 +1,23 @@
+
+                  .market-lower-grid .support-module-card-v0-1 {
+                    border-color: rgba(143, 183, 255, 0.16);
+                    background: linear-gradient(180deg, rgba(143, 183, 255, 0.030), rgba(255, 255, 255, 0.018));
+                    box-shadow: none;
+                  }
+                  .market-lower-grid .support-module-card-v0-1 .eyebrow {
+                    color: rgba(143, 183, 255, 0.78);
+                  }
+                  .market-lower-grid .support-module-card-v0-1 p {
+                    color: rgba(226, 232, 240, 0.72);
+                  }
+                  .market-lower-grid .support-module-card-v0-1 .small {
+                    color: rgba(148, 163, 184, 0.78);
+                  }
+                  .market-lower-grid .support-module-card-v0-1 .source-lane-line div {
+                    border-color: rgba(143, 183, 255, 0.14);
+                    background: rgba(143, 183, 255, 0.024);
+                  }
+                  .market-lower-grid .support-module-card-v0-1 .lane-rail.prepared {
+                    opacity: 0.72;
+                  }
+                

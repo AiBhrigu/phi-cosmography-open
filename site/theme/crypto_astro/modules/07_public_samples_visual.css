@@ -1,0 +1,37 @@
+
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-layer-v0-1 {
+    margin:14px 0 16px;
+    border:1px solid rgba(143,183,255,.18);
+    border-radius:22px;
+    padding:14px;
+    background:radial-gradient(circle at 15% 5%, rgba(143,183,255,.070), transparent 34%), radial-gradient(circle at 88% 6%, rgba(247,212,125,.065), transparent 32%), rgba(3,7,13,.20);
+  }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-head-v0-1 {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px;
+  }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-head-v0-1 strong { color:#f8fafc; font-size:15px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-head-v0-1 span { color:rgba(226,232,240,.72); font-size:12px; font-weight:700; }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-grid-v0-1 { display:grid; grid-template-columns:1.05fr .95fr; gap:12px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-card-v0-1 { border:1px solid rgba(255,255,255,.10); border-radius:18px; padding:12px; background:rgba(255,255,255,.024); }
+  .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-card-v0-1 h4 { margin:0 0 10px; color:#f8fafc; font-size:15px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-row-v0-1 { display:grid; grid-template-columns:120px 1fr 58px; gap:9px; align-items:center; margin:8px 0; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-row-v0-1 span { color:rgba(226,232,240,.76); font-size:12px; font-weight:760; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-rail-v0-1 { height:9px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.075); }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-rail-v0-1 i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(143,183,255,.58), rgba(134,239,172,.45), rgba(247,212,125,.62)); }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-value-v0-1 { color:#ffd978 !important; text-align:right; font-weight:900 !important; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-gauge-row-v0-1 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-gauge-v0-1 { border:1px solid rgba(247,212,125,.18); border-radius:18px; padding:13px; background:rgba(247,212,125,.035); }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-gauge-v0-1 strong { display:block; color:#ffd978; font-size:26px; letter-spacing:-.04em; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-gauge-v0-1 span { display:block; margin-top:4px; color:rgba(226,232,240,.72); font-size:11px; font-weight:820; letter-spacing:.08em; text-transform:uppercase; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-strip-v0-1 { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .visual-strip-v0-1 span { border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:7px 10px; color:rgba(244,247,255,.78); font-size:11px; font-weight:820; letter-spacing:.06em; text-transform:uppercase; background:rgba(255,255,255,.035); }
+  .crypto-astro-public-sample-web-panel-v0-1 .scenario-lane-v0-1 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:10px; }
+  .crypto-astro-public-sample-web-panel-v0-1 .scenario-lane-v0-1 div { border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px; background:rgba(3,7,13,.20); }
+  .crypto-astro-public-sample-web-panel-v0-1 .scenario-lane-v0-1 span { display:block; color:rgba(148,163,184,.95); font-size:10px; font-weight:850; letter-spacing:.10em; text-transform:uppercase; }
+  .crypto-astro-public-sample-web-panel-v0-1 .scenario-lane-v0-1 strong { display:block; margin-top:5px; color:#f8fafc; font-size:13px; }
+  @media(max-width:880px) {
+    .crypto-astro-public-sample-web-panel-v0-1 .sample-visual-grid-v0-1,
+    .crypto-astro-public-sample-web-panel-v0-1 .visual-gauge-row-v0-1,
+    .crypto-astro-public-sample-web-panel-v0-1 .scenario-lane-v0-1 { grid-template-columns:1fr; }
+    .crypto-astro-public-sample-web-panel-v0-1 .visual-row-v0-1 { grid-template-columns:95px 1fr 52px; }
+  }

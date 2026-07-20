@@ -1,0 +1,168 @@
+
+            .astromodule-wide-panel-v0-1 {
+              grid-column: 1 / -1;
+              display: grid;
+              gap: 1rem;
+              overflow: hidden;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-top-v0-1 {
+              display: grid;
+              grid-template-columns: minmax(0, 1.08fr) minmax(17rem, 0.92fr);
+              gap: 1rem;
+              align-items: stretch;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-identity-v0-1 {
+              border: 1px solid rgba(245, 199, 105, 0.28);
+              border-radius: 18px;
+              padding: 1rem;
+              background:
+                radial-gradient(circle at 12% 0%, rgba(245, 199, 105, 0.18), transparent 34%),
+                linear-gradient(135deg, rgba(245, 199, 105, 0.08), rgba(255, 255, 255, 0.035));
+            }
+
+            .astromodule-wide-panel-v0-1 .eyebrow {
+              margin-bottom: 0.38rem;
+            }
+
+            .astromodule-wide-panel-v0-1 h3 {
+              margin: 0;
+              color: #ffd978;
+              font-size: 1.28rem;
+              line-height: 1.2;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-brief-v0-1 {
+              max-width: 62rem;
+              margin: 0.62rem 0 0;
+              color: rgba(244, 247, 255, 0.82);
+              line-height: 1.52;
+            }
+
+            .astromodule-wide-panel-v0-1 .astromodule-score-box-v0-1 {
+              border: 1px solid rgba(245, 199, 105, 0.24);
+              border-radius: 18px;
+              padding: 1rem;
+              background: rgba(245, 199, 105, 0.07);
+              display: grid;
+              gap: 0.72rem;
+              align-content: center;
+            }
+
+            .astromodule-wide-panel-v0-1 .score-main-v0-1 {
+              display: flex;
+              flex-wrap: wrap;
+              align-items: baseline;
+              gap: 0.55rem;
+              color: #ffd978;
+              font-size: 1.25rem;
+              font-weight: 900;
+            }
+
+            .astromodule-wide-panel-v0-1 .score-main-v0-1 span {
+              color: rgba(244, 247, 255, 0.86);
+              font-size: 0.92rem;
+              font-weight: 800;
+            }
+
+            .astromodule-wide-panel-v0-1 .chip-row-v0-1 {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.46rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .state-chip-v0-1 {
+              border: 1px solid rgba(255, 255, 255, 0.13);
+              border-radius: 999px;
+              padding: 0.38rem 0.58rem;
+              background: rgba(255, 255, 255, 0.055);
+              color: rgba(244, 247, 255, 0.82);
+              font-size: 0.74rem;
+              font-weight: 780;
+              letter-spacing: 0.04em;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1,
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1,
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 {
+              border: 1px solid rgba(255, 255, 255, 0.10);
+              border-radius: 15px;
+              background: rgba(255, 255, 255, 0.045);
+              padding: 0.78rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1 strong,
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1 strong,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1 strong {
+              display: block;
+              color: rgba(244, 247, 255, 0.62);
+              font-size: 0.7rem;
+              letter-spacing: 0.11em;
+              text-transform: uppercase;
+            }
+
+            .astromodule-wide-panel-v0-1 .metric-v0-1 span {
+              display: block;
+              margin-top: 0.28rem;
+              color: #f4f7ff;
+              font-size: 0.92rem;
+              font-weight: 850;
+            }
+
+            .astromodule-wide-panel-v0-1 .flow-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .flow-line-v0-1 p,
+            .astromodule-wide-panel-v0-1 .access-cell-v0-1 p,
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 p {
+              margin: 0.32rem 0 0;
+              color: rgba(244, 247, 255, 0.82);
+              line-height: 1.46;
+            }
+
+            .astromodule-wide-panel-v0-1 .access-grid-v0-1 {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 0.66rem;
+            }
+
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 {
+              border-color: rgba(245, 199, 105, 0.23);
+              background: rgba(245, 199, 105, 0.065);
+            }
+
+            .astromodule-wide-panel-v0-1 .boundary-strip-v0-1 p {
+              margin: 0;
+              color: rgba(255, 226, 160, 0.92);
+              font-weight: 720;
+            }
+
+            @media (max-width: 900px) {
+              .astromodule-wide-panel-v0-1 .astromodule-top-v0-1,
+              .astromodule-wide-panel-v0-1 .flow-grid-v0-1,
+              .astromodule-wide-panel-v0-1 .access-grid-v0-1 {
+                grid-template-columns: 1fr;
+              }
+
+              .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+              }
+            }
+
+            @media (max-width: 560px) {
+              .astromodule-wide-panel-v0-1 .metric-grid-v0-1 {
+                grid-template-columns: 1fr;
+              }
+            }
+          

@@ -106,6 +106,30 @@ def _load(driver: Any, url: str, width: int, height: int) -> None:
     driver.execute_script("window.scrollTo(0, 0)")
 
 
+def _scroll_element_to_top(driver: Any, element: Any) -> None:
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    target = driver.execute_script(
+        """
+        const root = document.documentElement;
+        const body = document.body;
+        const rootBehavior = root.style.scrollBehavior;
+        const bodyBehavior = body.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        body.style.scrollBehavior = 'auto';
+        const target = Math.round(arguments[0].getBoundingClientRect().top + window.scrollY);
+        window.scrollTo(0, target);
+        root.style.scrollBehavior = rootBehavior;
+        body.style.scrollBehavior = bodyBehavior;
+        return target;
+        """,
+        element,
+    )
+    WebDriverWait(driver, 5).until(
+        lambda d: abs(float(d.execute_script("return window.scrollY")) - float(target)) <= 1
+    )
+
+
 def run_browser(url: str, out_dir: Path) -> dict[str, Any]:
     from selenium import webdriver
 
@@ -310,7 +334,7 @@ def run_browser(url: str, out_dir: Path) -> dict[str, Any]:
         driver.execute_script("window.scrollTo(0, 0)")
         _capture_screenshot(driver, out_dir / "desktop.png")
         btc = driver.find_element("id", "btc-phi-cycle-hub")
-        driver.execute_script("arguments[0].scrollIntoView({block:'start'})", btc)
+        _scroll_element_to_top(driver, btc)
         _capture_screenshot(driver, out_dir / "desktop-btc.png")
 
         _load(driver, url, 390, 844)
@@ -338,7 +362,7 @@ def run_browser(url: str, out_dir: Path) -> dict[str, Any]:
         driver.execute_script("window.scrollTo(0, 0)")
         _capture_screenshot(driver, out_dir / "mobile.png")
         btc = driver.find_element("id", "btc-phi-cycle-hub")
-        driver.execute_script("arguments[0].scrollIntoView({block:'start'})", btc)
+        _scroll_element_to_top(driver, btc)
         _capture_screenshot(driver, out_dir / "mobile-btc.png")
 
         overflow = {"desktop": desktop_overflow, "mobile": mobile_overflow}
