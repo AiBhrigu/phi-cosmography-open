@@ -12,7 +12,7 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   visual:
@@ -22,23 +22,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Apply bounded public IP semantic seal
-        if: github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          set -euo pipefail
-          python3 tools/crypto_astro_static_refresh/apply_public_ip_semantic_seal_v0_1.py
-          if ! git diff --quiet -- site/crypto-astro/index.html site/theme/system.css site/theme/ip_semantic_seal.css; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add site/crypto-astro/index.html site/theme/system.css site/theme/ip_semantic_seal.css
-            git commit -m "Seal public Source Lanes, C/T, and Aspect-Cycle semantics"
-            git push origin "HEAD:${HEAD_REF}"
-          fi
 
       - name: Verify DeFi TVL methodology contract
         run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
