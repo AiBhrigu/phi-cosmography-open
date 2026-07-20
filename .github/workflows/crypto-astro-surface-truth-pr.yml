@@ -1,0 +1,86 @@
+name: Crypto-Astro Surface Truth PR
+
+on:
+  pull_request:
+    paths:
+      - "site/crypto-astro/**"
+      - "site/theme/**"
+      - "tools/crypto_astro_surface_truth/**"
+      - ".github/workflows/crypto-astro-surface-truth-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  surface-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Enforce PR-01 bootstrap scope
+        if: github.head_ref == 'feature/crypto-astro-baseline-truth-harness-v0-1'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          allowed = (
+              ".github/workflows/crypto-astro-surface-truth-pr.yml",
+              "tools/crypto_astro_surface_truth/",
+          )
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+          ).splitlines()
+          unexpected = [
+              path for path in changed
+              if path != allowed[0] and not path.startswith(allowed[1])
+          ]
+          assert changed, "PR-01 must contain the truth harness"
+          assert not unexpected, f"Unexpected PR-01 paths: {unexpected}"
+          print("PR_01_ALLOWED_PATHS=PASS")
+          PY
+
+      - name: Run local fixture tests
+        run: |
+          python3 -m unittest discover \
+            -s tools/crypto_astro_surface_truth \
+            -p "test_*.py" \
+            -v
+
+      - name: Install browser dependency
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2
+
+      - name: Start static preview
+        run: |
+          python3 -m http.server 4173 --directory site >/tmp/crypto-astro-surface-truth.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && exit 0
+            sleep 0.5
+          done
+          cat /tmp/crypto-astro-surface-truth.log
+          exit 1
+
+      - name: Capture baseline truth
+        run: |
+          python3 tools/crypto_astro_surface_truth/surface_truth.py \
+            --url http://127.0.0.1:4173/crypto-astro/index.html \
+            --out artifacts/crypto-astro-surface-truth
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-surface-truth-${{ github.event.pull_request.number }}
+          path: artifacts/crypto-astro-surface-truth/
+          if-no-files-found: error
