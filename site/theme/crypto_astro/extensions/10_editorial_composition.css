@@ -1,0 +1,299 @@
+/* CRYPTO_ASTRO_EDITORIAL_COMPOSITION_AND_CTA_v0_1 */
+
+.crypto-astro-primary-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  border: 1px solid rgba(216, 186, 112, 0.24);
+  border-radius: 18px;
+  background: rgba(8, 12, 20, 0.92);
+  backdrop-filter: blur(18px);
+}
+
+.crypto-astro-primary-nav__brand {
+  color: var(--phi-gold);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crypto-astro-primary-nav__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.crypto-astro-primary-nav__links a {
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: var(--phi-text-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.crypto-astro-primary-nav__links a:hover,
+.crypto-astro-primary-nav__links a:focus-visible {
+  color: var(--phi-text-1);
+  background: rgba(216, 186, 112, 0.1);
+}
+
+.editorial-orientation-v0-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 28px;
+  min-height: 0;
+  padding: clamp(32px, 6vw, 72px);
+}
+
+.editorial-orientation-v0-1 .lead {
+  max-width: 760px;
+  margin-top: 14px;
+}
+
+.editorial-orientation-v0-1__actions {
+  display: grid;
+  gap: 12px;
+  min-width: min(100%, 310px);
+}
+
+.editorial-primary-cta-v0-1,
+.editorial-access-link-v0-1,
+.editorial-proof-link-v0-1 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.editorial-primary-cta-v0-1 {
+  color: #090c12;
+  background: linear-gradient(135deg, var(--phi-gold), #f0d79a);
+}
+
+.editorial-orientation-v0-1__trust,
+.editorial-boundary-v0-1 {
+  color: var(--phi-text-3);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.editorial-chapter-v0-1 {
+  scroll-margin-top: 92px;
+}
+
+.editorial-chapter-head-v0-1 {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.editorial-chapter-head-v0-1 p {
+  max-width: 780px;
+}
+
+.editorial-what-changed-v0-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  margin: 24px 0;
+  padding: 26px;
+  border: 1px solid rgba(91, 173, 190, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(17, 31, 42, 0.78), rgba(9, 14, 23, 0.94));
+}
+
+.editorial-what-changed-v0-1__state {
+  display: grid;
+  gap: 6px;
+  min-width: 240px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.editorial-what-changed-v0-1__state strong {
+  color: var(--phi-gold);
+}
+
+#btc-phi-cycle-hub,
+#market,
+#trust-access {
+  scroll-margin-top: 92px;
+}
+
+#btc-phi-cycle-hub .btc-entry-v1 strong {
+  letter-spacing: 0;
+}
+
+#market > .section-head {
+  margin-bottom: 28px;
+}
+
+.market-first-screen {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+}
+
+.editorial-astromodule-v0-1 {
+  display: grid;
+  gap: 18px;
+}
+
+.editorial-astromodule-v0-1__states {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.editorial-astromodule-v0-1__states div {
+  padding: 12px;
+  border: 1px solid rgba(216, 186, 112, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.editorial-astromodule-v0-1__states span,
+.editorial-astromodule-v0-1__states strong {
+  display: block;
+}
+
+.editorial-astromodule-v0-1__states span {
+  color: var(--phi-text-3);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.editorial-astromodule-v0-1__states strong {
+  margin-top: 5px;
+  color: var(--phi-text-1);
+}
+
+.editorial-trust-access-v0-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+  gap: 22px;
+  margin: 34px 0 18px;
+  padding: clamp(26px, 5vw, 48px);
+  border: 1px solid rgba(216, 186, 112, 0.24);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(27, 24, 18, 0.82), rgba(8, 13, 22, 0.96));
+}
+
+.editorial-trust-access-v0-1__actions {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.editorial-proof-link-v0-1 {
+  color: var(--phi-text-1);
+  border: 1px solid rgba(91, 173, 190, 0.3);
+  background: rgba(91, 173, 190, 0.08);
+}
+
+.editorial-access-link-v0-1 {
+  color: #090c12;
+  background: var(--phi-gold);
+}
+
+.proof-depth-appendix-v0-1 {
+  margin: 0 0 38px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(6, 10, 17, 0.76);
+  overflow: clip;
+}
+
+.proof-depth-appendix-v0-1 > summary {
+  cursor: pointer;
+  padding: 18px 22px;
+  color: var(--phi-text-1);
+  font-weight: 800;
+}
+
+.proof-depth-appendix-v0-1[open] > summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.proof-depth-appendix-v0-1__body {
+  padding: 8px 18px 24px;
+}
+
+.proof-moved-grid-v0-1 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.proof-moved-grid-v0-1 > * {
+  margin: 0;
+}
+
+.editorial-anchor-alias-v0-1 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .crypto-astro-primary-nav,
+  .editorial-orientation-v0-1,
+  .editorial-what-changed-v0-1,
+  .editorial-trust-access-v0-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .crypto-astro-primary-nav {
+    align-items: flex-start;
+  }
+
+  .crypto-astro-primary-nav__links {
+    justify-content: flex-start;
+  }
+
+  .market-first-screen,
+  .editorial-astromodule-v0-1__states,
+  .proof-moved-grid-v0-1 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .crypto-astro-primary-nav {
+    position: relative;
+    top: auto;
+  }
+
+  .crypto-astro-primary-nav__links,
+  .market-first-screen,
+  .editorial-astromodule-v0-1__states,
+  .proof-moved-grid-v0-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .crypto-astro-primary-nav__links {
+    display: grid;
+    width: 100%;
+  }
+
+  .crypto-astro-primary-nav__links a {
+    padding: 9px 0;
+  }
+}
