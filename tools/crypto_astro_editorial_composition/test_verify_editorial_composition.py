@@ -23,6 +23,15 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
         report = verify(self.sample())
         self.assertEqual(report["status"], "PASS", report["failures"])
 
+    def test_accepts_separate_brand_anchor(self) -> None:
+        value = self.sample().replace(
+            '<nav class="crypto-astro-primary-nav">',
+            '<nav class="crypto-astro-primary-nav"><a class="crypto-astro-primary-nav__brand" href="#surface">Crypto-Astro</a>',
+            1,
+        )
+        report = verify(value)
+        self.assertEqual(report["status"], "PASS", report["failures"])
+
     def test_rejects_competing_primary_cta(self) -> None:
         value = self.sample().replace("</section>\n<section id=\"what-changed\"", '<a href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a></section>\n<section id="what-changed"', 1)
         report = verify(value)
