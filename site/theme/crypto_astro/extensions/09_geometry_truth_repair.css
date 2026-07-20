@@ -1,0 +1,165 @@
+/* CRYPTO_ASTRO_GEOMETRY_TRUTH_REPAIR_v0_1:BEGIN */
+
+/* Decorative context marks: intentionally non-scalar. */
+.metric-context-mark {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-height:6px;
+  margin-top:10px;
+}
+.metric-context-mark i {
+  display:block;
+  width:6px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(143,183,255,.34);
+}
+.metric-context-mark i:nth-child(2) { background:rgba(247,212,125,.42); }
+.metric-context-mark i:nth-child(3) { background:rgba(134,239,172,.28); }
+
+/* Market composition is a semantic relation field, not a magnitude diagram. */
+.composition-semantic-field {
+  position:absolute;
+  inset:18px;
+  border:1px dashed rgba(143,183,255,.20);
+  border-radius:20px;
+  pointer-events:none;
+}
+.composition-semantic-field::before,
+.composition-semantic-field::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:1px;
+  height:68px;
+  background:linear-gradient(180deg, transparent, rgba(247,212,125,.30), transparent);
+  transform-origin:center;
+}
+.composition-semantic-field::before { transform:translate(-50%,-50%) rotate(54deg); }
+.composition-semantic-field::after { transform:translate(-50%,-50%) rotate(-54deg); }
+
+/* Barometer frame is semantic; the only scalar element is the bound 61/100 score. */
+.barometer-semantic-frame {
+  position:absolute;
+  inset:18px;
+  border:1px dashed rgba(247,212,125,.22);
+  border-radius:22px;
+  pointer-events:none;
+}
+.barometer-semantic-frame::before,
+.barometer-semantic-frame::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  background:rgba(143,183,255,.18);
+  transform:translate(-50%,-50%);
+}
+.barometer-semantic-frame::before { width:92px; height:1px; }
+.barometer-semantic-frame::after { width:1px; height:92px; }
+.score-orb.field-gauge::before {
+  border-style:dashed;
+  border-color:rgba(143,183,255,.24);
+}
+.score-orb.field-gauge::after { display:none; }
+
+/* Astromodule public geometry is categorical until a public numeric binding exists. */
+.astromodule-semantic-bands {
+  display:grid;
+  gap:8px;
+}
+.astromodule-semantic-bands .astromodule-polish-rail {
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:12px;
+  min-height:36px;
+  padding:8px 10px;
+  border:1px solid rgba(143,183,255,.18);
+  border-radius:12px;
+  background:rgba(3,7,13,.24);
+}
+.astromodule-semantic-bands .astromodule-polish-rail strong {
+  color:var(--gold);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+}
+.astromodule-right-balance__score--categorical {
+  grid-template-columns:auto 1fr;
+}
+.astromodule-right-balance__band {
+  display:grid;
+  place-items:center;
+  min-width:76px;
+  min-height:48px;
+  padding:8px 12px;
+  border:1px solid rgba(247,212,125,.30);
+  border-radius:16px;
+  color:var(--gold);
+  background:rgba(247,212,125,.055);
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+/* Negative returns and ranks remain text values; no arbitrary positive fill is drawn. */
+.distributed-row-text-v0-1 {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  min-height:32px;
+  padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.distributed-row-text-v0-1:last-child { border-bottom:0; }
+.distributed-row-text-v0-1 .distributed-value-v0-1 {
+  color:var(--soft);
+  font-size:12px;
+  font-weight:800;
+}
+.sample-context-status-v0-1 {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  margin-top:12px;
+  padding:10px 12px;
+  border:1px solid rgba(143,183,255,.16);
+  border-radius:14px;
+  background:rgba(143,183,255,.035);
+  color:var(--muted);
+  font-size:11px;
+}
+.sample-context-status-v0-1 strong {
+  color:var(--soft);
+  text-align:right;
+  font-size:11px;
+}
+
+/* Trend memory is fail-closed until two verified snapshots exist. */
+.trend-memory-unavailable {
+  margin-top:16px;
+  padding:12px 14px;
+  border:1px dashed rgba(143,183,255,.18);
+  border-radius:16px;
+  color:var(--muted);
+  background:rgba(3,7,13,.20);
+  font-size:12px;
+  line-height:1.5;
+}
+
+@media (max-width:620px) {
+  .astromodule-right-balance__score--categorical,
+  .sample-context-status-v0-1 {
+    grid-template-columns:1fr;
+  }
+  .sample-context-status-v0-1 strong { text-align:left; }
+}
+
+/* CRYPTO_ASTRO_GEOMETRY_TRUTH_REPAIR_v0_1:END */
