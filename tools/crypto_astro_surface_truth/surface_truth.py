@@ -11,25 +11,27 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-SCHEMA_VERSION = "crypto_astro_surface_truth_report_v0_1"
+SCHEMA_VERSION = "crypto_astro_surface_truth_report_v0_2"
 REQUIRED_SELECTORS = (
     "body",
-    ".surface-hub",
+    ".crypto-astro-primary-nav",
     ".hero",
+    "#what-changed",
     "#btc-phi-cycle-hub",
     ".market-reality-grid",
     ".alt-rotation-module",
-    ".cosmographer-watch-v0-2",
+    "#trust-access",
 )
 STYLE_SELECTORS = (
-    ".surface-hub",
+    ".crypto-astro-primary-nav",
     ".hero",
+    "#what-changed",
     "#btc-phi-cycle-hub",
     ".btc-quiet-phi-core-v0-3",
     ".btc-entry-v1",
     ".market-reality-grid",
     ".alt-rotation-module",
-    ".cosmographer-watch-v0-2",
+    "#trust-access",
 )
 STYLE_PROPERTIES = (
     "display",

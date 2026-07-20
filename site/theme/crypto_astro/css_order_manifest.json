@@ -1,4 +1,20 @@
 {
+  "extensions": [
+    {
+      "byte_count": 4425,
+      "order": 1,
+      "path": "site/theme/crypto_astro/extensions/09_geometry_truth_repair.css",
+      "role": "geometry_truth_repair",
+      "sha256": "5a7c3f7fb58a27dba3d9cd855527c7bb020869ea805a3c422bd76ca3cbd070ac"
+    },
+    {
+      "byte_count": 6236,
+      "order": 2,
+      "path": "site/theme/crypto_astro/extensions/10_editorial_composition.css",
+      "role": "editorial_composition_and_cta",
+      "sha256": "89158d066443d1701bbff0acfcd2510827d2651f10925e50db63deb379fc214c"
+    }
+  ],
   "generated_bundle_path": "site/theme/crypto_astro_surface.css",
   "join_rule": "append one LF only when a source module has no terminal CR or LF",
   "legacy_source_path": "site/theme/crypto_astro_inline_legacy.css",
@@ -70,14 +86,5 @@
   ],
   "schema_version": "crypto_astro_css_order_manifest_v0_1",
   "source_base_sha": "2b84a9c40ae692abaca0b0e96c1159027a26ac2b",
-  "source_html_path": "site/crypto-astro/index.html",
-  "extensions": [
-    {
-      "byte_count": 4425,
-      "order": 1,
-      "path": "site/theme/crypto_astro/extensions/09_geometry_truth_repair.css",
-      "role": "geometry_truth_repair",
-      "sha256": "5a7c3f7fb58a27dba3d9cd855527c7bb020869ea805a3c422bd76ca3cbd070ac"
-    }
-  ]
+  "source_html_path": "site/crypto-astro/index.html"
 }
