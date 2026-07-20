@@ -32,6 +32,16 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
         report = verify(value)
         self.assertEqual(report["status"], "PASS", report["failures"])
 
+    def test_rejects_duplicate_chapter_id(self) -> None:
+        value = self.sample().replace(
+            '<details id="proof">',
+            '<span id="market"></span><details id="proof">',
+            1,
+        )
+        report = verify(value)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertTrue(any(item.startswith("duplicate_ids") for item in report["failures"]))
+
     def test_rejects_competing_primary_cta(self) -> None:
         value = self.sample().replace("</section>\n<section id=\"what-changed\"", '<a href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a></section>\n<section id="what-changed"', 1)
         report = verify(value)
