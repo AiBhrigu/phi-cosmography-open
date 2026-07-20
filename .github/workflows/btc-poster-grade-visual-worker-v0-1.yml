@@ -11,18 +11,22 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: btc-poster-grade-visual-worker-v0-1
+  cancel-in-progress: false
+
 jobs:
   implement:
     name: Build poster-grade BTC visual PR
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout main
+      - name: Checkout main with parent payload
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
-      - name: Apply bounded visual implementation
+      - name: Recover anchored payload and open implementation PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -33,13 +37,32 @@ jobs:
           git push origin --delete "$BRANCH" >/dev/null 2>&1 || true
           git checkout -b "$BRANCH"
 
-          cat > /tmp/apply_btc_poster_grade.py <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
+          import subprocess
+          import textwrap
+
+          worker_path = ".github/workflows/btc-poster-grade-visual-worker-v0-1.yml"
+          old = subprocess.check_output(
+              ["git", "show", f"HEAD^:{worker_path}"],
+              text=True,
+          )
+          start_marker = "          css = r'''"
+          end_marker = "\n          '''\n"
+          if old.count(start_marker) != 1:
+              raise SystemExit(f"anchored CSS start count != 1: {old.count(start_marker)}")
+          start = old.index(start_marker) + len(start_marker)
+          end = old.index(end_marker, start)
+          css = textwrap.dedent(old[start:end]).strip() + "\n"
+
+          if "BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1" not in css:
+              raise SystemExit("poster-grade marker missing from anchored payload")
+          if "Φ" in css:
+              raise SystemExit("poster-grade CSS introduces a literal Phi")
 
           html_path = Path("site/crypto-astro/index.html")
           css_path = Path("site/theme/btc_poster_grade.css")
           visual_path = Path(".github/workflows/crypto-astro-static-refresh-pr-visual.yml")
-
           html = html_path.read_text(encoding="utf-8")
           visual = visual_path.read_text(encoding="utf-8")
 
@@ -55,586 +78,24 @@ jobs:
           path_anchor = '      - "site/theme/phi_theme.css"\n'
           poster_path = '      - "site/theme/btc_poster_grade.css"\n'
           if visual.count(path_anchor) != 1:
-              raise SystemExit(f"Visual workflow path anchor count != 1: {visual.count(path_anchor)}")
+              raise SystemExit(f"Visual path anchor count != 1: {visual.count(path_anchor)}")
           if poster_path not in visual:
               visual = visual.replace(path_anchor, path_anchor + poster_path, 1)
           if visual.count(poster_path) != 1:
-              raise SystemExit(f"Poster path trigger count != 1: {visual.count(poster_path)}")
+              raise SystemExit(f"Poster visual trigger count != 1: {visual.count(poster_path)}")
 
-          css = r'''/* BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1:BEGIN
-   Poster-grade attraction translated into live CSS geometry.
-   Quantitative meaning remains limited to the existing BTC dominance binding.
-   All other light paths are explicitly semantic and navigational. */
-
-.btc-deep-v1 {
-  --btc-poster-gold: #f6c961;
-  --btc-poster-blue: #6aa8ff;
-  --btc-poster-ink: #020611;
-  isolation: isolate;
-  border-color: rgba(246, 201, 97, 0.34);
-  background:
-    radial-gradient(circle at 78% 16%, rgba(80, 139, 235, 0.15), transparent 33%),
-    radial-gradient(circle at 24% 8%, rgba(246, 201, 97, 0.11), transparent 28%),
-    linear-gradient(155deg, #02050d 0%, #071126 54%, #02050c 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.025),
-    inset 0 0 130px rgba(44, 91, 171, 0.07),
-    0 34px 90px rgba(0,0,0,0.42);
-}
-
-.btc-deep-v1::before {
-  opacity: 0.28;
-  background:
-    linear-gradient(rgba(106,168,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(106,168,255,0.028) 1px, transparent 1px),
-    radial-gradient(circle at 50% 34%, rgba(246,201,97,0.08), transparent 34%);
-  background-size: 52px 52px, 52px 52px, 100% 100%;
-}
-
-.btc-deep-v1::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.72;
-  background-image:
-    radial-gradient(circle at 7% 13%, rgba(246,201,97,.72) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 18% 72%, rgba(106,168,255,.65) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 33% 24%, rgba(255,255,255,.62) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 52% 8%, rgba(246,201,97,.55) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 67% 83%, rgba(106,168,255,.55) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 88% 31%, rgba(246,201,97,.7) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 94% 74%, rgba(255,255,255,.52) 0 1px, transparent 1.7px);
-  background-size: 19rem 17rem, 23rem 21rem, 29rem 27rem, 31rem 25rem, 37rem 33rem, 41rem 37rem, 47rem 43rem;
-  animation: btcPosterStars 30s ease-in-out infinite;
-}
-
-.btc-deep-v1 > * {
-  position: relative;
-  z-index: 1;
-}
-
-.btc-deep-v1 .btc-head-v1 h2 {
-  max-width: 72rem;
-  font-size: clamp(2.75rem, 5vw, 4.45rem);
-  letter-spacing: -0.052em;
-  text-shadow: 0 0 34px rgba(106,168,255,0.08);
-}
-
-.btc-deep-v1 .btc-grid-v1 {
-  grid-template-columns: minmax(15rem, .54fr) minmax(34rem, 1.46fr);
-  gap: 1.15rem;
-}
-
-.btc-deep-v1 .btc-meta-v1 {
-  padding: 1.2rem 0 1.2rem .2rem;
-}
-
-.btc-deep-v1 .btc-metrics-v1 > div {
-  border-color: rgba(246,201,97,0.28);
-  background:
-    radial-gradient(circle at 10% 10%, rgba(246,201,97,0.11), transparent 36%),
-    linear-gradient(145deg, rgba(7,13,28,0.92), rgba(3,7,16,0.78));
-  box-shadow: inset 0 0 28px rgba(106,168,255,0.035), 0 18px 46px rgba(0,0,0,0.24);
-}
-
-.btc-deep-v1 .btc-field-v1 {
-  min-height: 38rem;
-  border-color: rgba(246,201,97,0.36);
-  background:
-    radial-gradient(circle at 50% 50%, rgba(246,201,97,0.22) 0 3%, transparent 18%),
-    radial-gradient(circle at 50% 50%, transparent 0 30%, rgba(72,124,220,0.12) 30.2% 30.7%, transparent 31% 43%, rgba(246,201,97,0.09) 43.2% 43.6%, transparent 44%),
-    repeating-radial-gradient(circle at 50% 50%, transparent 0 3.15rem, rgba(106,168,255,0.055) 3.18rem 3.22rem, transparent 3.25rem 5.4rem),
-    linear-gradient(145deg, #020611 0%, #0a1730 54%, #020611 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.025),
-    inset 0 0 110px rgba(42,85,166,0.08),
-    0 28px 76px rgba(0,0,0,0.38);
-}
-
-.btc-deep-v1 .btc-field-v1::before {
-  width: min(34rem, 86%);
-  aspect-ratio: 1;
-  border: 1px solid rgba(246,201,97,0.23);
-  background:
-    repeating-conic-gradient(from 0deg, rgba(246,201,97,0.22) 0 0.45deg, transparent 0.55deg 9deg),
-    radial-gradient(circle, transparent 0 54%, rgba(106,168,255,0.08) 54.5% 55%, transparent 55.5%);
-  -webkit-mask: radial-gradient(circle, transparent 0 48%, #000 49% 50%, transparent 51% 66%, #000 67% 68%, transparent 69%);
-  mask: radial-gradient(circle, transparent 0 48%, #000 49% 50%, transparent 51% 66%, #000 67% 68%, transparent 69%);
-  box-shadow:
-    0 0 0 4.9rem rgba(65,116,210,0.018),
-    0 0 0 4.95rem rgba(65,116,210,0.11),
-    0 0 88px rgba(106,168,255,0.09);
-  animation: btcPosterOrbit 38s linear infinite;
-}
-
-.btc-deep-v1 .btc-field-v1::after {
-  width: min(26rem, 68%);
-  aspect-ratio: 1;
-  border: 1px solid rgba(106,168,255,0.22);
-  background:
-    linear-gradient(90deg, transparent 49.7%, rgba(246,201,97,0.24) 49.9% 50.1%, transparent 50.3%),
-    linear-gradient(transparent 49.7%, rgba(106,168,255,0.18) 49.9% 50.1%, transparent 50.3%);
-  box-shadow: 0 0 0 3.7rem rgba(106,168,255,0.025), 0 0 0 3.75rem rgba(106,168,255,0.09);
-  opacity: 0.9;
-}
-
-.btc-deep-v1 .btc-quiet-phi-core-v0-3 {
-  width: clamp(10.2rem, 18vw, 12.7rem);
-  border: 1px solid rgba(255,239,190,0.88);
-  background:
-    radial-gradient(circle at 34% 26%, rgba(255,255,255,0.98) 0 2%, transparent 17%),
-    radial-gradient(circle at 50% 50%, #fff2bd 0 18%, #f7d778 51%, #d3d3c9 100%);
-  box-shadow:
-    0 0 16px rgba(255,238,184,0.9),
-    0 0 54px rgba(246,201,97,0.64),
-    0 0 135px rgba(246,201,97,0.25),
-    0 0 210px rgba(106,168,255,0.09);
-}
-
-.btc-deep-v1 .btc-quiet-phi-core-v0-3::before {
-  inset: -1.45rem;
-  -webkit-mask: radial-gradient(circle, transparent 0 69%, #000 70% 78%, transparent 79%);
-  mask: radial-gradient(circle, transparent 0 69%, #000 70% 78%, transparent 79%);
-  filter: drop-shadow(0 0 7px rgba(246,201,97,0.55));
-}
-
-.btc-deep-v1 .btc-quiet-phi-core-v0-3::after {
-  content: "";
-  position: absolute;
-  inset: 11%;
-  border-radius: 50%;
-  opacity: 0.48;
-  background:
-    repeating-conic-gradient(from 0deg, rgba(73,96,135,0.27) 0 0.65deg, transparent 0.75deg 12deg),
-    repeating-radial-gradient(circle, transparent 0 0.72rem, rgba(255,255,255,0.13) 0.75rem 0.78rem, transparent 0.81rem 1.35rem);
-  -webkit-mask: radial-gradient(circle, transparent 0 19%, #000 20% 72%, transparent 73%);
-  mask: radial-gradient(circle, transparent 0 19%, #000 20% 72%, transparent 73%);
-  animation: btcPosterCoreLattice 26s linear infinite;
-}
-
-.btc-deep-v1 .btc-quiet-phi-core-v0-3 span {
-  font-size: 1.7rem;
-  letter-spacing: .1em;
-}
-
-.btc-deep-v1 .btc-quiet-phi-core-v0-3 strong {
-  font-size: 1.5rem;
-}
-
-.btc-deep-v1 .btc-t-v1 {
-  width: 38%;
-  height: 25%;
-  color: rgba(239,245,255,0.92);
-  font-size: .76rem;
-  text-shadow: 0 0 12px rgba(106,168,255,0.16);
-}
-
-.btc-deep-v1 .btc-t-v1 span {
-  display: inline-flex;
-  align-items: center;
-  gap: .46rem;
-  padding: .22rem .45rem;
-  border-radius: 999px;
-  background: rgba(2,6,17,0.58);
-  box-shadow: 0 0 22px rgba(0,0,0,0.22);
-}
-
-.btc-deep-v1 .btc-t-v1 span::before {
-  content: "";
-  width: .52rem;
-  height: .52rem;
-  flex: 0 0 auto;
-  border: 1px solid rgba(246,201,97,0.68);
-  border-radius: 50%;
-  background: radial-gradient(circle, #f8d371 0 24%, transparent 29%);
-  box-shadow: 0 0 12px rgba(246,201,97,0.42);
-}
-
-.btc-deep-v1 .btc-t-v1.liquid span::before,
-.btc-deep-v1 .btc-t-v1.reviewed span::before {
-  border-color: rgba(106,168,255,0.72);
-  background: radial-gradient(circle, #86b7ff 0 24%, transparent 29%);
-  box-shadow: 0 0 12px rgba(106,168,255,0.42);
-}
-
-.btc-deep-v1 .btc-t-v1::after {
-  border-top-color: rgba(246,201,97,0.46);
-  box-shadow: 0 -1px 9px rgba(246,201,97,0.08);
-}
-
-.btc-deep-v1 .btc-t-v1.liquid::after,
-.btc-deep-v1 .btc-t-v1.reviewed::after {
-  border-top-color: rgba(106,168,255,0.46);
-  box-shadow: 0 -1px 9px rgba(106,168,255,0.08);
-}
-
-.btc-deep-v1 .btc-entry-v1 {
-  min-height: 7.15rem;
-  padding: 1rem 1.35rem;
-  border-color: rgba(246,201,97,0.66);
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at 7% 50%, rgba(246,201,97,0.25), transparent 18%),
-    radial-gradient(ellipse at 62% 50%, rgba(246,201,97,0.12), transparent 25%),
-    linear-gradient(90deg, rgba(246,201,97,0.10), rgba(31,69,133,0.15) 58%, rgba(2,6,17,0.82));
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.035),
-    inset 0 0 72px rgba(106,168,255,0.045),
-    0 25px 70px rgba(0,0,0,0.38),
-    0 0 42px rgba(246,201,97,0.08);
-}
-
-.btc-deep-v1 .btc-entry-v1::before {
-  left: 6.9rem;
-  right: 6.6rem;
-  height: 3px;
-  background: linear-gradient(90deg, rgba(255,223,132,0.98), rgba(246,201,97,0.42) 22%, rgba(106,168,255,0.58) 70%, rgba(246,201,97,0.34));
-  box-shadow: 0 0 9px rgba(246,201,97,0.84), 0 0 28px rgba(106,168,255,0.26);
-}
-
-.btc-deep-v1 .btc-entry-v1::after {
-  left: 6rem;
-  width: min(58rem, 76%);
-  height: 6.5rem;
-  opacity: .86;
-  background:
-    repeating-radial-gradient(ellipse at left center, transparent 0 1.2rem, rgba(246,201,97,0.13) 1.25rem 1.31rem, transparent 1.36rem 2.25rem),
-    conic-gradient(from 270deg at 78% 50%, transparent 0 42%, rgba(246,201,97,0.11) 46% 54%, transparent 58%),
-    radial-gradient(ellipse at left center, rgba(246,201,97,0.23), transparent 68%);
-  filter: drop-shadow(0 0 8px rgba(246,201,97,0.18));
-  animation: btcPosterTunnel 9s ease-in-out infinite;
-}
-
-.btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
-  width: 4.45rem;
-  height: 4.45rem;
-  border-color: rgba(246,201,97,0.82);
-  box-shadow:
-    0 0 0 .55rem rgba(246,201,97,0.035),
-    0 0 36px rgba(246,201,97,0.42),
-    inset 0 0 24px rgba(106,168,255,0.09);
-}
-
-.btc-deep-v1 .btc-entry-v1 strong {
-  font-size: clamp(.92rem, 1.35vw, 1.15rem);
-  letter-spacing: .17em;
-  text-shadow: 0 0 18px rgba(246,201,97,0.28);
-}
-
-.btc-deep-v1 .btc-entry-v1 em {
-  color: rgba(238,244,255,0.86);
-  font-size: .88rem;
-}
-
-.btc-deep-v1 .btc-entry-arrow-v1 {
-  width: 2.8rem;
-  height: 2.8rem;
-  border-color: rgba(246,201,97,0.42);
-  box-shadow: 0 0 24px rgba(246,201,97,0.18);
-}
-
-.btc-deep-v1 .btc-market-link-v1 {
-  opacity: .62;
-}
-
-.btc-deep-v1 .btc-cycle-v1 {
-  margin-top: 2.8rem;
-  padding-top: 2rem;
-}
-
-.btc-deep-v1 .btc-cycle-head-v1 h3 {
-  font-size: clamp(2rem, 4vw, 3.15rem);
-  text-shadow: 0 0 32px rgba(106,168,255,0.10);
-}
-
-.btc-deep-v1 .btc-cycle-canvas-v1 {
-  min-height: 43rem;
-  border-color: rgba(106,168,255,0.32);
-  background:
-    radial-gradient(circle at 50% 52%, rgba(246,201,97,0.19) 0 1.8%, transparent 10%),
-    radial-gradient(circle at 50% 52%, transparent 0 21%, rgba(106,168,255,0.12) 21.2% 21.7%, transparent 22% 35%, rgba(246,201,97,0.09) 35.2% 35.6%, transparent 36%),
-    radial-gradient(circle at 12% 20%, rgba(85,139,235,0.10), transparent 28%),
-    radial-gradient(circle at 86% 75%, rgba(246,201,97,0.07), transparent 31%),
-    repeating-radial-gradient(circle at 50% 52%, transparent 0 4.6rem, rgba(106,168,255,0.045) 4.65rem 4.7rem, transparent 4.75rem 7.8rem),
-    linear-gradient(145deg, #020611 0%, #09152e 55%, #020611 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.025),
-    inset 0 0 115px rgba(46,91,177,0.075),
-    0 30px 78px rgba(0,0,0,0.36);
-}
-
-.btc-deep-v1 .btc-cycle-canvas-v1::before {
-  width: 9.4rem;
-  border-color: rgba(246,201,97,0.42);
-  background:
-    radial-gradient(circle, rgba(255,227,143,0.32) 0 7%, transparent 25%),
-    repeating-conic-gradient(from 18deg, rgba(246,201,97,0.38) 0 1.2deg, transparent 1.4deg 20deg),
-    radial-gradient(circle, transparent 0 48%, rgba(106,168,255,0.16) 49% 50%, transparent 51%);
-  box-shadow:
-    0 0 0 2.8rem rgba(106,168,255,0.02),
-    0 0 0 2.85rem rgba(106,168,255,0.11),
-    0 0 58px rgba(246,201,97,0.24),
-    0 0 110px rgba(106,168,255,0.10);
-  animation: btcPosterNucleus 22s ease-in-out infinite;
-}
-
-.btc-deep-v1 .btc-cycle-canvas-v1::after {
-  width: min(34rem, 56%);
-  height: min(20rem, 42%);
-  border-color: rgba(106,168,255,0.28);
-  box-shadow:
-    0 0 0 3.1rem rgba(246,201,97,0.015),
-    0 0 0 3.15rem rgba(246,201,97,0.075),
-    0 0 78px rgba(106,168,255,0.08);
-  opacity: .9;
-  animation: btcPosterRelationalOrbit 34s linear infinite;
-}
-
-.btc-deep-v1 .btc-cycle-route-v1 path {
-  stroke: rgba(246,201,97,0.62);
-  stroke-width: 1.65;
-  stroke-dasharray: 11 12;
-  filter: drop-shadow(0 0 6px rgba(246,201,97,0.30));
-}
-
-.btc-deep-v1 .btc-cycle-route-v1 .s {
-  stroke: rgba(106,168,255,0.58);
-  stroke-width: 1.4;
-  stroke-dasharray: 2 12;
-  filter: drop-shadow(0 0 6px rgba(106,168,255,0.25));
-}
-
-.btc-deep-v1 .btc-node-v1 {
-  min-width: 12.5rem;
-  max-width: 15.5rem;
-  min-height: 5.6rem;
-  padding: 1rem 1rem 1rem 5.15rem;
-  display: grid;
-  align-content: center;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-
-.btc-deep-v1 .btc-node-v1 span {
-  color: rgba(246,201,97,0.92);
-  font-size: .7rem;
-  letter-spacing: .14em;
-}
-
-.btc-deep-v1 .btc-node-v1 strong {
-  color: rgba(241,246,255,0.92);
-  font-size: .82rem;
-  line-height: 1.38;
-  text-shadow: 0 0 12px rgba(106,168,255,0.10);
-}
-
-.btc-deep-v1 .btc-node-v1::before {
-  position: absolute !important;
-  left: .55rem !important;
-  top: 50% !important;
-  width: 3.75rem !important;
-  height: 3.75rem !important;
-  transform: translateY(-50%) !important;
-  float: none !important;
-  margin: 0 !important;
-  display: grid !important;
-  place-items: center !important;
-  border: 1px solid rgba(246,201,97,0.5) !important;
-  border-radius: 50% !important;
-  background:
-    radial-gradient(circle, rgba(246,201,97,0.18), rgba(3,7,16,0.96) 65%) !important;
-  box-shadow:
-    0 0 0 .5rem rgba(246,201,97,0.025),
-    0 0 32px rgba(246,201,97,0.18),
-    inset 0 0 20px rgba(106,168,255,0.06) !important;
-}
-
-.btc-deep-v1 .btc-node-v1.phase::before,
-.btc-deep-v1 .btc-node-v1.memory::before {
-  border-color: rgba(106,168,255,0.58) !important;
-  background: radial-gradient(circle, rgba(106,168,255,0.18), rgba(3,7,16,0.96) 65%) !important;
-  box-shadow: 0 0 0 .5rem rgba(106,168,255,0.025), 0 0 32px rgba(106,168,255,0.18), inset 0 0 20px rgba(246,201,97,0.05) !important;
-}
-
-.btc-deep-v1 .btc-node-v1.review::before {
-  content: "";
-  background:
-    radial-gradient(circle at 50% 35%, rgba(238,244,255,0.76) 0 11%, transparent 12%),
-    radial-gradient(ellipse at 50% 72%, rgba(238,244,255,0.42) 0 24%, transparent 25%),
-    radial-gradient(circle, rgba(106,168,255,0.14), rgba(3,7,16,0.96) 66%) !important;
-  border-color: rgba(226,233,255,0.42) !important;
-}
-
-.btc-deep-v1 .btc-node-v1.aspect {
-  left: 50%;
-  top: 6%;
-  transform: translateX(-50%);
-}
-
-.btc-deep-v1 .btc-node-v1.phase {
-  left: 6%;
-  top: 29%;
-}
-
-.btc-deep-v1 .btc-node-v1.memory {
-  left: auto;
-  right: 6%;
-  top: 29%;
-}
-
-.btc-deep-v1 .btc-node-v1.confirm {
-  left: 12%;
-  right: auto;
-  top: auto;
-  bottom: 9%;
-}
-
-.btc-deep-v1 .btc-node-v1.review {
-  left: auto;
-  right: 12%;
-  top: auto;
-  bottom: 9%;
-  min-width: 14rem;
-  border: 0;
-}
-
-.btc-deep-v1 .btc-node-v1:hover,
-.btc-deep-v1 .btc-node-v1:focus-within {
-  filter: brightness(1.12);
-}
-
-@media (max-width: 980px) and (min-width: 621px) {
-  .btc-deep-v1 .btc-grid-v1 {
-    grid-template-columns: 1fr;
-  }
-  .btc-deep-v1 .btc-field-v1 {
-    order: -1;
-  }
-  .btc-deep-v1 .btc-node-v1 {
-    min-width: 10.5rem;
-    max-width: 12.5rem;
-    padding-left: 4.25rem;
-  }
-  .btc-deep-v1 .btc-node-v1::before {
-    width: 3.1rem !important;
-    height: 3.1rem !important;
-  }
-}
-
-@media (max-width: 620px) {
-  .btc-deep-v1 .btc-grid-v1 {
-    grid-template-columns: 1fr;
-  }
-  .btc-deep-v1 .btc-field-v1 {
-    min-height: 30rem;
-  }
-  .btc-deep-v1 .btc-quiet-phi-core-v0-3 {
-    width: 9.1rem !important;
-  }
-  .btc-deep-v1 .btc-entry-v1 {
-    min-height: 7rem;
-  }
-  .btc-deep-v1 .btc-entry-v1::before {
-    left: 4.8rem;
-    right: 1rem;
-    top: 2.25rem;
-  }
-  .btc-deep-v1 .btc-entry-v1::after {
-    left: 4.1rem;
-    width: 82%;
-    top: 2.25rem;
-  }
-  .btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
-    width: 3.25rem;
-    height: 3.25rem;
-  }
-  .btc-deep-v1 .btc-cycle-canvas-v1 {
-    min-height: auto;
-    background:
-      radial-gradient(circle at 18% 20%, rgba(106,168,255,0.10), transparent 34%),
-      linear-gradient(180deg, #020611, #08152d);
-  }
-  .btc-deep-v1 .btc-cycle-route-v1,
-  .btc-deep-v1 .btc-cycle-canvas-v1::before,
-  .btc-deep-v1 .btc-cycle-canvas-v1::after {
-    display: none;
-  }
-  .btc-deep-v1 .btc-node-v1 {
-    min-height: 5.4rem;
-    padding: .9rem .8rem .9rem 4.55rem;
-    background: linear-gradient(100deg, rgba(106,168,255,0.055), rgba(2,6,17,0.72));
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .btc-deep-v1 .btc-node-v1::before {
-    left: .55rem !important;
-    width: 3rem !important;
-    height: 3rem !important;
-  }
-}
-
-@keyframes btcPosterStars {
-  0%, 100% { opacity: .48; transform: translate3d(0,0,0); }
-  50% { opacity: .82; transform: translate3d(0,-.35rem,0); }
-}
-
-@keyframes btcPosterOrbit {
-  to { transform: translate(-50%,-50%) rotate(360deg); }
-}
-
-@keyframes btcPosterCoreLattice {
-  to { transform: rotate(-360deg); }
-}
-
-@keyframes btcPosterTunnel {
-  0%, 100% { opacity: .62; transform: translateY(-50%) scaleX(.985); }
-  50% { opacity: .94; transform: translateY(-50%) scaleX(1.02); }
-}
-
-@keyframes btcPosterNucleus {
-  0%, 100% { transform: translate(-50%,-50%) scale(.97) rotate(0deg); opacity: .76; }
-  50% { transform: translate(-50%,-50%) scale(1.035) rotate(4deg); opacity: 1; }
-}
-
-@keyframes btcPosterRelationalOrbit {
-  to { transform: translate(-50%,-50%) rotate(343deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .btc-deep-v1::after,
-  .btc-deep-v1 .btc-field-v1::before,
-  .btc-deep-v1 .btc-quiet-phi-core-v0-3::after,
-  .btc-deep-v1 .btc-entry-v1::after,
-  .btc-deep-v1 .btc-cycle-canvas-v1::before,
-  .btc-deep-v1 .btc-cycle-canvas-v1::after {
-    animation: none !important;
-  }
-}
-/* BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1:END */
-'''
-
-          if 'Φ' in css:
-              raise SystemExit("Poster-grade CSS must not introduce a literal Phi")
-          if "BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1" not in css:
-              raise SystemExit("Poster-grade marker missing")
-          if "https://www.bhrigu.io/crypto-astro/btc" not in html:
-              raise SystemExit("BTC Field Read route missing before write")
           if html.count("https://www.bhrigu.io/crypto-astro/btc") != 1:
               raise SystemExit("BTC Field Read route count drift")
 
           html_path.write_text(html, encoding="utf-8")
           css_path.write_text(css, encoding="utf-8")
           visual_path.write_text(visual, encoding="utf-8")
+          print("POSTER_GRADE_PAYLOAD_RECOVERY=PASS")
           PY
 
-          python3 /tmp/apply_btc_poster_grade.py
           python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
-
           rm .github/workflows/btc-poster-grade-visual-worker-v0-1.yml
+
           git add site/crypto-astro/index.html site/theme/btc_poster_grade.css .github/workflows/crypto-astro-static-refresh-pr-visual.yml .github/workflows/btc-poster-grade-visual-worker-v0-1.yml
           git commit -m "Implement BTC poster-grade visual surface v0.1"
           git push --set-upstream origin "$BRANCH"
@@ -643,4 +104,4 @@ jobs:
             --base main \
             --head "$BRANCH" \
             --title "Crypto-Astro: implement BTC poster-grade visual surface" \
-            --body $'Poster-grade visual implementation for the already verified BTC deep node.\n\nScope:\n- strengthens the data-bound BTC gravitational field without adding new measured claims\n- turns Enter BTC Field Read into a luminous navigational corridor\n- arranges the five public-safe Aspect-Cycle nodes around a non-literal relational nucleus\n- preserves the single-Phi rule: no literal Phi exists in the new stylesheet\n- adds the new stylesheet to permanent visual-CI path coverage\n- removes this one-time worker from the implementation branch\n\nBoundary:\n- no data, snapshot, proof, refresh runner, route, A/E, C/T, backend, API, payment, forecast, trading signal, or ORION-core change\n- no Semenko, pairs, orbs, weights, ranked hits, or private method taxonomy reintroduced\n- reduced-motion supported'
+            --body $'Poster-grade visual implementation for the already verified BTC deep node.\n\nScope:\n- stronger data-bound BTC gravitational field without new measured claims\n- luminous Enter BTC Field Read corridor\n- five public-safe Aspect-Cycle nodes around a non-literal relational nucleus\n- single-Phi rule preserved: the new stylesheet contains no literal Phi\n- reduced-motion supported\n- one-time worker removed from the implementation branch\n\nBoundary:\n- no data, snapshot, proof, refresh runner, route, A/E, C/T, backend, API, payment, forecast, trading signal, or ORION-core change\n- no Semenko, pairs, orbs, weights, ranked hits, or private method taxonomy reintroduced'
