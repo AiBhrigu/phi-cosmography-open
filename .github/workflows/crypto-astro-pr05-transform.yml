@@ -27,7 +27,20 @@ jobs:
         run: python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
 
       - name: Apply editorial composition
-        run: python3 tools/crypto_astro_editorial_composition/apply_editorial_composition.py
+        run: |
+          set +e
+          python3 tools/crypto_astro_editorial_composition/apply_editorial_composition.py > editorial-transform.log 2>&1
+          status=$?
+          cat editorial-transform.log
+          exit $status
+
+      - name: Upload transform diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-pr05-transform-diagnostics-${{ github.event.pull_request.number }}
+          path: editorial-transform.log
+          if-no-files-found: warn
 
       - name: Build deterministic CSS bundle
         run: python3 tools/crypto_astro_css_modules/build_css_modules.py --write --verify-source-base
@@ -37,7 +50,7 @@ jobs:
 
       - name: Commit transformed surface and remove worker
         run: |
-          rm .github/workflows/crypto-astro-pr05-transform.yml
+          rm .github/workflows/crypto-astro-pr05-transform.yml editorial-transform.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/crypto-astro/index.html site/theme/crypto_astro/css_order_manifest.json site/theme/crypto_astro_surface.css site/theme/crypto_astro/extensions/10_editorial_composition.css tools/crypto_astro_editorial_composition .github/workflows/crypto-astro-pr05-transform.yml
