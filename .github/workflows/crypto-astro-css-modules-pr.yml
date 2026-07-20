@@ -1,0 +1,146 @@
+name: Crypto-Astro CSS Modules PR
+
+on:
+  pull_request:
+    paths:
+      - "site/crypto-astro/index.html"
+      - "site/theme/crypto_astro_inline_legacy.css"
+      - "site/theme/crypto_astro_surface.css"
+      - "site/theme/crypto_astro/**"
+      - "tools/crypto_astro_css_modules/**"
+      - ".github/workflows/crypto-astro-css-modules-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-modules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Enforce PR-03 path scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          allowed_exact = {
+              "site/crypto-astro/index.html",
+              "site/theme/crypto_astro_surface.css",
+              ".github/workflows/crypto-astro-css-modules-pr.yml",
+          }
+          allowed_prefixes = (
+              "site/theme/crypto_astro/",
+              "tools/crypto_astro_css_modules/",
+          )
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+          ).splitlines()
+          unexpected = [
+              path for path in changed
+              if path not in allowed_exact and not path.startswith(allowed_prefixes)
+          ]
+          assert not unexpected, f"Unexpected PR-03 paths: {unexpected}"
+          required = {
+              "site/crypto-astro/index.html",
+              "site/theme/crypto_astro_surface.css",
+              "site/theme/crypto_astro/css_order_manifest.json",
+          }
+          assert required.issubset(changed), f"Missing PR-03 paths: {sorted(required - set(changed))}"
+          assert ".github/workflows/crypto-astro-pr03-style-block-inspect.yml" not in changed
+          assert "tools/crypto_astro_css_modules/style_block_report.json" not in changed
+          print("PR_03_ALLOWED_PATHS=PASS")
+          PY
+
+      - name: Install browser dependencies
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Run module builder fixtures
+        run: |
+          python3 -m unittest discover \
+            -s tools/crypto_astro_css_modules \
+            -p "test_*.py" \
+            -v
+
+      - name: Verify module source, order, hashes, and generated bundle
+        run: |
+          python3 tools/crypto_astro_css_modules/build_css_modules.py \
+            --verify-source-base
+
+      - name: Verify runtime stylesheet route
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
+          surface = '<link href="../theme/crypto_astro_surface.css" rel="stylesheet"/>'
+          legacy = '<link href="../theme/crypto_astro_inline_legacy.css" rel="stylesheet"/>'
+          assert html.count(surface) == 1, "Generated surface stylesheet link must appear exactly once"
+          assert legacy not in html, "Legacy stylesheet must not be loaded at runtime"
+          assert "<style" not in html.lower(), "Inline style block returned"
+          print("PR_03_RUNTIME_STYLESHEET_ROUTE=PASS")
+          PY
+
+      - name: Prepare base worktree
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git worktree add --detach /tmp/crypto-astro-pr03-base "$BASE_SHA"
+
+      - name: Capture base and head truth on one origin
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/base artifacts/head
+          capture() {
+            local root="$1"
+            local out="$2"
+            local log="$3"
+            python3 -m http.server 4173 --directory "$root/site" >"$log" 2>&1 &
+            local pid=$!
+            for attempt in {1..40}; do
+              if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
+                break
+              fi
+              sleep 0.25
+            done
+            python3 tools/crypto_astro_surface_truth/surface_truth.py \
+              --url http://127.0.0.1:4173/crypto-astro/index.html \
+              --out "$out"
+            kill "$pid"
+            wait "$pid" 2>/dev/null || true
+            sleep 0.5
+          }
+          capture /tmp/crypto-astro-pr03-base artifacts/base /tmp/pr03-base.log
+          capture "$GITHUB_WORKSPACE" artifacts/head /tmp/pr03-head.log
+
+      - name: Compare surface truth
+        run: |
+          python3 tools/crypto_astro_css_extract/compare_surface_truth.py \
+            --base artifacts/base \
+            --head artifacts/head \
+            --out artifacts/css-module-parity-report.json
+
+      - name: Record module build report
+        run: |
+          python3 tools/crypto_astro_css_modules/build_css_modules.py \
+            --verify-source-base \
+            > artifacts/css-module-build-report.json
+
+      - name: Upload PR-03 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-css-modules-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
