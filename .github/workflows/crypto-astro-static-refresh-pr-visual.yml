@@ -7,11 +7,12 @@ on:
       - "site/theme/phi_theme.css"
       - "site/theme/system.css"
       - "site/theme/btc_poster_grade.css"
+      - "site/theme/ip_semantic_seal.css"
       - "tools/crypto_astro_static_refresh/**"
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   visual:
@@ -21,6 +22,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Apply bounded public IP semantic seal
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          python3 tools/crypto_astro_static_refresh/apply_public_ip_semantic_seal_v0_1.py
+          if ! git diff --quiet -- site/crypto-astro/index.html site/theme/system.css site/theme/ip_semantic_seal.css; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add site/crypto-astro/index.html site/theme/system.css site/theme/ip_semantic_seal.css
+            git commit -m "Seal public Source Lanes, C/T, and Aspect-Cycle semantics"
+            git push origin "HEAD:${HEAD_REF}"
+          fi
 
       - name: Verify DeFi TVL methodology contract
         run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
@@ -40,7 +58,7 @@ jobs:
           cat /tmp/crypto-astro-preview.log
           exit 1
 
-      - name: Render and verify snapshot bindings
+      - name: Render and verify snapshot bindings and semantic seal
         run: |
           mkdir -p artifacts
           python3 - <<'PY'
@@ -84,6 +102,10 @@ jobs:
               orb = driver.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge")
               btc_hub = driver.find_element(By.CSS_SELECTOR, "#btc-phi-cycle-hub").text
               btc_hub_lower = btc_hub.lower()
+              source_membranes = driver.find_element(By.CSS_SELECTOR, ".source-lanes-support-v0-1").text
+              source_membranes_lower = source_membranes.lower()
+              temporal_membrane = driver.find_element(By.CSS_SELECTOR, ".temporal-support-v0-1").text
+              temporal_membrane_lower = temporal_membrane.lower()
               sample_panel = driver.find_element(
                   By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]'
               ).text
@@ -98,6 +120,16 @@ jobs:
                   "icp_score": expected_icp in sample_panel,
                   "scoring_coverage": expected_coverage in scoring,
                   "heartbeat": "static · no schedule" in scoring,
+                  "field_membranes_title": "field membranes" in source_membranes_lower,
+                  "a_membrane_prepared": "a · prepared" in source_membranes_lower,
+                  "e_membrane_prepared": "e · prepared" in source_membranes_lower,
+                  "public_inputs_inactive": source_membranes_lower.count("public input inactive") == 2,
+                  "source_pipeline_not_public": "no source pipeline disclosure" in source_membranes_lower,
+                  "ct_bounded_membrane": "bounded context membrane" in temporal_membrane_lower,
+                  "ct_window": "observation window" in temporal_membrane_lower,
+                  "ct_phase": "phase context" in temporal_membrane_lower,
+                  "ct_provenance": "provenance" in temporal_membrane_lower,
+                  "ct_no_public_pipeline": "no public pipeline" in temporal_membrane_lower,
               }
 
               entry_phi_content = "not_in_scope"
@@ -124,19 +156,34 @@ jobs:
                   section_start = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->")
                   section_end = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->", section_start)
                   btc_section_source = html_source[section_start:section_end]
+                  btc_section_lower = btc_section_source.lower()
+
+                  seal_start = html_source.index("<!-- CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1:BEGIN -->")
+                  seal_end = html_source.index("<!-- CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1:END -->", seal_start)
+                  membrane_section_lower = html_source[seal_start:seal_end].lower()
 
                   theme_css = Path("site/theme/phi_theme.css").read_text(encoding="utf-8")
                   css_start = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:BEGIN")
                   css_end = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END", css_start)
                   refinement_css = theme_css[css_start:css_end]
-
                   poster_css = Path("site/theme/btc_poster_grade.css").read_text(encoding="utf-8")
+                  seal_css = Path("site/theme/ip_semantic_seal.css").read_text(encoding="utf-8")
+
+                  protected_btc_terms = (
+                      "semenko", "sun–pluto", "sun-pluto", "pairs", "orbs",
+                      "ranked hits", "crypto-events overlay", "internal calculation weights",
+                  )
+                  protected_membrane_terms = (
+                      "search demand", "public discussion", "future attention",
+                      "astropatterns memory", "raw ephemerides",
+                  )
 
                   checks.update({
                       "aspect_pressure": "aspect pressure" in btc_hub_lower,
                       "phase_condition": "phase condition" in btc_hub_lower,
                       "event_memory": "event memory" in btc_hub_lower,
-                      "private_research_depth": "private research depth" in btc_hub_lower,
+                      "protected_research_aperture": "research depth by review" in btc_hub_lower,
+                      "aspect_cycle_sealed_copy": "protected calculation structure sealed" in btc_hub_lower,
                       "single_phi_entry_threshold": "Φ" in entry_phi_content,
                       "aspect_cycle_nucleus_non_literal": (
                           "Φ" not in cycle_before_content and "Φ" not in cycle_after_content
@@ -145,6 +192,10 @@ jobs:
                       "single_phi_css_literal": refinement_css.count('content: "Φ";') == 1,
                       "poster_grade_marker": "BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1" in poster_css,
                       "poster_grade_no_literal_phi": "Φ" not in poster_css,
+                      "ip_semantic_seal_marker": "CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1" in seal_css,
+                      "ip_semantic_seal_no_literal_phi": "Φ" not in seal_css,
+                      "protected_btc_terms_absent": not any(term in btc_section_lower for term in protected_btc_terms),
+                      "protected_membrane_terms_absent": not any(term in membrane_section_lower for term in protected_membrane_terms),
                   })
 
               report["checks"] = checks
@@ -154,7 +205,9 @@ jobs:
                   "btc_timestamp": generated,
                   "btc_deep_node": "present" if deep_node_present else "not_in_scope",
                   "aspect_cycle_core": "present" if deep_node_present else "not_in_scope",
-                  "private_research_depth": "present" if deep_node_present else "not_in_scope",
+                  "protected_research_aperture": "present" if deep_node_present else "not_in_scope",
+                  "source_membranes": source_membranes,
+                  "temporal_membrane": temporal_membrane,
                   "entry_phi_content": entry_phi_content,
                   "aspect_cycle_before_content": cycle_before_content,
                   "aspect_cycle_after_content": cycle_after_content,
@@ -164,7 +217,11 @@ jobs:
                   "heartbeat": "static · no schedule",
               })
 
-              targets = {"btc-hub": "#btc-phi-cycle-hub"}
+              targets = {
+                  "btc-hub": "#btc-phi-cycle-hub",
+                  "source-membranes": ".source-lanes-support-v0-1",
+                  "temporal-membrane": ".temporal-support-v0-1",
+              }
               if deep_node_present:
                   targets.update({
                       "aspect-cycle": "#aspect-cycle-v1",
@@ -233,7 +290,11 @@ jobs:
           from PIL import Image, ImageDraw
 
           def sheet(mode, cell_width, cell_height, columns=2):
-              candidate_labels = ("btc-hub", "aspect-cycle", "private-depth", "market", "sample", "scoring")
+              candidate_labels = (
+                  "btc-hub", "aspect-cycle", "private-depth",
+                  "source-membranes", "temporal-membrane",
+                  "market", "sample", "scoring",
+              )
               labels = [
                   label for label in candidate_labels
                   if Path(f"artifacts/{mode}-{label}.png").exists()
