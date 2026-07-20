@@ -1,0 +1,74 @@
+name: Crypto-Astro PR-05 Mobile Nav Fix
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.head_ref == 'feature/crypto-astro-editorial-composition-cta-v0-1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: feature/crypto-astro-editorial-composition-cta-v0-1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Apply exact compact navigation rule
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          css_path = Path('site/theme/crypto_astro/extensions/10_editorial_composition.css')
+          css = css_path.read_text(encoding='utf-8')
+          old = '''  .crypto-astro-primary-nav {
+            align-items: flex-start;
+          }
+
+            .crypto-astro-primary-nav__links {
+              justify-content: flex-start;
+            }'''.replace('            ', '')
+          new = '''  .crypto-astro-primary-nav {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+            .crypto-astro-primary-nav__links {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              justify-content: stretch;
+              width: 100%;
+            }'''.replace('            ', '')
+          assert old in css, 'current mobile navigation block not found'
+          css_path.write_text(css.replace(old, new, 1), encoding='utf-8')
+
+          manifest_path = Path('site/theme/crypto_astro/css_order_manifest.json')
+          manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+          value = css_path.read_bytes()
+          for entry in manifest['extensions']:
+              if entry['path'] == str(css_path):
+                  entry['byte_count'] = len(value)
+                  entry['sha256'] = hashlib.sha256(value).hexdigest()
+                  break
+          else:
+              raise AssertionError('editorial extension manifest entry missing')
+          manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          PY
+      - name: Rebuild deterministic bundle
+        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --write --verify-source-base
+      - name: Remove worker and commit
+        run: |
+          rm .github/workflows/crypto-astro-pr05-mobile-nav-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/theme/crypto_astro/extensions/10_editorial_composition.css site/theme/crypto_astro/css_order_manifest.json site/theme/crypto_astro_surface.css .github/workflows/crypto-astro-pr05-mobile-nav-fix.yml
+          git commit -m "Compact PR-05 mobile navigation"
+          git push origin HEAD:feature/crypto-astro-editorial-composition-cta-v0-1
