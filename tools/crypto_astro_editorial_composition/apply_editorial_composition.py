@@ -84,7 +84,6 @@ def main() -> int:
         orientation,
         "orientation and what changed",
     )
-
     html = replace_once(
         html,
         r'<!-- CRYPTO_ASTRO_MOBILE_ROUTE_LAYER_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_MOBILE_ROUTE_LAYER_v0_1:END -->\s*',
@@ -110,73 +109,37 @@ def main() -> int:
         "BTC primary CTA",
     )
     html = html.replace("View wider Market Field confirmation", "View wider market context", 1)
-    html = replace_once(
-        html,
-        r'\s*<section class="btc-private-v1" aria-label="Protected research aperture">.*?</section>',
-        "",
-        "BTC competing research CTA",
-    )
-    html = replace_once(
-        html,
-        r'\s*<div class="btc-boundary-v1">.*?</div>',
-        "",
-        "BTC duplicate boundary",
-    )
+    html = replace_once(html, r'\s*<section class="btc-private-v1" aria-label="Protected research aperture">.*?</section>', "", "BTC competing research CTA")
+    html = replace_once(html, r'\s*<div class="btc-boundary-v1">.*?</div>', "", "BTC duplicate boundary")
 
-    html = html.replace(
-        '<section id="market" class="section surface-anchor" aria-label="Crypto-Astro Market Field">',
-        '<section id="market" class="section surface-anchor editorial-chapter-v0-1" data-editorial-chapter="wider-market" aria-label="Wider crypto market context">',
-        1,
-    )
-    html = replace_once(
-        html,
-        r'<section id="market".*?<div class="section-head">.*?</div>',
-        '<section id="market" class="section surface-anchor editorial-chapter-v0-1" data-editorial-chapter="wider-market" aria-label="Wider crypto market context">\n  <div class="section-head editorial-chapter-head-v0-1">\n    <div class="kicker">Wider Market</div>\n    <h2>Market structure around Bitcoin</h2>\n    <p>Verified values are read together: market reality, liquidity, breadth, concentration, timing context, and synthesis.</p>\n  </div>',
-        "wider market header",
-    )
-    html = replace_once(
-        html,
-        r'\s*<div class="market-status-rail" aria-label="Crypto-Astro Market Field status rail">.*?</div>',
-        "",
-        "market status rail",
-    )
+    old_market_header = '''<section id="market" class="section surface-anchor" aria-label="Crypto-Astro Market Field">
+  <div class="section-head">
+    <div class="kicker">Static public snapshot · field module</div>
+    <h2>Current Market Field Snapshot</h2>
+    <p>A source-bound market snapshot that organizes visible crypto-market structure: market reality, liquidity depth, dominance, stablecoin pressure, rotation, and Cosmographer synthesis.</p>
+  </div>'''
+    new_market_header = '''<section id="market" class="section surface-anchor editorial-chapter-v0-1" data-editorial-chapter="wider-market" aria-label="Wider crypto market context">
+  <div class="section-head editorial-chapter-head-v0-1">
+    <div class="kicker">Wider Market</div>
+    <h2>Market structure around Bitcoin</h2>
+    <p>Verified values are read together: market reality, liquidity, breadth, concentration, timing context, and synthesis.</p>
+  </div>'''
+    if old_market_header not in html:
+        raise RuntimeError("wider market header: exact source block not found")
+    html = html.replace(old_market_header, new_market_header, 1)
+    html = replace_once(html, r'\s*<div class="market-status-rail" aria-label="Crypto-Astro Market Field status rail">.*?</div>', "", "market status rail")
 
     html, continuation = extract_once(
         html,
         r'\s*<article class="market-card">\s*<p class="eyebrow">Continuation Field</p>.*?</article>',
         "continuation field",
     )
-
-    html = html.replace(
-        '<p>A compact field score showing how prepared membranes, market liquidity, and bounded context are positioned.</p>',
-        '<p>A compact score and categorical state for the verified market snapshot.</p>',
-        1,
-    )
-    html = html.replace(
-        '<div class="barometer-lane attention" aria-label="A membrane prepared">A<br/><span>prepared</span></div>',
-        '<div class="barometer-lane attention" aria-label="Input context prepared">Input<br/><span>prepared</span></div>',
-        1,
-    )
-    html = html.replace(
-        '<div class="barometer-lane engagement" aria-label="E membrane prepared">E<br/><span>prepared</span></div>',
-        '<div class="barometer-lane engagement" aria-label="Evidence context prepared">Evidence<br/><span>prepared</span></div>',
-        1,
-    )
-    html = html.replace(
-        '<div class="barometer-lane market" aria-label="Market vector active">M<br/><span>active</span></div>',
-        '<div class="barometer-lane market" aria-label="Market structure active">Market<br/><span>active</span></div>',
-        1,
-    )
-    html = html.replace(
-        '<div class="barometer-lane temporal" aria-label="Temporal context bounded">C/T<br/><span>bounded</span></div>',
-        '<div class="barometer-lane temporal" aria-label="Timing context bounded">Timing<br/><span>bounded</span></div>',
-        1,
-    )
-    html = html.replace(
-        '<p>Market Field Score: 61 / 100<br/>Bias: Neutral → Bullish</p>',
-        '<p>Market Field Score: 61 / 100<br/>Observed state: Balanced Expansion</p>',
-        1,
-    )
+    html = html.replace('<p>A compact field score showing how prepared membranes, market liquidity, and bounded context are positioned.</p>', '<p>A compact score and categorical state for the verified market snapshot.</p>', 1)
+    html = html.replace('<div class="barometer-lane attention" aria-label="A membrane prepared">A<br/><span>prepared</span></div>', '<div class="barometer-lane attention" aria-label="Input context prepared">Input<br/><span>prepared</span></div>', 1)
+    html = html.replace('<div class="barometer-lane engagement" aria-label="E membrane prepared">E<br/><span>prepared</span></div>', '<div class="barometer-lane engagement" aria-label="Evidence context prepared">Evidence<br/><span>prepared</span></div>', 1)
+    html = html.replace('<div class="barometer-lane market" aria-label="Market vector active">M<br/><span>active</span></div>', '<div class="barometer-lane market" aria-label="Market structure active">Market<br/><span>active</span></div>', 1)
+    html = html.replace('<div class="barometer-lane temporal" aria-label="Temporal context bounded">C/T<br/><span>bounded</span></div>', '<div class="barometer-lane temporal" aria-label="Timing context bounded">Timing<br/><span>bounded</span></div>', 1)
+    html = html.replace('<p>Market Field Score: 61 / 100<br/>Bias: Neutral → Bullish</p>', '<p>Market Field Score: 61 / 100<br/>Observed state: Balanced Expansion</p>', 1)
 
     compact_astromodule = '''<article class="market-card gold editorial-astromodule-v0-1" id="astromodule-surface-bridge" aria-label="Astromodule timing context">
   <div>
@@ -191,52 +154,21 @@ def main() -> int:
     <div><span>Stability</span><strong>Transitional-stable</strong></div>
   </div>
 </article>'''
-    html = replace_once(
-        html,
-        r'<article class="market-card gold astromodule-card astromodule-wide-panel-v0-1" id="astromodule-surface-bridge".*?</article>',
-        compact_astromodule,
-        "compact Astromodule",
-    )
+    html = replace_once(html, r'<article class="market-card gold astromodule-card astromodule-wide-panel-v0-1" id="astromodule-surface-bridge".*?</article>', compact_astromodule, "compact Astromodule")
 
-    html, support_modules = extract_once(
-        html,
-        r'<!-- CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1:END -->',
-        "support modules",
-    )
-    html, astromodule_depth = extract_once(
-        html,
-        r'\s*<article class="market-card astromodule-depth-note-v0-1".*?</article>',
-        "Astromodule depth note",
-    )
-    html, access_preview = extract_once(
-        html,
-        r'<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:END -->',
-        "access preview",
-    )
-    html, public_sample = extract_once(
-        html,
-        r'<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:END -->',
-        "public sample panel",
-    )
-    html, private_note = extract_once(
-        html,
-        r'<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->',
-        "private note CTA",
-    )
-    html = replace_once(
-        html,
-        r'\s*<div class="trend-memory" aria-label="Trend Memory">.*?</div>',
-        "",
-        "legacy trend memory",
-    )
+    html, support_modules = extract_once(html, r'<!-- CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_SUPPORT_MODULES_VISUAL_ALIGNMENT_v0_1:END -->', "support modules")
+    html, astromodule_depth = extract_once(html, r'\s*<article class="market-card astromodule-depth-note-v0-1".*?</article>', "Astromodule depth note")
+    html, access_preview = extract_once(html, r'<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:END -->', "access preview")
+    html, public_sample = extract_once(html, r'<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:END -->', "public sample panel")
+    html, private_note = extract_once(html, r'<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->', "private note CTA")
+    html = replace_once(html, r'\s*<div class="trend-memory" aria-label="Trend Memory">.*?</div>', "", "legacy trend memory")
 
-    replacements = {
+    for old, new in {
         "M active · membranes prepared · static context": "Market-led · reviewed context",
         ">M active<": ">Market active<",
         "Prepared field membranes remain inactive.": "Additional input context remains inactive.",
         "Prepared membranes remain inactive;": "Additional input context remains inactive;",
-    }
-    for old, new in replacements.items():
+    }.items():
         html = html.replace(old, new)
 
     trust = '''<section id="trust-access" class="editorial-trust-access-v0-1 editorial-chapter-v0-1" data-editorial-chapter="trust-access" aria-labelledby="trust-access-title">
@@ -253,8 +185,7 @@ def main() -> int:
   </div>
 </section>
 '''
-
-    proof_body = f'''<details id="proof" class="proof-depth-appendix-v0-1">
+    proof_open = f'''<details id="proof" class="proof-depth-appendix-v0-1">
   <summary>Source proof and research appendix</summary>
   <div class="proof-depth-appendix-v0-1__body">
     <div class="proof-moved-grid-v0-1">
@@ -267,11 +198,14 @@ def main() -> int:
     {private_note}
 '''
     html = html.replace('<section id="proof" class="truth-grid surface-anchor"', '<section class="truth-grid surface-anchor"', 1)
-    html = html.replace('<section class="truth-grid surface-anchor"', trust + proof_body + '<section class="truth-grid surface-anchor"', 1)
-    html = html.replace(
-        '<!-- CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1:END -->',
-        '  </div>\n</details>\n<!-- CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1:END -->',
-        1,
+    if '<section class="truth-grid surface-anchor"' not in html:
+        raise RuntimeError("proof section not found")
+    html = html.replace('<section class="truth-grid surface-anchor"', trust + proof_open + '<section class="truth-grid surface-anchor"', 1)
+    html = replace_once(
+        html,
+        r'(<!-- VERIFY_MARKERS: Local Staging Proof · Batch Queue Proof · No backend/API -->\s*)</main>',
+        r'\1  </div>\n</details>\n</main>',
+        "proof appendix closure",
     )
 
     HTML_PATH.write_text(html, encoding="utf-8")
@@ -280,7 +214,7 @@ def main() -> int:
     extension_bytes = EXTENSION_PATH.read_bytes()
     extension_entry = {
         "byte_count": len(extension_bytes),
-        "order": 2,
+        "order": 0,
         "path": "site/theme/crypto_astro/extensions/10_editorial_composition.css",
         "role": "editorial_composition_and_cta",
         "sha256": sha256_bytes(extension_bytes),
