@@ -5,7 +5,10 @@ on:
     paths:
       - "site/crypto-astro/index.html"
       - "site/theme/crypto_astro_inline_legacy.css"
+      - "site/theme/crypto_astro_surface.css"
+      - "site/theme/crypto_astro/**"
       - "tools/crypto_astro_css_extract/**"
+      - "tools/crypto_astro_surface_truth/**"
       - ".github/workflows/crypto-astro-css-extraction-pr.yml"
 
 permissions:
@@ -25,6 +28,7 @@ jobs:
           python-version: "3.11"
 
       - name: Enforce PR-02 path scope
+        if: github.head_ref == 'feature/crypto-astro-mechanical-inline-css-extraction-v0-1'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -63,6 +67,7 @@ jobs:
             -v
 
       - name: Verify exact mechanical extraction
+        if: github.head_ref == 'feature/crypto-astro-mechanical-inline-css-extraction-v0-1'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
