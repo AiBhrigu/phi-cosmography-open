@@ -8,7 +8,9 @@ on:
       - "site/theme/crypto_astro_surface.css"
       - "site/theme/crypto_astro/**"
       - "tools/crypto_astro_css_modules/**"
+      - "tools/crypto_astro_surface_truth/**"
       - ".github/workflows/crypto-astro-css-modules-pr.yml"
+      - ".github/workflows/crypto-astro-css-extraction-pr.yml"
 
 permissions:
   contents: read
@@ -39,6 +41,8 @@ jobs:
               "site/crypto-astro/index.html",
               "site/theme/crypto_astro_surface.css",
               ".github/workflows/crypto-astro-css-modules-pr.yml",
+              ".github/workflows/crypto-astro-css-extraction-pr.yml",
+              "tools/crypto_astro_surface_truth/surface_truth.py",
           }
           allowed_prefixes = (
               "site/theme/crypto_astro/",
