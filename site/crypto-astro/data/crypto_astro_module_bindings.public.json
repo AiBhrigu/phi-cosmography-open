@@ -10,7 +10,7 @@
     },
     "aem_barometer": {
       "source": "field_output",
-      "anchor": "A/E/M Field Barometer"
+      "anchor": "Field Membrane Barometer"
     },
     "continuation_field": {
       "source": "probability_continuation",

@@ -1,28 +1,20 @@
 {
-  "schema_version": "crypto_astro_market_field_public_v0_1",
+  "schema_version": "crypto_astro_market_field_public_v0_2",
   "snapshot_mode": "public_safe_market_field",
   "updated_at_utc": "2026-07-19T18:26:56Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
   "vectors": {
-    "A_attention": {
-      "state": "prepared_pending_calibration",
-      "source_class": "search_attention",
-      "search_pressure": null,
-      "query_acceleration": null,
-      "topic_heat": null,
-      "attention_divergence": null,
-      "notes": "Prepared source lane only. No live search adapter claim."
+    "A_membrane": {
+      "state": "prepared_inactive",
+      "public_input": false,
+      "disclosure": "status_only"
     },
-    "E_engagement": {
-      "state": "prepared_pending_calibration",
-      "source_class": "x_social_engagement",
-      "discussion_pressure": null,
-      "narrative_velocity": null,
-      "engagement_acceleration": null,
-      "social_amplification": null,
-      "notes": "Prepared source lane only. No live X.com/social adapter claim."
+    "E_membrane": {
+      "state": "prepared_inactive",
+      "public_input": false,
+      "disclosure": "status_only"
     },
     "M_market": {
       "state": "market_vector_active",
@@ -46,15 +38,12 @@
       "market_breadth_pct": 34.5,
       "liquidity_health": "context fresh"
     },
-    "CT_temporal": {
-      "state": "bounded_validated",
-      "source_class": "cosmographic_temporal",
-      "phase_density": null,
-      "harmonic_tension": null,
-      "resonance_level": null,
-      "eclipse_proximity": null,
-      "structural_stability": null,
-      "ephemerides_support": "bounded_validated"
+    "CT_context": {
+      "state": "bounded",
+      "observation_window": "public_context",
+      "phase_context": "public_context",
+      "provenance": "source_bound",
+      "pipeline": "sealed"
     }
   },
   "field_output": {
@@ -73,9 +62,9 @@
   },
   "cosmographer_read": {
     "state": "Balanced Expansion",
-    "meaning": "M-vector is active while A/E lanes remain prepared for calibration.",
-    "direction": "Watch liquidity depth, stablecoin flow, and future attention / engagement confirmation.",
-    "key_watch": "If attention rises without liquidity depth, noise risk increases.",
+    "meaning": "Market context is active while prepared membranes remain inactive.",
+    "direction": "Watch liquidity depth, stablecoin flow, breadth, and source freshness.",
+    "key_watch": "If breadth expands without liquidity depth, noise risk increases.",
     "boundary": "Scenario-only context. Not a price forecast. Not a trading signal."
   },
   "boundary": {

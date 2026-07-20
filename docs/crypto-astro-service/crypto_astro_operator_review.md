@@ -7,7 +7,7 @@ GENERATED_AT_UTC=2026-07-19T18:26:56Z
 ## Changed modules
 
 - Market Reality / Market Field
-- A/E/M Field Barometer
+- Field Membrane Barometer
 - Continuation Field
 - Liquidity / TVL
 - Altcoin Rotation Field

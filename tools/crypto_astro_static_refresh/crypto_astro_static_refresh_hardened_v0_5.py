@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 
 NODE = "CRYPTO_ASTRO_STATIC_REFRESH_AUTOMATED_RUNNER_v0_5"
 PRIMARY_RUNNER_DEFAULT = Path(os.environ.get('CRYPTO_ASTRO_PRIMARY_RUNNER', str(Path(__file__).resolve().parent / 'crypto_astro_all_module_static_refresh_source_v0_1.py')))
-EXPECTED_PRIMARY_SHA256 = "97912567f9d04b3d5daa80dcd327dc40950c43629d309a83da09ab53cb2a943b"
+EXPECTED_PRIMARY_SHA256 = "e1d858eacafc07d7536d7583d4865146adf7d0fbc2f9233560551f45c4b3c250"
 OLD_BRANCH = 'feature/crypto-astro-all-module-static-refresh-v0-1'
 NEW_BRANCH = os.environ.get('CRYPTO_ASTRO_REFRESH_BRANCH', 'automation/crypto-astro-static-refresh-manual-v0-5')
 BASE_BRANCH = 'main'
@@ -58,8 +58,8 @@ DEFI_TVL_PUBLIC_COPY = (
     'Source foundation: CoinGecko is the current public market-data anchor for global market cap, '
     '24h volume, BTC dominance, and market context. DeFi TVL uses the latest DefiLlama '
     '/v2/historicalChainTvl point, excluding liquid staking and double-counted TVL. Stablecoin '
-    'and DEX context use reviewed DefiLlama sources. A/E lanes remain prepared until source policy '
-    'and calibration are reviewed. This is a static public snapshot, not a live adapter.'
+    'and DEX context use reviewed DefiLlama sources. Prepared field membranes remain inactive; source policy '
+    'and calibration stay protected. This is a static public snapshot, not a live adapter.'
 )
 AFFECTED_FILES = [
     'site/crypto-astro/index.html',
@@ -394,19 +394,19 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
 
     slot_values = {
         'field_state_title': field.get('regime_label') or 'Static public context',
-        'field_state_badge': 'M active · A/E pending · static context',
+        'field_state_badge': 'M active · membranes prepared · static context',
         'field_state_body_1': (
             f"Public market context is active. BTC dominance is {vals['btc_dom']}; "
             f"stablecoin share is {vals['stable_share']}."
         ),
         'field_state_body_2': (
             f"Alt breadth is {vals['alt24']} over 24h and {vals['alt7']} over 7d. "
-            "A/E lanes remain pending calibration."
+            "Prepared field membranes remain inactive."
         ),
         'state_structure_status': 'M active',
-        'state_pressure_status': 'A/E pending',
+        'state_pressure_status': 'Prepared',
         'state_breadth_status': f"{vals['alt24']} / {vals['alt7']}",
-        'field_synthesis_lead': 'Static context is bounded; A/E confirmation is not available.',
+        'field_synthesis_lead': 'Static context is bounded; prepared membrane inputs are inactive.',
         'field_synthesis_body_1': (
             f"Market cap is {vals['market_cap']} with {vals['volume']} in 24h volume. "
             f"DeFi TVL is {vals['defi_tvl']}."
@@ -621,23 +621,15 @@ def update_market_field(repo: Path, snapshot: dict) -> dict:
         'derived_from': 'site/crypto-astro/data/crypto_astro_snapshot.public.json',
         'derived_status': 'DERIVED_FROM_CANONICAL_SNAPSHOT',
         'vectors': {
-            'A_attention': {
-                'state': 'prepared_pending_calibration',
-                'source_class': 'search_attention',
-                'search_pressure': None,
-                'query_acceleration': None,
-                'topic_heat': None,
-                'attention_divergence': None,
-                'notes': 'Prepared source lane only. No live search adapter claim.'
+            'A_membrane': {
+                'state': 'prepared_inactive',
+                'public_input': False,
+                'disclosure': 'status_only'
             },
-            'E_engagement': {
-                'state': 'prepared_pending_calibration',
-                'source_class': 'x_social_engagement',
-                'discussion_pressure': None,
-                'narrative_velocity': None,
-                'engagement_acceleration': None,
-                'social_amplification': None,
-                'notes': 'Prepared source lane only. No live X.com/social adapter claim.'
+            'E_membrane': {
+                'state': 'prepared_inactive',
+                'public_input': False,
+                'disclosure': 'status_only'
             },
             'M_market': {
                 'state': 'market_vector_active',
@@ -661,24 +653,21 @@ def update_market_field(repo: Path, snapshot: dict) -> dict:
                 'market_breadth_pct': (snapshot.get('altcoin_rotation') or {}).get('alt_breadth_24h_pct'),
                 'liquidity_health': liq.get('liquidity_context_state') or 'context_only'
             },
-            'CT_temporal': {
-                'state': 'bounded_validated',
-                'source_class': 'cosmographic_temporal',
-                'phase_density': None,
-                'harmonic_tension': None,
-                'resonance_level': None,
-                'eclipse_proximity': None,
-                'structural_stability': None,
-                'ephemerides_support': 'bounded_validated'
+            'CT_context': {
+                'state': 'bounded',
+                'observation_window': 'public_context',
+                'phase_context': 'public_context',
+                'provenance': 'source_bound',
+                'pipeline': 'sealed'
             }
         },
         'field_output': field,
         'probability_continuation': cont,
         'cosmographer_read': {
             'state': field.get('regime_label') or 'Static public context',
-            'meaning': 'M-vector is active while A/E lanes remain prepared for calibration.',
-            'direction': 'Watch liquidity depth, stablecoin flow, and future attention / engagement confirmation.',
-            'key_watch': 'If attention rises without liquidity depth, noise risk increases.',
+            'meaning': 'Market context is active while prepared membranes remain inactive.',
+            'direction': 'Watch liquidity depth, stablecoin flow, breadth, and source freshness.',
+            'key_watch': 'If breadth expands without liquidity depth, noise risk increases.',
             'boundary': 'Scenario-only context. Not a price forecast. Not a trading signal.'
         },
         'boundary': BOUNDARY.copy()
@@ -701,9 +690,9 @@ def update_scoring(repo: Path, snapshot: dict) -> dict:
         'coverage': {
             'assets': sorted(assets.keys()),
             'sample_count': len(assets),
-            'A_lane': 'calibration_pending',
-            'E_lane': 'calibration_pending',
-            'M_lane': 'market_context_active'
+            'A_membrane': 'prepared_inactive',
+            'E_membrane': 'prepared_inactive',
+            'M_market': 'market_context_active'
         },
         'heartbeat_sec': None,
         'assets': assets,
@@ -715,7 +704,7 @@ def update_scoring(repo: Path, snapshot: dict) -> dict:
         'market_source': 'CoinGecko + reviewed DeFi/TVL sources where available',
         'market_source_mode': 'static_public_snapshot',
         'market_generated_at_utc': generated_at,
-        'public_state_label': 'Static public context · A/E pending · M active'
+        'public_state_label': 'Static public context · prepared membranes inactive · M active'
     }
     write_json(path, data)
     return data
