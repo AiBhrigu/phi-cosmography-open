@@ -9,6 +9,7 @@ on:
       - "site/theme/crypto_astro_surface.css"
       - "tools/crypto_astro_local_truth/**"
       - "tools/crypto_astro_surface_truth/**"
+      - ".github/workflows/crypto-astro-css-modules-pr.yml"
       - ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml"
 
 permissions:
@@ -37,6 +38,7 @@ jobs:
           import subprocess
 
           allowed_exact = {
+              ".github/workflows/crypto-astro-css-modules-pr.yml",
               ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml",
               "site/crypto-astro/index.html",
           }
@@ -97,7 +99,7 @@ jobs:
           bash tools/crypto_astro_local_truth/run_local_truth.sh \
             "$GITHUB_WORKSPACE" \
             artifacts/head \
-            4174
+            4173
 
       - name: Compare base and normalized head truth
         run: |
