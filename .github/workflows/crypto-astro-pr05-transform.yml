@@ -1,17 +1,16 @@
 name: Crypto-Astro PR-05 Editorial Transform
 
 on:
-  push:
-    branches:
-      - feature/crypto-astro-editorial-composition-cta-v0-1
-    paths:
-      - ".github/workflows/crypto-astro-pr05-transform.yml"
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   transform:
+    if: github.head_ref == 'feature/crypto-astro-editorial-composition-cta-v0-1'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
