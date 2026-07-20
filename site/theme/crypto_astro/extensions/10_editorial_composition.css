@@ -262,11 +262,15 @@
   }
 
   .crypto-astro-primary-nav {
-    align-items: flex-start;
-  }
+  align-items: flex-start;
+  flex-direction: column;
+}
 
   .crypto-astro-primary-nav__links {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    width: 100%;
   }
 
   .market-first-screen,

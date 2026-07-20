@@ -8,11 +8,11 @@
       "sha256": "5a7c3f7fb58a27dba3d9cd855527c7bb020869ea805a3c422bd76ca3cbd070ac"
     },
     {
-      "byte_count": 6127,
+      "byte_count": 6236,
       "order": 2,
       "path": "site/theme/crypto_astro/extensions/10_editorial_composition.css",
       "role": "editorial_composition_and_cta",
-      "sha256": "c25132000d8a31b2e6191ba48a18e18adbb048944f37c98a54ba8a4785d8e676"
+      "sha256": "89158d066443d1701bbff0acfcd2510827d2651f10925e50db63deb379fc214c"
     }
   ],
   "generated_bundle_path": "site/theme/crypto_astro_surface.css",
