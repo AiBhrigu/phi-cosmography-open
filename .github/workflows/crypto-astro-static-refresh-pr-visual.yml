@@ -5,6 +5,8 @@ on:
     paths:
       - "site/crypto-astro/**"
       - "site/theme/phi_theme.css"
+      - "site/theme/system.css"
+      - "site/theme/btc_poster_grade.css"
       - "tools/crypto_astro_static_refresh/**"
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
@@ -128,6 +130,8 @@ jobs:
                   css_end = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END", css_start)
                   refinement_css = theme_css[css_start:css_end]
 
+                  poster_css = Path("site/theme/btc_poster_grade.css").read_text(encoding="utf-8")
+
                   checks.update({
                       "aspect_pressure": "aspect pressure" in btc_hub_lower,
                       "phase_condition": "phase condition" in btc_hub_lower,
@@ -139,6 +143,8 @@ jobs:
                       ),
                       "deep_node_html_no_literal_phi": "Φ" not in btc_section_source,
                       "single_phi_css_literal": refinement_css.count('content: "Φ";') == 1,
+                      "poster_grade_marker": "BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1" in poster_css,
+                      "poster_grade_no_literal_phi": "Φ" not in poster_css,
                   })
 
               report["checks"] = checks

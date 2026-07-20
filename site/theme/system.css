@@ -1,3 +1,5 @@
+@import url('./btc_poster_grade.css');
+
 /* Φ System Tokens v1.4 */
 :root {
   --phi-gold-1: #f7e8b0;
@@ -22,3 +24,25 @@
   --phi-major: 61.8%;
   --phi-minor: 38.2%;
 }
+
+/* BTC_POSTER_GRADE_REVIEW_FIX_v0_1:BEGIN
+   Desktop nodes remain free forms; mobile nodes reset desktop transforms. */
+@media (min-width: 621px) {
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .btc-deep-v1.btc-deep-v1 .btc-node-v1 {
+    transform: none !important;
+  }
+}
+/* BTC_POSTER_GRADE_REVIEW_FIX_v0_1:END */
