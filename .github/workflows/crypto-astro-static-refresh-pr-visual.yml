@@ -31,8 +31,15 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
+          mkdir -p artifacts
           if ! grep -q "CRYPTO_ASTRO_IP_SEMANTIC_TAIL_CLOSURE_v0_1:BEGIN" site/crypto-astro/index.html; then
-            python3 tools/crypto_astro_static_refresh/apply_ip_semantic_tail_closure_v0_1.py
+            set +e
+            python3 tools/crypto_astro_static_refresh/apply_ip_semantic_tail_closure_v0_1.py 2>&1 | tee artifacts/patch-diagnostic.txt
+            patch_status=${PIPESTATUS[0]}
+            set -e
+            if [ "$patch_status" -ne 0 ]; then
+              exit "$patch_status"
+            fi
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add \
