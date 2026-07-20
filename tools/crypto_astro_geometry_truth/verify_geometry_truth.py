@@ -11,7 +11,7 @@ HTML_PATH = Path("site/crypto-astro/index.html")
 MANIFEST_PATH = Path("site/theme/crypto_astro/css_order_manifest.json")
 LEGACY_PATH = Path("site/theme/crypto_astro_inline_legacy.css")
 GENERATED_PATH = Path("site/theme/crypto_astro_surface.css")
-EXTENSION_PATH = Path("site/theme/crypto_astro/extensions/09_geometry_truth_repair.css")
+GEOMETRY_EXTENSION_PATH = Path("site/theme/crypto_astro/extensions/09_geometry_truth_repair.css")
 
 FORBIDDEN_HTML = {
     "market_cap_unbound_rail": 'class="metric-rail cap"',
@@ -46,14 +46,11 @@ REQUIRED_COUNTS = {
     "semantic_barometer": ('class="barometer-visual" data-geometry-truth="semantic"', 1),
     "semantic_barometer_frame": ('class="barometer-semantic-frame"', 1),
     "data_bound_market_score": ('class="score-orb field-gauge" data-geometry-truth="data-bound"', 1),
-    "semantic_astromodule_bands": ('class="astromodule-polish-rails astromodule-semantic-bands" data-geometry-truth="semantic"', 1),
-    "categorical_astromodule_score": ('class="astromodule-right-balance__band"', 1),
     "data_bound_visual_score_rows": ('class="visual-row-v0-1" data-geometry-truth="data-bound"', 2),
     "text_only_visual_rows": ('class="visual-row-v0-1 visual-row-text-v0-1"', 2),
     "text_only_sample_rows": ('class="distributed-row-v0-1 distributed-row-text-v0-1"', 6),
     "data_bound_sample_score_rows": ('data-geometry-truth="data-bound"><span>Score</span>', 2),
     "sample_context_status": ('class="sample-context-status-v0-1"', 2),
-    "trend_memory_unavailable": ('class="trend-memory-unavailable" data-geometry-truth="semantic"', 1),
 }
 
 REQUIRED_LITERALS = {
@@ -66,7 +63,6 @@ REQUIRED_LITERALS = {
     "gram_negative_30d_preserved": ">-9.93%<",
     "icp_negative_24h_preserved": ">-1.01%<",
     "icp_negative_30d_preserved": ">-4.63%<",
-    "previous_snapshot_fallback": "Previous verified snapshot is not available.",
 }
 
 
@@ -98,6 +94,28 @@ def scan_html(html: str) -> tuple[dict[str, bool], dict[str, int]]:
         count = html.count(literal)
         counts[name] = count
         checks[f"required_present:{name}"] = count >= 1
+
+    old_astromodule = html.count('class="astromodule-polish-rails astromodule-semantic-bands" data-geometry-truth="semantic"')
+    new_astromodule = html.count('class="market-card gold editorial-astromodule-v0-1"')
+    counts["semantic_astromodule_context"] = old_astromodule + new_astromodule
+    checks["required_form:semantic_astromodule_context"] = old_astromodule + new_astromodule == 1
+
+    old_categorical = html.count('class="astromodule-right-balance__band"')
+    new_categorical = html.count('class="editorial-astromodule-v0-1__states"')
+    counts["categorical_astromodule_state"] = old_categorical + new_categorical
+    checks["required_form:categorical_astromodule_state"] = old_categorical + new_categorical == 1
+
+    old_memory = html.count('class="trend-memory-unavailable" data-geometry-truth="semantic"')
+    new_memory = html.count('data-what-changed-status="unavailable"')
+    counts["verified_change_memory_unavailable"] = old_memory + new_memory
+    checks["required_form:verified_change_memory_unavailable"] = old_memory + new_memory == 1
+
+    fallback_count = html.count("Previous verified snapshot is not available.") + html.count(
+        "Previous verified snapshot is not yet available."
+    )
+    counts["previous_snapshot_fallback"] = fallback_count
+    checks["required_present:previous_snapshot_fallback"] = fallback_count >= 1
+
     checks["gram_score_width_bound"] = 'style="width:53.0%"' in html and ">53.01<" in html
     checks["icp_score_width_bound"] = 'style="width:52.5%"' in html and ">52.46<" in html
     return checks, counts
@@ -108,32 +126,63 @@ def verify(root: Path) -> dict[str, Any]:
     manifest = json.loads((root / MANIFEST_PATH).read_text(encoding="utf-8"))
     legacy = (root / LEGACY_PATH).read_bytes()
     generated = (root / GENERATED_PATH).read_bytes()
-    extension = (root / EXTENSION_PATH).read_bytes()
 
     checks, counts = scan_html(html)
     extensions = manifest.get("extensions", [])
-    checks["one_extension_declared"] = isinstance(extensions, list) and len(extensions) == 1
-    entry = extensions[0] if checks["one_extension_declared"] else {}
-    checks["extension_path_bound"] = entry.get("path") == str(EXTENSION_PATH)
-    checks["extension_role_bound"] = entry.get("role") == "geometry_truth_repair"
-    checks["extension_order_bound"] = entry.get("order") == 1
-    checks["extension_byte_count_bound"] = entry.get("byte_count") == len(extension)
-    checks["extension_sha256_bound"] = entry.get("sha256") == sha256(extension)
-    checks["generated_bundle_matches_base_plus_extension"] = generated == join_values([legacy, extension])
-    extension_text = extension.decode("utf-8")
-    checks["extension_has_truth_marker"] = "CRYPTO_ASTRO_GEOMETRY_TRUTH_REPAIR_v0_1:BEGIN" in extension_text
-    checks["extension_has_no_animation"] = "animation:" not in extension_text and "@keyframes" not in extension_text
+    checks["extensions_declared"] = isinstance(extensions, list) and len(extensions) >= 1
+
+    ordered_extension_bytes: list[bytes] = []
+    geometry_entry: dict[str, Any] | None = None
+    extension_measurements: list[dict[str, Any]] = []
+    if checks["extensions_declared"]:
+        for position, entry in enumerate(extensions, 1):
+            path = root / str(entry.get("path") or "")
+            exists = path.is_file()
+            checks[f"extension_{position}:path_exists"] = exists
+            checks[f"extension_{position}:order_bound"] = entry.get("order") == position
+            if exists:
+                value = path.read_bytes()
+                ordered_extension_bytes.append(value)
+                checks[f"extension_{position}:byte_count_bound"] = entry.get("byte_count") == len(value)
+                checks[f"extension_{position}:sha256_bound"] = entry.get("sha256") == sha256(value)
+                extension_measurements.append(
+                    {
+                        "order": position,
+                        "path": str(entry.get("path")),
+                        "role": str(entry.get("role")),
+                        "byte_count": len(value),
+                        "sha256": sha256(value),
+                    }
+                )
+            if entry.get("path") == str(GEOMETRY_EXTENSION_PATH):
+                geometry_entry = entry
+
+    checks["geometry_extension_declared_once"] = sum(
+        1 for entry in extensions if entry.get("path") == str(GEOMETRY_EXTENSION_PATH)
+    ) == 1
+    geometry_extension = (root / GEOMETRY_EXTENSION_PATH).read_bytes()
+    checks["geometry_extension_role_bound"] = bool(geometry_entry) and geometry_entry.get("role") == "geometry_truth_repair"
+    checks["geometry_extension_order_bound"] = bool(geometry_entry) and geometry_entry.get("order") == 1
+    checks["geometry_extension_byte_count_bound"] = bool(geometry_entry) and geometry_entry.get("byte_count") == len(geometry_extension)
+    checks["geometry_extension_sha256_bound"] = bool(geometry_entry) and geometry_entry.get("sha256") == sha256(geometry_extension)
+    checks["generated_bundle_matches_base_plus_extensions"] = generated == join_values([legacy] + ordered_extension_bytes)
+
+    geometry_text = geometry_extension.decode("utf-8")
+    checks["geometry_extension_has_truth_marker"] = "CRYPTO_ASTRO_GEOMETRY_TRUTH_REPAIR_v0_1:BEGIN" in geometry_text
+    checks["geometry_extension_has_no_animation"] = "animation:" not in geometry_text and "@keyframes" not in geometry_text
 
     failures = sorted(name for name, passed in checks.items() if not passed)
     return {
-        "schema_version": "crypto_astro_geometry_truth_report_v0_1",
+        "schema_version": "crypto_astro_geometry_truth_report_v0_2",
         "status": "PASS" if not failures else "FAIL",
         "checks": checks,
         "counts": counts,
         "failures": failures,
         "measurements": {
-            "extension_bytes": len(extension),
-            "extension_sha256": sha256(extension),
+            "extension_count": len(extensions) if isinstance(extensions, list) else 0,
+            "extensions": extension_measurements,
+            "geometry_extension_bytes": len(geometry_extension),
+            "geometry_extension_sha256": sha256(geometry_extension),
             "generated_bundle_bytes": len(generated),
             "generated_bundle_sha256": sha256(generated),
             "data_bound_geometry_count": html.count('data-geometry-truth="data-bound"'),
