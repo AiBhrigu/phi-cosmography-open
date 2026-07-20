@@ -4281,7 +4281,7 @@
 }
 
 .crypto-astro-primary-nav__brand {
-  color: var(--phi-gold);
+  color: var(--phi-gold, #d8ba70);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-decoration: none;
@@ -4345,7 +4345,8 @@
 
 .editorial-primary-cta-v0-1 {
   color: #090c12;
-  background: linear-gradient(135deg, var(--phi-gold), #f0d79a);
+  background: linear-gradient(135deg, var(--phi-gold, #d8ba70), #f0d79a);
+  box-shadow: 0 12px 30px rgba(216, 186, 112, 0.18);
 }
 
 .editorial-orientation-v0-1__trust,
@@ -4391,7 +4392,7 @@
 }
 
 .editorial-what-changed-v0-1__state strong {
-  color: var(--phi-gold);
+  color: var(--phi-gold, #d8ba70);
 }
 
 #btc-phi-cycle-hub,
@@ -4472,7 +4473,7 @@
 
 .editorial-access-link-v0-1 {
   color: #090c12;
-  background: var(--phi-gold);
+  background: var(--phi-gold, #d8ba70);
 }
 
 .proof-depth-appendix-v0-1 {
@@ -4545,7 +4546,6 @@
     top: auto;
   }
 
-  .crypto-astro-primary-nav__links,
   .market-first-screen,
   .editorial-astromodule-v0-1__states,
   .proof-moved-grid-v0-1 {
@@ -4553,11 +4553,15 @@
   }
 
   .crypto-astro-primary-nav__links {
-    display: grid;
-    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 10px;
   }
 
   .crypto-astro-primary-nav__links a {
-    padding: 9px 0;
+    padding: 7px 4px;
+  }
+
+  .crypto-astro-primary-nav__links a:last-child {
+    grid-column: 1 / -1;
   }
 }
