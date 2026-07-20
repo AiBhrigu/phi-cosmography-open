@@ -1,0 +1,116 @@
+name: Crypto-Astro CSS Extraction Parity PR
+
+on:
+  pull_request:
+    paths:
+      - "site/crypto-astro/index.html"
+      - "site/theme/crypto_astro_inline_legacy.css"
+      - "tools/crypto_astro_css_extract/**"
+      - ".github/workflows/crypto-astro-css-extraction-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  extraction-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Enforce PR-02 path scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+          allowed_exact = {
+              "site/crypto-astro/index.html",
+              "site/theme/crypto_astro_inline_legacy.css",
+              ".github/workflows/crypto-astro-css-extraction-pr.yml",
+          }
+          allowed_prefix = "tools/crypto_astro_css_extract/"
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+          ).splitlines()
+          unexpected = [
+              path for path in changed
+              if path not in allowed_exact and not path.startswith(allowed_prefix)
+          ]
+          assert not unexpected, f"Unexpected PR-02 paths: {unexpected}"
+          assert "site/crypto-astro/index.html" in changed
+          assert "site/theme/crypto_astro_inline_legacy.css" in changed
+          print("PR_02_ALLOWED_PATHS=PASS")
+          PY
+
+      - name: Install test dependencies
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Run extractor and comparator fixtures
+        run: |
+          python3 -m unittest discover \
+            -s tools/crypto_astro_css_extract \
+            -p "test_*.py" \
+            -v
+
+      - name: Verify exact mechanical extraction
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python3 tools/crypto_astro_css_extract/extract_inline_css.py \
+            --verify-base-ref "$BASE_SHA"
+
+      - name: Prepare base worktree
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git worktree add --detach /tmp/crypto-astro-base "$BASE_SHA"
+
+      - name: Capture base and head truth on one origin
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/base artifacts/head
+          capture() {
+            local root="$1"
+            local out="$2"
+            local log="$3"
+            python3 -m http.server 4173 --directory "$root/site" >"$log" 2>&1 &
+            local pid=$!
+            for attempt in {1..40}; do
+              if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
+                break
+              fi
+              sleep 0.25
+            done
+            python3 tools/crypto_astro_surface_truth/surface_truth.py \
+              --url http://127.0.0.1:4173/crypto-astro/index.html \
+              --out "$out"
+            kill "$pid"
+            wait "$pid" 2>/dev/null || true
+            sleep 0.5
+          }
+          capture /tmp/crypto-astro-base artifacts/base /tmp/base-surface.log
+          capture "$GITHUB_WORKSPACE" artifacts/head /tmp/head-surface.log
+
+      - name: Compare surface truth
+        run: |
+          python3 tools/crypto_astro_css_extract/compare_surface_truth.py \
+            --base artifacts/base \
+            --head artifacts/head \
+            --out artifacts/css-extraction-parity-report.json
+
+      - name: Upload parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-css-extraction-parity-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
