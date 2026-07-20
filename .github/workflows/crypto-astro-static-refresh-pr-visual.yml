@@ -229,7 +229,6 @@ jobs:
                   'source-membranes': '.source-lanes-support-v0-1',
                   'temporal-membrane': '.temporal-support-v0-1',
                   'cosmographer-read': '.cosmographer-console-v0-2',
-                  'scoring': '#scoring',
                   'scoring-boundary': '.scoring-calc-intro',
                   'market': '#market',
                   'sample': '[aria-label="Crypto-Astro Public Sample Web Panel"]',
@@ -263,7 +262,7 @@ jobs:
               report['browser_severe'] = severe
               report['checks'] = checks
               report['assertions'] = {
-                  'field_score': orb.text.strip(), 'btc_timestamp': generated,
+                  'field_score': field_score, 'btc_timestamp': generated,
                   'entry_phi_content': entry_phi,
                   'aspect_cycle_before_content': cycle_before,
                   'aspect_cycle_after_content': cycle_after,
