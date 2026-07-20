@@ -1,0 +1,121 @@
+name: BTC Poster Motion Budget PR
+
+on:
+  pull_request:
+    paths:
+      - "site/crypto-astro/index.html"
+      - "site/theme/system.css"
+      - "site/theme/phi_theme.css"
+      - "site/theme/btc_poster_grade.css"
+      - "site/theme/btc_motion_budget.css"
+      - ".github/workflows/btc-poster-motion-budget-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  motion-budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify source contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          system = Path('site/theme/system.css').read_text()
+          budget = Path('site/theme/btc_motion_budget.css').read_text()
+          p = "@import url('./btc_poster_grade.css');"
+          m = "@import url('./btc_motion_budget.css');"
+          s = "@import url('./ip_semantic_seal.css');"
+          assert p in system and m in system and s in system
+          assert system.index(p) < system.index(m) < system.index(s)
+          assert 'BTC_POSTER_CPU_AND_ANIMATION_BUDGET_REPAIR_v0_1' in budget
+          assert 'Φ' not in budget
+          assert 'content-visibility: auto' in budget
+          assert 'contain: layout paint style' in budget
+          assert 'animation-name: none !important' in budget
+          assert 'animation-play-state: paused !important' in budget
+          print('BTC_MOTION_BUDGET_SOURCE=PASS')
+          PY
+
+      - name: Install browser driver
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2
+
+      - name: Start preview
+        run: |
+          python3 -m http.server 4173 --directory site >/tmp/btc-motion.log 2>&1 &
+          for attempt in {1..20}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && exit 0
+            sleep 0.5
+          done
+          cat /tmp/btc-motion.log
+          exit 1
+
+      - name: Verify motion budget in browser
+        run: |
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import json, time
+          from pathlib import Path
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.support.ui import WebDriverWait
+
+          js = """
+          const r=document.querySelector('.btc-deep-v1');
+          const n=[r,...r.querySelectorAll('*')]; let running=0,declared=0;
+          for(const e of n) for(const p of [null,'::before','::after']) {
+            const s=getComputedStyle(e,p), names=s.animationName.split(','), states=s.animationPlayState.split(',');
+            names.forEach((name,i)=>{if(name.trim()!=='none'){declared++;if((states[i]||states[0]||'running').trim()==='running')running++;}});
+          }
+          return {running,declared};
+          """
+          options=webdriver.ChromeOptions()
+          for arg in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--hide-scrollbars'): options.add_argument(arg)
+          options.set_capability('goog:loggingPrefs', {'browser':'ALL'})
+          driver=webdriver.Chrome(options=options)
+          report={'checks':{},'measurements':{},'failures':[]}
+          try:
+            driver.set_window_size(1440,1000)
+            driver.get('http://127.0.0.1:4173/crypto-astro/index.html')
+            WebDriverWait(driver,20).until(lambda d:d.find_element(By.ID,'btc-phi-cycle-hub'))
+            hub=driver.find_element(By.ID,'btc-phi-cycle-hub')
+            driver.execute_script('arguments[0].scrollIntoView({block:"start"})',hub); time.sleep(.3)
+            report['measurements']['desktop_visible']=driver.execute_script(js)
+            driver.save_screenshot('artifacts/desktop-btc-motion-budget.png')
+            driver.execute_script('window.scrollTo(0,0)'); time.sleep(.2)
+            report['measurements']['desktop_offscreen']=driver.execute_script(js)
+            driver.set_window_size(390,844); driver.refresh()
+            WebDriverWait(driver,20).until(lambda d:d.find_element(By.ID,'btc-phi-cycle-hub'))
+            hub=driver.find_element(By.ID,'btc-phi-cycle-hub')
+            driver.execute_script('arguments[0].scrollIntoView({block:"start"})',hub); time.sleep(.3)
+            report['measurements']['mobile']=driver.execute_script(js)
+            driver.save_screenshot('artifacts/mobile-btc-motion-budget.png')
+            driver.execute_cdp_cmd('Emulation.setEmulatedMedia',{'features':[{'name':'prefers-reduced-motion','value':'reduce'}]})
+            driver.refresh(); WebDriverWait(driver,20).until(lambda d:d.find_element(By.ID,'btc-phi-cycle-hub'))
+            report['measurements']['reduced_motion']=driver.execute_script(js)
+            for key,value in report['measurements'].items():
+              report['checks'][key+'_running_zero']=value['running']==0
+              report['checks'][key+'_declared_zero']=value['declared']==0
+            report['checks']['hidden_state_fail_closed']=report['measurements']['desktop_visible']['running']==0
+            report['checks']['mobile_no_overflow']=driver.execute_script('return document.documentElement.scrollWidth<=window.innerWidth+1')
+            report['checks']['core_visible']=driver.find_element(By.CSS_SELECTOR,'.btc-quiet-phi-core-v0-3').is_displayed()
+            report['checks']['corridor_visible']=driver.find_element(By.CSS_SELECTOR,'.btc-entry-v1').is_displayed()
+            severe=[e for e in driver.get_log('browser') if e.get('level')=='SEVERE' and 'favicon' not in e.get('message','').lower()]
+            report['checks']['browser_severe_none']=not severe
+            report['failures']=[k for k,v in report['checks'].items() if not v]
+            assert not report['failures'], report['failures']
+          finally:
+            driver.quit()
+            Path('artifacts/motion-budget-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btc-poster-motion-budget-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
