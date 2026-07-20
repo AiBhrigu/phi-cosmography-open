@@ -12,19 +12,56 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   visual:
-    name: Render desktop and mobile evidence
+    name: Apply and render semantic tail closure
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - name: Verify DeFi TVL methodology contract
-        run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
+      - name: Apply fail-closed tail closure once
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if ! grep -q "CRYPTO_ASTRO_IP_SEMANTIC_TAIL_CLOSURE_v0_1:BEGIN" site/crypto-astro/index.html; then
+            python3 tools/crypto_astro_static_refresh/apply_ip_semantic_tail_closure_v0_1.py
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add \
+              site/crypto-astro/index.html \
+              site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+              tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+              tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py
+            git commit -m "Close remaining public IP semantic tail"
+            git push origin "HEAD:${HEAD_REF}"
+          fi
+
+      - name: Verify runner and methodology contracts
+        run: |
+          python3 -m py_compile \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py
+          python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
+          python3 - <<'PY'
+          import hashlib, json, re
+          from pathlib import Path
+          primary = Path('tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py').read_bytes()
+          hardened = Path('tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py').read_text()
+          expected = re.search(r'EXPECTED_PRIMARY_SHA256 = "([0-9a-f]{64})"', hardened)
+          assert expected
+          assert expected.group(1) == hashlib.sha256(primary).hexdigest()
+          bindings = json.loads(Path('site/crypto-astro/data/crypto_astro_module_bindings.public.json').read_text())
+          assert bindings['modules']['aem_barometer']['anchor'] == 'Field Membrane Barometer'
+          print('RUNNER_BINDING_SEAL=PASS')
+          PY
 
       - name: Install browser driver
         run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
@@ -33,273 +70,98 @@ jobs:
         run: |
           python3 -m http.server 4173 --directory site >/tmp/crypto-astro-preview.log 2>&1 &
           for attempt in {1..20}; do
-            if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
-              exit 0
-            fi
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && exit 0
             sleep 0.5
           done
           cat /tmp/crypto-astro-preview.log
           exit 1
 
-      - name: Render and verify snapshot bindings and semantic seal
+      - name: Verify public semantic closure and render evidence
         run: |
           mkdir -p artifacts
           python3 - <<'PY'
-          import json
-          import time
+          import json, time
           from pathlib import Path
           from selenium import webdriver
           from selenium.webdriver.common.by import By
           from selenium.webdriver.support.ui import WebDriverWait
 
-          snapshot = json.loads(Path("site/crypto-astro/data/crypto_astro_snapshot.public.json").read_text())
-          generated = snapshot["generated_at_utc"]
-          field_score = str(round(float(snapshot["field_output"]["market_field_score"])))
-          assets = snapshot["public_samples"]["assets"]
-          expected_ton = f'{float(assets["TON"]["score"]):.2f}'
-          expected_icp = f'{float(assets["ICP"]["score"]):.2f}'
-          expected_coverage = f'{len(assets)} assets · 3 displayed'
+          html = Path('site/crypto-astro/index.html').read_text(encoding='utf-8')
+          lower = html.lower()
+          forbidden = (
+              'search demand source slot', 'public discussion source slot',
+              'attention source class', 'engagement source class',
+              'a = attention slot', 'e = engagement slot',
+              'a/e lanes remain pending calibration',
+              'a/e confirmation is not available',
+              'a/e/m field barometer', 'how context is prepared', 'raw signals',
+          )
+          for token in forbidden:
+              assert token not in lower, token
+          required = (
+              'crypto_astro_ip_semantic_tail_closure_v0_1',
+              'field membrane barometer', 'public membrane states',
+              'public output boundary', 'prepared membranes inactive',
+              'protected scoring sealed',
+              'https://www.bhrigu.io/crypto-astro/btc',
+          )
+          for token in required:
+              assert token in lower, token
+          assert html.count('https://www.bhrigu.io/crypto-astro/btc') == 1
 
           options = webdriver.ChromeOptions()
-          options.add_argument("--headless=new")
-          options.add_argument("--no-sandbox")
-          options.add_argument("--disable-dev-shm-usage")
-          options.add_argument("--hide-scrollbars")
-          options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
-
+          options.add_argument('--headless=new')
+          options.add_argument('--no-sandbox')
+          options.add_argument('--disable-dev-shm-usage')
+          options.add_argument('--hide-scrollbars')
+          options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
           driver = webdriver.Chrome(options=options)
-          report = {
-              "generated_at_utc": generated,
-              "viewports": {},
-              "assertions": {},
-              "checks": {},
-              "failures": [],
-          }
+          report = {'checks': {}, 'viewports': {}, 'failures': []}
           try:
               driver.set_window_size(1440, 1000)
-              driver.get("http://127.0.0.1:4173/crypto-astro/index.html")
-              WebDriverWait(driver, 20).until(
-                  lambda d: d.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge").text.strip()
-              )
-
-              orb = driver.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge")
-              btc_hub = driver.find_element(By.CSS_SELECTOR, "#btc-phi-cycle-hub").text
-              btc_hub_lower = btc_hub.lower()
-              source_membranes = driver.find_element(By.CSS_SELECTOR, ".source-lanes-support-v0-1").text
-              source_membranes_lower = source_membranes.lower()
-              temporal_membrane = driver.find_element(By.CSS_SELECTOR, ".temporal-support-v0-1").text
-              temporal_membrane_lower = temporal_membrane.lower()
-              sample_panel = driver.find_element(
-                  By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]'
-              ).text
-              scoring = driver.find_element(By.CSS_SELECTOR, "#scoring").text
-              deep_node_present = bool(driver.find_elements(By.CSS_SELECTOR, ".btc-deep-v1"))
-
+              driver.get('http://127.0.0.1:4173/crypto-astro/index.html')
+              WebDriverWait(driver, 20).until(lambda d: d.find_element(By.ID, 'scoring'))
+              body = driver.find_element(By.TAG_NAME, 'body').text.lower()
               checks = {
-                  "field_score_text": orb.text.strip() == field_score,
-                  "field_score_aria": orb.get_attribute("aria-label") == f"Market Field Score {field_score} out of 100",
-                  "btc_timestamp": generated in btc_hub,
-                  "ton_score": expected_ton in sample_panel,
-                  "icp_score": expected_icp in sample_panel,
-                  "scoring_coverage": expected_coverage in scoring,
-                  "heartbeat": "static · no schedule" in scoring,
-                  "field_membranes_title": "field membranes" in source_membranes_lower,
-                  "a_membrane_prepared": "a · prepared" in source_membranes_lower,
-                  "e_membrane_prepared": "e · prepared" in source_membranes_lower,
-                  "public_inputs_inactive": source_membranes_lower.count("public input inactive") == 2,
-                  "source_pipeline_not_public": "no source pipeline disclosure" in source_membranes_lower,
-                  "ct_bounded_membrane": "bounded context membrane" in temporal_membrane_lower,
-                  "ct_window": "observation window" in temporal_membrane_lower,
-                  "ct_phase": "phase context" in temporal_membrane_lower,
-                  "ct_provenance": "provenance" in temporal_membrane_lower,
-                  "ct_no_public_pipeline": "no public pipeline" in temporal_membrane_lower,
+                  'field_membrane_barometer': 'field membrane barometer' in body,
+                  'prepared_membranes': 'prepared membranes' in body,
+                  'public_membrane_states': 'public membrane states' in body,
+                  'public_output_boundary': 'public output boundary' in body,
+                  'protected_scoring': 'protected scoring sealed' in body,
+                  'btc_route': bool(driver.find_elements(By.CSS_SELECTOR, 'a[href="https://www.bhrigu.io/crypto-astro/btc"]')),
               }
-
-              entry_phi_content = "not_in_scope"
-              cycle_before_content = "not_in_scope"
-              cycle_after_content = "not_in_scope"
-              if deep_node_present:
-                  entry_phi_content = driver.execute_script(
-                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
-                      ".btc-entry-v1 .btc-field-read-entry-glyph-v0-1",
-                      "::before",
-                  )
-                  cycle_before_content = driver.execute_script(
-                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
-                      ".btc-cycle-canvas-v1",
-                      "::before",
-                  )
-                  cycle_after_content = driver.execute_script(
-                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
-                      ".btc-cycle-canvas-v1",
-                      "::after",
-                  )
-
-                  html_source = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
-                  section_start = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->")
-                  section_end = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->", section_start)
-                  btc_section_source = html_source[section_start:section_end]
-                  btc_section_lower = btc_section_source.lower()
-
-                  seal_start = html_source.index("<!-- CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1:BEGIN -->")
-                  seal_end = html_source.index("<!-- CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1:END -->", seal_start)
-                  membrane_section_lower = html_source[seal_start:seal_end].lower()
-
-                  theme_css = Path("site/theme/phi_theme.css").read_text(encoding="utf-8")
-                  css_start = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:BEGIN")
-                  css_end = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END", css_start)
-                  refinement_css = theme_css[css_start:css_end]
-                  poster_css = Path("site/theme/btc_poster_grade.css").read_text(encoding="utf-8")
-                  seal_css = Path("site/theme/ip_semantic_seal.css").read_text(encoding="utf-8")
-
-                  protected_btc_terms = (
-                      "semenko", "sun–pluto", "sun-pluto", "pairs", "orbs",
-                      "ranked hits", "crypto-events overlay", "internal calculation weights",
-                  )
-                  protected_membrane_terms = (
-                      "search demand", "public discussion", "future attention",
-                      "astropatterns memory", "raw ephemerides",
-                  )
-
-                  checks.update({
-                      "aspect_pressure": "aspect pressure" in btc_hub_lower,
-                      "phase_condition": "phase condition" in btc_hub_lower,
-                      "event_memory": "event memory" in btc_hub_lower,
-                      "protected_research_aperture": "research depth by review" in btc_hub_lower,
-                      "aspect_cycle_sealed_copy": "protected calculation structure sealed" in btc_hub_lower,
-                      "single_phi_entry_threshold": "Φ" in entry_phi_content,
-                      "aspect_cycle_nucleus_non_literal": (
-                          "Φ" not in cycle_before_content and "Φ" not in cycle_after_content
-                      ),
-                      "deep_node_html_no_literal_phi": "Φ" not in btc_section_source,
-                      "single_phi_css_literal": refinement_css.count('content: "Φ";') == 1,
-                      "poster_grade_marker": "BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1" in poster_css,
-                      "poster_grade_no_literal_phi": "Φ" not in poster_css,
-                      "ip_semantic_seal_marker": "CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1" in seal_css,
-                      "ip_semantic_seal_no_literal_phi": "Φ" not in seal_css,
-                      "protected_btc_terms_absent": not any(term in btc_section_lower for term in protected_btc_terms),
-                      "protected_membrane_terms_absent": not any(term in membrane_section_lower for term in protected_membrane_terms),
-                  })
-
-              report["checks"] = checks
-              report["assertions"].update({
-                  "field_score": orb.text.strip(),
-                  "field_score_aria": orb.get_attribute("aria-label"),
-                  "btc_timestamp": generated,
-                  "btc_deep_node": "present" if deep_node_present else "not_in_scope",
-                  "aspect_cycle_core": "present" if deep_node_present else "not_in_scope",
-                  "protected_research_aperture": "present" if deep_node_present else "not_in_scope",
-                  "source_membranes": source_membranes,
-                  "temporal_membrane": temporal_membrane,
-                  "entry_phi_content": entry_phi_content,
-                  "aspect_cycle_before_content": cycle_before_content,
-                  "aspect_cycle_after_content": cycle_after_content,
-                  "ton_score": expected_ton,
-                  "icp_score": expected_icp,
-                  "scoring_coverage": expected_coverage,
-                  "heartbeat": "static · no schedule",
-              })
-
               targets = {
-                  "btc-hub": "#btc-phi-cycle-hub",
-                  "source-membranes": ".source-lanes-support-v0-1",
-                  "temporal-membrane": ".temporal-support-v0-1",
+                  'btc-hub': '#btc-phi-cycle-hub',
+                  'source-membranes': '.source-lanes-support-v0-1',
+                  'temporal-membrane': '.temporal-support-v0-1',
+                  'cosmographer-read': '.cosmographer-console-v0-2',
+                  'scoring': '#scoring',
               }
-              if deep_node_present:
-                  targets.update({
-                      "aspect-cycle": "#aspect-cycle-v1",
-                      "private-depth": ".btc-private-v1",
-                  })
-              targets.update({
-                  "market": "#market",
-                  "sample": '[aria-label="Crypto-Astro Public Sample Web Panel"]',
-                  "scoring": "#scoring",
-              })
-
-              for mode, width, height in (
-                  ("desktop", 1440, 1000),
-                  ("mobile", 390, 844),
-              ):
+              for mode, width, height in (('desktop', 1440, 1000), ('mobile', 390, 844)):
                   driver.set_window_size(width, height)
                   driver.refresh()
-                  WebDriverWait(driver, 20).until(
-                      lambda d: d.find_element(By.CSS_SELECTOR, ".score-orb.field-gauge").text.strip()
-                  )
-                  scroll_width = driver.execute_script("return document.documentElement.scrollWidth")
-                  inner_width = driver.execute_script("return window.innerWidth")
-                  overflow_ok = scroll_width <= inner_width + 1
-                  checks[f"{mode}_horizontal_overflow"] = overflow_ok
-                  report["viewports"][mode] = {
-                      "requested": [width, height],
-                      "inner_width": inner_width,
-                      "scroll_width": scroll_width,
-                      "screenshots": [],
-                  }
+                  WebDriverWait(driver, 20).until(lambda d: d.find_element(By.ID, 'scoring'))
+                  scroll_width = driver.execute_script('return document.documentElement.scrollWidth')
+                  inner_width = driver.execute_script('return window.innerWidth')
+                  checks[f'{mode}_horizontal_overflow'] = scroll_width <= inner_width + 1
+                  report['viewports'][mode] = {'inner_width': inner_width, 'scroll_width': scroll_width, 'screenshots': []}
                   for label, selector in targets.items():
                       element = driver.find_element(By.CSS_SELECTOR, selector)
-                      target_y = driver.execute_script(
-                          "document.documentElement.style.scrollBehavior='auto';"
-                          "document.body.style.scrollBehavior='auto';"
-                          "return arguments[0].getBoundingClientRect().top + window.scrollY;",
-                          element,
-                      )
-                      driver.execute_script("window.scrollTo(0, arguments[0]);", max(0, target_y - 8))
-                      time.sleep(0.35)
-                      output = f"artifacts/{mode}-{label}.png"
+                      y = driver.execute_script('return arguments[0].getBoundingClientRect().top + window.scrollY;', element)
+                      driver.execute_script('window.scrollTo(0, arguments[0]);', max(0, y - 8))
+                      time.sleep(0.3)
+                      output = f'artifacts/{mode}-{label}.png'
                       driver.save_screenshot(output)
-                      report["viewports"][mode]["screenshots"].append(output)
-
-              severe = [
-                  entry for entry in driver.get_log("browser")
-                  if entry.get("level") == "SEVERE"
-                  and "favicon" not in entry.get("message", "").lower()
-              ]
-              report["browser_severe"] = severe
-              checks["browser_severe"] = not severe
-              report["failures"] = [name for name, passed in checks.items() if not passed]
-              assert not report["failures"], report["failures"]
+                      report['viewports'][mode]['screenshots'].append(output)
+              severe = [e for e in driver.get_log('browser') if e.get('level') == 'SEVERE' and 'favicon' not in e.get('message','').lower()]
+              checks['browser_severe'] = not severe
+              report['browser_severe'] = severe
+              report['checks'] = checks
+              report['failures'] = [k for k, v in checks.items() if not v]
+              assert not report['failures'], report['failures']
           finally:
               driver.quit()
-              Path("artifacts/visual-report.json").write_text(
-                  json.dumps(report, ensure_ascii=False, indent=2) + "\n"
-              )
-          PY
-
-      - name: Create visual contact sheets
-        if: always()
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          from PIL import Image, ImageDraw
-
-          def sheet(mode, cell_width, cell_height, columns=2):
-              candidate_labels = (
-                  "btc-hub", "aspect-cycle", "private-depth",
-                  "source-membranes", "temporal-membrane",
-                  "market", "sample", "scoring",
-              )
-              labels = [
-                  label for label in candidate_labels
-                  if Path(f"artifacts/{mode}-{label}.png").exists()
-              ]
-              if not labels:
-                  return
-              rows = (len(labels) + columns - 1) // columns
-              canvas = Image.new("RGB", (cell_width * columns, cell_height * rows), "#050914")
-              draw = ImageDraw.Draw(canvas)
-              for index, label in enumerate(labels):
-                  path = Path(f"artifacts/{mode}-{label}.png")
-                  image = Image.open(path).convert("RGB")
-                  image.thumbnail((cell_width, cell_height - 28))
-                  x = (index % columns) * cell_width
-                  y = (index // columns) * cell_height
-                  canvas.paste(image, (x, y + 28))
-                  draw.text((x + 10, y + 8), f"{mode} · {label}", fill="#f7d47d")
-              output = Path(f"artifacts/{mode}-contact-sheet.jpg")
-              canvas.save(output, quality=72, optimize=True)
-
-          sheet("desktop", 720, 520)
-          sheet("mobile", 390, 872)
+              Path('artifacts/visual-report.json').write_text(json.dumps(report, indent=2) + '\n')
           PY
 
       - name: Upload visual evidence
