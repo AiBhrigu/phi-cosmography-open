@@ -21,3 +21,5 @@ python3 tools/crypto_astro_local_truth/verify_import_graph.py --mode after
 ```
 
 The verification is fail-closed: missing or duplicate `system.css` imports fail the gate.
+
+The PR gate records exact-base LT-1 evidence, normalized-head evidence, import-route counts, and base/head screenshot parity in one artifact.
