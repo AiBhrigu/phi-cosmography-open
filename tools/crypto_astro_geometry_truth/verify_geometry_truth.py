@@ -48,6 +48,8 @@ REQUIRED_COUNTS = {
     "data_bound_market_score": ('class="score-orb field-gauge" data-geometry-truth="data-bound"', 1),
     "semantic_astromodule_bands": ('class="astromodule-polish-rails astromodule-semantic-bands" data-geometry-truth="semantic"', 1),
     "categorical_astromodule_score": ('class="astromodule-right-balance__band"', 1),
+    "data_bound_visual_score_rows": ('class="visual-row-v0-1" data-geometry-truth="data-bound"', 2),
+    "text_only_visual_rows": ('class="visual-row-v0-1 visual-row-text-v0-1"', 2),
     "text_only_sample_rows": ('class="distributed-row-v0-1 distributed-row-text-v0-1"', 6),
     "data_bound_sample_score_rows": ('data-geometry-truth="data-bound"><span>Score</span>', 2),
     "sample_context_status": ('class="sample-context-status-v0-1"', 2),
