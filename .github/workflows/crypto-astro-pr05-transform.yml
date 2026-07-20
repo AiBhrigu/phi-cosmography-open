@@ -1,0 +1,46 @@
+name: Crypto-Astro PR-05 Editorial Transform
+
+on:
+  push:
+    branches:
+      - feature/crypto-astro-editorial-composition-cta-v0-1
+    paths:
+      - ".github/workflows/crypto-astro-pr05-transform.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  transform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: feature/crypto-astro-editorial-composition-cta-v0-1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run editorial fixtures
+        run: python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
+
+      - name: Apply editorial composition
+        run: python3 tools/crypto_astro_editorial_composition/apply_editorial_composition.py
+
+      - name: Build deterministic CSS bundle
+        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --write --verify-source-base
+
+      - name: Verify editorial composition
+        run: python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py
+
+      - name: Commit transformed surface and remove worker
+        run: |
+          rm .github/workflows/crypto-astro-pr05-transform.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/crypto-astro/index.html site/theme/crypto_astro/css_order_manifest.json site/theme/crypto_astro_surface.css site/theme/crypto_astro/extensions/10_editorial_composition.css tools/crypto_astro_editorial_composition .github/workflows/crypto-astro-pr05-transform.yml
+          git commit -m "Apply Crypto-Astro editorial composition and CTA"
+          git push origin HEAD:feature/crypto-astro-editorial-composition-cta-v0-1
