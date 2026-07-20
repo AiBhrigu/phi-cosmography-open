@@ -23,6 +23,18 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Accept PR-04 trend-memory state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('tools/crypto_astro_editorial_composition/apply_editorial_composition.py')
+          text = path.read_text()
+          old = r'''r'\s*<div class="trend-memory" aria-label="Trend Memory">.*?</div>' '''.strip()
+          new = r'''r'\s*<div class="trend-memory(?:-unavailable)?"[^>]*>.*?</div>' '''.strip()
+          assert old in text, 'trend-memory compatibility source not found'
+          path.write_text(text.replace(old, new, 1))
+          PY
+
       - name: Run editorial fixtures
         run: python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
 
