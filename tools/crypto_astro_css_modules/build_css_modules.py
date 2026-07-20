@@ -34,6 +34,9 @@ def load_manifest(path: Path) -> dict[str, Any]:
     modules = value.get("modules")
     if not isinstance(modules, list) or not modules:
         raise ModuleBuildError("Manifest must contain ordered modules")
+    extensions = value.get("extensions", [])
+    if not isinstance(extensions, list):
+        raise ModuleBuildError("Manifest extensions must be an ordered list")
     return value
 
 
@@ -61,6 +64,27 @@ def read_source_blocks(repo_root: Path, manifest: dict[str, Any]) -> list[bytes]
     return STYLE_RE.findall(html)
 
 
+def read_ordered_entry(
+    repo_root: Path,
+    entry: dict[str, Any],
+    *,
+    position: int,
+    group: str,
+) -> bytes:
+    if entry.get("order") != position:
+        raise ModuleBuildError(f"{group} order mismatch at position {position}")
+    module_path = repo_root / str(entry.get("path") or "")
+    try:
+        value = module_path.read_bytes()
+    except OSError as exc:
+        raise ModuleBuildError(f"Unable to read {group.lower()}: {module_path}") from exc
+    if len(value) != int(entry.get("byte_count", -1)):
+        raise ModuleBuildError(f"{group} byte count mismatch: {entry['path']}")
+    if sha256_bytes(value) != entry.get("sha256"):
+        raise ModuleBuildError(f"{group} SHA-256 mismatch: {entry['path']}")
+    return value
+
+
 def build(
     repo_root: Path,
     manifest_path: Path,
@@ -74,17 +98,12 @@ def build(
     source_blocks = read_source_blocks(repo_root, manifest) if verify_source_base else []
 
     for position, entry in enumerate(manifest["modules"], 1):
-        if entry.get("order") != position:
-            raise ModuleBuildError(f"Module order mismatch at position {position}")
-        module_path = repo_root / str(entry.get("path") or "")
-        try:
-            value = module_path.read_bytes()
-        except OSError as exc:
-            raise ModuleBuildError(f"Unable to read module: {module_path}") from exc
-        if len(value) != int(entry.get("byte_count", -1)):
-            raise ModuleBuildError(f"Module byte count mismatch: {entry['path']}")
-        if sha256_bytes(value) != entry.get("sha256"):
-            raise ModuleBuildError(f"Module SHA-256 mismatch: {entry['path']}")
+        value = read_ordered_entry(
+            repo_root,
+            entry,
+            position=position,
+            group="Module",
+        )
         if verify_source_base:
             source_index = int(entry.get("source_style_block_index", 0))
             if source_index < 1 or source_index > len(source_blocks):
@@ -93,16 +112,28 @@ def build(
                 raise ModuleBuildError(f"Source style block mismatch: {entry['path']}")
         modules.append(value)
 
-    bundle = join_modules(modules)
+    base_bundle = join_modules(modules)
     legacy_path = repo_root / str(manifest.get("legacy_source_path") or "")
     output_path = repo_root / str(manifest.get("generated_bundle_path") or "")
     try:
         legacy = legacy_path.read_bytes()
     except OSError as exc:
         raise ModuleBuildError(f"Unable to read legacy source: {legacy_path}") from exc
-    if bundle != legacy:
-        raise ModuleBuildError("Generated module bundle differs from legacy CSS source")
+    if base_bundle != legacy:
+        raise ModuleBuildError("Immutable module base differs from legacy CSS source")
 
+    extensions: list[bytes] = []
+    for position, entry in enumerate(manifest.get("extensions", []), 1):
+        extensions.append(
+            read_ordered_entry(
+                repo_root,
+                entry,
+                position=position,
+                group="Extension",
+            )
+        )
+
+    bundle = join_modules(modules + extensions)
     if write:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_bytes(bundle)
@@ -110,11 +141,15 @@ def build(
         raise ModuleBuildError("Generated CSS bundle is missing or stale")
 
     report = {
-        "schema_version": "crypto_astro_css_module_build_report_v0_1",
+        "schema_version": "crypto_astro_css_module_build_report_v0_2",
         "status": "PASS",
         "module_count": len(modules),
+        "extension_count": len(extensions),
+        "base_bundle_byte_count": len(base_bundle),
+        "base_bundle_sha256": sha256_bytes(base_bundle),
         "bundle_byte_count": len(bundle),
         "bundle_sha256": sha256_bytes(bundle),
+        "legacy_base_equivalent": True,
         "legacy_source_path": str(manifest["legacy_source_path"]),
         "generated_bundle_path": str(manifest["generated_bundle_path"]),
         "source_base_verified": verify_source_base,
