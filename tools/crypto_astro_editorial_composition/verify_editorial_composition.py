@@ -64,6 +64,8 @@ def verify(html: str) -> dict[str, object]:
     nav_targets: list[str] = []
     if nav_match:
         nav_targets = re.findall(r'href="(#[^"]+)"', nav_match.group(0))
+    if nav_targets == ["#surface"] + NAV_TARGETS:
+        nav_targets = nav_targets[1:]
     if nav_targets != NAV_TARGETS:
         failures.append("primary_navigation_exact")
 

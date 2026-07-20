@@ -161,7 +161,7 @@ def main() -> int:
     html, access_preview = extract_once(html, r'<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_ACCESS_PATH_PREVIEW_v0_1:END -->', "access preview")
     html, public_sample = extract_once(html, r'<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PUBLIC_SAMPLE_WEB_PANEL_v0_1:END -->', "public sample panel")
     html, private_note = extract_once(html, r'<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:BEGIN -->.*?<!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->', "private note CTA")
-    html = replace_once(html, r'\s*<div class="trend-memory" aria-label="Trend Memory">.*?</div>', "", "legacy trend memory")
+    html = replace_once(html, r'\s*<div class="trend-memory(?:-unavailable)?"[^>]*>.*?</div>', "", "legacy trend memory")
 
     for old, new in {
         "M active · membranes prepared · static context": "Market-led · reviewed context",
@@ -172,7 +172,6 @@ def main() -> int:
         html = html.replace(old, new)
 
     trust = '''<section id="trust-access" class="editorial-trust-access-v0-1 editorial-chapter-v0-1" data-editorial-chapter="trust-access" aria-labelledby="trust-access-title">
-  <span id="access" class="editorial-anchor-alias-v0-1" aria-hidden="true"></span>
   <div>
     <p class="eyebrow">Trust &amp; Access</p>
     <h2 id="trust-access-title">Proof remains public; deeper research remains reviewed.</h2>
