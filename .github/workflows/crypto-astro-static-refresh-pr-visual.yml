@@ -44,14 +44,19 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add \
               site/crypto-astro/index.html \
+              site/crypto-astro/data/crypto_astro_snapshot.public.json \
               site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+              site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+              site/crypto-astro/data/scoring_snapshot.public.json \
+              docs/crypto-astro-service/crypto_astro_operator_review.md \
               tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
               tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py
+            git diff --cached --quiet && { echo 'semantic closure produced no commit'; exit 1; }
             git commit -m "Close remaining public IP semantic tail"
             git push origin "HEAD:${HEAD_REF}"
           fi
 
-      - name: Verify runner and methodology contracts
+      - name: Verify runner, packet, and methodology contracts
         run: |
           python3 -m py_compile \
             tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
@@ -60,14 +65,46 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, re
           from pathlib import Path
-          primary = Path('tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py').read_bytes()
-          hardened = Path('tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py').read_text()
+
+          primary_path = Path('tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py')
+          hardened_path = Path('tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py')
+          primary = primary_path.read_bytes()
+          hardened = hardened_path.read_text(encoding='utf-8')
           expected = re.search(r'EXPECTED_PRIMARY_SHA256 = "([0-9a-f]{64})"', hardened)
-          assert expected
-          assert expected.group(1) == hashlib.sha256(primary).hexdigest()
+          assert expected and expected.group(1) == hashlib.sha256(primary).hexdigest()
+
+          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
           bindings = json.loads(Path('site/crypto-astro/data/crypto_astro_module_bindings.public.json').read_text())
+          market = json.loads(Path('site/crypto-astro/data/market_field_snapshot.public.v0_1.json').read_text())
+          scoring = json.loads(Path('site/crypto-astro/data/scoring_snapshot.public.json').read_text())
+
           assert bindings['modules']['aem_barometer']['anchor'] == 'Field Membrane Barometer'
-          print('RUNNER_BINDING_SEAL=PASS')
+          assert set(market['vectors']) >= {'A_membrane', 'E_membrane', 'M_market', 'CT_context'}
+          assert not ({'A_attention', 'E_engagement', 'CT_temporal'} & set(market['vectors']))
+          assert market['vectors']['A_membrane']['state'] == 'prepared_inactive'
+          assert market['vectors']['E_membrane']['state'] == 'prepared_inactive'
+          assert market['vectors']['CT_context']['pipeline'] == 'sealed'
+          assert scoring['coverage']['A_membrane'] == 'prepared_inactive'
+          assert scoring['coverage']['E_membrane'] == 'prepared_inactive'
+          assert 'A_lane' not in scoring['coverage'] and 'E_lane' not in scoring['coverage']
+
+          for asset in snapshot['public_samples']['assets'].values():
+              assert 'A_state' not in asset and 'E_state' not in asset
+              assert asset['membrane_state'] == 'prepared_inactive'
+          for asset in scoring['assets'].values():
+              assert 'A_state' not in asset and 'E_state' not in asset
+              assert asset['membrane_state'] == 'prepared_inactive'
+
+          public_packets = json.dumps({'snapshot': snapshot, 'market': market, 'scoring': scoring}, ensure_ascii=False).lower()
+          forbidden = (
+              'search_attention', 'x_social_engagement', 'search_pressure', 'query_acceleration',
+              'topic_heat', 'attention_divergence', 'discussion_pressure', 'narrative_velocity',
+              'engagement_acceleration', 'social_amplification', 'ephemerides_support',
+              'future attention', 'engagement confirmation', 'a/e pending',
+          )
+          for token in forbidden:
+              assert token not in public_packets, token
+          print('RUNNER_PACKET_BINDING_SEAL=PASS')
           PY
 
       - name: Install browser driver
@@ -99,17 +136,15 @@ jobs:
               'search demand source slot', 'public discussion source slot',
               'attention source class', 'engagement source class',
               'a = attention slot', 'e = engagement slot',
-              'a/e lanes remain pending calibration',
-              'a/e confirmation is not available',
+              'a/e lanes remain pending calibration', 'a/e confirmation is not available',
               'a/e/m field barometer', 'how context is prepared', 'raw signals',
           )
           for token in forbidden:
               assert token not in lower, token
           required = (
-              'crypto_astro_ip_semantic_tail_closure_v0_1',
-              'field membrane barometer', 'public membrane states',
-              'public output boundary', 'prepared membranes inactive',
-              'protected scoring sealed',
+              'crypto_astro_ip_semantic_tail_closure_v0_1', 'field membrane barometer',
+              'public membrane states', 'public output boundary',
+              'prepared membranes inactive', 'protected scoring sealed',
               'https://www.bhrigu.io/crypto-astro/btc',
           )
           for token in required:
