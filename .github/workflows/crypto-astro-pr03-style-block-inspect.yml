@@ -1,0 +1,75 @@
+name: Crypto-Astro PR-03 Style Block Inspect
+
+on:
+  push:
+    branches:
+      - feature/crypto-astro-deterministic-css-modules-v0-1
+    paths:
+      - ".github/workflows/crypto-astro-pr03-style-block-inspect.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: feature/crypto-astro-deterministic-css-modules-v0-1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Recover original style block boundaries
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import re
+          import subprocess
+          from pathlib import Path
+
+          base = "2b84a9c40ae692abaca0b0e96c1159027a26ac2b"
+          html = subprocess.check_output(
+              ["git", "show", f"{base}:site/crypto-astro/index.html"],
+              text=True,
+              encoding="utf-8",
+          )
+          blocks = re.findall(r"<style(?:\s[^>]*)?>(.*?)</style>", html, re.I | re.S)
+          rows = []
+          for index, block in enumerate(blocks, 1):
+              lines = block.splitlines()
+              nonempty = [line.strip() for line in lines if line.strip()]
+              markers = [line for line in nonempty if line.startswith("/*")][:8]
+              rows.append({
+                  "index": index,
+                  "line_count": len(lines),
+                  "byte_count": len(block.encode("utf-8")),
+                  "sha256": hashlib.sha256(block.encode("utf-8")).hexdigest(),
+                  "first_nonempty": nonempty[:5],
+                  "last_nonempty": nonempty[-5:],
+                  "markers": markers,
+              })
+          out = {
+              "schema_version": "crypto_astro_original_style_blocks_v0_1",
+              "base_sha": base,
+              "block_count": len(blocks),
+              "blocks": rows,
+          }
+          path = Path("tools/crypto_astro_css_modules/style_block_report.json")
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(out, indent=2))
+          PY
+
+      - name: Commit report to feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/crypto_astro_css_modules/style_block_report.json
+          git commit -m "Crypto-Astro: inspect original style block boundaries"
+          git push origin HEAD:feature/crypto-astro-deterministic-css-modules-v0-1
