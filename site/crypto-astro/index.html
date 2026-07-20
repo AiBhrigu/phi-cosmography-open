@@ -98,16 +98,14 @@
         <p class="eyebrow">Market Reality</p>
         <p>Core market structure: total market cap, 24h volume, BTC dominance, and stablecoin share.</p>
         <div class="market-reality-grid">
-          <div class="market-metric" aria-label="Market Cap $2.287T"><span>Market Cap</span><strong>$2.287T</strong><div class="metric-rail cap" aria-hidden="true"><i aria-hidden="true"></i></div></div>
-          <div class="market-metric" aria-label="24h Volume $40.71B"><span>24h Volume</span><strong>$40.71B</strong><div class="metric-rail volume" aria-hidden="true"><i aria-hidden="true"></i></div></div>
-          <div class="market-metric" aria-label="BTC Dominance 56.5%"><span>BTC Dominance</span><strong>56.5%</strong><div class="metric-rail dominance" aria-hidden="true"><i aria-hidden="true"></i></div></div>
-          <div class="market-metric" aria-label="Stablecoin Share 13.5%"><span>Stablecoin Share</span><strong>13.5%</strong><div class="metric-rail stable" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="Market Cap $2.287T"><span>Market Cap</span><strong>$2.287T</strong><div class="metric-context-mark" data-geometry-truth="decorative" aria-hidden="true"><i></i><i></i><i></i></div></div>
+          <div class="market-metric" aria-label="24h Volume $40.71B"><span>24h Volume</span><strong>$40.71B</strong><div class="metric-context-mark" data-geometry-truth="decorative" aria-hidden="true"><i></i><i></i><i></i></div></div>
+          <div class="market-metric" aria-label="BTC Dominance 56.5%"><span>BTC Dominance</span><strong>56.5%</strong><div class="metric-rail dominance" data-geometry-truth="data-bound" aria-hidden="true"><i aria-hidden="true"></i></div></div>
+          <div class="market-metric" aria-label="Stablecoin Share 13.5%"><span>Stablecoin Share</span><strong>13.5%</strong><div class="metric-rail stable" data-geometry-truth="data-bound" aria-hidden="true"><i aria-hidden="true"></i></div></div>
         </div>
         <div class="market-composition-map" aria-label="Market Composition Map">
-          <div class="composition-screen" aria-label="Market composition visual field">
-            <div class="composition-ring stable" aria-hidden="true"></div>
-            <div class="composition-ring alt" aria-hidden="true"></div>
-            <div class="composition-flow" aria-hidden="true"></div>
+          <div class="composition-screen" data-geometry-truth="semantic" aria-label="Market composition semantic relation field">
+            <div class="composition-semantic-field" aria-hidden="true"></div>
             <div class="composition-core">BTC<br>56.5%</div>
             <div class="composition-node stable">Stable<br>13.5%</div>
             <div class="composition-node eth">ETH<br>9.8%</div>
@@ -128,10 +126,9 @@
         <p class="eyebrow">Field Membrane Barometer</p>
         <p>A compact field score showing how prepared membranes, market liquidity, and bounded context are positioned.</p>
         <div class="barometer-core barometer-semantic-core">
-          <div class="barometer-visual" aria-label="Field Membrane Barometer visual state">
-            <div class="barometer-ring temporal" aria-hidden="true"></div>
-            <div class="barometer-arc market" aria-hidden="true"></div>
-            <div class="score-orb field-gauge" role="img" aria-label="Market Field Score 61 out of 100">61</div>
+          <div class="barometer-visual" data-geometry-truth="semantic" aria-label="Field Membrane Barometer semantic state">
+            <div class="barometer-semantic-frame" aria-hidden="true"></div>
+            <div class="score-orb field-gauge" data-geometry-truth="data-bound" role="img" aria-label="Market Field Score 61 out of 100">61</div>
             <div class="barometer-lane attention" aria-label="A membrane prepared">A<br/><span>prepared</span></div>
             <div class="barometer-lane engagement" aria-label="E membrane prepared">E<br/><span>prepared</span></div>
             <div class="barometer-lane market" aria-label="Market vector active">M<br/><span>active</span></div>
@@ -187,10 +184,10 @@
     </div>
     <div class="astromodule-polish-card">
       <p class="astromodule-polish-kicker">Scenario components</p>
-      <div class="astromodule-polish-rails" aria-label="Astromodule scenario component rails">
-        <div class="astromodule-polish-rail"><span>Timing</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 72%"></span></span></div>
-        <div class="astromodule-polish-rail"><span>Stability</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 58%"></span></span></div>
-        <div class="astromodule-polish-rail"><span>Corridor</span><span class="astromodule-polish-track"><span class="astromodule-polish-fill" style="width: 64%"></span></span></div>
+      <div class="astromodule-polish-rails astromodule-semantic-bands" data-geometry-truth="semantic" aria-label="Astromodule categorical scenario context">
+        <div class="astromodule-polish-rail"><span>Timing</span><strong>Context</strong></div>
+        <div class="astromodule-polish-rail"><span>Stability</span><strong>State</strong></div>
+        <div class="astromodule-polish-rail"><span>Corridor</span><strong>Bounded</strong></div>
       </div>
     </div>
   </div>
@@ -207,7 +204,7 @@
             </div>
 
             <div class="astromodule-score-box-v0-1" aria-label="Astrobarometer public state">
-              <div class="score-main-v0-1">MEDIUM <span>63 / 100</span></div>
+              <div class="score-main-v0-1">MEDIUM <span>public context band</span></div>
               <div class="chip-row-v0-1">
                 <span class="state-chip-v0-1">STATIC PROOF</span>
                 <span class="state-chip-v0-1">MEDIUM CONFIDENCE</span>
@@ -217,12 +214,9 @@
 <!-- CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:BEGIN -->
 <div class="astromodule-right-balance" aria-label="Astrobarometer read balance">
   <h3 class="astromodule-right-balance__title">Astrobarometer read</h3>
-  <div class="astromodule-right-balance__score">
-    <div class="astromodule-right-balance__number">63</div>
-    <div>
-      <div class="astromodule-right-balance__track"><span class="astromodule-right-balance__fill"></span></div>
-      <div class="astromodule-right-balance__meta">medium pressure band · static proof</div>
-    </div>
+  <div class="astromodule-right-balance__score astromodule-right-balance__score--categorical" data-geometry-truth="semantic">
+    <div class="astromodule-right-balance__band">Medium</div>
+    <div class="astromodule-right-balance__meta">medium pressure band · static proof</div>
   </div>
   <div class="astromodule-right-balance__grid">
     <div class="astromodule-right-balance__cell"><span class="astromodule-right-balance__label">Pressure</span><span class="astromodule-right-balance__value">Medium</span></div>
@@ -565,10 +559,10 @@
   <div class="sample-visual-grid-v0-1">
     <div class="sample-visual-card-v0-1" aria-label="TON ICP comparison mini bars">
       <h4>TON / ICP comparison mini-bars</h4>
-      <div class="visual-row-v0-1"><span>Gram (prev. Toncoin)</span><div class="visual-rail-v0-1"><i style="width:53.0%"></i></div><span class="visual-value-v0-1">53.01</span></div>
-      <div class="visual-row-v0-1"><span>Internet Computer</span><div class="visual-rail-v0-1"><i style="width:52.5%"></i></div><span class="visual-value-v0-1">52.46</span></div>
-      <div class="visual-row-v0-1"><span>24h TON</span><div class="visual-rail-v0-1"><i style="width:19.9%"></i></div><span class="visual-value-v0-1">-2.67%</span></div>
-      <div class="visual-row-v0-1"><span>24h ICP</span><div class="visual-rail-v0-1"><i style="width:20.0%"></i></div><span class="visual-value-v0-1">-1.01%</span></div>
+      <div class="visual-row-v0-1" data-geometry-truth="data-bound"><span>Gram (prev. Toncoin)</span><div class="visual-rail-v0-1"><i style="width:53.0%"></i></div><span class="visual-value-v0-1">53.01</span></div>
+      <div class="visual-row-v0-1" data-geometry-truth="data-bound"><span>Internet Computer</span><div class="visual-rail-v0-1"><i style="width:52.5%"></i></div><span class="visual-value-v0-1">52.46</span></div>
+      <div class="visual-row-v0-1 visual-row-text-v0-1"><span>24h TON</span><strong class="visual-value-v0-1">-2.67%</strong></div>
+      <div class="visual-row-v0-1 visual-row-text-v0-1"><span>24h ICP</span><strong class="visual-value-v0-1">-1.01%</strong></div>
     </div>
 
     <div class="sample-visual-card-v0-1" aria-label="Sample pressure gauges">
@@ -615,18 +609,18 @@
   <div class="sample-grid">
     <div class="sample-card"><h4>Gram (prev. Toncoin)</h4><span class="sample-chip gold">Primary sample</span><span class="sample-chip">Altcoin rotation watch</span><div class="sample-metrics"><div class="sample-metric"><span>Market role</span><strong>A/E calibration pending</strong></div><div class="sample-metric"><span>Pressure band</span><strong>elevated / watch</strong></div><div class="sample-metric"><span>Scenario corridor</span><strong>static / bounded</strong></div><div class="sample-metric"><span>Confirmation</span><strong>relative strength + breadth + sustained volume</strong></div></div><p>The sample panel shows whether the asset is moving with the wider field, against it, or waiting for confirmation.</p>
 <div class="distributed-rail-v0-1" aria-label="Gram source sample distributed visual metrics">
-  <div class="distributed-row-v0-1"><span>Score</span><div class="distributed-track-v0-1"><i style="width:53.0%"></i></div><span class="distributed-value-v0-1">53.01</span></div>
-  <div class="distributed-row-v0-1"><span>24h</span><div class="distributed-track-v0-1"><i style="width:19.9%"></i></div><span class="distributed-value-v0-1">-2.67%</span></div>
-  <div class="distributed-row-v0-1"><span>30d</span><div class="distributed-track-v0-1"><i style="width:71.8%"></i></div><span class="distributed-value-v0-1">-9.93%</span></div>
-  <div class="distributed-row-v0-1"><span>Rank</span><div class="distributed-track-v0-1"><i style="width:77.0%"></i></div><span class="distributed-value-v0-1">26</span></div>
+  <div class="distributed-row-v0-1" data-geometry-truth="data-bound"><span>Score</span><div class="distributed-track-v0-1"><i style="width:53.0%"></i></div><span class="distributed-value-v0-1">53.01</span></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>24h</span><strong class="distributed-value-v0-1">-2.67%</strong></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>30d</span><strong class="distributed-value-v0-1">-9.93%</strong></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>Rank</span><strong class="distributed-value-v0-1">26</strong></div>
 </div>
 </div>
     <div class="sample-card"><h4>ICP · Internet Computer</h4><span class="sample-chip gold">Comparison sample</span><span class="sample-chip">Infrastructure layer</span><div class="sample-metrics"><div class="sample-metric"><span>Market role</span><strong>A/E calibration pending</strong></div><div class="sample-metric"><span>Pressure band</span><strong>elevated / watch</strong></div><div class="sample-metric"><span>Scenario corridor</span><strong>static / bounded</strong></div><div class="sample-metric"><span>Confirmation</span><strong>relative strength + breadth + sustained volume</strong></div></div><p>The sample panel shows whether the asset is moving with the wider field, against it, or waiting for confirmation.</p>
 <div class="distributed-rail-v0-1" aria-label="ICP comparison sample distributed visual metrics">
-  <div class="distributed-row-v0-1"><span>Score</span><div class="distributed-track-v0-1"><i style="width:52.5%"></i></div><span class="distributed-value-v0-1">52.46</span></div>
-  <div class="distributed-row-v0-1"><span>24h</span><div class="distributed-track-v0-1"><i style="width:20.0%"></i></div><span class="distributed-value-v0-1">-1.01%</span></div>
-  <div class="distributed-row-v0-1"><span>30d</span><div class="distributed-track-v0-1"><i style="width:36.8%"></i></div><span class="distributed-value-v0-1">-4.63%</span></div>
-  <div class="distributed-row-v0-1"><span>Rank</span><div class="distributed-track-v0-1"><i style="width:38.0%"></i></div><span class="distributed-value-v0-1">60</span></div>
+  <div class="distributed-row-v0-1" data-geometry-truth="data-bound"><span>Score</span><div class="distributed-track-v0-1"><i style="width:52.5%"></i></div><span class="distributed-value-v0-1">52.46</span></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>24h</span><strong class="distributed-value-v0-1">-1.01%</strong></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>30d</span><strong class="distributed-value-v0-1">-4.63%</strong></div>
+  <div class="distributed-row-v0-1 distributed-row-text-v0-1"><span>Rank</span><strong class="distributed-value-v0-1">60</strong></div>
 </div>
 </div>
     <div class="sample-card"><h4>Sample Barometer · applied view</h4><p>Applied pressure read for this TON/ICP sample. The main Astromodule · Astrobarometer axis remains the source timing-scenario module above.</p><div class="sample-metrics"><div class="sample-metric"><span>TON barometer</span><strong>53.01</strong></div><div class="sample-metric"><span>ICP barometer</span><strong>52.46</strong></div><div class="sample-metric"><span>Market reality</span><strong>market context active</strong></div><div class="sample-metric"><span>Rotation state</span><strong>A/E calibration pending</strong></div></div>
@@ -634,11 +628,7 @@
   <div class="distributed-gauge-v0-1"><strong>53.01</strong><span>Gram (prev. Toncoin) · elevated / watch</span></div>
   <div class="distributed-gauge-v0-1"><strong>52.46</strong><span>Internet Computer · elevated / watch</span></div>
 </div>
-<div class="distributed-rail-v0-1" aria-label="Sample pressure components">
-  <div class="distributed-row-v0-1"><span>Temporal</span><div class="distributed-track-v0-1"><i style="width:49.8%"></i></div><span class="distributed-value-v0-1">49.83</span></div>
-  <div class="distributed-row-v0-1"><span>Phase</span><div class="distributed-track-v0-1"><i style="width:48.8%"></i></div><span class="distributed-value-v0-1">48.81</span></div>
-  <div class="distributed-row-v0-1"><span>Stability</span><div class="distributed-track-v0-1"><i style="width:71.5%"></i></div><span class="distributed-value-v0-1">71.46</span></div>
-</div>
+<div class="sample-context-status-v0-1" aria-label="Sample component detail not published"><span>Component detail</span><strong>not published in this public sample</strong></div>
 </div>
     <div class="sample-card"><h4>Scenario Corridor · Manual depth route</h4><p>This public panel shows a bounded sample. Full depth research remains manual, reviewed, and non-automated.</p><span class="sample-chip">Static snapshot</span><span class="sample-chip">Manual review</span><span class="sample-chip">Research orientation</span>
 <div class="distributed-corridor-v0-1" aria-label="Distributed scenario corridor">
@@ -646,9 +636,7 @@
   <div><span>Extension</span><strong>extension only if relative participation holds</strong></div>
   <div><span>Stress</span><strong>compression if BTC dominance or stable pressure rises</strong></div>
 </div>
-<div class="distributed-rail-v0-1" aria-label="Scenario confirmation lane">
-  <div class="distributed-row-v0-1"><span>Confirm</span><div class="distributed-track-v0-1"><i style="width:64%"></i></div><span class="distributed-value-v0-1">watch</span></div>
-</div>
+<div class="sample-context-status-v0-1" aria-label="Scenario confirmation watch"><span>Confirm</span><strong>watch</strong></div>
 </div>
   </div>
   <div class="sample-footer"><p>Static sample · research orientation · manual depth route.</p><a href="https://www.bhrigu.io/access">Request Depth Research</a></div>
@@ -665,13 +653,7 @@
     </div>
     <!-- CRYPTO_ASTRO_PRIVATE_NOTE_CTA_v0_1:END -->
 
-    <div class="trend-memory" aria-label="Trend Memory">
-      <span>Market Cap 7D</span>
-      <span>BTC Dominance 7D</span>
-      <span>TVL 7D</span>
-      <span>Stable Share 7D</span>
-      <span>Volume 7D</span>
-    </div>
+    <div class="trend-memory-unavailable" data-geometry-truth="semantic" aria-label="Trend Memory unavailable">Trend Memory · Previous verified snapshot is not available.</div>
   </div>
 </section>
 <!-- CRYPTO_ASTRO_MARKET_FIELD_MODULE_v0_1:END -->
