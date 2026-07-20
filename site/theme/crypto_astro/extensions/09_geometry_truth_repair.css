@@ -108,6 +108,7 @@
 }
 
 /* Negative returns and ranks remain text values; no arbitrary positive fill is drawn. */
+.visual-row-text-v0-1,
 .distributed-row-text-v0-1 {
   display:grid;
   grid-template-columns:1fr auto;
@@ -117,7 +118,9 @@
   padding:6px 0;
   border-bottom:1px solid rgba(255,255,255,.07);
 }
+.visual-row-text-v0-1:last-child,
 .distributed-row-text-v0-1:last-child { border-bottom:0; }
+.visual-row-text-v0-1 .visual-value-v0-1,
 .distributed-row-text-v0-1 .distributed-value-v0-1 {
   color:var(--soft);
   font-size:12px;
