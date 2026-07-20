@@ -1,0 +1,58 @@
+/* BTC_POSTER_CPU_AND_ANIMATION_BUDGET_REPAIR_v0_1:BEGIN
+   Poster-grade geometry remains visible while continuous decorative repaint is removed.
+   Interaction transitions remain available; CSS keyframe animation is fail-closed. */
+
+.btc-deep-v1 {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 96rem;
+  contain: layout paint style;
+}
+
+.btc-deep-v1,
+.btc-deep-v1 *,
+.btc-deep-v1::before,
+.btc-deep-v1::after,
+.btc-deep-v1 *::before,
+.btc-deep-v1 *::after {
+  animation-name: none !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  animation-play-state: paused !important;
+}
+
+/* Large masked and filter-heavy layers stay as static geometry. */
+.btc-deep-v1.btc-deep-v1::after,
+.btc-deep-v1.btc-deep-v1 .btc-field-v1::before,
+.btc-deep-v1.btc-deep-v1 .btc-quiet-phi-core-v0-3::after,
+.btc-deep-v1.btc-deep-v1 .btc-entry-v1::after,
+.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::before,
+.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+  will-change: auto !important;
+}
+
+/* Preserve responsive rendering without allocating an oversized skipped box. */
+@media (max-width: 980px) {
+  .btc-deep-v1 {
+    contain-intrinsic-size: auto 118rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .btc-deep-v1 {
+    contain-intrinsic-size: auto 150rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btc-deep-v1,
+  .btc-deep-v1 *,
+  .btc-deep-v1::before,
+  .btc-deep-v1::after,
+  .btc-deep-v1 *::before,
+  .btc-deep-v1 *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* BTC_POSTER_CPU_AND_ANIMATION_BUDGET_REPAIR_v0_1:END */
