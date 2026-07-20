@@ -1,0 +1,52 @@
+name: Crypto-Astro LT-1 Import Normalization Transform
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    if: github.head_ref == 'feature/crypto-astro-lt1-import-normalization-v0-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/crypto-astro-lt1-import-normalization-v0-1
+          fetch-depth: 0
+
+      - name: Remove only the duplicate direct system.css route
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("site/crypto-astro/index.html")
+          text = path.read_text(encoding="utf-8")
+          line = '<link href="../theme/system.css" rel="stylesheet"/>\n'
+          assert text.count(line) == 1, "Expected exactly one direct system.css link"
+          path.write_text(text.replace(line, "", 1), encoding="utf-8")
+
+          phi = Path("site/theme/phi_theme.css").read_text(encoding="utf-8")
+          assert phi.count("@import url('./system.css');") == 1
+          assert text.count('<link href="../theme/phi_theme.css" rel="stylesheet"/>') == 1
+          assert text.count('<link href="../theme/crypto_astro_surface.css" rel="stylesheet"/>') == 1
+          PY
+
+      - name: Remove one-time worker
+        run: rm .github/workflows/crypto-astro-lt1-import-normalization-transform.yml
+
+      - name: Commit bounded transform
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          changed="$(git status --short --untracked-files=all)"
+          printf '%s\n' "$changed"
+          test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 2
+          printf '%s\n' "$changed" | grep -F "site/crypto-astro/index.html"
+          printf '%s\n' "$changed" | grep -F ".github/workflows/crypto-astro-lt1-import-normalization-transform.yml"
+          git add site/crypto-astro/index.html .github/workflows/crypto-astro-lt1-import-normalization-transform.yml
+          git commit -m "Normalize Crypto-Astro system CSS import route"
+          git push origin HEAD:feature/crypto-astro-lt1-import-normalization-v0-1
