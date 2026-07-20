@@ -1,0 +1,39 @@
+name: Crypto-Astro PR-04 Compatibility Patch
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'feature/crypto-astro-geometry-truth-repair-v0-1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/crypto-astro-geometry-truth-repair-v0-1
+      - name: Patch bootstrap scope gates
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          lt1 = Path('.github/workflows/crypto-astro-lt1-import-normalization-pr.yml')
+          text = lt1.read_text()
+          text = text.replace('  lt1-import-normalization:\n    runs-on:', "  lt1-import-normalization:\n    if: github.head_ref == 'feature/crypto-astro-lt1-import-normalization-v0-1'\n    runs-on:", 1)
+          lt1.write_text(text)
+
+          geo = Path('.github/workflows/crypto-astro-geometry-truth-pr.yml')
+          text = geo.read_text()
+          text = text.replace('      - ".github/workflows/crypto-astro-geometry-truth-pr.yml"\n', '      - ".github/workflows/crypto-astro-geometry-truth-pr.yml"\n      - ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml"\n', 1)
+          text = text.replace('              ".github/workflows/crypto-astro-geometry-truth-pr.yml",\n', '              ".github/workflows/crypto-astro-geometry-truth-pr.yml",\n              ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml",\n', 1)
+          geo.write_text(text)
+          PY
+          rm .github/workflows/crypto-astro-pr04-compat-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/crypto-astro-lt1-import-normalization-pr.yml .github/workflows/crypto-astro-geometry-truth-pr.yml .github/workflows/crypto-astro-pr04-compat-patch.yml
+          git commit -m "Bind bootstrap CI scopes for PR-04"
+          git push origin HEAD:feature/crypto-astro-geometry-truth-repair-v0-1
