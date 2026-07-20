@@ -9,6 +9,7 @@ on:
       - "site/theme/crypto_astro/extensions/10_editorial_composition.css"
       - "tools/crypto_astro_editorial_composition/**"
       - "tools/crypto_astro_geometry_truth/verify_geometry_truth.py"
+      - "tools/crypto_astro_surface_truth/surface_truth.py"
       - ".github/workflows/crypto-astro-editorial-composition-pr.yml"
 
 permissions:
@@ -46,6 +47,7 @@ jobs:
               "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
               "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
               "tools/crypto_astro_geometry_truth/verify_geometry_truth.py",
+              "tools/crypto_astro_surface_truth/surface_truth.py",
           }
           changed = subprocess.check_output(
               ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
@@ -62,6 +64,7 @@ jobs:
           }
           assert required.issubset(changed), f"Missing PR-05 paths: {sorted(required - set(changed))}"
           assert ".github/workflows/crypto-astro-pr05-transform.yml" not in changed
+          assert ".github/workflows/crypto-astro-pr05-harness-patch.yml" not in changed
           print("PR_05_ALLOWED_PATHS=PASS")
           PY
 
