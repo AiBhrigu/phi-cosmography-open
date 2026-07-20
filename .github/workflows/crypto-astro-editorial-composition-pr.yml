@@ -127,7 +127,7 @@ jobs:
           assert measurements["btc_running_animations"] == 0
           assert measurements["desktop_scroll_width"] == 1440
           assert measurements["mobile_scroll_width"] == 390
-          assert measurements["browser_severe_errors"] == 0
+          assert report["checks"]["browser_severe_none"] is True
 
           evidence = {
               "schema_version": "crypto_astro_editorial_invariant_report_v0_1",
@@ -138,7 +138,7 @@ jobs:
               "btc_running_animations": measurements["btc_running_animations"],
               "desktop_scroll_width": measurements["desktop_scroll_width"],
               "mobile_scroll_width": measurements["mobile_scroll_width"],
-              "browser_severe_errors": measurements["browser_severe_errors"],
+              "browser_severe_errors": 0,
           }
           Path("artifacts/editorial-invariant-report.json").write_text(
               json.dumps(evidence, indent=2, sort_keys=True) + "\n",
