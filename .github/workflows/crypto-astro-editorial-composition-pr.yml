@@ -8,6 +8,7 @@ on:
       - "site/theme/crypto_astro/css_order_manifest.json"
       - "site/theme/crypto_astro/extensions/10_editorial_composition.css"
       - "tools/crypto_astro_editorial_composition/**"
+      - "tools/crypto_astro_geometry_truth/verify_geometry_truth.py"
       - ".github/workflows/crypto-astro-editorial-composition-pr.yml"
 
 permissions:
@@ -44,6 +45,7 @@ jobs:
               "tools/crypto_astro_editorial_composition/apply_editorial_composition.py",
               "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
               "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
+              "tools/crypto_astro_geometry_truth/verify_geometry_truth.py",
           }
           changed = subprocess.check_output(
               ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
@@ -66,8 +68,10 @@ jobs:
       - name: Install browser dependencies
         run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
 
-      - name: Run editorial fixtures
-        run: python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
+      - name: Run editorial and geometry fixtures
+        run: |
+          python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
+          python3 -m unittest discover -s tools/crypto_astro_geometry_truth -p "test_*.py" -v
 
       - name: Verify deterministic CSS bundle
         run: |
@@ -79,11 +83,6 @@ jobs:
 
       - name: Verify geometry contract remains valid
         run: python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
-
-      - name: Prepare exact base worktree
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: git worktree add --detach /tmp/crypto-astro-pr05-base "$BASE_SHA"
 
       - name: Run local truth on final head
         run: bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4173
