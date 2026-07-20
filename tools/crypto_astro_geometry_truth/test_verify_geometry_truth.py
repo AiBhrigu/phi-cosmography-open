@@ -20,6 +20,10 @@ class GeometryTruthScanTests(unittest.TestCase):
                 'class="score-orb field-gauge" data-geometry-truth="data-bound"',
                 'class="astromodule-polish-rails astromodule-semantic-bands" data-geometry-truth="semantic"',
                 'class="astromodule-right-balance__band"',
+                'class="visual-row-v0-1" data-geometry-truth="data-bound"',
+                'class="visual-row-v0-1" data-geometry-truth="data-bound"',
+                'class="visual-row-v0-1 visual-row-text-v0-1"',
+                'class="visual-row-v0-1 visual-row-text-v0-1"',
                 'class="distributed-row-v0-1 distributed-row-text-v0-1"',
                 'class="distributed-row-v0-1 distributed-row-text-v0-1"',
                 'class="distributed-row-v0-1 distributed-row-text-v0-1"',
@@ -60,6 +64,15 @@ class GeometryTruthScanTests(unittest.TestCase):
         )
         checks, _ = scan_html(html)
         self.assertFalse(checks["required_count:text_only_sample_rows"])
+
+    def test_missing_visual_text_row_fails(self) -> None:
+        html = self.valid_html().replace(
+            'class="visual-row-v0-1 visual-row-text-v0-1"',
+            "removed",
+            1,
+        )
+        checks, _ = scan_html(html)
+        self.assertFalse(checks["required_count:text_only_visual_rows"])
 
     def test_unsupported_component_value_fails(self) -> None:
         checks, _ = scan_html(self.valid_html() + "\n>49.83<")
