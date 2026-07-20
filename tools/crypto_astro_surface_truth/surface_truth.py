@@ -393,8 +393,6 @@ def run_browser(url: str, out_dir: Path) -> dict[str, Any]:
         },
     }
     write_json(out_dir / "surface-truth-report.json", report)
-    report["sha256_manifest_digest"] = build_sha256_manifest(out_dir)
-    write_json(out_dir / "surface-truth-report.json", report)
     build_sha256_manifest(out_dir)
     return report
 
