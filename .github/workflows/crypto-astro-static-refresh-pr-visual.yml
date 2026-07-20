@@ -97,12 +97,48 @@ jobs:
                   "scoring_coverage": expected_coverage in scoring,
                   "heartbeat": "static · no schedule" in scoring,
               }
+
+              entry_phi_content = "not_in_scope"
+              cycle_before_content = "not_in_scope"
+              cycle_after_content = "not_in_scope"
               if deep_node_present:
+                  entry_phi_content = driver.execute_script(
+                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
+                      ".btc-entry-v1 .btc-field-read-entry-glyph-v0-1",
+                      "::before",
+                  )
+                  cycle_before_content = driver.execute_script(
+                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
+                      ".btc-cycle-canvas-v1",
+                      "::before",
+                  )
+                  cycle_after_content = driver.execute_script(
+                      "return window.getComputedStyle(document.querySelector(arguments[0]), arguments[1]).content;",
+                      ".btc-cycle-canvas-v1",
+                      "::after",
+                  )
+
+                  html_source = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
+                  section_start = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->")
+                  section_end = html_source.index("<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->", section_start)
+                  btc_section_source = html_source[section_start:section_end]
+
+                  theme_css = Path("site/theme/phi_theme.css").read_text(encoding="utf-8")
+                  css_start = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:BEGIN")
+                  css_end = theme_css.index("/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END", css_start)
+                  refinement_css = theme_css[css_start:css_end]
+
                   checks.update({
                       "aspect_pressure": "aspect pressure" in btc_hub_lower,
                       "phase_condition": "phase condition" in btc_hub_lower,
                       "event_memory": "event memory" in btc_hub_lower,
                       "private_research_depth": "private research depth" in btc_hub_lower,
+                      "single_phi_entry_threshold": "Φ" in entry_phi_content,
+                      "aspect_cycle_nucleus_non_literal": (
+                          "Φ" not in cycle_before_content and "Φ" not in cycle_after_content
+                      ),
+                      "deep_node_html_no_literal_phi": "Φ" not in btc_section_source,
+                      "single_phi_css_literal": refinement_css.count('content: "Φ";') == 1,
                   })
 
               report["checks"] = checks
@@ -113,6 +149,9 @@ jobs:
                   "btc_deep_node": "present" if deep_node_present else "not_in_scope",
                   "aspect_cycle_core": "present" if deep_node_present else "not_in_scope",
                   "private_research_depth": "present" if deep_node_present else "not_in_scope",
+                  "entry_phi_content": entry_phi_content,
+                  "aspect_cycle_before_content": cycle_before_content,
+                  "aspect_cycle_after_content": cycle_after_content,
                   "ton_score": expected_ton,
                   "icp_score": expected_icp,
                   "scoring_coverage": expected_coverage,
