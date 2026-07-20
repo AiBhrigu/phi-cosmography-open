@@ -2,10 +2,13 @@ name: Crypto-Astro PR-03 Branch Transform
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
     paths:
       - ".github/workflows/crypto-astro-pr03-branch-transform.yml"
       - "tools/crypto_astro_css_modules/**"
+      - "site/crypto-astro/index.html"
+      - "site/theme/crypto_astro_surface.css"
+      - "site/theme/crypto_astro/**"
 
 permissions:
   contents: write
@@ -97,9 +100,12 @@ jobs:
           html = path.read_text(encoding="utf-8")
           old = '<link href="../theme/crypto_astro_inline_legacy.css" rel="stylesheet"/>'
           new = '<link href="../theme/crypto_astro_surface.css" rel="stylesheet"/>'
-          assert html.count(old) == 1, "Expected exactly one legacy stylesheet link"
-          assert new not in html, "Generated surface stylesheet link already exists"
-          path.write_text(html.replace(old, new, 1), encoding="utf-8")
+          if old in html:
+              assert html.count(old) == 1
+              assert new not in html
+              path.write_text(html.replace(old, new, 1), encoding="utf-8")
+          else:
+              assert html.count(new) == 1, "Expected generated surface stylesheet link"
           PY
 
       - name: Verify transform scope
@@ -107,7 +113,10 @@ jobs:
           python3 - <<'PY'
           import subprocess
 
-          rows = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+          rows = subprocess.check_output(
+              ["git", "status", "--porcelain", "--untracked-files=all"],
+              text=True,
+          ).splitlines()
           paths = {row[3:] for row in rows}
           allowed_exact = {
               "site/crypto-astro/index.html",
@@ -122,6 +131,10 @@ jobs:
 
       - name: Commit transform to feature branch
         run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "PR_03_TRANSFORM=NOOP_ALREADY_APPLIED"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
