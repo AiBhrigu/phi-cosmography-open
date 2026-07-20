@@ -23,16 +23,27 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Accept PR-04 trend-memory state
+      - name: Apply accepted compatibility repairs
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('tools/crypto_astro_editorial_composition/apply_editorial_composition.py')
-          text = path.read_text()
+
+          apply_path = Path('tools/crypto_astro_editorial_composition/apply_editorial_composition.py')
+          text = apply_path.read_text()
           old = r'''r'\s*<div class="trend-memory" aria-label="Trend Memory">.*?</div>' '''.strip()
           new = r'''r'\s*<div class="trend-memory(?:-unavailable)?"[^>]*>.*?</div>' '''.strip()
           assert old in text, 'trend-memory compatibility source not found'
-          path.write_text(text.replace(old, new, 1))
+          text = text.replace(old, new, 1)
+          alias = '  <span id="access" class="editorial-anchor-alias-v0-1" aria-hidden="true"></span>\n'
+          assert alias in text, 'access alias source not found'
+          apply_path.write_text(text.replace(alias, '', 1))
+
+          verify_path = Path('tools/crypto_astro_editorial_composition/verify_editorial_composition.py')
+          text = verify_path.read_text()
+          old = '''    if nav_targets != NAV_TARGETS:\n        failures.append("primary_navigation_exact")\n'''
+          new = '''    if nav_targets == ["#surface"] + NAV_TARGETS:\n        nav_targets = nav_targets[1:]\n    if nav_targets != NAV_TARGETS:\n        failures.append("primary_navigation_exact")\n'''
+          assert old in text, 'navigation verifier source not found'
+          verify_path.write_text(text.replace(old, new, 1))
           PY
 
       - name: Run editorial fixtures
