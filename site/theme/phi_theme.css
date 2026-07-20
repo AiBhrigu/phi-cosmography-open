@@ -66,3 +66,403 @@ html, body {
   }
 }
 /* BTC_DEEP_NODE_VISUAL_REVIEW_POLISH_v0_1:END */
+
+/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:BEGIN
+   Less explanatory copy, a stronger BTC question threshold, and a richer
+   relational field without exposing protected calculation structure. */
+.btc-deep-v1 .btc-head-v1 {
+  max-width: 64rem;
+  margin-bottom: 1.15rem;
+}
+
+.btc-deep-v1 .btc-head-v1 h2 {
+  max-width: 100%;
+  margin-bottom: 0.9rem !important;
+  line-height: 1.04 !important;
+  text-wrap: balance;
+}
+
+/* Preserve the longer source copy for assistive reading while replacing its
+   visual footprint with one short orientation line. */
+.btc-deep-v1 .btc-head-v1 > p:last-child {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.btc-deep-v1 .btc-head-v1::after {
+  content: "Bitcoin as current market gravity inside the verified field.";
+  display: block;
+  max-width: 45rem;
+  color: rgba(226, 233, 255, 0.72);
+  font-size: clamp(0.96rem, 1.4vw, 1.12rem);
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+
+.btc-deep-v1 .btc-truth-v1 {
+  min-height: 2.7rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.72rem 1rem;
+  border: 1px solid rgba(245, 199, 106, 0.22);
+  border-left-width: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(245, 199, 106, 0.07), rgba(91, 157, 255, 0.055));
+  color: transparent;
+  font-size: 0;
+  line-height: 1;
+}
+
+.btc-deep-v1 .btc-truth-v1 strong {
+  display: none;
+}
+
+.btc-deep-v1 .btc-truth-v1::before {
+  content: "Data-bound core · interpretive field";
+  color: rgba(236, 211, 143, 0.88);
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.13em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+/* Primary question threshold. */
+.btc-deep-v1 .btc-entry-v1 {
+  position: relative;
+  isolation: isolate;
+  min-height: 5.4rem;
+  overflow: hidden;
+  padding: 1rem 1.2rem;
+  border-color: rgba(245, 199, 106, 0.52);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 8% 50%, rgba(245, 199, 106, 0.18), transparent 18%),
+    linear-gradient(90deg, rgba(245, 199, 106, 0.09), rgba(91, 157, 255, 0.09) 48%, rgba(245, 199, 106, 0.035));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 20px 60px rgba(0, 0, 0, 0.32),
+    0 0 36px rgba(245, 199, 106, 0.055);
+}
+
+.btc-deep-v1 .btc-entry-v1::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 5.5rem;
+  right: 6.7rem;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(245, 199, 106, 0.92), rgba(245, 199, 106, 0.22) 28%, rgba(91, 157, 255, 0.46) 68%, rgba(245, 199, 106, 0.36));
+  box-shadow: 0 0 8px rgba(245, 199, 106, 0.7), 0 0 22px rgba(91, 157, 255, 0.22);
+}
+
+.btc-deep-v1 .btc-entry-v1::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 4.8rem;
+  top: 50%;
+  width: min(48rem, 70%);
+  height: 4.8rem;
+  transform: translateY(-50%);
+  opacity: 0.72;
+  background:
+    repeating-radial-gradient(ellipse at left center, transparent 0 1.15rem, rgba(245, 199, 106, 0.1) 1.2rem 1.25rem, transparent 1.3rem 2.1rem),
+    radial-gradient(ellipse at left center, rgba(245, 199, 106, 0.18), transparent 64%);
+  animation: btcCorridorPulseV2 10s ease-in-out infinite;
+}
+
+.btc-deep-v1 .btc-entry-v1 > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
+  position: relative;
+  width: 3.45rem;
+  height: 3.45rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 199, 106, 0.65);
+  border-radius: 50%;
+  padding: 0;
+  overflow: visible;
+  background: radial-gradient(circle, rgba(245, 199, 106, 0.19), rgba(5, 9, 20, 0.94) 67%);
+  box-shadow: 0 0 0 0.45rem rgba(245, 199, 106, 0.035), 0 0 28px rgba(245, 199, 106, 0.24);
+  color: transparent;
+  font-size: 0 !important;
+}
+
+.btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1::before {
+  content: "Φ";
+  color: #f5c76a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  line-height: 1;
+  text-shadow: 0 0 15px rgba(245, 199, 106, 0.72);
+}
+
+.btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1::after {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+  border: 1px solid rgba(245, 199, 106, 0.18);
+  border-radius: 50%;
+  box-shadow: inset 0 0 18px rgba(91, 157, 255, 0.08);
+}
+
+.btc-deep-v1 .btc-entry-v1 strong {
+  color: #f6d477;
+  font-size: clamp(0.82rem, 1.15vw, 1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(245, 199, 106, 0.16);
+}
+
+.btc-deep-v1 .btc-entry-v1 em {
+  color: rgba(226, 233, 255, 0.74);
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
+.btc-deep-v1 .btc-entry-arrow-v1 {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 199, 106, 0.25);
+  border-radius: 50%;
+  background: rgba(5, 9, 20, 0.68);
+  box-shadow: 0 0 20px rgba(245, 199, 106, 0.1);
+}
+
+.btc-deep-v1 .btc-entry-v1:hover,
+.btc-deep-v1 .btc-entry-v1:focus-visible {
+  border-color: rgba(245, 199, 106, 0.78);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 70px rgba(0, 0, 0, 0.36),
+    0 0 48px rgba(245, 199, 106, 0.12);
+}
+
+.btc-deep-v1 .btc-market-link-v1 {
+  margin-top: 0.7rem;
+  color: rgba(226, 233, 255, 0.46);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+.btc-deep-v1 .btc-market-link-v1:hover,
+.btc-deep-v1 .btc-market-link-v1:focus-visible {
+  color: rgba(226, 233, 255, 0.82);
+}
+
+/* Restore depth to the relational field without recreating a dashboard. */
+.btc-deep-v1 .btc-cycle-v1 {
+  position: relative;
+  margin-top: 2.4rem;
+  padding-top: 1.8rem;
+}
+
+.btc-deep-v1 .btc-cycle-head-v1 {
+  margin-bottom: 1.35rem;
+}
+
+.btc-deep-v1 .btc-cycle-canvas-v1 {
+  min-height: 36rem;
+  border-color: rgba(91, 157, 255, 0.28);
+  background:
+    radial-gradient(circle at 50% 52%, rgba(245, 199, 106, 0.17) 0 2.2%, transparent 10%),
+    radial-gradient(circle at 50% 52%, transparent 0 20%, rgba(91, 157, 255, 0.11) 20.2% 20.7%, transparent 21% 33%, rgba(245, 199, 106, 0.085) 33.2% 33.6%, transparent 34%),
+    radial-gradient(circle at 19% 16%, rgba(245, 199, 106, 0.055), transparent 31%),
+    radial-gradient(circle at 84% 72%, rgba(91, 157, 255, 0.075), transparent 34%),
+    linear-gradient(145deg, #030713, #09142b 58%, #040817);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 0 90px rgba(91, 157, 255, 0.045),
+    0 26px 66px rgba(0, 0, 0, 0.28);
+}
+
+.btc-deep-v1 .btc-cycle-route-v1 path {
+  stroke: rgba(245, 199, 106, 0.5);
+  stroke-width: 1.55;
+  stroke-dasharray: 10 12;
+  filter: drop-shadow(0 0 5px rgba(245, 199, 106, 0.22));
+}
+
+.btc-deep-v1 .btc-cycle-route-v1 .s {
+  stroke: rgba(91, 157, 255, 0.42);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 13;
+  filter: drop-shadow(0 0 5px rgba(91, 157, 255, 0.18));
+}
+
+.btc-deep-v1 .btc-node-v1 {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(7, 13, 28, 0.94), rgba(3, 7, 16, 0.82));
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34), inset 0 0 28px rgba(91, 157, 255, 0.025);
+  backdrop-filter: blur(10px);
+}
+
+.btc-deep-v1 .btc-node-v1.aspect {
+  background: radial-gradient(circle at 15% 35%, rgba(245, 199, 106, 0.13), transparent 30%), rgba(4, 8, 18, 0.9);
+  box-shadow: 0 0 34px rgba(245, 199, 106, 0.07), 0 18px 42px rgba(0, 0, 0, 0.3);
+}
+
+.btc-deep-v1 .btc-node-v1.phase {
+  background: radial-gradient(circle at 18% 50%, rgba(91, 157, 255, 0.14), transparent 32%), rgba(4, 8, 18, 0.9);
+}
+
+.btc-deep-v1 .btc-node-v1.memory {
+  background: linear-gradient(105deg, rgba(91, 157, 255, 0.1), rgba(4, 8, 18, 0.9) 38%);
+}
+
+.btc-deep-v1 .btc-node-v1.confirm {
+  background: radial-gradient(ellipse at 18% 50%, rgba(245, 199, 106, 0.12), transparent 36%), rgba(4, 8, 18, 0.9);
+  box-shadow: 0 0 32px rgba(245, 199, 106, 0.055), 0 18px 42px rgba(0, 0, 0, 0.3);
+}
+
+.btc-deep-v1 .btc-node-v1.review {
+  background: linear-gradient(90deg, rgba(226, 233, 255, 0.055), rgba(4, 8, 18, 0.92) 42%);
+}
+
+@media (min-width: 621px) {
+  .btc-deep-v1 .btc-cycle-canvas-v1::before,
+  .btc-deep-v1 .btc-cycle-canvas-v1::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 52%;
+    pointer-events: none;
+  }
+
+  .btc-deep-v1 .btc-cycle-canvas-v1::before {
+    width: 8.4rem;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(245, 199, 106, 0.28);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(245, 199, 106, 0.16), transparent 37%),
+      conic-gradient(from 18deg, rgba(245, 199, 106, 0.28), transparent 18%, rgba(91, 157, 255, 0.2) 42%, transparent 66%, rgba(245, 199, 106, 0.24));
+    box-shadow:
+      0 0 0 2.7rem rgba(91, 157, 255, 0.018),
+      0 0 0 2.75rem rgba(91, 157, 255, 0.09),
+      0 0 42px rgba(245, 199, 106, 0.18);
+    animation: btcRelationalNucleusV2 18s ease-in-out infinite;
+  }
+
+  .btc-deep-v1 .btc-cycle-canvas-v1::after {
+    width: min(28rem, 48%);
+    height: min(13rem, 32%);
+    transform: translate(-50%, -50%) rotate(-17deg);
+    border: 1px solid rgba(91, 157, 255, 0.18);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2.3rem rgba(245, 199, 106, 0.018), 0 0 0 2.35rem rgba(245, 199, 106, 0.07);
+    opacity: 0.76;
+  }
+}
+
+@media (max-width: 620px) {
+  .btc-deep-v1 .btc-head-v1 {
+    margin-bottom: 0.85rem;
+  }
+
+  .btc-deep-v1 .btc-head-v1 h2 {
+    margin-bottom: 0.7rem !important;
+    line-height: 1.02 !important;
+  }
+
+  .btc-deep-v1 .btc-head-v1::after {
+    font-size: 0.91rem;
+    line-height: 1.45;
+  }
+
+  .btc-deep-v1 .btc-truth-v1 {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .btc-deep-v1 .btc-entry-v1 {
+    min-height: 6.4rem;
+    padding: 0.85rem;
+  }
+
+  .btc-deep-v1 .btc-entry-v1::before {
+    left: 4.6rem;
+    right: 1.25rem;
+    top: 2.15rem;
+  }
+
+  .btc-deep-v1 .btc-entry-v1::after {
+    left: 4rem;
+    width: 76%;
+    height: 4rem;
+    top: 2.15rem;
+  }
+
+  .btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .btc-deep-v1 .btc-entry-v1 strong {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+  }
+
+  .btc-deep-v1 .btc-entry-v1 em {
+    margin-top: 0.3rem;
+    font-size: 0.76rem;
+  }
+
+  .btc-deep-v1 .btc-cycle-canvas-v1 {
+    min-height: auto;
+    background:
+      linear-gradient(90deg, rgba(245, 199, 106, 0.035), transparent 22%),
+      radial-gradient(circle at 22% 48%, rgba(91, 157, 255, 0.08), transparent 42%),
+      linear-gradient(180deg, #040817, #081329);
+  }
+
+  .btc-deep-v1 .btc-node-v1 {
+    min-height: 5.2rem;
+    display: grid;
+    align-content: center;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28), inset 0 0 22px rgba(91, 157, 255, 0.025);
+  }
+}
+
+@keyframes btcCorridorPulseV2 {
+  0%, 100% { opacity: 0.46; transform: translateY(-50%) scaleX(0.98); }
+  50% { opacity: 0.82; transform: translateY(-50%) scaleX(1.015); }
+}
+
+@keyframes btcRelationalNucleusV2 {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.985) rotate(0deg); opacity: 0.72; }
+  50% { transform: translate(-50%, -50%) scale(1.018) rotate(3deg); opacity: 0.96; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btc-deep-v1 .btc-entry-v1::after,
+  .btc-deep-v1 .btc-cycle-canvas-v1::before {
+    animation: none !important;
+  }
+}
+/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END */

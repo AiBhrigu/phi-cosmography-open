@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "site/crypto-astro/**"
+      - "site/theme/phi_theme.css"
       - "tools/crypto_astro_static_refresh/**"
       - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
 
