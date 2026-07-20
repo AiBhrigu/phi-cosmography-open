@@ -17,7 +17,7 @@ EXACT_FILES = (
     "computed-style-fingerprint.json",
     "motion-report.json",
     "overflow-report.json",
-    "severe-browser-log.json",
+    "browser-severe-log.json",
 )
 SCREENSHOTS = ("desktop.png", "desktop-btc.png", "mobile.png", "mobile-btc.png")
 BOX_TOLERANCE_PX = 1.0
