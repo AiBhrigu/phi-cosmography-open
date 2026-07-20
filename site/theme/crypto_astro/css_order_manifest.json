@@ -70,5 +70,14 @@
   ],
   "schema_version": "crypto_astro_css_order_manifest_v0_1",
   "source_base_sha": "2b84a9c40ae692abaca0b0e96c1159027a26ac2b",
-  "source_html_path": "site/crypto-astro/index.html"
+  "source_html_path": "site/crypto-astro/index.html",
+  "extensions": [
+    {
+      "byte_count": 4425,
+      "order": 1,
+      "path": "site/theme/crypto_astro/extensions/09_geometry_truth_repair.css",
+      "role": "geometry_truth_repair",
+      "sha256": "5a7c3f7fb58a27dba3d9cd855527c7bb020869ea805a3c422bd76ca3cbd070ac"
+    }
+  ]
 }

@@ -50,9 +50,53 @@ class CssModuleBuildTests(unittest.TestCase):
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
             report = build(root, Path("manifest.json"), write=True, verify_source_base=False)
             self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["extension_count"], 0)
             self.assertEqual((root / "surface.css").read_bytes(), bundle)
             checked = build(root, Path("manifest.json"), write=False, verify_source_base=False)
             self.assertEqual(checked["bundle_sha256"], hashlib.sha256(bundle).hexdigest())
+
+    def test_ordered_extension_appends_after_immutable_base(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            module = b"a{}"
+            extension = b".repair{}"
+            base_bundle = join_modules([module])
+            full_bundle = join_modules([module, extension])
+            (root / "mods").mkdir()
+            (root / "ext").mkdir()
+            (root / "mods/a.css").write_bytes(module)
+            (root / "ext/repair.css").write_bytes(extension)
+            (root / "legacy.css").write_bytes(base_bundle)
+            manifest = {
+                "schema_version": "crypto_astro_css_order_manifest_v0_1",
+                "source_base_sha": "unused",
+                "source_html_path": "unused",
+                "legacy_source_path": "legacy.css",
+                "generated_bundle_path": "surface.css",
+                "modules": [
+                    {
+                        "order": 1,
+                        "source_style_block_index": 1,
+                        "path": "mods/a.css",
+                        "byte_count": len(module),
+                        "sha256": hashlib.sha256(module).hexdigest(),
+                    }
+                ],
+                "extensions": [
+                    {
+                        "order": 1,
+                        "path": "ext/repair.css",
+                        "byte_count": len(extension),
+                        "sha256": hashlib.sha256(extension).hexdigest(),
+                    }
+                ],
+            }
+            (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            report = build(root, Path("manifest.json"), write=True, verify_source_base=False)
+            self.assertEqual(report["module_count"], 1)
+            self.assertEqual(report["extension_count"], 1)
+            self.assertTrue(report["legacy_base_equivalent"])
+            self.assertEqual((root / "surface.css").read_bytes(), full_bundle)
 
     def test_hash_mismatch_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -70,6 +114,40 @@ class CssModuleBuildTests(unittest.TestCase):
                         "order": 1,
                         "source_style_block_index": 1,
                         "path": "module.css",
+                        "byte_count": 3,
+                        "sha256": "0" * 64,
+                    }
+                ],
+            }
+            (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaises(ModuleBuildError):
+                build(root, Path("manifest.json"), write=True, verify_source_base=False)
+
+    def test_extension_hash_mismatch_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "module.css").write_bytes(b"a{}")
+            (root / "extension.css").write_bytes(b"b{}")
+            (root / "legacy.css").write_bytes(b"a{}\n")
+            manifest = {
+                "schema_version": "crypto_astro_css_order_manifest_v0_1",
+                "source_base_sha": "unused",
+                "source_html_path": "unused",
+                "legacy_source_path": "legacy.css",
+                "generated_bundle_path": "surface.css",
+                "modules": [
+                    {
+                        "order": 1,
+                        "source_style_block_index": 1,
+                        "path": "module.css",
+                        "byte_count": 3,
+                        "sha256": hashlib.sha256(b"a{}").hexdigest(),
+                    }
+                ],
+                "extensions": [
+                    {
+                        "order": 1,
+                        "path": "extension.css",
                         "byte_count": 3,
                         "sha256": "0" * 64,
                     }
