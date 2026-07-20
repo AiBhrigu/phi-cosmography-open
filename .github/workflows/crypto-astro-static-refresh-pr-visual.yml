@@ -230,6 +230,7 @@ jobs:
                   'temporal-membrane': '.temporal-support-v0-1',
                   'cosmographer-read': '.cosmographer-console-v0-2',
                   'scoring': '#scoring',
+                  'scoring-boundary': '.scoring-calc-intro',
                   'market': '#market',
                   'sample': '[aria-label="Crypto-Astro Public Sample Web Panel"]',
               }
@@ -237,6 +238,7 @@ jobs:
                   driver.set_window_size(width, height)
                   driver.refresh()
                   WebDriverWait(driver, 20).until(lambda d: d.find_element(By.ID, 'scoring'))
+                  driver.execute_script("document.body.style.paddingBottom='1400px';")
                   scroll_width = driver.execute_script('return document.documentElement.scrollWidth')
                   inner_width = driver.execute_script('return window.innerWidth')
                   checks[f'{mode}_horizontal_overflow'] = scroll_width <= inner_width + 1
@@ -246,14 +248,11 @@ jobs:
                   }
                   for label, selector in targets.items():
                       element = driver.find_element(By.CSS_SELECTOR, selector)
+                      y = driver.execute_script('return arguments[0].getBoundingClientRect().top + window.scrollY;', element)
+                      driver.execute_script('window.scrollTo(0, arguments[0]);', max(0, y - 8))
+                      time.sleep(0.3)
                       output = f'artifacts/{mode}-{label}.png'
-                      if label == 'scoring':
-                          element.screenshot(output)
-                      else:
-                          y = driver.execute_script('return arguments[0].getBoundingClientRect().top + window.scrollY;', element)
-                          driver.execute_script('window.scrollTo(0, arguments[0]);', max(0, y - 8))
-                          time.sleep(0.3)
-                          driver.save_screenshot(output)
+                      driver.save_screenshot(output)
                       report['viewports'][mode]['screenshots'].append(output)
 
               severe = [
