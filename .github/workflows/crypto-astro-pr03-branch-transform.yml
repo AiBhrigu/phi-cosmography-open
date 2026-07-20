@@ -1,17 +1,19 @@
 name: Crypto-Astro PR-03 Branch Transform
 
 on:
-  push:
-    branches:
-      - feature/crypto-astro-deterministic-css-modules-v0-1
+  pull_request:
+    types: [opened]
     paths:
       - ".github/workflows/crypto-astro-pr03-branch-transform.yml"
+      - "tools/crypto_astro_css_modules/**"
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   transform:
+    if: github.head_ref == 'feature/crypto-astro-deterministic-css-modules-v0-1'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
