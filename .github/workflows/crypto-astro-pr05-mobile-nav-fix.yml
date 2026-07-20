@@ -20,23 +20,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Apply exact compact navigation rule
+      - name: Apply compact navigation rule
         run: |
           python3 - <<'PY'
           import hashlib
           import json
+          import re
           from pathlib import Path
 
           css_path = Path('site/theme/crypto_astro/extensions/10_editorial_composition.css')
           css = css_path.read_text(encoding='utf-8')
-          old = '''  .crypto-astro-primary-nav {
-            align-items: flex-start;
-          }
-
-            .crypto-astro-primary-nav__links {
-              justify-content: flex-start;
-            }'''.replace('            ', '')
-          new = '''  .crypto-astro-primary-nav {
+          pattern = re.compile(
+              r'  \.crypto-astro-primary-nav \{\n'
+              r'    align-items: flex-start;\n'
+              r'  \}\n\n'
+              r'  \.crypto-astro-primary-nav__links \{\n'
+              r'    justify-content: flex-start;\n'
+              r'  \}',
+          )
+          replacement = '''  .crypto-astro-primary-nav {
             align-items: flex-start;
             flex-direction: column;
           }
@@ -47,8 +49,9 @@ jobs:
               justify-content: stretch;
               width: 100%;
             }'''.replace('            ', '')
-          assert old in css, 'current mobile navigation block not found'
-          css_path.write_text(css.replace(old, new, 1), encoding='utf-8')
+          css, count = pattern.subn(replacement, css, count=1)
+          assert count == 1, f'compact navigation replacements={count}'
+          css_path.write_text(css, encoding='utf-8')
 
           manifest_path = Path('site/theme/crypto_astro/css_order_manifest.json')
           manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
