@@ -1,0 +1,74 @@
+{
+  "generated_bundle_path": "site/theme/crypto_astro_surface.css",
+  "join_rule": "append one LF only when a source module has no terminal CR or LF",
+  "legacy_source_path": "site/theme/crypto_astro_inline_legacy.css",
+  "modules": [
+    {
+      "byte_count": 83189,
+      "order": 1,
+      "path": "site/theme/crypto_astro/modules/01_surface_market_btc.css",
+      "role": "surface_market_btc",
+      "sha256": "29986f46e118166558f79185c08ba1295b5a076a350546284538a5d9c0a40c1a",
+      "source_style_block_index": 1
+    },
+    {
+      "byte_count": 5781,
+      "order": 2,
+      "path": "site/theme/crypto_astro/modules/02_astromodule_core.css",
+      "role": "astromodule_core",
+      "sha256": "e2eb238504e18410a75f5bf274d45461c197eacb371bb3c92b4ebd1ac6babba9",
+      "source_style_block_index": 2
+    },
+    {
+      "byte_count": 1117,
+      "order": 3,
+      "path": "site/theme/crypto_astro/modules/03_support_modules.css",
+      "role": "support_modules",
+      "sha256": "cdd8cc2e4303a85ce4acad582b6ae9fb3b22ced327102b432b7f6bb54f99089c",
+      "source_style_block_index": 3
+    },
+    {
+      "byte_count": 3617,
+      "order": 4,
+      "path": "site/theme/crypto_astro/modules/04_astromodule_balance.css",
+      "role": "astromodule_balance",
+      "sha256": "4fdaccdfb09f2205a6e66fc38b9b176c7a843f3550f1c1b342ae07426d4c0686",
+      "source_style_block_index": 4
+    },
+    {
+      "byte_count": 19393,
+      "order": 5,
+      "path": "site/theme/crypto_astro/modules/05_field_synthesis.css",
+      "role": "field_synthesis",
+      "sha256": "62cb51c4066f04c9225079766dc9cb1431e08f7fbb25e93f928add474a88ca0d",
+      "source_style_block_index": 5
+    },
+    {
+      "byte_count": 2595,
+      "order": 6,
+      "path": "site/theme/crypto_astro/modules/06_public_samples.css",
+      "role": "public_samples",
+      "sha256": "63c91465722c974957d9e375aa383c5c285698eeae7d8ab8168f346c23333b3e",
+      "source_style_block_index": 6
+    },
+    {
+      "byte_count": 4214,
+      "order": 7,
+      "path": "site/theme/crypto_astro/modules/07_public_samples_visual.css",
+      "role": "public_samples_visual",
+      "sha256": "d128b5096abe7ea47a7e69551a36fa64975773713e85d109ee3e36dcc3d6dbbd",
+      "source_style_block_index": 7
+    },
+    {
+      "byte_count": 11038,
+      "order": 8,
+      "path": "site/theme/crypto_astro/modules/08_proof_access_tail.css",
+      "role": "proof_access_tail",
+      "sha256": "38456cfe4a41b79502729cfc5fbf6588d26d3181a4af1fb4152ae667e6fdba2f",
+      "source_style_block_index": 8
+    }
+  ],
+  "schema_version": "crypto_astro_css_order_manifest_v0_1",
+  "source_base_sha": "2b84a9c40ae692abaca0b0e96c1159027a26ac2b",
+  "source_html_path": "site/crypto-astro/index.html"
+}

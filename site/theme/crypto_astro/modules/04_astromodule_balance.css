@@ -1,0 +1,137 @@
+
+            .astromodule-depth-note-v0-1 {
+              grid-column: 1 / -1;
+              border-color: rgba(245, 199, 105, 0.18);
+              background: linear-gradient(135deg, rgba(245, 199, 105, 0.055), rgba(255, 255, 255, 0.025));
+            }
+            .astromodule-depth-note-v0-1 .depth-note-head-v0-1 {
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              justify-content: space-between;
+              gap: 0.75rem;
+              margin-bottom: 0.55rem;
+            }
+            .astromodule-depth-note-v0-1 h3 {
+              margin: 0;
+              color: #ffd978;
+              font-size: 1rem;
+              line-height: 1.25;
+            }
+            .astromodule-depth-note-v0-1 p {
+              margin: 0;
+              max-width: 72rem;
+              color: rgba(244, 247, 255, 0.80);
+              line-height: 1.52;
+            }
+            .astromodule-depth-note-v0-1 .depth-note-link-v0-1 {
+              display: inline-flex;
+              border: 1px solid rgba(245, 199, 105, 0.28);
+              border-radius: 999px;
+              padding: 0.42rem 0.7rem;
+              color: #ffd978;
+              background: rgba(245, 199, 105, 0.08);
+              font-size: 0.78rem;
+              font-weight: 820;
+              letter-spacing: 0.04em;
+              text-decoration: none;
+              white-space: nowrap;
+            }
+            .astromodule-depth-note-v0-1 .depth-note-boundary-v0-1 {
+              color: rgba(255, 226, 160, 0.88);
+              font-weight: 700;
+            }
+          
+/* CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:BEGIN */
+.astromodule-right-balance {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.astromodule-right-balance__title {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.5vw, 1.24rem);
+  color: rgba(246, 252, 255, 0.95);
+}
+
+.astromodule-right-balance__score {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  background: rgba(4, 10, 18, 0.46);
+}
+
+.astromodule-right-balance__number {
+  font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+  line-height: 0.95;
+  color: rgba(255, 219, 120, 0.98);
+  font-weight: 800;
+}
+
+.astromodule-right-balance__track {
+  height: 9px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.09);
+  overflow: hidden;
+}
+
+.astromodule-right-balance__fill {
+  display: block;
+  height: 100%;
+  width: 63%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(145,231,255,0.44), rgba(255,219,120,0.84));
+}
+
+.astromodule-right-balance__meta {
+  margin-top: 6px;
+  color: rgba(225, 238, 245, 0.68);
+  font-size: 0.82rem;
+}
+
+.astromodule-right-balance__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.astromodule-right-balance__cell {
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 15px;
+  background: rgba(255,255,255,0.035);
+}
+
+.astromodule-right-balance__label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(190, 210, 222, 0.74);
+}
+
+.astromodule-right-balance__value {
+  display: block;
+  color: rgba(245, 250, 255, 0.94);
+  font-weight: 780;
+}
+
+.astromodule-right-balance__note {
+  margin: 4px 0 0;
+  color: rgba(218, 235, 244, 0.70);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .astromodule-right-balance__grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* CRYPTO_ASTRO_ASTROMODULE_RIGHT_PANEL_BALANCE_v0_1:END */

@@ -1,0 +1,535 @@
+
+          /* CRYPTO_ASTRO_COSMOGRAPHER_READ_REACTIVE_FIELD_v0_2:BEGIN */
+          .cosmographer-console-v0-2 {
+            grid-column: 1 / -1;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(216, 160, 72, 0.28);
+            border-radius: 28px;
+            padding: clamp(1.2rem, 2.2vw, 1.8rem);
+            background:
+              radial-gradient(circle at 14% 20%, rgba(216,160,72,0.10), transparent 30%),
+              radial-gradient(circle at 84% 24%, rgba(72,173,220,0.09), transparent 30%),
+              linear-gradient(135deg, rgba(4, 10, 18, 0.98), rgba(5, 12, 22, 0.96));
+            box-shadow: 0 26px 80px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(255,255,255,0.025);
+            --field-gold: 216, 160, 72;
+            --field-blue: 72, 173, 220;
+            --field-teal: 98, 214, 192;
+            --field-purple: 176, 135, 218;
+            --field-brightness: 0.78;
+            --field-spread: 1;
+            --field-membrane: 0.52;
+            --field-gravity: 0.84;
+          }
+
+          .cosmographer-console-v0-2[data-field-mode="guarded_rotation"] {
+            --field-brightness: 0.62;
+            --field-spread: 0.82;
+            --field-membrane: 0.78;
+            --field-gravity: 0.72;
+          }
+
+          .cosmographer-console-v0-2[data-field-mode="compression_watch"] {
+            --field-brightness: 0.48;
+            --field-spread: 0.62;
+            --field-membrane: 0.86;
+            --field-gravity: 0.92;
+          }
+
+          .cosmographer-console-v0-2[data-field-mode="high_momentum"] {
+            --field-brightness: 0.95;
+            --field-spread: 1.18;
+            --field-membrane: 0.42;
+            --field-gravity: 0.92;
+          }
+
+          .cosmographer-console-v0-2::before {
+            content: "";
+            position: absolute;
+            inset: 14px;
+            border: 1px solid rgba(255,255,255,0.045);
+            border-radius: 22px;
+            pointer-events: none;
+          }
+
+          .cosmographer-console-head-v0-2 {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1rem;
+            align-items: start;
+            margin-bottom: 1.15rem;
+          }
+
+          .cosmographer-console-kicker-v0-2 {
+            margin: 0 0 0.34rem;
+            color: rgba(220, 176, 104, 0.88);
+            font-size: 0.72rem;
+            font-weight: 850;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-console-title-v0-2 {
+            margin: 0;
+            color: rgba(246, 239, 222, 0.96);
+            font-size: clamp(2.2rem, 5vw, 4.2rem);
+            line-height: 0.92;
+            letter-spacing: -0.045em;
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 500;
+          }
+
+          .cosmographer-console-voice-v0-2 {
+            margin: 0.75rem 0 0;
+            max-width: 55rem;
+            color: rgba(232, 239, 246, 0.76);
+            line-height: 1.56;
+            font-size: clamp(0.94rem, 1.35vw, 1.08rem);
+          }
+
+          .cosmographer-console-badge-v0-2 {
+            justify-self: end;
+            min-width: 14.5rem;
+            padding: 0.72rem 1rem;
+            border: 1px solid rgba(216,160,72,0.32);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.026);
+            text-align: center;
+          }
+
+          .cosmographer-console-badge-v0-2 strong {
+            display: block;
+            color: rgba(240, 178, 82, 0.96);
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-console-badge-v0-2 span {
+            display: block;
+            margin-top: 0.28rem;
+            color: rgba(230, 239, 246, 0.68);
+            font-size: 0.86rem;
+          }
+
+          .cosmographer-console-grid-v0-2 {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(18rem, 0.92fr) minmax(24rem, 1.18fr) minmax(18rem, 0.82fr);
+            gap: 1rem;
+            align-items: stretch;
+          }
+
+          .cosmographer-console-panel-v0-2 {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.085);
+            border-radius: 20px;
+            padding: 1rem;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,0.038), rgba(255,255,255,0.020));
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.014);
+          }
+
+          .cosmographer-console-label-v0-2 {
+            display: block;
+            margin: 0 0 0.7rem;
+            color: rgba(240, 172, 82, 0.9);
+            font-size: 0.7rem;
+            font-weight: 850;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-console-state-row-v0-2 {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.95rem;
+            align-items: center;
+            margin-bottom: 0.85rem;
+          }
+
+          .cosmographer-console-orb-v0-2 {
+            width: 58px;
+            height: 58px;
+            border-radius: 999px;
+            border: 1px solid rgba(var(--field-gold), 0.38);
+            background:
+              radial-gradient(circle, rgba(var(--field-gold),0.44), transparent 18%),
+              radial-gradient(circle, transparent 31%, rgba(var(--field-gold),0.22) 32% 34%, transparent 35%),
+              rgba(5, 12, 22, 0.72);
+            box-shadow: 0 0 28px rgba(var(--field-gold), calc(var(--field-brightness) * 0.18));
+          }
+
+          .cosmographer-console-panel-v0-2 h3,
+          .cosmographer-console-panel-v0-2 h4 {
+            margin: 0;
+            color: rgba(246, 239, 222, 0.95);
+            font-size: 1.18rem;
+            line-height: 1.2;
+          }
+
+          .cosmographer-console-pill-v0-2 {
+            display: inline-flex;
+            gap: 0.38rem;
+            align-items: center;
+            margin-top: 0.38rem;
+            padding: 0.28rem 0.55rem;
+            border: 1px solid rgba(var(--field-teal), 0.22);
+            border-radius: 999px;
+            color: rgba(184, 245, 232, 0.78);
+            background: rgba(var(--field-teal), 0.06);
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-console-panel-v0-2 p {
+            margin: 0;
+            color: rgba(225, 236, 244, 0.72);
+            line-height: 1.55;
+            font-size: 0.92rem;
+          }
+
+          .cosmographer-console-panel-v0-2 p + p {
+            margin-top: 0.65rem;
+          }
+
+          .cosmographer-mini-grid-v0-2 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.55rem;
+            margin-top: 0.95rem;
+          }
+
+          .cosmographer-mini-v0-2 {
+            min-height: 58px;
+            padding: 0.62rem;
+            border: 1px solid rgba(255,255,255,0.075);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.026);
+          }
+
+          .cosmographer-mini-v0-2 span {
+            display: block;
+            color: rgba(240,172,82,0.86);
+            font-size: 0.62rem;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-mini-v0-2 strong {
+            display: block;
+            margin-top: 0.28rem;
+            color: rgba(245,250,255,0.86);
+            font-size: 0.86rem;
+            font-weight: 700;
+          }
+
+          .cosmographer-synthesis-lead-v0-2 {
+            color: rgba(148, 219, 255, 0.92) !important;
+            font-size: 1.08rem !important;
+            font-weight: 650;
+          }
+
+          .cosmographer-keyword-grid-v0-2 {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 0.45rem;
+            margin-top: 0.85rem;
+          }
+
+          .cosmographer-keyword-v0-2 {
+            padding: 0.58rem 0.42rem;
+            border: 1px solid rgba(255,255,255,0.075);
+            border-radius: 13px;
+            background: rgba(3, 9, 16, 0.50);
+            text-align: center;
+          }
+
+          .cosmographer-keyword-v0-2 span {
+            display: block;
+            color: rgba(209, 231, 241, 0.78);
+            font-size: 0.72rem;
+            line-height: 1.15;
+          }
+
+          .cosmographer-keyword-v0-2 strong {
+            display: block;
+            margin-top: 0.22rem;
+            color: rgba(172, 241, 220, 0.78);
+            font-size: 0.68rem;
+            font-weight: 650;
+          }
+
+          .cosmographer-method-list-v0-2 {
+            display: grid;
+            gap: 0.38rem;
+          }
+
+          .cosmographer-method-item-v0-2 {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 0.55rem;
+            align-items: center;
+            padding: 0.52rem 0.62rem;
+            border: 1px solid rgba(255,255,255,0.055);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.027);
+          }
+
+          .cosmographer-method-dot-v0-2 {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(var(--field-blue), 0.90);
+            box-shadow: 0 0 14px rgba(var(--field-blue), 0.30);
+          }
+
+          .cosmographer-method-item-v0-2 span {
+            color: rgba(226,238,246,0.77);
+            font-size: 0.82rem;
+          }
+
+          .cosmographer-method-item-v0-2 strong {
+            color: rgba(230, 240, 246, 0.62);
+            font-size: 0.74rem;
+            font-weight: 650;
+          }
+
+
+          /* CRYPTO_ASTRO_FIELD_INFLUENCE_MATRIX_v0_1:BEGIN */
+          .cosmographer-influence-matrix-v0-1 {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.86;
+          }
+
+          .cosmographer-influence-membrane-v0-1 {
+            position: absolute;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.035);
+            filter: blur(0.1px);
+            opacity: 0.62;
+          }
+
+          .cosmographer-influence-membrane-v0-1.stable {
+            left: 18%;
+            top: 13%;
+            width: 29%;
+            height: 70%;
+            background: radial-gradient(ellipse at center, rgba(var(--field-teal), calc(var(--field-membrane) * 0.18)), transparent 65%);
+          }
+
+          .cosmographer-influence-membrane-v0-1.rotation {
+            left: 22%;
+            top: 41%;
+            width: 32%;
+            height: 48%;
+            background: radial-gradient(ellipse at center, rgba(var(--field-teal), calc(var(--field-spread) * 0.15)), transparent 68%);
+            transform: rotate(-6deg);
+          }
+
+          .cosmographer-influence-membrane-v0-1.depth {
+            left: 39%;
+            top: 53%;
+            width: 28%;
+            height: 39%;
+            background: radial-gradient(ellipse at center, rgba(var(--field-blue), 0.17), transparent 70%);
+          }
+
+          .cosmographer-influence-membrane-v0-1.timing {
+            left: 60%;
+            top: 28%;
+            width: 24%;
+            height: 57%;
+            background: radial-gradient(ellipse at center, rgba(var(--field-blue), 0.14), transparent 70%);
+            transform: rotate(4deg);
+          }
+
+          .cosmographer-influence-membrane-v0-1.freshness {
+            right: 6%;
+            top: 31%;
+            width: 21%;
+            height: 38%;
+            background: radial-gradient(ellipse at center, rgba(var(--field-purple), 0.13), transparent 72%);
+          }
+
+          .cosmographer-influence-lane-v0-1 {
+            position: absolute;
+            height: 1px;
+            transform-origin: left center;
+            background: linear-gradient(90deg, transparent, rgba(var(--lane-color), 0.42), transparent);
+            box-shadow: 0 0 16px rgba(var(--lane-color), 0.14);
+            opacity: 0.76;
+          }
+
+          .cosmographer-influence-lane-v0-1::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(var(--lane-color), 0.45);
+            box-shadow: 0 0 14px rgba(var(--lane-color), 0.28);
+          }
+
+          .cosmographer-influence-lane-v0-1.btc-stable { --lane-color: var(--field-gold); left: 37%; top: 39%; width: 17%; transform: rotate(-17deg); }
+          .cosmographer-influence-lane-v0-1.btc-rotation { --lane-color: var(--field-teal); left: 35%; top: 50%; width: 18%; transform: rotate(17deg); }
+          .cosmographer-influence-lane-v0-1.rotation-liquidity { --lane-color: var(--field-teal); left: 32%; top: 70%; width: 21%; transform: rotate(5deg); }
+          .cosmographer-influence-lane-v0-1.liquidity-timing { --lane-color: var(--field-blue); left: 52%; top: 75%; width: 18%; transform: rotate(-14deg); }
+          .cosmographer-influence-lane-v0-1.timing-freshness { --lane-color: var(--field-purple); left: 67%; top: 63%; width: 23%; transform: rotate(-18deg); }
+
+          .cosmographer-field-node-v0-2 {
+            z-index: 4;
+          }
+          /* CRYPTO_ASTRO_FIELD_INFLUENCE_MATRIX_v0_1:END */
+
+          .cosmographer-field-canvas-v0-2 {
+            position: relative;
+            height: clamp(180px, 21vw, 260px);
+            margin: 1rem 0 0;
+            overflow: hidden;
+            border-radius: 20px;
+            background:
+              radial-gradient(ellipse at 50% 50%, rgba(var(--field-gold), calc(var(--field-gravity) * 0.16)), transparent 16%),
+              radial-gradient(ellipse at 24% 50%, rgba(var(--field-teal), calc(var(--field-membrane) * 0.08)), transparent 28%),
+              radial-gradient(ellipse at 78% 48%, rgba(var(--field-blue), calc(var(--field-spread) * 0.10)), transparent 32%),
+              linear-gradient(180deg, rgba(2,8,15,0.20), rgba(2,8,15,0.64));
+          }
+
+          .cosmographer-field-canvas-v0-2::before {
+            content: "";
+            position: absolute;
+            inset: 10% -6%;
+            background:
+              linear-gradient(90deg, transparent, rgba(var(--field-gold), calc(var(--field-brightness) * 0.40)), transparent),
+              repeating-radial-gradient(ellipse at center, rgba(var(--field-blue),0.09) 0 1px, transparent 2px 18px);
+            opacity: 0.72;
+            filter: blur(0.2px);
+            transform: scaleX(calc(1 + (var(--field-spread) - 1) * 0.18));
+          }
+
+          .cosmographer-field-canvas-v0-2::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+              radial-gradient(circle at 50% 50%, rgba(var(--field-gold), calc(var(--field-brightness) * 0.90)) 0 2px, transparent 3px 5px),
+              radial-gradient(circle at 50% 50%, rgba(var(--field-gold), calc(var(--field-gravity) * 0.34)), transparent 10%),
+              linear-gradient(90deg, transparent, rgba(var(--field-gold), calc(var(--field-brightness) * 0.22)), transparent 53%);
+            opacity: 0.88;
+            pointer-events: none;
+          }
+
+          .cosmographer-field-thread-v0-2 {
+            position: absolute;
+            left: 3%;
+            right: 3%;
+            top: 50%;
+            height: 68px;
+            transform: translateY(-50%);
+            background:
+              radial-gradient(ellipse at 15% 50%, rgba(var(--field-gold), 0.55), transparent 11%),
+              radial-gradient(ellipse at 50% 50%, rgba(var(--field-gold), 0.72), transparent 13%),
+              radial-gradient(ellipse at 82% 50%, rgba(var(--field-blue), 0.42), transparent 14%);
+            border-top: 1px solid rgba(var(--field-gold), calc(var(--field-brightness) * 0.20));
+            border-bottom: 1px solid rgba(var(--field-blue), calc(var(--field-brightness) * 0.13));
+            opacity: 0.72;
+            filter: blur(0.15px);
+          }
+
+          .cosmographer-field-node-v0-2 {
+            position: absolute;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.34rem 0.52rem;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 999px;
+            background: rgba(3, 10, 18, 0.72);
+            color: rgba(234,244,250,0.80);
+            font-size: 0.74rem;
+            line-height: 1.15;
+            backdrop-filter: blur(6px);
+          }
+
+          .cosmographer-field-node-v0-2 i {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(var(--node-color), 0.92);
+            box-shadow: 0 0 14px rgba(var(--node-color), 0.42);
+          }
+
+          .cosmographer-field-node-v0-2[data-node="stable"] { --node-color: var(--field-teal); left: 25%; top: 20%; }
+          .cosmographer-field-node-v0-2[data-node="rotation"] { --node-color: var(--field-teal); left: 25%; top: 70%; }
+          .cosmographer-field-node-v0-2[data-node="btc"] { --node-color: var(--field-gold); left: 48%; top: 11%; }
+          .cosmographer-field-node-v0-2[data-node="liquidity"] { --node-color: var(--field-blue); left: 47%; top: 77%; }
+          .cosmographer-field-node-v0-2[data-node="timing"] { --node-color: var(--field-blue); left: 67%; top: 69%; }
+          .cosmographer-field-node-v0-2[data-node="freshness"] { --node-color: var(--field-purple); right: 9%; top: 44%; }
+
+          .cosmographer-field-legend-v0-2 {
+            position: absolute;
+            left: 1rem;
+            bottom: 0.8rem;
+            z-index: 3;
+            color: rgba(225, 238, 246, 0.52);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-field-legend-v0-2 strong {
+            color: rgba(216,160,72,0.74);
+            font-weight: 760;
+          }
+
+          .cosmographer-watch-v0-2 {
+            position: relative;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0.82rem 1rem;
+            border: 1px solid rgba(216,160,72,0.20);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.024);
+          }
+
+          .cosmographer-watch-v0-2 strong {
+            color: rgba(240,172,82,0.92);
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+          }
+
+          .cosmographer-watch-v0-2 span {
+            color: rgba(230,239,246,0.70);
+            font-size: 0.9rem;
+          }
+
+          @media (max-width: 980px) {
+            .cosmographer-console-head-v0-2,
+            .cosmographer-console-grid-v0-2,
+            .cosmographer-watch-v0-2 {
+              grid-template-columns: 1fr;
+            }
+            .cosmographer-console-badge-v0-2 {
+              justify-self: start;
+            }
+            .cosmographer-keyword-grid-v0-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .cosmographer-mini-grid-v0-2 {
+              grid-template-columns: 1fr;
+            }
+          }
+          /* CRYPTO_ASTRO_COSMOGRAPHER_READ_REACTIVE_FIELD_v0_2:END */
+        
