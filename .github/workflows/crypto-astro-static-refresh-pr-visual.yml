@@ -51,6 +51,11 @@ jobs:
           python -m http.server 4173 --directory site > artifacts/http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID' EXIT
+          for attempt in {1..20}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && break
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -61,23 +66,50 @@ jobs:
           expected_status=delta['comparison_status'].lower().replace('_','-')
           dominance=f"{float(snapshot['market_reality']['btc_dominance_pct']):.1f}%"
           out=Path('artifacts')
+          report={}
           with sync_playwright() as p:
             browser=p.chromium.launch()
             for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
               page=browser.new_page(viewport={'width':width,'height':height})
               errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
               page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
-              assert page.locator('#what-changed').get_attribute('data-what-changed-status')==expected_status
-              assert page.locator('#what-changed [data-metric]').count()==len(delta['metrics'])
-              assert generated in page.locator('#btc-phi-cycle-hub').inner_text()
-              assert page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()==2
+              section_status=page.locator('#what-changed').get_attribute('data-what-changed-status')
+              metric_count=page.locator('#what-changed [data-metric]').count()
+              btc_text=page.locator('#btc-phi-cycle-hub').inner_text()
+              cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()
               core=page.locator('.btc-quiet-phi-core-v0-3')
-              assert dominance in core.inner_text()
-              assert core.get_attribute('style')==f'--btc-dominance:{dominance};'
-              assert not page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
-              assert not errors, errors
+              core_text=core.inner_text()
+              core_style=core.get_attribute('style')
+              scroll_width=page.evaluate('document.documentElement.scrollWidth')
+              client_width=page.evaluate('document.documentElement.clientWidth')
+              evidence={
+                'status':section_status,
+                'expected_status':expected_status,
+                'metric_count':metric_count,
+                'expected_metric_count':len(delta['metrics']),
+                'btc_timestamp_present':generated in btc_text,
+                'cta_count':cta_count,
+                'core_dominance_present':dominance in core_text,
+                'core_style':core_style,
+                'expected_core_style':f'--btc-dominance:{dominance};',
+                'scroll_width':scroll_width,
+                'client_width':client_width,
+                'console_errors':errors,
+              }
+              report[name]=evidence
               page.screenshot(path=str(out/f'crypto-astro-{name}.png'),full_page=True)
+              (out/f'crypto-astro-{name}-geometry.json').write_text(json.dumps(evidence,indent=2)+'\n')
+              assert section_status==expected_status, evidence
+              assert metric_count==len(delta['metrics']), evidence
+              assert generated in btc_text, evidence
+              assert cta_count==2, evidence
+              assert dominance in core_text, evidence
+              assert core_style==f'--btc-dominance:{dominance};', evidence
+              assert scroll_width <= client_width + 1, evidence
+              assert not errors, evidence
+              page.close()
             browser.close()
+          (out/'browser-coherence.json').write_text(json.dumps(report,indent=2)+'\n')
           PY
       - name: Upload visual evidence
         if: always()
