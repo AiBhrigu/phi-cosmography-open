@@ -123,7 +123,7 @@ jobs:
           ids = re.findall(r'\bid="([^"]+)"', html)
           checks = {
               "five_chapter_order": chapters == expected,
-              "navigation_targets": nav_hrefs == ["#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"],
+              "navigation_targets": nav_hrefs == ["#surface", "#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"],
               "primary_cta_exactly_two": html.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 2,
               "what_changed_fail_closed_status_present": bool(re.search(r'data-what-changed-status="(?:full-comparable|partial|unavailable)"', html)),
               "source_proof_action_present": "View source proof" in html,
