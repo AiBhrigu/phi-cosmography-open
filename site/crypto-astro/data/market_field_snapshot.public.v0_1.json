@@ -1,5 +1,5 @@
 {
-  "schema_version": "crypto_astro_market_field_public_v0_1",
+  "schema_version": "crypto_astro_market_field_public_v0_2",
   "snapshot_mode": "public_safe_market_field",
   "updated_at_utc": "2026-07-21T12:40:11Z",
   "source_mode": "static_public_snapshot",

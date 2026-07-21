@@ -1,0 +1,59 @@
+name: Crypto-Astro BHRIGU Consumer Contract PR
+
+on:
+  pull_request:
+    paths:
+      - 'site/crypto-astro/data/crypto_astro_snapshot.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json'
+      - 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py'
+      - 'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py'
+      - '.github/workflows/crypto-astro-static-refresh-manual.yml'
+      - '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bhrigu-consumer-contract:
+    name: Validate producer with current BHRIGU consumer
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Crypto-Astro producer
+        uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run producer-side fail-closed contract proof
+        run: python3 tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
+
+      - name: Checkout current BHRIGU consumer
+        uses: actions/checkout@v5
+        with:
+          repository: AiBhrigu/bhrigu-portal
+          ref: master
+          path: .consumer/bhrigu-portal
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: .consumer/bhrigu-portal/package-lock.json
+
+      - name: Install BHRIGU consumer dependencies
+        working-directory: .consumer/bhrigu-portal
+        run: npm ci
+
+      - name: Execute BHRIGU loader against producer PR artifacts
+        working-directory: .consumer/bhrigu-portal
+        env:
+          BTC_PRODUCER_SNAPSHOT_PATH: ${{ github.workspace }}/site/crypto-astro/data/crypto_astro_snapshot.public.json
+          BTC_PRODUCER_PROOF_PATH: ${{ github.workspace }}/site/crypto-astro/data/crypto_astro_snapshot_proof.public.json
+          BTC_PRODUCER_MARKET_FIELD_PATH: ${{ github.workspace }}/site/crypto-astro/data/market_field_snapshot.public.v0_1.json
+        run: npm run verify:btc-producer-contract
