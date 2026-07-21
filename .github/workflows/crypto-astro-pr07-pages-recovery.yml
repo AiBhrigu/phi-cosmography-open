@@ -25,10 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check out current main only
+      - name: Check out exact reviewed production source
         uses: actions/checkout@v5
         with:
-          ref: main
+          ref: 3947fe13b5d7e7a63f16b779e4c81761ee7a6035
           fetch-depth: 1
 
       - name: Verify exact deployment source
@@ -43,11 +43,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload current main site
+      - name: Upload reviewed production site
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
-      - name: Deploy current main
+      - name: Deploy reviewed production site
         id: deployment
         uses: actions/deploy-pages@v4
