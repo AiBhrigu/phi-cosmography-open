@@ -1,0 +1,77 @@
+name: Crypto-Astro Operational Cadence PR
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/crypto-astro-static-refresh-manual.yml"
+      - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
+      - "tools/crypto_astro_operations/**"
+      - "docs/crypto-astro-service/crypto_astro_operator_review.md"
+
+permissions:
+  contents: read
+
+jobs:
+  operational-cadence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Enforce bounded cadence file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          allowed = {
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+                  text=True,
+              ).splitlines()
+          )
+          unexpected = sorted(changed - allowed)
+          assert not unexpected, f"Unexpected cadence paths: {unexpected}"
+          assert changed, "Cadence gate triggered without a changed cadence file"
+          print("OPERATIONAL_CADENCE_FILE_SCOPE=PASS")
+          PY
+
+      - name: Run cadence verifier fixtures
+        run: python3 -m unittest discover -s tools/crypto_astro_operations -p "test_*.py" -v
+
+      - name: Verify locked operational cadence
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_operations/verify_operational_cadence.py \
+            --repo . \
+            --report artifacts/operational-cadence-verification.json
+
+      - name: Upload cadence evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-operational-cadence-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

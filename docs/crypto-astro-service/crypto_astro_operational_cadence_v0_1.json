@@ -1,0 +1,73 @@
+{
+  "schema_version": "crypto_astro_operational_cadence_v0_1",
+  "policy_id": "CRYPTO_ASTRO_GATE_3_OPERATIONAL_CADENCE_LOCK_v0_1",
+  "refresh_trigger": "workflow_dispatch",
+  "default_mode": "DAILY_CADENCE",
+  "allowed_modes": [
+    "DAILY_CADENCE",
+    "PRE_REPORT",
+    "MATERIAL_MARKET_EVENT",
+    "REPEATABILITY_PROOF",
+    "SOURCE_OR_SCHEMA_REPAIR"
+  ],
+  "exception_modes": [
+    "PRE_REPORT",
+    "MATERIAL_MARKET_EVENT",
+    "REPEATABILITY_PROOF",
+    "SOURCE_OR_SCHEMA_REPAIR"
+  ],
+  "required_dispatch_inputs": [
+    "refresh_mode",
+    "operator_ref",
+    "refresh_reason"
+  ],
+  "cadence": {
+    "target_accepted_refresh_interval_hours": 24,
+    "daily_minimum_interval_hours": 18,
+    "target_max_operational_gap_hours": 48
+  },
+  "freshness": {
+    "fresh_hours": 72,
+    "stale_limited_hours": 168,
+    "unavailable_after_hours": 168
+  },
+  "single_flight": {
+    "concurrent_workflow_runs_forbidden": true,
+    "second_open_refresh_pr_forbidden": true,
+    "non_current_main_dispatch_forbidden": true,
+    "auto_close_previous_refresh_pr": false
+  },
+  "acceptance": {
+    "bhrigu_consumer_preflight_required": true,
+    "atomic_branch_proof_required": true,
+    "review_pr_required": true,
+    "desktop_visual_review_required": true,
+    "mobile_visual_review_required": true,
+    "explicit_merge_authorization_required": true,
+    "public_pages_verification_required": true,
+    "bhrigu_btc_field_read_verification_required": true
+  },
+  "deployment": {
+    "refresh_workflow_merge_command_allowed": false,
+    "refresh_workflow_deploy_command_allowed": false,
+    "pages_publish_after_accepted_main_merge": true
+  },
+  "prohibited_refresh_triggers": [
+    "schedule",
+    "push"
+  ],
+  "boundary": {
+    "cron": false,
+    "auto_merge": false,
+    "backend": false,
+    "public_api": false,
+    "payment": false,
+    "live_adapter": false,
+    "forecast": false,
+    "trading_signal": false,
+    "price_target": false,
+    "a_e_activation": false,
+    "c_t_runtime_expansion": false,
+    "orion_core_exposure": false
+  }
+}
