@@ -1,0 +1,53 @@
+name: Crypto-Astro First Bounded Refresh Proof Trigger v0.3
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/crypto-astro-first-bounded-refresh-proof-trigger-v0-3.yml'
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: crypto-astro-first-bounded-refresh-proof-trigger-v0-3
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/crypto-astro-first-bounded-refresh-proof-trigger-v0-3'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Dispatch visible-coherence-repaired manual refresh exactly once
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          WORKFLOW='crypto-astro-static-refresh-manual.yml'
+          BEFORE="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$WORKFLOW" --event workflow_dispatch --branch main --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          gh workflow run "$WORKFLOW" --repo "$GITHUB_REPOSITORY" --ref main
+
+          RUN_ID=''
+          for attempt in {1..40}; do
+            CANDIDATE="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$WORKFLOW" --event workflow_dispatch --branch main --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+            if [ "$CANDIDATE" != '0' ] && [ "$CANDIDATE" != "$BEFORE" ]; then
+              RUN_ID="$CANDIDATE"
+              break
+            fi
+            sleep 3
+          done
+          test -n "$RUN_ID"
+          echo "MANUAL_REFRESH_RUN_ID=$RUN_ID"
+          gh run watch "$RUN_ID" --repo "$GITHUB_REPOSITORY" --exit-status
+
+          OUTPUT_BRANCH="automation/crypto-astro-static-refresh-$RUN_ID"
+          OUTPUT_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$OUTPUT_BRANCH" --json number --jq '.[0].number // 0')"
+          test "$OUTPUT_PR" != '0'
+          OUTPUT_URL="$(gh pr view "$OUTPUT_PR" --repo "$GITHUB_REPOSITORY" --json url --jq '.url')"
+          gh pr comment "$TRIGGER_PR" --repo "$GITHUB_REPOSITORY" --body "FIRST_BOUNDED_REFRESH_PROOF_V03_DISPATCH=PASS · workflow_run=$RUN_ID · generated_pr=$OUTPUT_PR · $OUTPUT_URL"
