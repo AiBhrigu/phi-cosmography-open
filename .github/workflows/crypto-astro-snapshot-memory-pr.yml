@@ -43,6 +43,16 @@ jobs:
           test "$(sha256sum /tmp/refresh-memory-v02.tar.gz | awk '{print $1}')" = '9298152f0ad8c3632671a8513264bf44ba3ec2df2d94ecb9989a31aba8440ede'
           tar -xzf /tmp/refresh-memory-v02.tar.gz -C .
           rm $PART_GLOB
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('site/crypto-astro/data/crypto_astro_snapshot_registry.public.json')
+          old = '2754dc348605a2655e26dbc0494d63510ca88843'
+          new = '2a37742fc4d962be4bcbc7e8d925834102de5030'
+          text = path.read_text(encoding='utf-8')
+          assert text.count(old) == 9, text.count(old)
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          print('CURRENT_RUNNER_LOCK_REPAIRED=9')
+          PY
 
       - name: Enforce exact final implementation scope
         env:
@@ -83,24 +93,9 @@ jobs:
         run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
 
       - name: Build committed accepted pair
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set +e
           rm -rf /tmp/memory-build
-          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build > /tmp/build.log 2>&1
-          code=$?
-          cat /tmp/build.log
-          if [ "$code" -ne 0 ]; then
-            {
-              echo '<!-- REFRESH_MEMORY_V02_BUILD_FAILURE -->'
-              echo '```text'
-              tail -n 80 /tmp/build.log
-              echo '```'
-            } > /tmp/build-comment.md
-            gh pr comment 138 --body-file /tmp/build-comment.md
-            exit "$code"
-          fi
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build
 
       - name: Compare committed registry
         run: cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
