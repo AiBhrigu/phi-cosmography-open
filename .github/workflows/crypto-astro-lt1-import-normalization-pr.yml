@@ -9,6 +9,7 @@ on:
       - "site/theme/crypto_astro_surface.css"
       - "tools/crypto_astro_local_truth/**"
       - "tools/crypto_astro_surface_truth/**"
+      - "tools/crypto_astro_ci/**"
       - ".github/workflows/crypto-astro-css-modules-pr.yml"
       - ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml"
 
@@ -28,15 +29,42 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce bounded path scope
+      - name: Test legacy applicability classifier
+        run: python3 -m unittest discover -s tools/crypto_astro_ci -p "test_*.py" -v
+
+      - name: Classify gate applicability
+        id: applicability
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_ci/classify_legacy_applicability.py \
+            --workflow lt1-import-normalization \
+            --head-ref "$HEAD_REF" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --out artifacts/lt1-applicability.json
+
+      - name: Record explicit non-applicable pass
+        if: ${{ steps.applicability.outputs.mode != 'HISTORICAL_EXACT' }}
+        run: |
+          echo "LT1_IMPORT_NORMALIZATION_NOT_APPLICABLE_PASS=${{ steps.applicability.outputs.mode }}"
+          echo "The duplicate-import transition was completed once in PR #132; current surface truth remains covered elsewhere."
+
+      - name: Install historical browser dependencies
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Enforce bounded historical LT-1 path scope
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python3 - <<'PY'
-          import os
-          import subprocess
-
+          import os, subprocess
           allowed_exact = {
               ".github/workflows/crypto-astro-css-modules-pr.yml",
               ".github/workflows/crypto-astro-lt1-import-normalization-pr.yml",
@@ -44,88 +72,45 @@ jobs:
           }
           allowed_prefixes = ("tools/crypto_astro_local_truth/",)
           changed = subprocess.check_output(
-              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-              text=True,
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).splitlines()
-          unexpected = [
-              path for path in changed
-              if path not in allowed_exact and not path.startswith(allowed_prefixes)
-          ]
-          assert not unexpected, f"Unexpected LT-1/import-normalization paths: {unexpected}"
+          unexpected = [p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefixes)]
+          assert not unexpected, f"Unexpected historical LT-1 paths: {unexpected}"
           assert "site/crypto-astro/index.html" in changed
-          print("LT1_IMPORT_NORMALIZATION_PATH_SCOPE=PASS")
+          print("HISTORICAL_LT1_PATH_SCOPE=PASS")
           PY
 
-      - name: Install browser dependencies
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+      - name: Run historical import graph fixtures
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m unittest discover -s tools/crypto_astro_local_truth -p "test_*.py" -v
 
-      - name: Run import graph fixtures
-        run: |
-          python3 -m unittest discover \
-            -s tools/crypto_astro_local_truth \
-            -p "test_*.py" \
-            -v
-
-      - name: Prepare exact base worktree
+      - name: Run historical LT-1 exact transition proof
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: git worktree add --detach /tmp/crypto-astro-lt1-base "$BASE_SHA"
-
-      - name: Verify pre-normalization import graph
         run: |
-          mkdir -p artifacts/base
+          git worktree add --detach /tmp/crypto-astro-lt1-base "$BASE_SHA"
+          mkdir -p artifacts/base artifacts/head
           python3 tools/crypto_astro_local_truth/verify_import_graph.py \
-            --root /tmp/crypto-astro-lt1-base \
-            --mode before \
-            --out artifacts/base/import-graph-report.json
-
-      - name: Run LT-1 against exact merged base
-        run: |
-          bash tools/crypto_astro_local_truth/run_local_truth.sh \
-            /tmp/crypto-astro-lt1-base \
-            artifacts/base \
-            4173
-
-      - name: Verify normalized head import graph
-        run: |
-          mkdir -p artifacts/head
+            --root /tmp/crypto-astro-lt1-base --mode before --out artifacts/base/import-graph-report.json
+          bash tools/crypto_astro_local_truth/run_local_truth.sh /tmp/crypto-astro-lt1-base artifacts/base 4173
           python3 tools/crypto_astro_local_truth/verify_import_graph.py \
-            --root "$GITHUB_WORKSPACE" \
-            --mode after \
-            --out artifacts/head/import-graph-report.json
-
-      - name: Run local truth against normalized head
-        run: |
-          bash tools/crypto_astro_local_truth/run_local_truth.sh \
-            "$GITHUB_WORKSPACE" \
-            artifacts/head \
-            4173
-
-      - name: Compare base and normalized head truth
-        run: |
+            --root "$GITHUB_WORKSPACE" --mode after --out artifacts/head/import-graph-report.json
+          bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4174
           python3 tools/crypto_astro_css_extract/compare_surface_truth.py \
-            --base artifacts/base \
-            --head artifacts/head \
-            --out artifacts/lt1-import-normalization-parity-report.json
-
-      - name: Verify import route reduction only
-        run: |
+            --base artifacts/base --head artifacts/head --out artifacts/lt1-import-normalization-parity-report.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           base = json.loads(Path("artifacts/base/import-graph-report.json").read_text())
           head = json.loads(Path("artifacts/head/import-graph-report.json").read_text())
-          assert base["status"] == "PASS"
-          assert head["status"] == "PASS"
+          assert base["status"] == "PASS" and head["status"] == "PASS"
           assert base["measurements"]["effective_system_css_routes"] == 2
           assert head["measurements"]["effective_system_css_routes"] == 1
-          print("SYSTEM_CSS_EFFECTIVE_ROUTES_BEFORE=2")
-          print("SYSTEM_CSS_EFFECTIVE_ROUTES_AFTER=1")
-          print("IMPORT_NORMALIZATION=PASS")
+          print("HISTORICAL_LT1_IMPORT_NORMALIZATION=PASS")
           PY
 
-      - name: Upload LT-1 and parity evidence
+      - name: Upload LT-1 applicability evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
