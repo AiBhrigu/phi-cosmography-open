@@ -36,18 +36,19 @@ jobs:
         id: payload
         run: |
           set -euo pipefail
-          PAYLOAD='tools/crypto_astro_snapshot_memory/.refresh_memory_v02_payload.tar.gz.b64'
-          if [ ! -f "$PAYLOAD" ]; then
+          PART_GLOB='tools/crypto_astro_snapshot_memory/.refresh_memory_v02_payload.part-*'
+          if ! compgen -G "$PART_GLOB" >/dev/null; then
             echo 'applied=false' >> "$GITHUB_OUTPUT"
             echo 'Payload already consumed; nothing to do.'
             exit 0
           fi
-          test "$(sha256sum "$PAYLOAD" | awk '{print $1}')" = '5e57b71fa79489de526d6ee7b0d0addbf2e2cf8977abc6794f5830698478920b'
-          base64 -d "$PAYLOAD" > /tmp/refresh-memory-v02.tar.gz
+          cat $PART_GLOB > /tmp/refresh-memory-v02.b64
+          test "$(sha256sum /tmp/refresh-memory-v02.b64 | awk '{print $1}')" = '5e57b71fa79489de526d6ee7b0d0addbf2e2cf8977abc6794f5830698478920b'
+          base64 -d /tmp/refresh-memory-v02.b64 > /tmp/refresh-memory-v02.tar.gz
           test "$(sha256sum /tmp/refresh-memory-v02.tar.gz | awk '{print $1}')" = '9298152f0ad8c3632671a8513264bf44ba3ec2df2d94ecb9989a31aba8440ede'
           tar -tzf /tmp/refresh-memory-v02.tar.gz | sort > /tmp/payload-files.txt
           tar -xzf /tmp/refresh-memory-v02.tar.gz -C .
-          rm "$PAYLOAD"
+          rm $PART_GLOB
           echo 'applied=true' >> "$GITHUB_OUTPUT"
 
       - name: Validate exact final scope
