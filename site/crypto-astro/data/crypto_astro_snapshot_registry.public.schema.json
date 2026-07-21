@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+  "title": "Crypto-Astro Snapshot Registry Public v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "registry_generated_at_utc",
+    "selection_policy",
+    "current",
+    "previous",
+    "metric_methodologies",
+    "boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "crypto_astro_snapshot_registry_public_v0_1"
+    },
+    "registry_generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "selection_policy": {
+      "const": "EXPLICIT_ACCEPTED_PAIR"
+    },
+    "current": {
+      "$ref": "#/$defs/snapshotEntry"
+    },
+    "previous": {
+      "$ref": "#/$defs/snapshotEntry"
+    },
+    "metric_methodologies": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {
+        "$ref": "#/$defs/methodology"
+      }
+    },
+    "boundary": {
+      "$ref": "#/$defs/boundary"
+    }
+  },
+  "$defs": {
+    "sha40": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "snapshotEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "snapshot_id",
+        "commit_sha",
+        "data_origin_commit_sha",
+        "snapshot_path",
+        "snapshot_blob_sha",
+        "snapshot_sha256",
+        "proof_path",
+        "proof_blob_sha",
+        "proof_sha256",
+        "bindings_path",
+        "bindings_blob_sha",
+        "bindings_sha256",
+        "runner_blob_sha",
+        "generated_at_utc",
+        "proof_generated_at_utc",
+        "source_mode",
+        "schema_version",
+        "acceptance_status"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "current",
+            "previous"
+          ]
+        },
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^crypto-astro:.+:[0-9a-f]{12}$"
+        },
+        "commit_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "data_origin_commit_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "snapshot_path": {
+          "const": "site/crypto-astro/data/crypto_astro_snapshot.public.json"
+        },
+        "snapshot_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "snapshot_sha256": {
+          "$ref": "#/$defs/sha64"
+        },
+        "proof_path": {
+          "const": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+        },
+        "proof_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "proof_sha256": {
+          "$ref": "#/$defs/sha64"
+        },
+        "bindings_path": {
+          "const": "site/crypto-astro/data/crypto_astro_module_bindings.public.json"
+        },
+        "bindings_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "bindings_sha256": {
+          "$ref": "#/$defs/sha64"
+        },
+        "runner_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "proof_generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_mode": {
+          "const": "static_public_snapshot"
+        },
+        "schema_version": {
+          "const": "crypto_astro_snapshot_public_v0_1"
+        },
+        "acceptance_status": {
+          "const": "ACCEPTED"
+        }
+      }
+    },
+    "methodology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_methodology_id",
+        "previous_methodology_id",
+        "comparable",
+        "current_runner_blob_sha",
+        "previous_runner_blob_sha"
+      ],
+      "properties": {
+        "current_methodology_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "previous_methodology_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparable": {
+          "type": "boolean"
+        },
+        "current_runner_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        },
+        "previous_runner_blob_sha": {
+          "$ref": "#/$defs/sha40"
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only",
+        "static_public_snapshot",
+        "no_live_adapter_claim",
+        "no_true_live_feed_claim",
+        "no_trading_signal",
+        "no_forecast",
+        "no_price_target",
+        "no_investment_recommendation",
+        "backend_api_closed",
+        "runtime_closed",
+        "payment_closed",
+        "orion_core_protected",
+        "formula_weights_exposed",
+        "crawler_input_forbidden",
+        "html_presentation_input_forbidden",
+        "ui_binding_opened"
+      ],
+      "properties": {
+        "read_only": {
+          "const": true
+        },
+        "static_public_snapshot": {
+          "const": true
+        },
+        "no_live_adapter_claim": {
+          "const": true
+        },
+        "no_true_live_feed_claim": {
+          "const": true
+        },
+        "no_trading_signal": {
+          "const": true
+        },
+        "no_forecast": {
+          "const": true
+        },
+        "no_price_target": {
+          "const": true
+        },
+        "no_investment_recommendation": {
+          "const": true
+        },
+        "backend_api_closed": {
+          "const": true
+        },
+        "runtime_closed": {
+          "const": true
+        },
+        "payment_closed": {
+          "const": true
+        },
+        "orion_core_protected": {
+          "const": true
+        },
+        "formula_weights_exposed": {
+          "const": false
+        },
+        "crawler_input_forbidden": {
+          "const": true
+        },
+        "html_presentation_input_forbidden": {
+          "const": true
+        },
+        "ui_binding_opened": {
+          "const": false
+        }
+      }
+    }
+  }
+}

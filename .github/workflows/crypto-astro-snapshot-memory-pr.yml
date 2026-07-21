@@ -1,0 +1,105 @@
+name: Crypto-Astro Snapshot Memory PR
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json"
+      - "tools/crypto_astro_snapshot_memory/**"
+      - "site/crypto-astro/data/crypto_astro_snapshot.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+      - "site/crypto-astro/data/crypto_astro_module_bindings.public.json"
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot-memory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+
+      - name: Enforce exact PR-06 file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          allowed = {
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json",
+              "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+          }
+          changed = set(subprocess.check_output(
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+          ).splitlines())
+          assert changed == allowed, {
+              "missing": sorted(allowed - changed),
+              "unexpected": sorted(changed - allowed),
+          }
+          print("PR_06_EXACT_ALLOWLIST=PASS")
+          PY
+
+      - name: Run deterministic fixtures
+        run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p "test_*.py" -v
+
+      - name: Build twice and compare
+        run: |
+          mkdir -p artifacts
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-a > artifacts/build-a-report.json
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-b > artifacts/build-b-report.json
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+
+      - name: Verify schemas, hashes, ancestry and deltas
+        run: |
+          mkdir -p artifacts/final
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/final/snapshot-memory-verification.json
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
+          (cd artifacts/final && sha256sum * > SHA256SUMS)
+
+      - name: Prove UI and refresh inputs unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/theme \
+            tools/crypto_astro_static_refresh \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json
+
+      - name: Upload PR-06 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-snapshot-memory-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json",
+  "title": "Crypto-Astro Snapshot Delta Public v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "current_snapshot_id",
+    "previous_snapshot_id",
+    "comparison_status",
+    "metrics",
+    "unavailable_metrics",
+    "boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "crypto_astro_snapshot_delta_public_v0_1"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_snapshot_id": {
+      "type": "string"
+    },
+    "previous_snapshot_id": {
+      "type": "string"
+    },
+    "comparison_status": {
+      "const": "PARTIAL_COMPARABLE"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "btc_gravity_pct",
+        "stablecoin_share_pct",
+        "alt_breadth_24h_pct",
+        "alt_breadth_7d_pct",
+        "market_field_score",
+        "regime_label"
+      ],
+      "properties": {
+        "btc_gravity_pct": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "stablecoin_share_pct": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "alt_breadth_24h_pct": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "alt_breadth_7d_pct": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "market_field_score": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "regime_label": {
+          "$ref": "#/$defs/categoricalMetric"
+        }
+      }
+    },
+    "unavailable_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defi_tvl_usd",
+        "liquidity_context_state"
+      ],
+      "properties": {
+        "defi_tvl_usd": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "liquidity_context_state": {
+          "$ref": "#/$defs/unavailableMetric"
+        }
+      }
+    },
+    "boundary": {
+      "$ref": "#/$defs/boundary"
+    }
+  },
+  "$defs": {
+    "numericMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "type",
+        "path",
+        "unit",
+        "delta_unit",
+        "methodology_id",
+        "proof_sources",
+        "previous_value",
+        "current_value",
+        "raw_delta",
+        "display_precision",
+        "display_delta",
+        "direction"
+      ],
+      "properties": {
+        "status": {
+          "const": "COMPARABLE"
+        },
+        "type": {
+          "const": "NUMERIC"
+        },
+        "path": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "delta_unit": {
+          "type": "string"
+        },
+        "methodology_id": {
+          "type": "string"
+        },
+        "proof_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "previous_value": {
+          "type": "string"
+        },
+        "current_value": {
+          "type": "string"
+        },
+        "raw_delta": {
+          "type": "string"
+        },
+        "display_precision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "display_delta": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "UP",
+            "DOWN",
+            "UNCHANGED"
+          ]
+        }
+      }
+    },
+    "categoricalMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "type",
+        "path",
+        "unit",
+        "methodology_id",
+        "proof_sources",
+        "previous_value",
+        "current_value",
+        "transition"
+      ],
+      "properties": {
+        "status": {
+          "const": "COMPARABLE"
+        },
+        "type": {
+          "const": "CATEGORICAL"
+        },
+        "path": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "methodology_id": {
+          "type": "string"
+        },
+        "proof_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "previous_value": {
+          "type": "string"
+        },
+        "current_value": {
+          "type": "string"
+        },
+        "transition": {
+          "enum": [
+            "UNCHANGED",
+            "CHANGED"
+          ]
+        }
+      }
+    },
+    "unavailableMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "path",
+        "reason_code",
+        "previous_methodology_id",
+        "current_methodology_id",
+        "delta_value"
+      ],
+      "properties": {
+        "status": {
+          "const": "UNAVAILABLE"
+        },
+        "path": {
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "PREVIOUS_MISSING",
+            "CURRENT_MISSING",
+            "HASH_MISMATCH",
+            "ANCESTRY_INVALID",
+            "SCHEMA_MISMATCH",
+            "TIMESTAMP_ORDER_INVALID",
+            "PROOF_NOT_PASS",
+            "SOURCE_BINDING_MISSING",
+            "SOURCE_URL_MISMATCH",
+            "METHODOLOGY_MISMATCH",
+            "DEPENDENCY_METHODOLOGY_MISMATCH",
+            "UNIVERSE_MISMATCH",
+            "NON_FINITE_VALUE",
+            "BOUNDARY_MISMATCH"
+          ]
+        },
+        "previous_methodology_id": {
+          "type": "string"
+        },
+        "current_methodology_id": {
+          "type": "string"
+        },
+        "delta_value": {
+          "type": "null"
+        },
+        "dependency": {
+          "type": "string"
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only",
+        "static_public_snapshot",
+        "no_live_adapter_claim",
+        "no_true_live_feed_claim",
+        "no_trading_signal",
+        "no_forecast",
+        "no_price_target",
+        "no_investment_recommendation",
+        "backend_api_closed",
+        "runtime_closed",
+        "payment_closed",
+        "orion_core_protected",
+        "formula_weights_exposed",
+        "crawler_input_forbidden",
+        "html_presentation_input_forbidden",
+        "ui_binding_opened"
+      ],
+      "properties": {
+        "read_only": {
+          "const": true
+        },
+        "static_public_snapshot": {
+          "const": true
+        },
+        "no_live_adapter_claim": {
+          "const": true
+        },
+        "no_true_live_feed_claim": {
+          "const": true
+        },
+        "no_trading_signal": {
+          "const": true
+        },
+        "no_forecast": {
+          "const": true
+        },
+        "no_price_target": {
+          "const": true
+        },
+        "no_investment_recommendation": {
+          "const": true
+        },
+        "backend_api_closed": {
+          "const": true
+        },
+        "runtime_closed": {
+          "const": true
+        },
+        "payment_closed": {
+          "const": true
+        },
+        "orion_core_protected": {
+          "const": true
+        },
+        "formula_weights_exposed": {
+          "const": false
+        },
+        "crawler_input_forbidden": {
+          "const": true
+        },
+        "html_presentation_input_forbidden": {
+          "const": true
+        },
+        "ui_binding_opened": {
+          "const": false
+        }
+      }
+    }
+  }
+}

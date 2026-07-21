@@ -1,0 +1,123 @@
+{
+  "boundary": {
+    "backend_api_closed": true,
+    "crawler_input_forbidden": true,
+    "formula_weights_exposed": false,
+    "html_presentation_input_forbidden": true,
+    "no_forecast": true,
+    "no_investment_recommendation": true,
+    "no_live_adapter_claim": true,
+    "no_price_target": true,
+    "no_trading_signal": true,
+    "no_true_live_feed_claim": true,
+    "orion_core_protected": true,
+    "payment_closed": true,
+    "read_only": true,
+    "runtime_closed": true,
+    "static_public_snapshot": true,
+    "ui_binding_opened": false
+  },
+  "current": {
+    "acceptance_status": "ACCEPTED",
+    "bindings_blob_sha": "5b3ddff59fa797e3bb61a2043d344248c2e7e23a",
+    "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+    "bindings_sha256": "d2f7d6fd7c15e0cf7ff252a7a3634c207e025a326efd45fcc8ab6463e86c89ce",
+    "commit_sha": "8f12ee8e4c8748c362568ada4d79ba16b61adde1",
+    "data_origin_commit_sha": "3520e542f6c554888aeb5e95dde2728dc692d239",
+    "generated_at_utc": "2026-07-19T18:26:56Z",
+    "proof_blob_sha": "dde4176b6ac7510c0adbd7f785bc3d82aa1607ab",
+    "proof_generated_at_utc": "2026-07-19T18:26:49Z",
+    "proof_path": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+    "proof_sha256": "4034e9ab3693360652ab6b352b1a0e0547608dd6238f4269c9c3ee78273c653c",
+    "role": "current",
+    "runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+    "schema_version": "crypto_astro_snapshot_public_v0_1",
+    "snapshot_blob_sha": "33ded2a6555bdd77549f697d71a0acbfeea3f672",
+    "snapshot_id": "crypto-astro:2026-07-19T18:26:56Z:8fb7e78233ab",
+    "snapshot_path": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+    "snapshot_sha256": "8fb7e78233ab6ea8fe6b0224cd521fe92e2788c03c44723cd6e1c22e25715b57",
+    "source_mode": "static_public_snapshot"
+  },
+  "metric_methodologies": {
+    "alt_breadth_24h_pct": {
+      "comparable": true,
+      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "alt_breadth_7d_pct": {
+      "comparable": true,
+      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "btc_gravity_pct": {
+      "comparable": true,
+      "current_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "defi_tvl_usd": {
+      "comparable": false,
+      "current_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "defillama_protocols_sum_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "liquidity_context_state": {
+      "comparable": false,
+      "current_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "liquidity_context_state_with_protocol_sum_tvl_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "market_field_score": {
+      "comparable": true,
+      "current_methodology_id": "public_market_field_score_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "public_market_field_score_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "regime_label": {
+      "comparable": true,
+      "current_methodology_id": "public_regime_threshold_58_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "public_regime_threshold_58_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    },
+    "stablecoin_share_pct": {
+      "comparable": true,
+      "current_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
+      "current_runner_blob_sha": "2754dc348605a2655e26dbc0494d63510ca88843",
+      "previous_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
+      "previous_runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9"
+    }
+  },
+  "previous": {
+    "acceptance_status": "ACCEPTED",
+    "bindings_blob_sha": "51201acf0738500f0c914ce9b3ed3450ffaf93ad",
+    "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+    "bindings_sha256": "e4662b9bbaf64c7df43d4489f67f8800afbbfcf8cdb47c8d5239a391c64cd9e1",
+    "commit_sha": "006901742f5656a5b7370f2b1b6e5aa566b865f5",
+    "data_origin_commit_sha": "006901742f5656a5b7370f2b1b6e5aa566b865f5",
+    "generated_at_utc": "2026-07-12T22:05:46Z",
+    "proof_blob_sha": "d44044b06bf8bf347a39f0058768747e3fa63047",
+    "proof_generated_at_utc": "2026-07-12T22:05:45Z",
+    "proof_path": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+    "proof_sha256": "203f3e9767311b0a5340f521c84f4f2c61894e69134925422dcf80dbd8c7525c",
+    "role": "previous",
+    "runner_blob_sha": "086a77f2dd209a061e6b557de0e86a9b7b4f98d9",
+    "schema_version": "crypto_astro_snapshot_public_v0_1",
+    "snapshot_blob_sha": "318c3d07b077961215d479db4ce5e0a032a1c86a",
+    "snapshot_id": "crypto-astro:2026-07-12T22:05:46Z:f423cf480b15",
+    "snapshot_path": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+    "snapshot_sha256": "f423cf480b1570b8377919421e74bdd47a647cc4773afbaee2845d62bcc54ad8",
+    "source_mode": "static_public_snapshot"
+  },
+  "registry_generated_at_utc": "2026-07-19T18:26:56Z",
+  "schema_version": "crypto_astro_snapshot_registry_public_v0_1",
+  "selection_policy": "EXPLICIT_ACCEPTED_PAIR"
+}
