@@ -6,8 +6,12 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-manual.yml"
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
       - "tools/crypto_astro_operations/**"
       - "docs/crypto-astro-service/crypto_astro_operator_review.md"
 
@@ -17,7 +21,7 @@ permissions:
 jobs:
   operational-cadence:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
         with:
@@ -27,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce bounded cadence file scope
+      - name: Enforce bounded cadence or assistant-dispatch file scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -36,7 +40,7 @@ jobs:
           import os
           import subprocess
 
-          allowed = {
+          cadence_allowed = {
               ".github/workflows/crypto-astro-static-refresh-manual.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
@@ -46,19 +50,35 @@ jobs:
               "tools/crypto_astro_operations/test_verify_operational_cadence.py",
               "docs/crypto-astro-service/crypto_astro_operator_review.md",
           }
+          assistant_dispatch_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json",
+              "tools/crypto_astro_operations/verify_assistant_dispatch.py",
+              "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
+          }
+          base = subprocess.check_output(
+              ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
+          ).strip()
           changed = set(
               subprocess.check_output(
-                  ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-                  text=True,
+                  ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
               ).splitlines()
           )
-          unexpected = sorted(changed - allowed)
-          assert not unexpected, f"Unexpected cadence paths: {unexpected}"
-          assert changed, "Cadence gate triggered without a changed cadence file"
-          print("OPERATIONAL_CADENCE_FILE_SCOPE=PASS")
+          if changed == assistant_dispatch_scope:
+              print("ASSISTANT_DISPATCH_FILE_SCOPE=PASS")
+          else:
+              unexpected = sorted(changed - cadence_allowed)
+              assert not unexpected, f"Unexpected cadence paths: {unexpected}"
+              assert changed, "Cadence gate triggered without a changed cadence file"
+              print("OPERATIONAL_CADENCE_FILE_SCOPE=PASS")
           PY
 
-      - name: Run cadence verifier fixtures
+      - name: Run operations verifier fixtures
         run: python3 -m unittest discover -s tools/crypto_astro_operations -p "test_*.py" -v
 
       - name: Verify locked operational cadence
@@ -68,7 +88,14 @@ jobs:
             --repo . \
             --report artifacts/operational-cadence-verification.json
 
-      - name: Upload cadence evidence
+      - name: Verify assistant dispatch when present
+        if: ${{ hashFiles('tools/crypto_astro_operations/verify_assistant_dispatch.py') != '' }}
+        run: |
+          python3 tools/crypto_astro_operations/verify_assistant_dispatch.py verify-repository \
+            --repo . \
+            --report artifacts/assistant-dispatch-verification.json
+
+      - name: Upload operations evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
