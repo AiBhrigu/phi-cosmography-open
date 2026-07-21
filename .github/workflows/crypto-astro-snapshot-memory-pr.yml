@@ -71,25 +71,41 @@ jobs:
           print('REFRESH_MEMORY_V02_EXACT_SCOPE=PASS')
           PY
 
-      - name: Run deterministic offline gates before commit
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+
+      - name: Compile implementation tools
         run: |
-          python -m pip install --disable-pip-version-check jsonschema==4.26.0
           python -m py_compile \
             tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
             tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
             tools/crypto_astro_what_changed/render_what_changed.py \
             tools/crypto_astro_what_changed/verify_what_changed.py
-          python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
-          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+
+      - name: Run Snapshot Memory fixtures
+        run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+
+      - name: Run What Changed fixtures
+        run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+
+      - name: Build committed pair and compare
+        run: |
           rm -rf /tmp/memory-build
           python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build
           cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
           cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
-          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
+
+      - name: Verify Snapshot Memory contract
+        run: python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
+
+      - name: Prove static render is byte-identical
+        run: |
           cp site/crypto-astro/index.html /tmp/index-before.html
           python tools/crypto_astro_what_changed/render_what_changed.py --repo .
           cmp /tmp/index-before.html site/crypto-astro/index.html
-          python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
+
+      - name: Verify What Changed binding
+        run: python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
 
       - name: Commit final implementation to PR branch
         run: |
