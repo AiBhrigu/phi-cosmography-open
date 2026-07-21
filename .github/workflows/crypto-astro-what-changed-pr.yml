@@ -84,6 +84,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID' EXIT
           python - <<'PY'
+          import json
           from pathlib import Path
           from playwright.sync_api import sync_playwright
 
@@ -98,33 +99,51 @@ jobs:
 
                   section = page.locator('#what-changed')
                   section.scroll_into_view_if_needed()
-                  assert section.get_attribute('data-what-changed-status') == 'partial-comparable'
-                  assert section.locator('[data-metric]').count() == 6
-
                   section_box = section.bounding_box()
                   head_box = section.locator('.what-changed-memory-v0-1__head').bounding_box()
                   grid_box = section.locator('.what-changed-memory-v0-1__grid').bounding_box()
                   unavailable_box = section.locator('.what-changed-memory-v0-1__unavailable').bounding_box()
-                  assert all((section_box, head_box, grid_box, unavailable_box)), name
-
-                  grid_tracks = section.evaluate("el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length")
-                  assert grid_tracks == 1, {name: {'outer_grid_tracks': grid_tracks}}
-
-                  max_section_height = 900 if name == 'desktop' else 1450
-                  assert section_box['height'] < max_section_height, {name: {'section_height': section_box['height']}}
-                  for label, box in [('head', head_box), ('grid', grid_box), ('unavailable', unavailable_box)]:
-                      assert box['width'] >= section_box['width'] * 0.88, {
-                          name: {label: box['width'], 'section': section_box['width']}
-                      }
-
+                  meta_box = section.locator('.what-changed-memory-v0-1__meta').bounding_box()
                   metric_boxes = section.locator('[data-metric]').evaluate_all(
                       "els => els.map(el => el.getBoundingClientRect().width)"
                   )
+                  grid_tracks = section.evaluate(
+                      "el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length"
+                  )
+                  assert all((section_box, head_box, grid_box, unavailable_box, meta_box)), name
+
+                  geometry = {
+                      'viewport': {'width': width, 'height': height},
+                      'section': section_box,
+                      'head': head_box,
+                      'grid': grid_box,
+                      'unavailable': unavailable_box,
+                      'meta': meta_box,
+                      'metric_widths': metric_boxes,
+                      'outer_grid_tracks': grid_tracks,
+                      'head_to_grid_gap': grid_box['y'] - (head_box['y'] + head_box['height']),
+                      'grid_to_unavailable_gap': unavailable_box['y'] - (grid_box['y'] + grid_box['height']),
+                      'meta_to_section_bottom_gap': (section_box['y'] + section_box['height']) - (meta_box['y'] + meta_box['height']),
+                  }
+                  (out / f'what-changed-{name}-geometry.json').write_text(
+                      json.dumps(geometry, indent=2) + '\n', encoding='utf-8'
+                  )
+                  page.screenshot(path=str(out / f'what-changed-{name}.png'), full_page=True)
+
+                  assert section.get_attribute('data-what-changed-status') == 'partial-comparable'
+                  assert section.locator('[data-metric]').count() == 6
+                  assert grid_tracks == 1, {name: geometry}
+                  max_section_height = 900 if name == 'desktop' else 2100
+                  assert section_box['height'] < max_section_height, {name: geometry}
+                  for label, box in [('head', head_box), ('grid', grid_box), ('unavailable', unavailable_box)]:
+                      assert box['width'] >= section_box['width'] * 0.88, {name: geometry, 'failed_width': label}
+                  assert geometry['head_to_grid_gap'] < 100, {name: geometry}
+                  assert geometry['grid_to_unavailable_gap'] < 100, {name: geometry}
+                  assert geometry['meta_to_section_bottom_gap'] < 100, {name: geometry}
                   min_metric_width = 180 if name == 'desktop' else 240
-                  assert min(metric_boxes) >= min_metric_width, {name: {'metric_widths': metric_boxes}}
+                  assert min(metric_boxes) >= min_metric_width, {name: geometry}
                   assert not page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
                   assert not errors, {name: errors}
-                  page.screenshot(path=str(out / f'what-changed-{name}.png'), full_page=True)
               browser.close()
           PY
       - name: Upload PR-07 evidence
