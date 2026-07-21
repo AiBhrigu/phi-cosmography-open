@@ -1,9 +1,21 @@
 /* CRYPTO_ASTRO_PR_07_WHAT_CHANGED_UI_BINDING_v0_1 */
-.what-changed-memory-v0-1 {
+.editorial-what-changed-v0-1.what-changed-memory-v0-1 {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row;
+  align-items: stretch;
+  min-height: 0;
   gap: clamp(1rem, 2vw, 1.5rem);
   border: 1px solid rgba(213, 177, 91, 0.2);
   background: linear-gradient(145deg, rgba(10, 20, 32, 0.96), rgba(7, 13, 22, 0.98));
+}
+
+.editorial-what-changed-v0-1.what-changed-memory-v0-1 > * {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
 }
 
 .what-changed-memory-v0-1__head {
@@ -11,6 +23,12 @@
   grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.48fr);
   gap: clamp(1rem, 3vw, 2.4rem);
   align-items: end;
+}
+
+.what-changed-memory-v0-1__head > div {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
 }
 
 .what-changed-memory-v0-1__head h2 { margin: 0.35rem 0 0.75rem; }
