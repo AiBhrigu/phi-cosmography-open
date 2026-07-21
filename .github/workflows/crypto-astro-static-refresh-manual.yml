@@ -2,6 +2,26 @@ name: Crypto-Astro Static Refresh Manual
 
 on:
   workflow_dispatch:
+    inputs:
+      refresh_mode:
+        description: Locked operational reason for this bounded refresh
+        required: true
+        type: choice
+        default: DAILY_CADENCE
+        options:
+          - DAILY_CADENCE
+          - PRE_REPORT
+          - MATERIAL_MARKET_EVENT
+          - REPEATABILITY_PROOF
+          - SOURCE_OR_SCHEMA_REPAIR
+      operator_ref:
+        description: Named operator or authorization reference
+        required: true
+        type: string
+      refresh_reason:
+        description: Concise reason recorded in the review PR
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -19,11 +39,15 @@ jobs:
     env:
       CRYPTO_ASTRO_REFRESH_BRANCH: automation/crypto-astro-static-refresh-${{ github.run_id }}
       CRYPTO_ASTRO_REFRESH_OUT: /tmp/crypto_astro_static_refresh_output
+      CRYPTO_ASTRO_REFRESH_MODE: ${{ inputs.refresh_mode }}
+      CRYPTO_ASTRO_OPERATOR_REF: ${{ inputs.operator_ref }}
+      CRYPTO_ASTRO_REFRESH_REASON: ${{ inputs.refresh_reason }}
       COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
     steps:
       - name: Checkout exact main source
         uses: actions/checkout@v5
         with:
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -38,21 +62,127 @@ jobs:
       - name: Install offline validators
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
 
-      - name: Configure Git identity and lock base
+      - name: Configure Git identity and lock current main
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          MAIN_SHA=$(git rev-parse origin/main)
+          test "$LOCAL_SHA" = "$MAIN_SHA"
+          echo "BASE_SHA=$LOCAL_SHA" >> "$GITHUB_ENV"
+          rm -rf "$CRYPTO_ASTRO_REFRESH_OUT"
+          mkdir -p "$CRYPTO_ASTRO_REFRESH_OUT"
+
+      - name: Verify operational cadence and single-flight preflight
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools/crypto_astro_operations -p "test_*.py" -v
+          python3 tools/crypto_astro_operations/verify_operational_cadence.py \
+            --repo . \
+            --report "$CRYPTO_ASTRO_REFRESH_OUT/operational-cadence-static-verification.json"
+
+          OPEN_REFRESH_COUNT=$(gh pr list --state open --base main \
+            --json number,title,headRefName \
+            --jq '[.[] | select(.title == "Crypto-Astro: automated static market snapshot refresh" or (.headRefName | startswith("automation/crypto-astro-static-refresh-")))] | length')
+          test "$OPEN_REFRESH_COUNT" = "0"
+
+          python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          policy = json.loads(Path("docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json").read_text())
+          mode = os.environ["CRYPTO_ASTRO_REFRESH_MODE"].strip()
+          operator_ref = os.environ["CRYPTO_ASTRO_OPERATOR_REF"].strip()
+          reason = os.environ["CRYPTO_ASTRO_REFRESH_REASON"].strip()
+          allowed = policy["allowed_modes"]
+          if mode not in allowed:
+              raise SystemExit(f"REFRESH_MODE_NOT_ALLOWED:{mode}")
+          if not operator_ref:
+              raise SystemExit("OPERATOR_REF_REQUIRED")
+          if not reason:
+              raise SystemExit("REFRESH_REASON_REQUIRED")
+          if len(operator_ref) > 160:
+              raise SystemExit("OPERATOR_REF_TOO_LONG")
+          if len(reason) > 500:
+              raise SystemExit("REFRESH_REASON_TOO_LONG")
+
+          snapshot = json.loads(Path("site/crypto-astro/data/crypto_astro_snapshot.public.json").read_text())
+          generated = datetime.fromisoformat(snapshot["generated_at_utc"].replace("Z", "+00:00"))
+          now = datetime.now(timezone.utc)
+          age_hours = (now - generated).total_seconds() / 3600
+          if age_hours < 0:
+              raise SystemExit("LATEST_ACCEPTED_SNAPSHOT_IS_IN_FUTURE")
+          daily_minimum_interval_hours = policy["cadence"]["daily_minimum_interval_hours"]
+          if mode == "DAILY_CADENCE" and age_hours < daily_minimum_interval_hours:
+              raise SystemExit(
+                  f"DAILY_CADENCE_TOO_EARLY:{age_hours:.2f}h<"
+                  f"{daily_minimum_interval_hours}h"
+              )
+
+          report = {
+              "schema_version": "crypto_astro_operational_cadence_preflight_v0_1",
+              "status": "PASS",
+              "refresh_mode": mode,
+              "operator_ref": operator_ref,
+              "refresh_reason": reason,
+              "base_sha": os.environ["BASE_SHA"],
+              "latest_accepted_snapshot_utc": snapshot["generated_at_utc"],
+              "snapshot_age_hours": round(age_hours, 4),
+              "daily_minimum_interval_hours": daily_minimum_interval_hours,
+              "open_refresh_pr_count": 0,
+          }
+          out = Path(os.environ["CRYPTO_ASTRO_REFRESH_OUT"]) / "operational-cadence-preflight.json"
+          out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          print("OPERATIONAL_CADENCE_PREFLIGHT=PASS")
+          PY
 
       - name: Verify DeFi TVL methodology contract
         run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
 
       - name: Run BHRIGU-compatible hardened static refresh locally
         run: |
-          rm -rf "$CRYPTO_ASTRO_REFRESH_OUT"
-          mkdir -p "$CRYPTO_ASTRO_REFRESH_OUT"
           python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
             "$GITHUB_WORKSPACE" "$CRYPTO_ASTRO_REFRESH_OUT"
+
+      - name: Materialize cadence metadata in operator review
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("docs/crypto-astro-service/crypto_astro_operator_review.md")
+          text = path.read_text(encoding="utf-8")
+          metadata = (
+              f"REFRESH_MODE={os.environ['CRYPTO_ASTRO_REFRESH_MODE']}\n"
+              f"OPERATOR_REF={os.environ['CRYPTO_ASTRO_OPERATOR_REF']}\n"
+              f"REFRESH_REASON={os.environ['CRYPTO_ASTRO_REFRESH_REASON']}\n"
+          )
+          text, count = re.subn(
+              r"(GENERATED_AT_UTC=[^\n]+\n)(?:REFRESH_MODE=[^\n]*\nOPERATOR_REF=[^\n]*\nREFRESH_REASON=[^\n]*\n)?",
+              r"\1" + metadata,
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("OPERATOR_REVIEW_METADATA_ANCHOR_MISSING")
+          boundary = (
+              "Workflow may push one fully validated review branch and open one review PR. "
+              "It may not merge or issue a deployment command. Publication follows only "
+              "after explicit merge authorization."
+          )
+          text = text.replace("No push, no PR, no deploy.", boundary)
+          if boundary not in text:
+              raise SystemExit("OPERATOR_REVIEW_BOUNDARY_NOT_MATERIALIZED")
+          path.write_text(text, encoding="utf-8")
+          print("OPERATOR_REVIEW_CADENCE_METADATA=PASS")
+          PY
 
       - name: Validate generated bundle with current BHRIGU consumer
         run: |
@@ -89,11 +219,13 @@ jobs:
               changed.add(raw.split(' -> ')[-1].strip())
           if not changed:
               print('changed=false')
-              with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out: out.write('changed=false\n')
+              with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out:
+                  out.write('changed=false\n')
               raise SystemExit(0)
           assert required <= changed <= allowed, {'missing': sorted(required-changed), 'unexpected': sorted(changed-allowed)}
           print('DATA_STAGE_SCOPE=PASS')
-          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out: out.write('changed=true\n')
+          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('changed=true\n')
           PY
 
       - name: Create local data commit
@@ -196,14 +328,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat > /tmp/crypto_astro_refresh_pr_body.md <<'BODY'
+          cat > /tmp/crypto_astro_refresh_pr_body.md <<BODY
           Atomic static Crypto-Astro refresh generated by manual workflow dispatch.
+
+          Dispatch record:
+          - Refresh mode: ${CRYPTO_ASTRO_REFRESH_MODE}
+          - Operator reference: ${CRYPTO_ASTRO_OPERATOR_REF}
+          - Reason: ${CRYPTO_ASTRO_REFRESH_REASON}
+          - Base SHA: ${BASE_SHA}
 
           Includes the verified public snapshot, proof, bindings, derived static surfaces, dynamic accepted-pair registry/delta, and statically rendered What Changed section.
 
           Review boundary:
           - review PR only; no auto-merge and no deploy command
           - BHRIGU BTC Field Read consumer compatibility must PASS before push
+          - desktop and mobile visual review are required before explicit merge authorization
+          - publication follows only after explicit merge authorization and accepted merge to main
           - no cron, backend, API, payment, live-adapter claim, forecast, trading signal, price target, or investment recommendation
           - no A/E activation, C/T runtime, formula-weight disclosure, or ORION core exposure
           BODY
