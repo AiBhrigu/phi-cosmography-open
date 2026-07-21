@@ -1,0 +1,53 @@
+name: Crypto-Astro PR-07 Pages Recovery
+
+on:
+  pull_request_target:
+    types: [synchronize]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: crypto-astro-pr07-pages-recovery
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event.pull_request.number == 137 &&
+      github.event.pull_request.head.ref == 'agent/crypto-astro-pr07-pages-recovery' &&
+      contains(github.event.pull_request.body, 'PAGES_RECOVERY_TOKEN=RUN_PR07_V1')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out current main only
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Verify exact deployment source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "3947fe13b5d7e7a63f16b779e4c81761ee7a6035"
+          grep -F 'data-what-changed-status="partial-comparable"' site/crypto-astro/index.html
+          grep -F '2026-07-19T18:26:56Z' site/crypto-astro/index.html
+          test "$(git hash-object site/crypto-astro/data/crypto_astro_snapshot_registry.public.json)" = "7af2b3a9932af84aa654453663ba2b4b24ef4070"
+          test "$(git hash-object site/crypto-astro/data/crypto_astro_snapshot_delta.public.json)" = "172af6dfc1c512df4d289ac1f25f6a76a01c82f5"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload current main site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy current main
+        id: deployment
+        uses: actions/deploy-pages@v4
