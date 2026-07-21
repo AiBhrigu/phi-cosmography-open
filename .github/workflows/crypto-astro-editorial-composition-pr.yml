@@ -93,16 +93,60 @@ jobs:
           print("HISTORICAL_PR_05_ALLOWED_PATHS=PASS")
           PY
 
-      - name: Run current editorial and geometry fixtures
+      - name: Run reusable editorial and geometry fixtures
         if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: |
           python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
           python3 -m unittest discover -s tools/crypto_astro_geometry_truth -p "test_*.py" -v
 
-      - name: Verify current CSS, editorial and geometry contracts
+      - name: Verify current deterministic CSS bundle
         if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
+
+      - name: Verify current editorial structure without historical values
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' }}
         run: |
-          python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          html = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
+          expected = [
+              ("surface", "orientation"),
+              ("what-changed", "what-changed"),
+              ("btc-phi-cycle-hub", "btc-field"),
+              ("market", "wider-market"),
+              ("trust-access", "trust-access"),
+          ]
+          chapters = re.findall(r'<section id="([^"]+)"[^>]*data-editorial-chapter="([^"]+)"', html)
+          nav_match = re.search(r'<nav class="crypto-astro-primary-nav".*?</nav>', html, re.S)
+          nav_hrefs = re.findall(r'href="(#[^"]+)"', nav_match.group(0)) if nav_match else []
+          ids = re.findall(r'\bid="([^"]+)"', html)
+          checks = {
+              "five_chapter_order": chapters == expected,
+              "navigation_targets": nav_hrefs == ["#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"],
+              "primary_cta_exactly_two": html.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 2,
+              "what_changed_fail_closed_status_present": bool(re.search(r'data-what-changed-status="(?:full-comparable|partial|unavailable)"', html)),
+              "source_proof_action_present": "View source proof" in html,
+              "research_access_present": "Research access" in html,
+              "duplicate_ids_absent": len(ids) == len(set(ids)),
+          }
+          failures = sorted(name for name, passed in checks.items() if not passed)
+          report = {
+              "schema_version": "crypto_astro_current_editorial_invariant_report_v0_1",
+              "status": "PASS" if not failures else "FAIL",
+              "checks": checks,
+              "failures": failures,
+              "chapter_count": len(chapters),
+              "navigation_targets": nav_hrefs,
+          }
+          Path("artifacts/current-editorial-invariant-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          assert not failures, failures
+          print("CURRENT_EDITORIAL_INVARIANTS=PASS")
+          PY
+
+      - name: Run historical editorial and geometry verifiers
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: |
           python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py --out artifacts/editorial-composition-report.json
           python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
 
