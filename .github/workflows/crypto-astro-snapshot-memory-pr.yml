@@ -68,7 +68,6 @@ jobs:
           }
           changed=set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA']],text=True).splitlines())
           assert changed == expected, {'missing':sorted(expected-changed),'unexpected':sorted(changed-expected)}
-          print('REFRESH_MEMORY_V02_EXACT_SCOPE=PASS')
           PY
 
       - name: Install schema validator
@@ -84,9 +83,24 @@ jobs:
         run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
 
       - name: Build committed accepted pair
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set +e
           rm -rf /tmp/memory-build
-          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build > /tmp/build.log 2>&1
+          code=$?
+          cat /tmp/build.log
+          if [ "$code" -ne 0 ]; then
+            {
+              echo '<!-- REFRESH_MEMORY_V02_BUILD_FAILURE -->'
+              echo '```text'
+              tail -n 80 /tmp/build.log
+              echo '```'
+            } > /tmp/build-comment.md
+            gh pr comment 138 --body-file /tmp/build-comment.md
+            exit "$code"
+          fi
 
       - name: Compare committed registry
         run: cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
