@@ -131,8 +131,8 @@ jobs:
             -f "refresh_mode=${REFRESH_MODE}" \
             -f "operator_ref=${OPERATOR_REF}" \
             -f "refresh_reason=${REFRESH_REASON}" \
-            -f "expected_main_sha=${EXPECTED_MAIN_SHA}" \
-            -f "dispatch_request_issue=${DISPATCH_REQUEST_ISSUE}"
+            -f expected_main_sha="${EXPECTED_MAIN_SHA}" \
+            -f dispatch_request_issue="${DISPATCH_REQUEST_ISSUE}"
 
       - name: Record accepted dispatch
         if: ${{ steps.request.outputs.valid == 'true' && steps.preflight.outcome == 'success' && steps.dispatch.outcome == 'success' }}
