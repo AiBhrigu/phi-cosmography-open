@@ -69,6 +69,8 @@ jobs:
             'tools/crypto_astro_what_changed/test_what_changed.py',
           }
           squash_merge_ancestry_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
             'tools/crypto_astro_snapshot_memory/build_snapshot_memory.py',
             'tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py',
