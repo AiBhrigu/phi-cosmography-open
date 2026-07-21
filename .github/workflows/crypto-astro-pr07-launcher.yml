@@ -35,13 +35,13 @@ jobs:
           rm -f \
             .github/workflows/crypto-astro-pr07-bootstrap.yml \
             .github/workflows/crypto-astro-pr07-pr-worker.yml
+          rm -rf artifacts
 
           python tools/crypto_astro_what_changed/render_what_changed.py --repo .
           python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
-          mkdir -p artifacts
           python tools/crypto_astro_what_changed/verify_what_changed.py \
             --repo . \
-            --report artifacts/what-changed-verification.json
+            --report /tmp/what-changed-verification.json
 
           git fetch origin main
           BASE=$(git merge-base origin/main HEAD)
