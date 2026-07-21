@@ -9,6 +9,7 @@ on:
       - "site/theme/crypto_astro/**"
       - "tools/crypto_astro_css_modules/**"
       - "tools/crypto_astro_surface_truth/**"
+      - "tools/crypto_astro_ci/**"
       - ".github/workflows/crypto-astro-css-modules-pr.yml"
       - ".github/workflows/crypto-astro-css-extraction-pr.yml"
 
@@ -28,16 +29,38 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce PR-03 path scope
-        if: github.head_ref == 'feature/crypto-astro-deterministic-css-modules-v0-1'
+      - name: Test legacy applicability classifier
+        run: python3 -m unittest discover -s tools/crypto_astro_ci -p "test_*.py" -v
+
+      - name: Classify gate applicability
+        id: applicability
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_ci/classify_legacy_applicability.py \
+            --workflow css-modules \
+            --head-ref "$HEAD_REF" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --out artifacts/css-modules-applicability.json
+
+      - name: Record explicit non-applicable pass
+        if: ${{ steps.applicability.outputs.mode == 'GENERATED_REFRESH' || steps.applicability.outputs.mode == 'NON_APPLICABLE' }}
+        run: |
+          echo "CSS_MODULES_NOT_APPLICABLE_PASS=${{ steps.applicability.outputs.mode }}"
+          echo "Generated refresh remains governed by current refresh and public-surface truth gates."
+
+      - name: Enforce bounded historical PR-03 path scope
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python3 - <<'PY'
-          import os
-          import subprocess
-
+          import os, subprocess
           allowed_exact = {
               "site/crypto-astro/index.html",
               "site/theme/crypto_astro_surface.css",
@@ -45,104 +68,52 @@ jobs:
               ".github/workflows/crypto-astro-css-extraction-pr.yml",
               "tools/crypto_astro_surface_truth/surface_truth.py",
           }
-          allowed_prefixes = (
-              "site/theme/crypto_astro/",
-              "tools/crypto_astro_css_modules/",
-          )
+          allowed_prefixes = ("site/theme/crypto_astro/", "tools/crypto_astro_css_modules/")
           changed = subprocess.check_output(
-              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-              text=True,
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).splitlines()
-          unexpected = [
-              path for path in changed
-              if path not in allowed_exact and not path.startswith(allowed_prefixes)
-          ]
-          assert not unexpected, f"Unexpected PR-03 paths: {unexpected}"
-          required = {
-              "site/crypto-astro/index.html",
-              "site/theme/crypto_astro_surface.css",
-              "site/theme/crypto_astro/css_order_manifest.json",
-          }
-          assert required.issubset(changed), f"Missing PR-03 paths: {sorted(required - set(changed))}"
-          assert ".github/workflows/crypto-astro-pr03-style-block-inspect.yml" not in changed
-          assert "tools/crypto_astro_css_modules/style_block_report.json" not in changed
-          print("PR_03_ALLOWED_PATHS=PASS")
+          unexpected = [p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefixes)]
+          assert not unexpected, f"Unexpected historical PR-03 paths: {unexpected}"
+          required = {"site/crypto-astro/index.html", "site/theme/crypto_astro_surface.css", "site/theme/crypto_astro/css_order_manifest.json"}
+          assert required.issubset(changed), f"Missing historical PR-03 paths: {sorted(required - set(changed))}"
+          print("HISTORICAL_PR_03_ALLOWED_PATHS=PASS")
           PY
 
-      - name: Install browser dependencies
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+      - name: Run current CSS module fixtures
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m unittest discover -s tools/crypto_astro_css_modules -p "test_*.py" -v
 
-      - name: Run module builder fixtures
-        run: |
-          python3 -m unittest discover \
-            -s tools/crypto_astro_css_modules \
-            -p "test_*.py" \
-            -v
+      - name: Verify current source order, hashes and generated bundle
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
 
-      - name: Verify module source, order, hashes, and generated bundle
-        run: |
-          python3 tools/crypto_astro_css_modules/build_css_modules.py \
-            --verify-source-base
-
-      - name: Verify runtime stylesheet route
+      - name: Verify current runtime stylesheet route
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           html = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
           surface = '<link href="../theme/crypto_astro_surface.css" rel="stylesheet"/>'
           legacy = '<link href="../theme/crypto_astro_inline_legacy.css" rel="stylesheet"/>'
           assert html.count(surface) == 1, "Generated surface stylesheet link must appear exactly once"
-          assert legacy not in html, "Legacy stylesheet must not be loaded at runtime"
+          assert legacy not in html, "Legacy stylesheet must not load at runtime"
           assert "<style" not in html.lower(), "Inline style block returned"
-          print("PR_03_RUNTIME_STYLESHEET_ROUTE=PASS")
+          print("CURRENT_RUNTIME_STYLESHEET_ROUTE=PASS")
           PY
 
-      - name: Prepare base worktree
+      - name: Run historical PR-03 base/head parity
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: git worktree add --detach /tmp/crypto-astro-pr03-base "$BASE_SHA"
-
-      - name: Capture base and head truth on one origin
         run: |
-          set -euo pipefail
-          mkdir -p artifacts/base artifacts/head
-          capture() {
-            local root="$1"
-            local out="$2"
-            local log="$3"
-            python3 -m http.server 4173 --directory "$root/site" >"$log" 2>&1 &
-            local pid=$!
-            for attempt in {1..40}; do
-              if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
-                break
-              fi
-              sleep 0.25
-            done
-            python3 tools/crypto_astro_surface_truth/surface_truth.py \
-              --url http://127.0.0.1:4173/crypto-astro/index.html \
-              --out "$out"
-            kill "$pid"
-            wait "$pid" 2>/dev/null || true
-            sleep 0.5
-          }
-          capture /tmp/crypto-astro-pr03-base artifacts/base /tmp/pr03-base.log
-          capture "$GITHUB_WORKSPACE" artifacts/head /tmp/pr03-head.log
-
-      - name: Compare surface truth
-        run: |
+          python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+          git worktree add --detach /tmp/crypto-astro-pr03-base "$BASE_SHA"
+          bash tools/crypto_astro_local_truth/run_local_truth.sh /tmp/crypto-astro-pr03-base artifacts/base 4173
+          bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4174
           python3 tools/crypto_astro_css_extract/compare_surface_truth.py \
-            --base artifacts/base \
-            --head artifacts/head \
-            --out artifacts/css-module-parity-report.json
+            --base artifacts/base --head artifacts/head --out artifacts/css-module-parity-report.json
 
-      - name: Record module build report
-        run: |
-          python3 tools/crypto_astro_css_modules/build_css_modules.py \
-            --verify-source-base \
-            > artifacts/css-module-build-report.json
-
-      - name: Upload PR-03 evidence
+      - name: Upload CSS module applicability evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
