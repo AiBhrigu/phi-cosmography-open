@@ -7,6 +7,7 @@ on:
       - '.github/workflows/crypto-astro-static-refresh-manual.yml'
       - '.github/workflows/crypto-astro-static-refresh-pr-visual.yml'
       - '.github/workflows/crypto-astro-what-changed-pr.yml'
+      - '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml'
       - 'site/crypto-astro/index.html'
       - 'site/crypto-astro/data/crypto_astro_snapshot*.json'
       - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
@@ -14,6 +15,8 @@ on:
       - 'site/crypto-astro/data/scoring_snapshot.public.json'
       - 'tools/crypto_astro_snapshot_memory/**'
       - 'tools/crypto_astro_what_changed/**'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py'
+      - 'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py'
       - 'docs/crypto-astro-service/crypto_astro_snapshot_summary.md'
       - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
 
@@ -33,7 +36,7 @@ jobs:
           python-version: '3.11'
       - name: Install schema validator
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-      - name: Classify exact implementation, maintenance, or generated-refresh scope
+      - name: Classify exact implementation, maintenance, consumer-repair, or generated-refresh scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -63,6 +66,14 @@ jobs:
             'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py',
             'tools/crypto_astro_static_refresh/test_current_surface_contract_v0_1.py',
           }
+          consumer_repair = {
+            '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py',
+            'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py',
+            'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+          }
           generated = {
             'site/crypto-astro/index.html',
             'site/crypto-astro/data/crypto_astro_snapshot.public.json',
@@ -82,6 +93,8 @@ jobs:
               mode='implementation'
           elif changed == maintenance:
               mode='surface_contract_maintenance'
+          elif changed == consumer_repair:
+              mode='bhrigu_consumer_contract_repair'
           elif changed in (generated, generated | optional):
               mode='generated_refresh'
           else:
@@ -89,8 +102,9 @@ jobs:
                   'changed':sorted(changed),
                   'implementation_missing':sorted(implementation-changed),
                   'maintenance_missing':sorted(maintenance-changed),
+                  'consumer_repair_missing':sorted(consumer_repair-changed),
                   'generated_missing':sorted(generated-changed),
-                  'unexpected':sorted(changed-implementation-maintenance-generated-optional),
+                  'unexpected':sorted(changed-implementation-maintenance-consumer_repair-generated-optional),
               })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -114,7 +128,7 @@ jobs:
           cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
           cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
           (cd artifacts/final && sha256sum * > SHA256SUMS)
-      - name: Prove non-generated scope leaves public data and HTML unchanged
+      - name: Prove non-generated scope leaves canonical public data and HTML unchanged
         if: steps.scope.outputs.mode != 'generated_refresh'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
