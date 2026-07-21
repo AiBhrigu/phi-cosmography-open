@@ -86,6 +86,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           from playwright.sync_api import sync_playwright
+
           out = Path('artifacts')
           with sync_playwright() as p:
               browser = p.chromium.launch()
@@ -94,9 +95,33 @@ jobs:
                   errors = []
                   page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
                   page.goto('http://127.0.0.1:8000/crypto-astro/index.html', wait_until='networkidle')
-                  page.locator('#what-changed').scroll_into_view_if_needed()
-                  assert page.locator('#what-changed [data-metric]').count() == 6
-                  assert page.locator('#what-changed').get_attribute('data-what-changed-status') == 'partial-comparable'
+
+                  section = page.locator('#what-changed')
+                  section.scroll_into_view_if_needed()
+                  assert section.get_attribute('data-what-changed-status') == 'partial-comparable'
+                  assert section.locator('[data-metric]').count() == 6
+
+                  section_box = section.bounding_box()
+                  head_box = section.locator('.what-changed-memory-v0-1__head').bounding_box()
+                  grid_box = section.locator('.what-changed-memory-v0-1__grid').bounding_box()
+                  unavailable_box = section.locator('.what-changed-memory-v0-1__unavailable').bounding_box()
+                  assert all((section_box, head_box, grid_box, unavailable_box)), name
+
+                  grid_tracks = section.evaluate("el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length")
+                  assert grid_tracks == 1, {name: {'outer_grid_tracks': grid_tracks}}
+
+                  max_section_height = 900 if name == 'desktop' else 1450
+                  assert section_box['height'] < max_section_height, {name: {'section_height': section_box['height']}}
+                  for label, box in [('head', head_box), ('grid', grid_box), ('unavailable', unavailable_box)]:
+                      assert box['width'] >= section_box['width'] * 0.88, {
+                          name: {label: box['width'], 'section': section_box['width']}
+                      }
+
+                  metric_boxes = section.locator('[data-metric]').evaluate_all(
+                      "els => els.map(el => el.getBoundingClientRect().width)"
+                  )
+                  min_metric_width = 180 if name == 'desktop' else 240
+                  assert min(metric_boxes) >= min_metric_width, {name: {'metric_widths': metric_boxes}}
                   assert not page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
                   assert not errors, {name: errors}
                   page.screenshot(path=str(out / f'what-changed-{name}.png'), full_page=True)
