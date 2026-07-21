@@ -31,10 +31,10 @@ def load_json(path: Path) -> dict:
 
 
 def snapshot_time(snapshot_id: str) -> str:
-    parts = snapshot_id.split(":")
-    if len(parts) < 3:
+    prefix = "crypto-astro:"
+    if not snapshot_id.startswith(prefix) or ":" not in snapshot_id[len(prefix):]:
         raise ValueError(f"invalid snapshot id: {snapshot_id}")
-    return parts[1]
+    return snapshot_id[len(prefix):].rsplit(":", 1)[0]
 
 
 def display_value(metric: dict, field: str) -> str:
