@@ -71,6 +71,13 @@ def load_locked_core():
 
 
 core = load_locked_core()
+
+
+def __getattr__(name: str):
+    """Preserve the public v0.5 module API through the byte-locked core."""
+    return getattr(core, name)
+
+
 _core_patch_html = core.patch_html
 
 
