@@ -7,7 +7,6 @@ from verify_operational_cadence import (
     EXPECTED_MODES,
     OPERATOR_BOUNDARY,
     verify_cadence_workflow,
-    verify_generator,
     verify_manual_workflow,
     verify_operator_review,
     verify_policy,
@@ -89,8 +88,16 @@ jobs:
           LOCAL_SHA=$(git rev-parse HEAD)
           MAIN_SHA=$(git rev-parse origin/main)
           OPEN_REFRESH_COUNT=$(gh pr list --state open --base main --json number)
+          test "$OPEN_REFRESH_COUNT" = "0"
           echo daily_minimum_interval_hours
           echo automation/crypto-astro-static-refresh-
+      - name: Materialize cadence metadata in operator review
+        run: |
+          echo REFRESH_MODE=
+          echo OPERATOR_REF=
+          echo REFRESH_REASON=
+          echo Workflow may push one fully validated review branch
+          echo It may not merge or issue a deployment command.
       - run: python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
       - run: npm run verify:btc-producer-contract
       - run: echo ATOMIC_REFRESH_BRANCH=PASS
@@ -105,10 +112,10 @@ on:
     paths:
       - '.github/workflows/crypto-astro-static-refresh-manual.yml'
       - '.github/workflows/crypto-astro-operational-cadence-pr.yml'
+      - '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
       - 'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md'
       - 'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json'
       - 'tools/crypto_astro_operations/**'
-      - 'tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py'
       - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
 steps:
   - run: python -m unittest tools/crypto_astro_operations/test_verify_operational_cadence.py
@@ -116,13 +123,10 @@ steps:
 """
 
 
-def valid_generator():
-    return f"""CRYPTO_ASTRO_REFRESH_MODE
-CRYPTO_ASTRO_OPERATOR_REF
-CRYPTO_ASTRO_REFRESH_REASON
-REFRESH_MODE=
-OPERATOR_REF=
-REFRESH_REASON=
+def valid_operator_review():
+    return f"""REFRESH_MODE=DAILY_CADENCE
+OPERATOR_REF=operator-f
+REFRESH_REASON=daily accepted refresh
 {OPERATOR_BOUNDARY}
 """
 
@@ -151,18 +155,19 @@ class OperationalCadenceTests(unittest.TestCase):
             verify_manual_workflow(text, valid_policy()),
         )
 
+    def test_removed_open_pr_gate_fails(self):
+        text = valid_manual().replace('test "$OPEN_REFRESH_COUNT" = "0"', "echo unchecked")
+        self.assertIn("manual:open_pr_count", verify_manual_workflow(text, valid_policy()))
+
     def test_cadence_workflow_passes(self):
         self.assertEqual(verify_cadence_workflow(valid_cadence_workflow()), [])
 
     def test_old_operator_boundary_fails(self):
-        text = valid_generator() + "No push, no PR, no deploy."
-        self.assertIn("generator:obsolete_boundary", verify_generator(text))
+        text = valid_operator_review() + "No push, no PR, no deploy."
         self.assertIn("operator_review:obsolete_boundary", verify_operator_review(text))
 
-    def test_generator_and_operator_review_pass(self):
-        text = valid_generator()
-        self.assertEqual(verify_generator(text), [])
-        self.assertEqual(verify_operator_review(text), [])
+    def test_operator_review_passes(self):
+        self.assertEqual(verify_operator_review(valid_operator_review()), [])
 
 
 if __name__ == "__main__":
