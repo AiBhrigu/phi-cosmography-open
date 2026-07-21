@@ -1,0 +1,158 @@
+name: Crypto-Astro What Changed PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-what-changed-pr.yml'
+      - 'site/crypto-astro/index.html'
+      - 'site/theme/crypto_astro_what_changed.css'
+      - 'tools/crypto_astro_what_changed/**'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json'
+
+permissions:
+  contents: read
+
+jobs:
+  what-changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install validators
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 playwright==1.55.0
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Enforce exact PR-07 file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          allowed = {
+              '.github/workflows/crypto-astro-what-changed-pr.yml',
+              'site/crypto-astro/index.html',
+              'site/theme/crypto_astro_what_changed.css',
+              'tools/crypto_astro_what_changed/render_what_changed.py',
+              'tools/crypto_astro_what_changed/verify_what_changed.py',
+              'tools/crypto_astro_what_changed/test_what_changed.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']], text=True
+          ).strip()
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']], text=True
+          ).splitlines())
+          assert changed == allowed, {'missing': sorted(allowed - changed), 'unexpected': sorted(changed - allowed)}
+          print('PR_07_EXACT_ALLOWLIST=PASS')
+          PY
+      - name: Verify committed source blobs
+        run: |
+          test "$(git hash-object site/crypto-astro/data/crypto_astro_snapshot_registry.public.json)" = "7af2b3a9932af84aa654453663ba2b4b24ef4070"
+          test "$(git hash-object site/crypto-astro/data/crypto_astro_snapshot_delta.public.json)" = "172af6dfc1c512df4d289ac1f25f6a76a01c82f5"
+      - name: Verify Snapshot Memory contract
+        run: |
+          mkdir -p artifacts
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/snapshot-memory.json
+      - name: Run deterministic renderer tests
+        run: |
+          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          git diff --exit-code
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo . --report artifacts/what-changed-verification.json
+      - name: Prove protected inputs unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            tools/crypto_astro_static_refresh
+      - name: Desktop and mobile browser review
+        run: |
+          mkdir -p artifacts
+          python -m http.server 8000 --directory site > artifacts/http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+
+          out = Path('artifacts')
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              for name, width, height in [('desktop', 1440, 1100), ('mobile', 390, 844)]:
+                  page = browser.new_page(viewport={'width': width, 'height': height})
+                  errors = []
+                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                  page.goto('http://127.0.0.1:8000/crypto-astro/index.html', wait_until='networkidle')
+
+                  section = page.locator('#what-changed')
+                  section.scroll_into_view_if_needed()
+                  section_box = section.bounding_box()
+                  head_box = section.locator('.what-changed-memory-v0-1__head').bounding_box()
+                  grid_box = section.locator('.what-changed-memory-v0-1__grid').bounding_box()
+                  unavailable_box = section.locator('.what-changed-memory-v0-1__unavailable').bounding_box()
+                  meta_box = section.locator('.what-changed-memory-v0-1__meta').bounding_box()
+                  metric_boxes = section.locator('[data-metric]').evaluate_all(
+                      "els => els.map(el => el.getBoundingClientRect().width)"
+                  )
+                  grid_tracks = section.evaluate(
+                      "el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length"
+                  )
+                  assert all((section_box, head_box, grid_box, unavailable_box, meta_box)), name
+
+                  geometry = {
+                      'viewport': {'width': width, 'height': height},
+                      'section': section_box,
+                      'head': head_box,
+                      'grid': grid_box,
+                      'unavailable': unavailable_box,
+                      'meta': meta_box,
+                      'metric_widths': metric_boxes,
+                      'outer_grid_tracks': grid_tracks,
+                      'head_to_grid_gap': grid_box['y'] - (head_box['y'] + head_box['height']),
+                      'grid_to_unavailable_gap': unavailable_box['y'] - (grid_box['y'] + grid_box['height']),
+                      'meta_to_section_bottom_gap': (section_box['y'] + section_box['height']) - (meta_box['y'] + meta_box['height']),
+                  }
+                  (out / f'what-changed-{name}-geometry.json').write_text(
+                      json.dumps(geometry, indent=2) + '\n', encoding='utf-8'
+                  )
+                  page.screenshot(path=str(out / f'what-changed-{name}.png'), full_page=True)
+
+                  assert section.get_attribute('data-what-changed-status') == 'partial-comparable'
+                  assert section.locator('[data-metric]').count() == 6
+                  assert grid_tracks == 1, {name: geometry}
+                  max_section_height = 900 if name == 'desktop' else 2100
+                  assert section_box['height'] < max_section_height, {name: geometry}
+                  min_width_ratio = 0.88 if name == 'desktop' else 0.82
+                  for label, box in [('head', head_box), ('grid', grid_box), ('unavailable', unavailable_box)]:
+                      assert box['width'] >= section_box['width'] * min_width_ratio, {
+                          name: geometry, 'failed_width': label, 'required_ratio': min_width_ratio
+                      }
+                  assert geometry['head_to_grid_gap'] < 100, {name: geometry}
+                  assert geometry['grid_to_unavailable_gap'] < 100, {name: geometry}
+                  assert geometry['meta_to_section_bottom_gap'] < 100, {name: geometry}
+                  min_metric_width = 180 if name == 'desktop' else 240
+                  assert min(metric_boxes) >= min_metric_width, {name: geometry}
+                  assert not page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
+                  assert not errors, {name: errors}
+              browser.close()
+          PY
+      - name: Upload PR-07 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-what-changed-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
