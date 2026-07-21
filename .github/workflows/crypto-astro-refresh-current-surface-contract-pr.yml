@@ -1,0 +1,35 @@
+name: Crypto-Astro Refresh Current Surface Contract PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-refresh-current-surface-contract-pr.yml'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py'
+      - 'tools/crypto_astro_static_refresh/test_current_surface_contract_v0_1.py'
+      - 'site/crypto-astro/index.html'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile locked core and compatibility entrypoint
+        run: |
+          python -m py_compile \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py \
+            tools/crypto_astro_static_refresh/test_current_surface_contract_v0_1.py
+      - name: Verify current-surface DOM bindings
+        run: python -m unittest discover -s tools/crypto_astro_static_refresh -p 'test_current_surface_contract_v0_1.py' -v
+      - name: Verify DeFi TVL methodology remains unchanged
+        run: python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
