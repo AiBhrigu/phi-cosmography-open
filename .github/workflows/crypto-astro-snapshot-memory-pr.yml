@@ -46,11 +46,15 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           path = Path('site/crypto-astro/data/crypto_astro_snapshot_registry.public.json')
-          old = '2754dc348605a2655e26dbc0494d63510ca88843'
-          new = '2a37742fc4d962be4bcbc7e8d925834102de5030'
           text = path.read_text(encoding='utf-8')
-          assert text.count(old) == 9, text.count(old)
-          path.write_text(text.replace(old, new), encoding='utf-8')
+          repairs = (
+              ('2754dc348605a2655e26dbc0494d63510ca88843', '2a37742fc4d962be4bcbc7e8d925834102de5030', 9),
+              ('086a77f2dd209a061e6b557de0e86a9b7b4f98d9', '136f78c1df53e67b0765794eb02589cae5e11349', 9),
+          )
+          for old, new, expected in repairs:
+              assert text.count(old) == expected, (old, text.count(old))
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
           PY
 
       - name: Enforce exact final implementation scope
