@@ -75,12 +75,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
 
       - name: Compile implementation tools
-        run: |
-          python -m py_compile \
-            tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
-            tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
-            tools/crypto_astro_what_changed/render_what_changed.py \
-            tools/crypto_astro_what_changed/verify_what_changed.py
+        run: python -m py_compile tools/crypto_astro_snapshot_memory/build_snapshot_memory.py tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py tools/crypto_astro_what_changed/render_what_changed.py tools/crypto_astro_what_changed/verify_what_changed.py
 
       - name: Run Snapshot Memory fixtures
         run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
@@ -88,12 +83,16 @@ jobs:
       - name: Run What Changed fixtures
         run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
 
-      - name: Build committed pair and compare
+      - name: Build committed accepted pair
         run: |
           rm -rf /tmp/memory-build
           python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build
-          cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
-          cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+
+      - name: Compare committed registry
+        run: cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+
+      - name: Compare committed delta
+        run: cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
 
       - name: Verify Snapshot Memory contract
         run: python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
