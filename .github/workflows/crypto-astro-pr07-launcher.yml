@@ -2,7 +2,7 @@ name: Crypto-Astro PR-07 Trusted Launcher
 
 on:
   pull_request_target:
-    types: [edited]
+    types: [edited, ready_for_review, reopened, labeled]
 
 permissions:
   contents: write
