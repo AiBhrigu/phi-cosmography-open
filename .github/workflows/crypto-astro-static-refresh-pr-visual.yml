@@ -75,10 +75,10 @@ jobs:
               page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
               section_status=page.locator('#what-changed').get_attribute('data-what-changed-status')
               metric_count=page.locator('#what-changed [data-metric]').count()
-              btc_text=page.locator('#btc-phi-cycle-hub').inner_text()
+              btc_text=page.locator('#btc-phi-cycle-hub').text_content() or ''
               cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()
               core=page.locator('.btc-quiet-phi-core-v0-3')
-              core_text=core.inner_text()
+              core_text=core.text_content() or ''
               core_style=core.get_attribute('style')
               scroll_width=page.evaluate('document.documentElement.scrollWidth')
               client_width=page.evaluate('document.documentElement.clientWidth')
