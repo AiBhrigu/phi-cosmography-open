@@ -1,69 +1,47 @@
-name: Crypto-Astro Snapshot Memory v0.2 Transport
+name: Crypto-Astro Snapshot Memory PR
 
 on:
   pull_request:
-    types: [synchronize, reopened, ready_for_review]
     paths:
       - '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
+      - '.github/workflows/crypto-astro-static-refresh-manual.yml'
+      - '.github/workflows/crypto-astro-static-refresh-pr-visual.yml'
+      - '.github/workflows/crypto-astro-what-changed-pr.yml'
+      - 'site/crypto-astro/index.html'
+      - 'site/crypto-astro/data/crypto_astro_snapshot*.json'
+      - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
+      - 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json'
+      - 'site/crypto-astro/data/scoring_snapshot.public.json'
       - 'tools/crypto_astro_snapshot_memory/**'
+      - 'tools/crypto_astro_what_changed/**'
+      - 'docs/crypto-astro-service/crypto_astro_snapshot_summary.md'
+      - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  transport:
-    if: >-
-      github.event.pull_request.number == 138 &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'agent/crypto-astro-refresh-snapshot-memory-v02' &&
-      contains(github.event.pull_request.body, 'REFRESH_MEMORY_V02_TRANSPORT=AUTHORIZED')
+  snapshot-memory:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
-      - name: Checkout exact PR branch
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
-          ref: agent/crypto-astro-refresh-snapshot-memory-v02
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Verify and expand exact payload
-        run: |
-          set -euo pipefail
-          PART_GLOB='tools/crypto_astro_snapshot_memory/.refresh_memory_v02_payload.part-*'
-          compgen -G "$PART_GLOB" >/dev/null
-          cat $PART_GLOB > /tmp/refresh-memory-v02.b64
-          test "$(sha256sum /tmp/refresh-memory-v02.b64 | awk '{print $1}')" = '5e57b71fa79489de526d6ee7b0d0addbf2e2cf8977abc6794f5830698478920b'
-          base64 -d /tmp/refresh-memory-v02.b64 > /tmp/refresh-memory-v02.tar.gz
-          test "$(sha256sum /tmp/refresh-memory-v02.tar.gz | awk '{print $1}')" = '9298152f0ad8c3632671a8513264bf44ba3ec2df2d94ecb9989a31aba8440ede'
-          tar -xzf /tmp/refresh-memory-v02.tar.gz -C .
-          rm $PART_GLOB
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('site/crypto-astro/data/crypto_astro_snapshot_registry.public.json')
-          text = path.read_text(encoding='utf-8')
-          repairs = (
-              ('2754dc348605a2655e26dbc0494d63510ca88843', '2a37742fc4d962be4bcbc7e8d925834102de5030', 9),
-              ('086a77f2dd209a061e6b557de0e86a9b7b4f98d9', '136f78c1df53e67b0765794eb02589cae5e11349', 9),
-          )
-          for old, new, expected in repairs:
-              assert text.count(old) == expected, (old, text.count(old))
-              text = text.replace(old, new)
-          path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Enforce exact final implementation scope
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+      - name: Classify exact implementation or generated-refresh scope
+        id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python - <<'PY'
           import os, subprocess
-          expected = {
+          implementation = {
             '.github/workflows/crypto-astro-static-refresh-manual.yml',
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -79,69 +57,66 @@ jobs:
             'tools/crypto_astro_what_changed/verify_what_changed.py',
             'tools/crypto_astro_what_changed/test_what_changed.py',
           }
-          changed=set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA']],text=True).splitlines())
-          assert changed == expected, {'missing':sorted(expected-changed),'unexpected':sorted(changed-expected)}
+          generated = {
+            'site/crypto-astro/index.html',
+            'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+            'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+            'site/crypto-astro/data/scoring_snapshot.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+            'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+            'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          if changed == implementation:
+              mode='implementation'
+          elif changed in (generated, generated | optional):
+              mode='generated_refresh'
+          else:
+              raise AssertionError({'changed':sorted(changed),'implementation_missing':sorted(implementation-changed),'generated_missing':sorted(generated-changed),'unexpected':sorted(changed-implementation-generated-optional)})
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
+          print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
           PY
-
-      - name: Install schema validator
-        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-
-      - name: Compile implementation tools
-        run: python -m py_compile tools/crypto_astro_snapshot_memory/build_snapshot_memory.py tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py tools/crypto_astro_what_changed/render_what_changed.py tools/crypto_astro_what_changed/verify_what_changed.py
-
-      - name: Run Snapshot Memory fixtures
+      - name: Run deterministic fixtures
         run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
-
-      - name: Run What Changed fixtures
-        run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
-
-      - name: Build committed accepted pair
+      - name: Build twice and compare committed contract
+        run: |
+          mkdir -p artifacts/build-a artifacts/build-b artifacts/final
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-a
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-b
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+      - name: Verify schemas, hashes, ancestry and per-metric status
+        run: |
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/final/snapshot-memory-verification.json
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
+          (cd artifacts/final && sha256sum * > SHA256SUMS)
+      - name: Prove implementation leaves public data and HTML unchanged
+        if: steps.scope.outputs.mode == 'implementation'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set +e
-          rm -rf /tmp/memory-build
-          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build > /tmp/build.log 2>&1
-          code=$?
-          cat /tmp/build.log
-          if [ "$code" -ne 0 ]; then
-            {
-              echo '<!-- REFRESH_MEMORY_V02_BUILD_FAILURE -->'
-              echo '```text'
-              tail -n 80 /tmp/build.log
-              echo '```'
-            } > /tmp/build-comment.md
-            gh pr comment 138 --body-file /tmp/build-comment.md
-            exit "$code"
-          fi
-
-      - name: Compare committed registry
-        run: cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
-
-      - name: Compare committed delta
-        run: cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
-
-      - name: Verify Snapshot Memory contract
-        run: python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
-
-      - name: Prove static render is byte-identical
-        run: |
-          cp site/crypto-astro/index.html /tmp/index-before.html
-          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
-          cmp /tmp/index-before.html site/crypto-astro/index.html
-
-      - name: Verify What Changed binding
-        run: python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
-
-      - name: Commit non-workflow implementation to PR branch
-        run: |
-          git checkout HEAD -- \
-            .github/workflows/crypto-astro-static-refresh-manual.yml \
-            .github/workflows/crypto-astro-static-refresh-pr-visual.yml \
-            .github/workflows/crypto-astro-snapshot-memory-pr.yml \
-            .github/workflows/crypto-astro-what-changed-pr.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'Crypto-Astro: add dynamic snapshot memory implementation'
-          git push origin HEAD:agent/crypto-astro-refresh-snapshot-memory-v02
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            tools/crypto_astro_static_refresh
+      - name: Upload Snapshot Memory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-snapshot-memory-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
