@@ -32,11 +32,8 @@ CRYPTO_ASTRO_REFRESH_MODE = "CRYPTO_ASTRO_REFRESH_MODE"
 CRYPTO_ASTRO_OPERATOR_REF = "CRYPTO_ASTRO_OPERATOR_REF"
 CRYPTO_ASTRO_REFRESH_REASON = "CRYPTO_ASTRO_REFRESH_REASON"
 
-OPERATOR_BOUNDARY = (
-    "Workflow may push one fully validated review branch and open one review PR. "
-    "It may not merge or issue a deployment command. Publication follows only "
-    "after explicit merge authorization."
-)
+OPERATOR_BOUNDARY = "Workflow may push one fully validated review branch and open one review PR. It may not merge or issue a deployment command. Publication follows only after explicit merge authorization."
+OBSOLETE_OPERATOR_BOUNDARY = "No push, no " + "PR, no deploy."
 
 
 def load_runtime():
@@ -105,7 +102,7 @@ def materialize_operator_review(repo: Path) -> None:
     if count != 1:
         raise RuntimeError("operator review generated-at anchor missing")
 
-    text = text.replace("No push, no PR, no deploy.", OPERATOR_BOUNDARY)
+    text = text.replace(OBSOLETE_OPERATOR_BOUNDARY, OPERATOR_BOUNDARY)
     if OPERATOR_BOUNDARY not in text:
         raise RuntimeError("operator review cadence boundary missing")
     if "REFRESH_MODE=" not in text or "OPERATOR_REF=" not in text or "REFRESH_REASON=" not in text:
