@@ -9,7 +9,6 @@ on:
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
       - "tools/crypto_astro_operations/**"
-      - "tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py"
       - "docs/crypto-astro-service/crypto_astro_operator_review.md"
 
 permissions:
@@ -45,7 +44,6 @@ jobs:
               "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
               "tools/crypto_astro_operations/verify_operational_cadence.py",
               "tools/crypto_astro_operations/test_verify_operational_cadence.py",
-              "tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py",
               "docs/crypto-astro-service/crypto_astro_operator_review.md",
           }
           changed = set(
