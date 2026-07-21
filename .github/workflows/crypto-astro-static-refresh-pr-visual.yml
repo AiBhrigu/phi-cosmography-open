@@ -3,283 +3,86 @@ name: Crypto-Astro Static Refresh PR Visual
 on:
   pull_request:
     paths:
-      - "site/crypto-astro/**"
-      - "site/theme/phi_theme.css"
-      - "site/theme/system.css"
-      - "site/theme/btc_poster_grade.css"
-      - "site/theme/ip_semantic_seal.css"
-      - "tools/crypto_astro_static_refresh/**"
-      - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
+      - 'site/crypto-astro/**'
+      - 'site/theme/crypto_astro_what_changed.css'
+      - 'tools/crypto_astro_static_refresh/**'
+      - 'tools/crypto_astro_snapshot_memory/**'
+      - 'tools/crypto_astro_what_changed/**'
+      - '.github/workflows/crypto-astro-static-refresh-pr-visual.yml'
+      - '.github/workflows/crypto-astro-static-refresh-manual.yml'
 
 permissions:
   contents: read
 
 jobs:
   visual:
-    name: Render desktop and mobile evidence
+    name: Validate static refresh and public surface
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Verify runner, packet, binding, and methodology contracts
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install validators and browser
         run: |
-          set -euo pipefail
-          python3 -m py_compile \
+          python -m pip install --disable-pip-version-check jsonschema==4.26.0 playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Verify runner and methodology contracts
+        run: |
+          python -m py_compile \
             tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
             tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py
-          python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
-          python3 - <<'PY'
-          import hashlib, json, re
-          from pathlib import Path
-
-          primary_path = Path('tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py')
-          hardened_path = Path('tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py')
-          primary = primary_path.read_bytes()
-          hardened = hardened_path.read_text(encoding='utf-8')
-          expected = re.search(r'EXPECTED_PRIMARY_SHA256 = "([0-9a-f]{64})"', hardened)
-          assert expected and expected.group(1) == hashlib.sha256(primary).hexdigest()
-
-          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
-          bindings = json.loads(Path('site/crypto-astro/data/crypto_astro_module_bindings.public.json').read_text())
-          market = json.loads(Path('site/crypto-astro/data/market_field_snapshot.public.v0_1.json').read_text())
-          scoring = json.loads(Path('site/crypto-astro/data/scoring_snapshot.public.json').read_text())
-
-          assert bindings['modules']['aem_barometer']['anchor'] == 'Field Membrane Barometer'
-          assert market['schema_version'] == 'crypto_astro_market_field_public_v0_2'
-          assert set(market['vectors']) >= {'A_membrane', 'E_membrane', 'M_market', 'CT_context'}
-          assert not ({'A_attention', 'E_engagement', 'CT_temporal'} & set(market['vectors']))
-          assert market['vectors']['A_membrane'] == {
-              'state': 'prepared_inactive', 'public_input': False, 'disclosure': 'status_only'
-          }
-          assert market['vectors']['E_membrane'] == {
-              'state': 'prepared_inactive', 'public_input': False, 'disclosure': 'status_only'
-          }
-          assert market['vectors']['CT_context']['pipeline'] == 'sealed'
-          assert scoring['coverage']['A_membrane'] == 'prepared_inactive'
-          assert scoring['coverage']['E_membrane'] == 'prepared_inactive'
-          assert scoring['coverage']['M_market'] == 'market_context_active'
-          assert 'A_lane' not in scoring['coverage'] and 'E_lane' not in scoring['coverage']
-
-          for asset in snapshot['public_samples']['assets'].values():
-              assert 'A_state' not in asset and 'E_state' not in asset
-              assert asset['membrane_state'] == 'prepared_inactive'
-          for asset in scoring['assets'].values():
-              assert 'A_state' not in asset and 'E_state' not in asset
-              assert asset['membrane_state'] == 'prepared_inactive'
-
-          public_packets = json.dumps(
-              {'snapshot': snapshot, 'market': market, 'scoring': scoring},
-              ensure_ascii=False,
-          ).lower()
-          forbidden = (
-              'a_attention', 'e_engagement', 'ct_temporal', 'search_attention',
-              'x_social_engagement', 'search_pressure', 'query_acceleration',
-              'topic_heat', 'attention_divergence', 'discussion_pressure',
-              'narrative_velocity', 'engagement_acceleration', 'social_amplification',
-              'ephemerides_support', 'future attention', 'engagement confirmation',
-              'a/e pending',
-          )
-          for token in forbidden:
-              assert token not in public_packets, token
-          print('RUNNER_PACKET_BINDING_SEAL=PASS')
-          PY
-
-      - name: Install browser driver
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
-
-      - name: Start static preview
-        run: |
-          python3 -m http.server 4173 --directory site >/tmp/crypto-astro-preview.log 2>&1 &
-          for attempt in {1..20}; do
-            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && exit 0
-            sleep 0.5
-          done
-          cat /tmp/crypto-astro-preview.log
-          exit 1
-
-      - name: Render and verify full public semantic seal
+          python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
+      - name: Verify dynamic memory and static rendering
         run: |
           mkdir -p artifacts
-          python3 - <<'PY'
+          python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/snapshot-memory.json
+          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          cp site/crypto-astro/index.html /tmp/index-before.html
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          cmp /tmp/index-before.html site/crypto-astro/index.html
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo . --report artifacts/what-changed.json
+      - name: Browser coherence review
+        run: |
+          python -m http.server 4173 --directory site > artifacts/http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          python - <<'PY'
           import json
-          import time
           from pathlib import Path
-          from selenium import webdriver
-          from selenium.webdriver.common.by import By
-          from selenium.webdriver.support.ui import WebDriverWait
-
-          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
-          generated = snapshot['generated_at_utc']
-          field_score = str(round(float(snapshot['field_output']['market_field_score'])))
-          assets = snapshot['public_samples']['assets']
-          expected_ton = f'{float(assets["TON"]["score"]):.2f}'
-          expected_icp = f'{float(assets["ICP"]["score"]):.2f}'
-          expected_coverage = f'{len(assets)} assets · 3 displayed'
-
-          html_source = Path('site/crypto-astro/index.html').read_text(encoding='utf-8')
-          html_lower = html_source.lower()
-          forbidden_global = (
-              'search demand source slot', 'public discussion source slot',
-              'attention source class', 'engagement source class',
-              'a = attention slot', 'e = engagement slot',
-              'a/e lanes remain pending calibration', 'a/e confirmation is not available',
-              'a/e/m field barometer', 'how context is prepared', 'raw signals',
-              'astropatterns memory', 'raw ephemerides',
-          )
-          for token in forbidden_global:
-              assert token not in html_lower, token
-          required_global = (
-              'crypto_astro_public_ip_semantic_seal_v0_1',
-              'crypto_astro_ip_semantic_tail_closure_v0_1',
-              'field membrane barometer', 'public membrane states',
-              'public output boundary', 'prepared membranes inactive',
-              'protected scoring sealed', 'https://www.bhrigu.io/crypto-astro/btc',
-          )
-          for token in required_global:
-              assert token in html_lower, token
-          assert html_source.count('https://www.bhrigu.io/crypto-astro/btc') == 1
-
-          btc_start = html_source.index('<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->')
-          btc_end = html_source.index('<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:END -->', btc_start)
-          btc_source = html_source[btc_start:btc_end]
-          btc_lower = btc_source.lower()
-          for token in ('semenko', 'sun–pluto', 'sun-pluto', 'pairs', 'orbs', 'ranked hits', 'crypto-events overlay'):
-              assert token not in btc_lower, token
-
-          theme_css = Path('site/theme/phi_theme.css').read_text(encoding='utf-8')
-          css_start = theme_css.index('/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:BEGIN')
-          css_end = theme_css.index('/* BTC_DEEP_NODE_VISUAL_REFINEMENT_v0_1:END', css_start)
-          refinement_css = theme_css[css_start:css_end]
-          poster_css = Path('site/theme/btc_poster_grade.css').read_text(encoding='utf-8')
-          seal_css = Path('site/theme/ip_semantic_seal.css').read_text(encoding='utf-8')
-          assert refinement_css.count('content: "Φ";') == 1
-          assert 'BTC_DEEP_NODE_POSTER_GRADE_VISUAL_IMPLEMENTATION_v0_1' in poster_css
-          assert 'Φ' not in poster_css
-          assert 'CRYPTO_ASTRO_PUBLIC_IP_SEMANTIC_SEAL_v0_1' in seal_css
-          assert 'Φ' not in seal_css
-
-          options = webdriver.ChromeOptions()
-          options.add_argument('--headless=new')
-          options.add_argument('--no-sandbox')
-          options.add_argument('--disable-dev-shm-usage')
-          options.add_argument('--hide-scrollbars')
-          options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-          driver = webdriver.Chrome(options=options)
-          report = {
-              'generated_at_utc': generated,
-              'checks': {}, 'assertions': {}, 'viewports': {}, 'failures': [],
-          }
-          try:
-              driver.set_window_size(1440, 1000)
-              driver.get('http://127.0.0.1:4173/crypto-astro/index.html')
-              WebDriverWait(driver, 20).until(
-                  lambda d: d.find_element(By.CSS_SELECTOR, '.score-orb.field-gauge').text.strip()
-              )
-              orb = driver.find_element(By.CSS_SELECTOR, '.score-orb.field-gauge')
-              btc_hub = driver.find_element(By.ID, 'btc-phi-cycle-hub')
-              btc_text = btc_hub.text.lower()
-              source_text = driver.find_element(By.CSS_SELECTOR, '.source-lanes-support-v0-1').text.lower()
-              temporal_text = driver.find_element(By.CSS_SELECTOR, '.temporal-support-v0-1').text.lower()
-              cosmographer_text = driver.find_element(By.CSS_SELECTOR, '.cosmographer-console-v0-2').text.lower()
-              scoring_text = driver.find_element(By.ID, 'scoring').text.lower()
-              sample_text = driver.find_element(By.CSS_SELECTOR, '[aria-label="Crypto-Astro Public Sample Web Panel"]').text
-              entry_phi = driver.execute_script(
-                  "return getComputedStyle(document.querySelector('.btc-entry-v1 .btc-field-read-entry-glyph-v0-1'),'::before').content;"
-              )
-              cycle_before = driver.execute_script(
-                  "return getComputedStyle(document.querySelector('.btc-cycle-canvas-v1'),'::before').content;"
-              )
-              cycle_after = driver.execute_script(
-                  "return getComputedStyle(document.querySelector('.btc-cycle-canvas-v1'),'::after').content;"
-              )
-
-              checks = {
-                  'field_score_text': orb.text.strip() == field_score,
-                  'field_score_aria': orb.get_attribute('aria-label') == f'Market Field Score {field_score} out of 100',
-                  'btc_timestamp': generated in btc_hub.text,
-                  'ton_score': expected_ton in sample_text,
-                  'icp_score': expected_icp in sample_text,
-                  'scoring_coverage': expected_coverage.lower() in scoring_text,
-                  'heartbeat': 'static · no schedule' in scoring_text,
-                  'field_membranes': 'field membranes' in source_text,
-                  'a_prepared': 'a · prepared' in source_text,
-                  'e_prepared': 'e · prepared' in source_text,
-                  'source_pipeline_sealed': 'no source pipeline disclosure' in source_text,
-                  'ct_bounded': 'bounded context membrane' in temporal_text,
-                  'ct_window_phase_provenance': all(x in temporal_text for x in ('observation window', 'phase context', 'provenance')),
-                  'ct_pipeline_sealed': 'no public pipeline' in temporal_text,
-                  'cosmographer_membranes': 'field membrane barometer' in cosmographer_text and 'prepared field membranes remain inactive' in cosmographer_text,
-                  'scoring_membrane_states': 'public membrane states' in scoring_text,
-                  'scoring_output_boundary': 'public output boundary' in scoring_text,
-                  'scoring_protected': 'protected scoring sealed' in scoring_text,
-                  'aspect_cycle_semantic': all(x in btc_text for x in ('aspect pressure', 'phase condition', 'event memory')),
-                  'aspect_cycle_sealed': 'protected calculation structure sealed' in btc_text,
-                  'single_phi_entry': 'Φ' in entry_phi,
-                  'aspect_nucleus_non_literal': 'Φ' not in cycle_before and 'Φ' not in cycle_after,
-                  'btc_html_non_literal': 'Φ' not in btc_source,
-                  'btc_route': bool(driver.find_elements(By.CSS_SELECTOR, 'a[href="https://www.bhrigu.io/crypto-astro/btc"]')),
-              }
-
-              targets = {
-                  'btc-hub': '#btc-phi-cycle-hub',
-                  'aspect-cycle': '#aspect-cycle-v1',
-                  'private-depth': '.btc-private-v1',
-                  'source-membranes': '.source-lanes-support-v0-1',
-                  'temporal-membrane': '.temporal-support-v0-1',
-                  'cosmographer-read': '.cosmographer-console-v0-2',
-                  'scoring-boundary': '.scoring-calc-intro',
-                  'market': '#market',
-                  'sample': '[aria-label="Crypto-Astro Public Sample Web Panel"]',
-              }
-              for mode, width, height in (('desktop', 1440, 1000), ('mobile', 390, 844)):
-                  driver.set_window_size(width, height)
-                  driver.refresh()
-                  WebDriverWait(driver, 20).until(lambda d: d.find_element(By.ID, 'scoring'))
-                  driver.execute_script("document.body.style.paddingBottom='1400px';")
-                  scroll_width = driver.execute_script('return document.documentElement.scrollWidth')
-                  inner_width = driver.execute_script('return window.innerWidth')
-                  checks[f'{mode}_horizontal_overflow'] = scroll_width <= inner_width + 1
-                  report['viewports'][mode] = {
-                      'requested': [width, height], 'inner_width': inner_width,
-                      'scroll_width': scroll_width, 'screenshots': [],
-                  }
-                  for label, selector in targets.items():
-                      element = driver.find_element(By.CSS_SELECTOR, selector)
-                      y = driver.execute_script('return arguments[0].getBoundingClientRect().top + window.scrollY;', element)
-                      driver.execute_script('window.scrollTo(0, arguments[0]);', max(0, y - 8))
-                      time.sleep(0.3)
-                      output = f'artifacts/{mode}-{label}.png'
-                      driver.save_screenshot(output)
-                      report['viewports'][mode]['screenshots'].append(output)
-
-              severe = [
-                  e for e in driver.get_log('browser')
-                  if e.get('level') == 'SEVERE' and 'favicon' not in e.get('message', '').lower()
-              ]
-              checks['browser_severe'] = not severe
-              report['browser_severe'] = severe
-              report['checks'] = checks
-              report['assertions'] = {
-                  'field_score': field_score, 'btc_timestamp': generated,
-                  'entry_phi_content': entry_phi,
-                  'aspect_cycle_before_content': cycle_before,
-                  'aspect_cycle_after_content': cycle_after,
-              }
-              report['failures'] = [name for name, passed in checks.items() if not passed]
-              assert not report['failures'], report['failures']
-          finally:
-              driver.quit()
-              Path('artifacts/visual-report.json').write_text(
-                  json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-              )
+          from playwright.sync_api import sync_playwright
+          snapshot=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
+          delta=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_delta.public.json').read_text())
+          generated=snapshot['generated_at_utc']
+          expected_status=delta['comparison_status'].lower().replace('_','-')
+          dominance=f"{float(snapshot['market_reality']['btc_dominance_pct']):.1f}%"
+          out=Path('artifacts')
+          with sync_playwright() as p:
+            browser=p.chromium.launch()
+            for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
+              page=browser.new_page(viewport={'width':width,'height':height})
+              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+              page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
+              assert page.locator('#what-changed').get_attribute('data-what-changed-status')==expected_status
+              assert page.locator('#what-changed [data-metric]').count()==len(delta['metrics'])
+              assert generated in page.locator('#btc-phi-cycle-hub').inner_text()
+              assert page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()==2
+              core=page.locator('.btc-quiet-phi-core-v0-3')
+              assert dominance in core.inner_text()
+              assert core.get_attribute('style')==f'--btc-dominance:{dominance};'
+              assert not page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
+              assert not errors, errors
+              page.screenshot(path=str(out/f'crypto-astro-{name}.png'),full_page=True)
+            browser.close()
           PY
-
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: crypto-astro-pr-visual-${{ github.event.pull_request.number }}
+          name: crypto-astro-static-refresh-visual-${{ github.event.pull_request.number }}
           path: artifacts/
           if-no-files-found: error
