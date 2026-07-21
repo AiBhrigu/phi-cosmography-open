@@ -63,8 +63,12 @@ jobs:
           snapshot=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
           delta=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_delta.public.json').read_text())
           generated=snapshot['generated_at_utc']
+          hero_timestamp=generated[:16].replace('T',' ')+' UTC'
           expected_status=delta['comparison_status'].lower().replace('_','-')
           dominance=f"{float(snapshot['market_reality']['btc_dominance_pct']):.1f}%"
+          dominance_number=dominance.removesuffix('%')
+          score=str(int(round(float(snapshot['field_output']['market_field_score']))))
+          regime=str(snapshot['field_output']['regime_label'])
           out=Path('artifacts')
           report={}
           with sync_playwright() as p:
@@ -75,11 +79,18 @@ jobs:
               page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
               section_status=page.locator('#what-changed').get_attribute('data-what-changed-status')
               metric_count=page.locator('#what-changed [data-metric]').count()
+              hero_text=page.locator('.editorial-orientation-v0-1__trust').text_content() or ''
               btc_text=page.locator('#btc-phi-cycle-hub').text_content() or ''
+              btc_aria=page.locator('.btc-field-v1').get_attribute('aria-label') or ''
               cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()
               core=page.locator('.btc-quiet-phi-core-v0-3')
               core_text=core.text_content() or ''
               core_style=core.get_attribute('style')
+              barometer=page.locator('.barometer-core.barometer-semantic-core')
+              barometer_text=barometer.text_content() or ''
+              orb=barometer.locator('.score-orb.field-gauge')
+              orb_text=(orb.text_content() or '').strip()
+              orb_aria=orb.get_attribute('aria-label') or ''
               scroll_width=page.evaluate('document.documentElement.scrollWidth')
               client_width=page.evaluate('document.documentElement.clientWidth')
               evidence={
@@ -87,11 +98,19 @@ jobs:
                 'expected_status':expected_status,
                 'metric_count':metric_count,
                 'expected_metric_count':len(delta['metrics']),
+                'hero_timestamp_present':hero_timestamp in hero_text,
                 'btc_timestamp_present':generated in btc_text,
+                'btc_aria':btc_aria,
+                'expected_btc_aria_fragment':f'BTC dominance is {dominance_number} percent',
                 'cta_count':cta_count,
                 'core_dominance_present':dominance in core_text,
                 'core_style':core_style,
                 'expected_core_style':f'--btc-dominance:{dominance};',
+                'barometer_score_present':f'Market Field Score: {score} / 100' in barometer_text,
+                'barometer_regime_present':f'Observed state: {regime}' in barometer_text,
+                'orb_text':orb_text,
+                'orb_aria':orb_aria,
+                'expected_orb_aria':f'Market Field Score {score} out of 100',
                 'scroll_width':scroll_width,
                 'client_width':client_width,
                 'console_errors':errors,
@@ -101,10 +120,16 @@ jobs:
               (out/f'crypto-astro-{name}-geometry.json').write_text(json.dumps(evidence,indent=2)+'\n')
               assert section_status==expected_status, evidence
               assert metric_count==len(delta['metrics']), evidence
+              assert hero_timestamp in hero_text, evidence
               assert generated in btc_text, evidence
+              assert f'BTC dominance is {dominance_number} percent' in btc_aria, evidence
               assert cta_count==2, evidence
               assert dominance in core_text, evidence
               assert core_style==f'--btc-dominance:{dominance};', evidence
+              assert f'Market Field Score: {score} / 100' in barometer_text, evidence
+              assert f'Observed state: {regime}' in barometer_text, evidence
+              assert orb_text==score, evidence
+              assert orb_aria==f'Market Field Score {score} out of 100', evidence
               assert scroll_width <= client_width + 1, evidence
               assert not errors, evidence
               page.close()

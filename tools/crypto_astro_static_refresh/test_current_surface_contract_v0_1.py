@@ -24,7 +24,10 @@ class CurrentSurfaceContractTests(unittest.TestCase):
 
     def test_current_surface_bindings_patch_exactly_once(self):
         snapshot = copy.deepcopy(self.snapshot)
+        snapshot["generated_at_utc"] = "2030-01-02T03:04:05Z"
+        snapshot["market_reality"]["btc_dominance_pct"] = 67.89
         snapshot["field_output"]["market_field_score"] = 77
+        snapshot["field_output"]["regime_label"] = "Guarded Rotation"
         ton = snapshot["public_samples"]["assets"]["TON"]
         icp = snapshot["public_samples"]["assets"]["ICP"]
         ton.update(score=64.25, market_24h_change_pct=1.23, market_30d_change_pct=-4.56, market_cap_rank=21)
@@ -40,7 +43,8 @@ class CurrentSurfaceContractTests(unittest.TestCase):
             self.assertTrue(compat.validate_html_counts(patch, report), report)
             counts = patch["replace_counts"]
             for key in (
-                "field:score_orb",
+                "timestamp:hero_trust", "btc_hub:field_aria",
+                "field:score_orb", "field:barometer_copy",
                 "sample:ton_visual_score", "sample:icp_visual_score",
                 "sample:ton_visual_24h", "sample:icp_visual_24h",
                 "sample:ton_score", "sample:ton_24h", "sample:ton_30d", "sample:ton_rank",
@@ -51,7 +55,11 @@ class CurrentSurfaceContractTests(unittest.TestCase):
             self.assertIn("rail:eth-anchor", report["validation"]["html_superseded_bindings"])
 
             rendered = target.read_text(encoding="utf-8")
+            self.assertIn('Snapshot · 2030-01-02 03:04 UTC<br/>', rendered)
+            self.assertIn('aria-label="BTC current field. BTC dominance is 67.9 percent.', rendered)
             self.assertIn('aria-label="Market Field Score 77 out of 100">77</div>', rendered)
+            self.assertIn('<h3>Guarded Rotation</h3>', rendered)
+            self.assertIn('Market Field Score: 77 / 100<br/>Observed state: Guarded Rotation', rendered)
             self.assertIn('style="width:64.2%"></i></div><span class="visual-value-v0-1">64.25', rendered)
             self.assertIn('<span>24h TON</span><strong class="visual-value-v0-1">1.23%</strong>', rendered)
             self.assertIn('<span>30d</span><strong class="distributed-value-v0-1">-4.56%</strong>', rendered)
