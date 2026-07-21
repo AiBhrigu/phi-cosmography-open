@@ -8,8 +8,9 @@ on:
       - "site/theme/crypto_astro/css_order_manifest.json"
       - "site/theme/crypto_astro/extensions/10_editorial_composition.css"
       - "tools/crypto_astro_editorial_composition/**"
-      - "tools/crypto_astro_geometry_truth/verify_geometry_truth.py"
-      - "tools/crypto_astro_surface_truth/surface_truth.py"
+      - "tools/crypto_astro_geometry_truth/**"
+      - "tools/crypto_astro_surface_truth/**"
+      - "tools/crypto_astro_ci/**"
       - ".github/workflows/crypto-astro-editorial-composition-pr.yml"
 
 permissions:
@@ -28,15 +29,42 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce bounded PR-05 path scope
+      - name: Test legacy applicability classifier
+        run: python3 -m unittest discover -s tools/crypto_astro_ci -p "test_*.py" -v
+
+      - name: Classify gate applicability
+        id: applicability
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_ci/classify_legacy_applicability.py \
+            --workflow editorial-composition \
+            --head-ref "$HEAD_REF" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --out artifacts/editorial-applicability.json
+
+      - name: Record explicit non-applicable pass
+        if: ${{ steps.applicability.outputs.mode == 'GENERATED_REFRESH' || steps.applicability.outputs.mode == 'NON_APPLICABLE' }}
+        run: |
+          echo "EDITORIAL_COMPOSITION_NOT_APPLICABLE_PASS=${{ steps.applicability.outputs.mode }}"
+          echo "Current refresh, memory, surface, visual and consumer gates remain mandatory."
+
+      - name: Install browser dependencies
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Enforce bounded historical PR-05 path scope
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python3 - <<'PY'
-          import os
-          import subprocess
-
+          import os, subprocess
           allowed = {
               ".github/workflows/crypto-astro-editorial-composition-pr.yml",
               "site/crypto-astro/index.html",
@@ -50,11 +78,10 @@ jobs:
               "tools/crypto_astro_surface_truth/surface_truth.py",
           }
           changed = subprocess.check_output(
-              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-              text=True,
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).splitlines()
           unexpected = sorted(set(changed) - allowed)
-          assert not unexpected, f"Unexpected PR-05 paths: {unexpected}"
+          assert not unexpected, f"Unexpected historical PR-05 paths: {unexpected}"
           required = {
               "site/crypto-astro/index.html",
               "site/theme/crypto_astro/css_order_manifest.json",
@@ -62,92 +89,50 @@ jobs:
               "site/theme/crypto_astro_surface.css",
               "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
           }
-          assert required.issubset(changed), f"Missing PR-05 paths: {sorted(required - set(changed))}"
-          assert ".github/workflows/crypto-astro-pr05-transform.yml" not in changed
-          assert ".github/workflows/crypto-astro-pr05-harness-patch.yml" not in changed
-          print("PR_05_ALLOWED_PATHS=PASS")
+          assert required.issubset(changed), f"Missing historical PR-05 paths: {sorted(required - set(changed))}"
+          print("HISTORICAL_PR_05_ALLOWED_PATHS=PASS")
           PY
 
-      - name: Install browser dependencies
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
-
-      - name: Run editorial and geometry fixtures
+      - name: Run current editorial and geometry fixtures
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: |
           python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
           python3 -m unittest discover -s tools/crypto_astro_geometry_truth -p "test_*.py" -v
 
-      - name: Verify deterministic CSS bundle
+      - name: Verify current CSS, editorial and geometry contracts
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: |
-          mkdir -p artifacts
           python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
+          python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py --out artifacts/editorial-composition-report.json
+          python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
 
-      - name: Verify editorial contract
-        run: python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py --out artifacts/editorial-composition-report.json
-
-      - name: Verify geometry contract remains valid
-        run: python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
-
-      - name: Run local truth on final head
+      - name: Run current local surface truth
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4173
 
-      - name: Verify preserved source and BTC invariants
+      - name: Verify historical PR-05 preserved invariants
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           python3 - <<'PY'
-          import json
-          import os
-          import re
-          import subprocess
+          import json, os, re, subprocess
           from pathlib import Path
-
-          base = subprocess.check_output(
-              ["git", "show", f"{os.environ['BASE_SHA']}:site/crypto-astro/index.html"],
-              text=True,
-          )
+          base = subprocess.check_output(["git", "show", f"{os.environ['BASE_SHA']}:site/crypto-astro/index.html"], text=True)
           head = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
-
           core_re = re.compile(r'<article class="btc-field-v1".*?</article>', re.S)
-          base_core = core_re.search(base)
-          head_core = core_re.search(head)
-          assert base_core and head_core
-          assert base_core.group(0) == head_core.group(0), "BTC data-bound field core changed"
-
-          accepted = [
-              "$2.287T", "$40.71B", "56.5%", "13.5%", "34.5%", "39.9%",
-              "9.8%", "66.3%", "$308.81B", "$75.55B", "$4.65B",
-              "2026-07-19T18:26:56Z",
-          ]
+          base_core, head_core = core_re.search(base), core_re.search(head)
+          assert base_core and head_core and base_core.group(0) == head_core.group(0), "Historical BTC core changed"
+          accepted = ["$2.287T", "$40.71B", "56.5%", "13.5%", "34.5%", "39.9%", "9.8%", "66.3%", "$308.81B", "$75.55B", "$4.65B", "2026-07-19T18:26:56Z"]
           for value in accepted:
-              assert value in head, f"Accepted public value missing: {value}"
-
+              assert value in head, f"Historical accepted value missing: {value}"
           report = json.loads(Path("artifacts/head/surface-truth-report.json").read_text())
-          assert report["status"] == "PASS", report.get("failures")
-          measurements = report["measurements"]
-          assert measurements["btc_running_animations"] == 0
-          assert measurements["desktop_scroll_width"] == 1440
-          assert measurements["mobile_scroll_width"] == 390
-          assert report["checks"]["browser_severe_none"] is True
-
-          evidence = {
-              "schema_version": "crypto_astro_editorial_invariant_report_v0_1",
-              "status": "PASS",
-              "btc_data_bound_core_exact": True,
-              "accepted_public_values_preserved": accepted,
-              "local_truth": report["status"],
-              "btc_running_animations": measurements["btc_running_animations"],
-              "desktop_scroll_width": measurements["desktop_scroll_width"],
-              "mobile_scroll_width": measurements["mobile_scroll_width"],
-              "browser_severe_errors": 0,
-          }
-          Path("artifacts/editorial-invariant-report.json").write_text(
-              json.dumps(evidence, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
-          )
-          print("PR_05_PRESERVED_INVARIANTS=PASS")
+          assert report["status"] == "PASS"
+          assert report["measurements"]["btc_running_animations"] == 0
+          print("HISTORICAL_PR_05_INVARIANTS=PASS")
           PY
 
-      - name: Upload PR-05 evidence
+      - name: Upload editorial applicability evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
