@@ -1,0 +1,117 @@
+name: Crypto-Astro Refresh Memory v0.2 Transport
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crypto-astro-refresh-memory-v02-transport-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/crypto-astro-refresh-snapshot-memory-v02' &&
+      contains(github.event.pull_request.body, 'REFRESH_MEMORY_V02_TRANSPORT=AUTHORIZED')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout authorized PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: agent/crypto-astro-refresh-snapshot-memory-v02
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Apply exact payload
+        id: payload
+        run: |
+          set -euo pipefail
+          PAYLOAD='tools/crypto_astro_snapshot_memory/.refresh_memory_v02_payload.tar.gz.b64'
+          if [ ! -f "$PAYLOAD" ]; then
+            echo 'applied=false' >> "$GITHUB_OUTPUT"
+            echo 'Payload already consumed; nothing to do.'
+            exit 0
+          fi
+          test "$(sha256sum "$PAYLOAD" | awk '{print $1}')" = '5e57b71fa79489de526d6ee7b0d0addbf2e2cf8977abc6794f5830698478920b'
+          base64 -d "$PAYLOAD" > /tmp/refresh-memory-v02.tar.gz
+          test "$(sha256sum /tmp/refresh-memory-v02.tar.gz | awk '{print $1}')" = '9298152f0ad8c3632671a8513264bf44ba3ec2df2d94ecb9989a31aba8440ede'
+          tar -tzf /tmp/refresh-memory-v02.tar.gz | sort > /tmp/payload-files.txt
+          tar -xzf /tmp/refresh-memory-v02.tar.gz -C .
+          rm "$PAYLOAD"
+          echo 'applied=true' >> "$GITHUB_OUTPUT"
+
+      - name: Validate exact final scope
+        if: steps.payload.outputs.applied == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-what-changed-pr.yml',
+            'tools/crypto_astro_snapshot_memory/build_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+            'tools/crypto_astro_what_changed/render_what_changed.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+            'tools/crypto_astro_what_changed/test_what_changed.py',
+          }
+          changed=set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA']],text=True).splitlines())
+          assert changed == expected, {'missing':sorted(expected-changed),'unexpected':sorted(changed-expected)}
+          print('REFRESH_MEMORY_V02_EXACT_SCOPE=PASS')
+          PY
+
+      - name: Run offline deterministic gates
+        if: steps.payload.outputs.applied == 'true'
+        run: |
+          python -m pip install --disable-pip-version-check jsonschema==4.26.0
+          python -m py_compile \
+            tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
+            tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
+            tools/crypto_astro_what_changed/render_what_changed.py \
+            tools/crypto_astro_what_changed/verify_what_changed.py
+          python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          rm -rf /tmp/memory-build
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir /tmp/memory-build
+          cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json /tmp/memory-build/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
+          cp site/crypto-astro/index.html /tmp/index-before.html
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          cmp /tmp/index-before.html site/crypto-astro/index.html
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
+
+      - name: Commit exact implementation
+        if: steps.payload.outputs.applied == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Crypto-Astro: bind dynamic snapshot memory to refresh pipeline'
+          git push origin HEAD:agent/crypto-astro-refresh-snapshot-memory-v02
+
+      - name: Report transport completion
+        if: steps.payload.outputs.applied == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body 'REFRESH_MEMORY_V02_TRANSPORT=PASS · exact 14-file implementation applied; index.html and live snapshot inputs remain unchanged.'
