@@ -133,10 +133,15 @@ jobs:
       - name: Verify What Changed binding
         run: python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
 
-      - name: Commit final implementation to PR branch
+      - name: Commit non-workflow implementation to PR branch
         run: |
+          git checkout HEAD -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            .github/workflows/crypto-astro-static-refresh-pr-visual.yml \
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml \
+            .github/workflows/crypto-astro-what-changed-pr.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Crypto-Astro: bind dynamic snapshot memory to refresh pipeline'
+          git commit -m 'Crypto-Astro: add dynamic snapshot memory implementation'
           git push origin HEAD:agent/crypto-astro-refresh-snapshot-memory-v02
