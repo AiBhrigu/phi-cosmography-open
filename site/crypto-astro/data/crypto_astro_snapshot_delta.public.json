@@ -18,76 +18,106 @@
     "static_public_snapshot": true,
     "ui_binding_opened": true
   },
-  "comparison_status": "PARTIAL_COMPARABLE",
-  "current_snapshot_id": "crypto-astro:2026-07-19T18:26:56Z:8fb7e78233ab",
-  "generated_at_utc": "2026-07-19T18:26:56Z",
+  "comparison_status": "FULL_COMPARABLE",
+  "current_snapshot_id": "crypto-astro:2026-07-21T12:40:11Z:9281e029f2e5",
+  "generated_at_utc": "2026-07-21T12:40:11Z",
   "metrics": {
     "alt_breadth_24h_pct": {
-      "current_value": "34.5",
+      "current_value": "79.0",
       "delta_unit": "percentage_points",
       "direction": "UP",
-      "display_delta": "+8.0",
+      "display_delta": "+44.5",
       "display_precision": 1,
       "methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
       "path": "altcoin_rotation.alt_breadth_24h_pct",
-      "previous_value": "26.5",
+      "previous_value": "34.5",
       "proof_sources": [
         "coingecko_top250_markets"
       ],
-      "raw_delta": "8.0",
+      "raw_delta": "44.5",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
     "alt_breadth_7d_pct": {
-      "current_value": "39.9",
+      "current_value": "60.1",
       "delta_unit": "percentage_points",
-      "direction": "DOWN",
-      "display_delta": "-1.3",
+      "direction": "UP",
+      "display_delta": "+20.2",
       "display_precision": 1,
       "methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
       "path": "altcoin_rotation.alt_breadth_7d_pct",
-      "previous_value": "41.2",
+      "previous_value": "39.9",
       "proof_sources": [
         "coingecko_top250_markets"
       ],
-      "raw_delta": "-1.3",
+      "raw_delta": "20.2",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
     "btc_gravity_pct": {
-      "current_value": "56.50010249230421",
+      "current_value": "56.8068918922262",
       "delta_unit": "percentage_points",
       "direction": "UP",
-      "display_delta": "+0.28",
+      "display_delta": "+0.31",
       "display_precision": 2,
       "methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
       "path": "market_reality.btc_dominance_pct",
-      "previous_value": "56.21621132126818",
+      "previous_value": "56.50010249230421",
       "proof_sources": [
         "coingecko_global"
       ],
-      "raw_delta": "0.28389117103603",
+      "raw_delta": "0.30678939992199",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
+    "defi_tvl_usd": {
+      "current_value": "77088846917.0",
+      "delta_unit": "usd",
+      "direction": "UP",
+      "display_delta": "+1537647019",
+      "display_precision": 0,
+      "methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
+      "path": "liquidity_tvl.defi_tvl_usd",
+      "previous_value": "75551199898.0",
+      "proof_sources": [
+        "defillama_tvl_methodology_source"
+      ],
+      "raw_delta": "1537647019.0",
+      "status": "COMPARABLE",
+      "type": "NUMERIC",
+      "unit": "usd"
+    },
+    "liquidity_context_state": {
+      "current_value": "context fresh",
+      "methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
+      "path": "liquidity_tvl.liquidity_context_state",
+      "previous_value": "context fresh",
+      "proof_sources": [
+        "defi_tvl_usd"
+      ],
+      "status": "COMPARABLE",
+      "transition": "UNCHANGED",
+      "type": "CATEGORICAL",
+      "unit": "state"
+    },
     "market_field_score": {
-      "current_value": "61.0",
+      "current_value": "83.0",
       "delta_unit": "score_points",
       "direction": "UP",
-      "display_delta": "+1.0",
+      "display_delta": "+22.0",
       "display_precision": 1,
       "methodology_id": "public_market_field_score_v0_1",
       "path": "field_output.market_field_score",
-      "previous_value": "60.0",
+      "previous_value": "61.0",
       "proof_sources": [
         "coingecko_global",
         "coingecko_top250_markets",
         "defillama_stablecoins"
       ],
-      "raw_delta": "1.0",
+      "raw_delta": "22.0",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "score_0_100"
@@ -108,43 +138,25 @@
       "unit": "state"
     },
     "stablecoin_share_pct": {
-      "current_value": "13.500433230542436",
+      "current_value": "13.134748143012063",
       "delta_unit": "percentage_points",
       "direction": "DOWN",
-      "display_delta": "-0.18",
+      "display_delta": "-0.37",
       "display_precision": 2,
       "methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
       "path": "market_reality.stablecoin_share_pct",
-      "previous_value": "13.683691685333388",
+      "previous_value": "13.500433230542436",
       "proof_sources": [
         "defillama_stablecoins",
         "coingecko_global"
       ],
-      "raw_delta": "-0.183258454790952",
+      "raw_delta": "-0.365685087530373",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     }
   },
-  "previous_snapshot_id": "crypto-astro:2026-07-12T22:05:46Z:f423cf480b15",
+  "previous_snapshot_id": "crypto-astro:2026-07-19T18:26:56Z:8fb7e78233ab",
   "schema_version": "crypto_astro_snapshot_delta_public_v0_2",
-  "unavailable_metrics": {
-    "defi_tvl_usd": {
-      "current_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
-      "delta_value": null,
-      "path": "liquidity_tvl.defi_tvl_usd",
-      "previous_methodology_id": "defillama_protocols_sum_v0_1",
-      "reason_code": "METHODOLOGY_MISMATCH",
-      "status": "UNAVAILABLE"
-    },
-    "liquidity_context_state": {
-      "current_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
-      "delta_value": null,
-      "dependency": "defi_tvl_usd",
-      "path": "liquidity_tvl.liquidity_context_state",
-      "previous_methodology_id": "liquidity_context_state_with_protocol_sum_tvl_v0_1",
-      "reason_code": "DEPENDENCY_METHODOLOGY_MISMATCH",
-      "status": "UNAVAILABLE"
-    }
-  }
+  "unavailable_metrics": {}
 }
