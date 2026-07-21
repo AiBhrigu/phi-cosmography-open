@@ -7,62 +7,51 @@ import json
 import re
 from pathlib import Path
 
-EXPECTED = {
-    "btc_gravity_pct": "+0.28 percentage points",
-    "stablecoin_share_pct": "-0.18 percentage points",
-    "alt_breadth_24h_pct": "+8.0 percentage points",
-    "alt_breadth_7d_pct": "-1.3 percentage points",
-    "market_field_score": "+1.0 points",
-    "regime_label": "Unchanged",
-}
-EXPECTED_TIMESTAMPS = (
-    "2026-07-19T18:26:56Z",
-    "2026-07-12T22:05:46Z",
-)
+from render_what_changed import SECTION_PATTERN, load_json, render
 
 
 def verify(repo: Path) -> dict:
     html_path = repo / "site/crypto-astro/index.html"
     source = html_path.read_text(encoding="utf-8")
+    registry = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json")
+    delta = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json")
     failures: list[str] = []
-    if source.count('data-what-changed-status="partial-comparable"') != 1:
-        failures.append("partial-comparable status count")
-    if source.count('data-source-contract="crypto_astro_snapshot_delta_public_v0_1"') != 1:
-        failures.append("source contract count")
-    for key, display in EXPECTED.items():
-        if source.count(f'data-metric="{key}"') != 1:
-            failures.append(f"{key} count")
-        if source.count(display) != 1:
-            failures.append(f"{key} display")
-    for timestamp in EXPECTED_TIMESTAMPS:
-        if timestamp not in source:
-            failures.append(f"full timestamp missing: {timestamp}")
-    for code in ("METHODOLOGY_MISMATCH", "DEPENDENCY_METHODOLOGY_MISMATCH"):
-        if source.count(f"<code>{code}</code>") != 1:
-            failures.append(f"{code} count")
-    section = re.search(r'<section id="what-changed".*?</section>', source, re.S)
+    section = SECTION_PATTERN.search(source)
+    expected = render(registry, delta)
     if section is None:
         failures.append("What Changed section missing")
-    else:
-        lowered = section.group(0).lower()
-        for term in ("fetch(", "xmlhttprequest", "websocket(", "eventsource("):
-            if term in lowered:
-                failures.append(f"forbidden browser runtime: {term}")
+    elif section.group(0).rstrip("\n") != expected:
+        failures.append("rendered section differs from deterministic contract")
     if source.count('href="https://www.bhrigu.io/crypto-astro/btc"') != 2:
         failures.append("BTC CTA count drift")
-    if source.count('style="--btc-dominance:56.5%;"') != 1:
+    snapshot = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot.public.json")
+    dominance = f'{float(snapshot["market_reality"]["btc_dominance_pct"]):.1f}%'
+    if source.count(f'style="--btc-dominance:{dominance};"') != 1:
         failures.append("BTC geometry drift")
     if source.count('../theme/crypto_astro_what_changed.css') != 1:
         failures.append("CSS link count")
+    lowered = expected.lower()
+    for term in ("fetch(", "xmlhttprequest", "websocket(", "eventsource("):
+        if term in lowered:
+            failures.append(f"forbidden browser runtime: {term}")
+    metrics = delta["metrics"]
+    unavailable = delta["unavailable_metrics"]
+    for key in metrics:
+        if source.count(f'data-metric="{key}"') != 1:
+            failures.append(f"{key} count")
+    for key, item in unavailable.items():
+        if source.count(f'<code>{item["reason_code"]}</code>') != 1:
+            failures.append(f"{key} unavailable reason count")
     result = {
-        "node": "CRYPTO_ASTRO_PR_07_WHAT_CHANGED_UI_BINDING_IMPLEMENTATION_v0_1",
+        "node": "CRYPTO_ASTRO_REFRESH_PIPELINE_SNAPSHOT_MEMORY_BINDING_IMPLEMENTATION_v0_1",
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
         "html_sha256": hashlib.sha256(html_path.read_bytes()).hexdigest(),
-        "comparable_metric_count": 6,
-        "unavailable_metric_count": 2,
+        "comparison_status": delta["comparison_status"],
+        "comparable_metric_count": len(metrics),
+        "unavailable_metric_count": len(unavailable),
         "browser_fetch": False,
-        "refresh_pipeline_integration": False,
+        "refresh_pipeline_integration": True,
     }
     if failures:
         raise AssertionError(json.dumps(result, indent=2))

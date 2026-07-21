@@ -13,9 +13,10 @@
     "orion_core_protected": true,
     "payment_closed": true,
     "read_only": true,
+    "refresh_pipeline_binding_opened": true,
     "runtime_closed": true,
     "static_public_snapshot": true,
-    "ui_binding_opened": false
+    "ui_binding_opened": true
   },
   "comparison_status": "PARTIAL_COMPARABLE",
   "current_snapshot_id": "crypto-astro:2026-07-19T18:26:56Z:8fb7e78233ab",
@@ -126,7 +127,7 @@
     }
   },
   "previous_snapshot_id": "crypto-astro:2026-07-12T22:05:46Z:f423cf480b15",
-  "schema_version": "crypto_astro_snapshot_delta_public_v0_1",
+  "schema_version": "crypto_astro_snapshot_delta_public_v0_2",
   "unavailable_metrics": {
     "defi_tvl_usd": {
       "current_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
