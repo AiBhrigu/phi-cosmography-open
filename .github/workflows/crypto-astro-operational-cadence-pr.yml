@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/crypto-astro-static-refresh-manual.yml"
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
       - "tools/crypto_astro_operations/**"
@@ -39,6 +40,7 @@ jobs:
           allowed = {
               ".github/workflows/crypto-astro-static-refresh-manual.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
               "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
               "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
               "tools/crypto_astro_operations/verify_operational_cadence.py",
