@@ -113,6 +113,9 @@ def verify_manual_workflow(text: str, policy: dict[str, Any]) -> list[str]:
         "CRYPTO_ASTRO_REFRESH_MODE",
         "CRYPTO_ASTRO_OPERATOR_REF",
         "CRYPTO_ASTRO_REFRESH_REASON",
+        "Materialize cadence metadata in operator review",
+        "Workflow may push one fully validated review branch",
+        "It may not merge or issue a deployment command.",
         "explicit merge authorization",
     ]
     for marker in required_markers:
@@ -135,7 +138,7 @@ def verify_manual_workflow(text: str, policy: dict[str, Any]) -> list[str]:
         require(re.search(pattern, text, flags=re.MULTILINE | re.IGNORECASE) is None, f"manual:forbidden:{name}", failures)
 
     require("cancel-in-progress: false" in text, "manual:concurrency_cancel_policy", failures)
-    require("OPEN_REFRESH_COUNT" in text and "OPEN_REFRESH_COUNT" in text, "manual:open_pr_count", failures)
+    require("OPEN_REFRESH_COUNT" in text and 'test "$OPEN_REFRESH_COUNT" = "0"' in text, "manual:open_pr_count", failures)
     require("git rev-parse HEAD" in text and "git rev-parse origin/main" in text, "manual:exact_main_check", failures)
     return failures
 
@@ -147,10 +150,10 @@ def verify_cadence_workflow(text: str) -> list[str]:
         "pull_request:",
         ".github/workflows/crypto-astro-static-refresh-manual.yml",
         ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+        ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
         "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
         "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
         "tools/crypto_astro_operations/**",
-        "crypto_astro_all_module_static_refresh_source_v0_1.py",
         "crypto_astro_operator_review.md",
         "test_verify_operational_cadence.py",
         "verify_operational_cadence.py",
@@ -158,22 +161,6 @@ def verify_cadence_workflow(text: str) -> list[str]:
         require(marker in text, f"cadence_workflow:missing:{marker}", failures)
     require(re.search(r"^  schedule:\s*$", text, flags=re.MULTILINE) is None, "cadence_workflow:schedule", failures)
     require(re.search(r"^  push:\s*$", text, flags=re.MULTILINE) is None, "cadence_workflow:push", failures)
-    return failures
-
-
-def verify_generator(text: str) -> list[str]:
-    failures: list[str] = []
-    for marker in (
-        "CRYPTO_ASTRO_REFRESH_MODE",
-        "CRYPTO_ASTRO_OPERATOR_REF",
-        "CRYPTO_ASTRO_REFRESH_REASON",
-        "REFRESH_MODE=",
-        "OPERATOR_REF=",
-        "REFRESH_REASON=",
-        OPERATOR_BOUNDARY,
-    ):
-        require(marker in text, f"generator:missing:{marker}", failures)
-    require("No push, no PR, no deploy." not in text, "generator:obsolete_boundary", failures)
     return failures
 
 
@@ -190,7 +177,6 @@ def verify_repository(
     policy_path: Path,
     manual_workflow_path: Path,
     cadence_workflow_path: Path,
-    generator_path: Path,
     operator_review_path: Path,
 ) -> dict[str, Any]:
     policy = load_json(policy_path)
@@ -198,7 +184,6 @@ def verify_repository(
         "policy": verify_policy(policy),
         "manual_workflow": verify_manual_workflow(manual_workflow_path.read_text(encoding="utf-8"), policy),
         "cadence_workflow": verify_cadence_workflow(cadence_workflow_path.read_text(encoding="utf-8")),
-        "generator": verify_generator(generator_path.read_text(encoding="utf-8")),
         "operator_review": verify_operator_review(operator_review_path.read_text(encoding="utf-8")),
     }
     failures = [f"{section}:{failure}" for section, values in checks.items() for failure in values]
@@ -217,7 +202,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--policy", default="docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json")
     parser.add_argument("--manual-workflow", default=".github/workflows/crypto-astro-static-refresh-manual.yml")
     parser.add_argument("--cadence-workflow", default=".github/workflows/crypto-astro-operational-cadence-pr.yml")
-    parser.add_argument("--generator", default="tools/crypto_astro_static_refresh/crypto_astro_all_module_static_refresh_source_v0_1.py")
     parser.add_argument("--operator-review", default="docs/crypto-astro-service/crypto_astro_operator_review.md")
     parser.add_argument("--report")
     return parser.parse_args()
@@ -232,7 +216,6 @@ def main() -> int:
         resolve(args.policy),
         resolve(args.manual_workflow),
         resolve(args.cadence_workflow),
-        resolve(args.generator),
         resolve(args.operator_review),
     )
     rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
