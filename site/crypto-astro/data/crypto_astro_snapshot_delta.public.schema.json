@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json",
-  "title": "Crypto-Astro Snapshot Delta Public v0.1",
+  "title": "Crypto-Astro Snapshot Delta Public v0.2",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,7 +16,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "crypto_astro_snapshot_delta_public_v0_1"
+      "const": "crypto_astro_snapshot_delta_public_v0_2"
     },
     "generated_at_utc": {
       "type": "string",
@@ -29,19 +29,16 @@
       "type": "string"
     },
     "comparison_status": {
-      "const": "PARTIAL_COMPARABLE"
+      "enum": [
+        "FULL_COMPARABLE",
+        "PARTIAL_COMPARABLE",
+        "UNAVAILABLE"
+      ]
     },
     "metrics": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "btc_gravity_pct",
-        "stablecoin_share_pct",
-        "alt_breadth_24h_pct",
-        "alt_breadth_7d_pct",
-        "market_field_score",
-        "regime_label"
-      ],
+      "maxProperties": 8,
       "properties": {
         "btc_gravity_pct": {
           "$ref": "#/$defs/numericMetric"
@@ -60,17 +57,38 @@
         },
         "regime_label": {
           "$ref": "#/$defs/categoricalMetric"
+        },
+        "defi_tvl_usd": {
+          "$ref": "#/$defs/numericMetric"
+        },
+        "liquidity_context_state": {
+          "$ref": "#/$defs/categoricalMetric"
         }
       }
     },
     "unavailable_metrics": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "defi_tvl_usd",
-        "liquidity_context_state"
-      ],
+      "maxProperties": 8,
       "properties": {
+        "btc_gravity_pct": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "stablecoin_share_pct": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "alt_breadth_24h_pct": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "alt_breadth_7d_pct": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "market_field_score": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
+        "regime_label": {
+          "$ref": "#/$defs/unavailableMetric"
+        },
         "defi_tvl_usd": {
           "$ref": "#/$defs/unavailableMetric"
         },
@@ -113,17 +131,25 @@
           "type": "string"
         },
         "unit": {
-          "type": "string"
+          "enum": [
+            "percent",
+            "score_0_100",
+            "usd"
+          ]
         },
         "delta_unit": {
-          "type": "string"
+          "enum": [
+            "percentage_points",
+            "score_points",
+            "usd"
+          ]
         },
         "methodology_id": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "proof_sources": {
           "type": "array",
-          "minItems": 1,
           "items": {
             "type": "string"
           }
@@ -179,14 +205,14 @@
           "type": "string"
         },
         "unit": {
-          "type": "string"
+          "const": "state"
         },
         "methodology_id": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "proof_sources": {
           "type": "array",
-          "minItems": 1,
           "items": {
             "type": "string"
           }
@@ -236,6 +262,7 @@
             "SOURCE_URL_MISMATCH",
             "METHODOLOGY_MISMATCH",
             "DEPENDENCY_METHODOLOGY_MISMATCH",
+            "DEPENDENCY_UNAVAILABLE",
             "UNIVERSE_MISMATCH",
             "NON_FINITE_VALUE",
             "BOUNDARY_MISMATCH"
@@ -274,7 +301,8 @@
         "formula_weights_exposed",
         "crawler_input_forbidden",
         "html_presentation_input_forbidden",
-        "ui_binding_opened"
+        "ui_binding_opened",
+        "refresh_pipeline_binding_opened"
       ],
       "properties": {
         "read_only": {
@@ -323,7 +351,10 @@
           "const": true
         },
         "ui_binding_opened": {
-          "const": false
+          "const": true
+        },
+        "refresh_pipeline_binding_opened": {
+          "const": true
         }
       }
     }

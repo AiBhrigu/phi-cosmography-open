@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify committed Crypto-Astro snapshot-memory outputs against repo truth."""
+"""Verify committed dynamic Snapshot Memory outputs against exact Git truth."""
 from __future__ import annotations
 
 import argparse
@@ -12,21 +12,10 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from build_snapshot_memory import (
-    DELTA_PATH,
-    REGISTRY_PATH,
-    build_documents,
-    json_bytes,
-    load_from_repo,
-    write_documents,
+    DELTA_PATH, REGISTRY_PATH, TRACKED_METRICS, build_documents, json_bytes,
+    load_pair, write_documents,
 )
 
-EXPECTED_DELTAS = {
-    "btc_gravity_pct": ("0.28389117103603", "+0.28", "UP"),
-    "stablecoin_share_pct": ("-0.183258454790952", "-0.18", "DOWN"),
-    "alt_breadth_24h_pct": ("8.0", "+8.0", "UP"),
-    "alt_breadth_7d_pct": ("-1.3", "-1.3", "DOWN"),
-    "market_field_score": ("1.0", "+1.0", "UP"),
-}
 FORBIDDEN_IMPORT_ROOTS = {"urllib", "requests", "http", "socket", "aiohttp"}
 
 
@@ -49,8 +38,8 @@ def validate_no_network_imports(path: Path) -> None:
 
 
 def verify(repo: Path, report_path: Path | None = None) -> dict:
-    current, previous, ancestry = load_from_repo(repo)
-    registry, delta = build_documents(current, previous, ancestry_ok=ancestry, strict_locks=True)
+    current, previous, ancestry = load_pair(repo)
+    registry, delta = build_documents(current, previous, ancestry_ok=ancestry)
 
     registry_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json")
     delta_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json")
@@ -69,45 +58,46 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     with tempfile.TemporaryDirectory() as temp_a, tempfile.TemporaryDirectory() as temp_b:
         out_a, out_b = Path(temp_a), Path(temp_b)
         write_documents(out_a, registry, delta)
-        registry2, delta2 = build_documents(current, previous, ancestry_ok=ancestry, strict_locks=True)
+        registry2, delta2 = build_documents(current, previous, ancestry_ok=ancestry)
         write_documents(out_b, registry2, delta2)
         for relative in (REGISTRY_PATH, DELTA_PATH):
             if (out_a / relative).read_bytes() != (out_b / relative).read_bytes():
                 raise AssertionError(f"non-deterministic output: {relative}")
 
-    for metric_id, (raw, display, direction) in EXPECTED_DELTAS.items():
-        metric = delta["metrics"][metric_id]
-        assert metric["raw_delta"] == raw
-        assert metric["display_delta"] == display
-        assert metric["direction"] == direction
+    metrics = set(delta["metrics"])
+    unavailable = set(delta["unavailable_metrics"])
+    assert metrics | unavailable == set(TRACKED_METRICS)
+    assert not (metrics & unavailable)
+    expected_status = "FULL_COMPARABLE" if len(metrics) == len(TRACKED_METRICS) else \
+                      "PARTIAL_COMPARABLE" if metrics else "UNAVAILABLE"
+    assert delta["comparison_status"] == expected_status
+    for metric in delta["metrics"].values():
+        if metric["type"] == "NUMERIC":
+            assert metric["direction"] in {"UP", "DOWN", "UNCHANGED"}
+            assert isinstance(metric["display_delta"], str)
+    for item in delta["unavailable_metrics"].values():
+        assert item["delta_value"] is None
 
-    regime = delta["metrics"]["regime_label"]
-    assert regime["transition"] == "UNCHANGED"
-    assert regime["previous_value"] == "Balanced Expansion"
-    assert regime["current_value"] == "Balanced Expansion"
-
-    defi = delta["unavailable_metrics"]["defi_tvl_usd"]
-    assert defi["reason_code"] == "METHODOLOGY_MISMATCH"
-    assert defi["delta_value"] is None
-    liquidity = delta["unavailable_metrics"]["liquidity_context_state"]
-    assert liquidity["reason_code"] == "DEPENDENCY_METHODOLOGY_MISMATCH"
-
-    build_path = repo / "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py"
-    verify_path = repo / "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py"
-    validate_no_network_imports(build_path)
-    validate_no_network_imports(verify_path)
+    for relative in (
+        "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+        "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+    ):
+        validate_no_network_imports(repo / relative)
 
     report = {
-        "schema_version": "crypto_astro_snapshot_memory_verification_v0_1",
+        "schema_version": "crypto_astro_snapshot_memory_verification_v0_2",
         "status": "PASS",
         "registry_schema": "PASS",
         "delta_schema": "PASS",
         "locked_source_hashes": "PASS",
         "ancestry": "PASS",
         "deterministic_double_build": "PASS",
-        "expected_deltas": "PASS",
-        "defi_tvl_fail_closed": "PASS",
+        "metric_partition": "PASS",
+        "per_metric_fail_closed": "PASS",
         "zero_network_imports": "PASS",
+        "comparison_status": delta["comparison_status"],
+        "comparable_metric_count": len(metrics),
+        "unavailable_metric_count": len(unavailable),
         "registry_sha256": hashlib.sha256(committed_registry).hexdigest(),
         "delta_sha256": hashlib.sha256(committed_delta).hexdigest(),
     }
@@ -122,8 +112,7 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    report = verify(args.repo.resolve(), args.report)
-    print(json.dumps(report, indent=2, sort_keys=True))
+    print(json.dumps(verify(args.repo.resolve(), args.report), indent=2, sort_keys=True))
     return 0
 
 

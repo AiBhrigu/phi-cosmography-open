@@ -2,12 +2,6 @@ name: Crypto-Astro Static Refresh Manual
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "tools/crypto_astro_static_refresh/**"
-      - ".github/workflows/crypto-astro-static-refresh-manual.yml"
 
 permissions:
   contents: write
@@ -19,88 +13,188 @@ concurrency:
 
 jobs:
   refresh:
-    name: Run static refresh and open review PR
+    name: Build atomic static refresh and review PR
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       CRYPTO_ASTRO_REFRESH_BRANCH: automation/crypto-astro-static-refresh-${{ github.run_id }}
       CRYPTO_ASTRO_REFRESH_OUT: /tmp/crypto_astro_static_refresh_output
       COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
     steps:
-      - name: Checkout repository
+      - name: Checkout exact main source
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Git identity
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install offline validators
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+
+      - name: Configure Git identity and lock base
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Verify DeFi TVL methodology contract
         run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
 
-      - name: Run hardened static refresh
+      - name: Run hardened static refresh locally
         run: |
           rm -rf "$CRYPTO_ASTRO_REFRESH_OUT"
           mkdir -p "$CRYPTO_ASTRO_REFRESH_OUT"
-          python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py             "$GITHUB_WORKSPACE"             "$CRYPTO_ASTRO_REFRESH_OUT"
+          python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            "$GITHUB_WORKSPACE" "$CRYPTO_ASTRO_REFRESH_OUT"
 
-      - name: Detect changes
+      - name: Validate data-stage file scope
         id: changes
         run: |
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No static refresh diff produced."
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            git status --short
-            git diff --stat
-          fi
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              'site/crypto-astro/index.html',
+              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+              'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json',
+              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+              'site/crypto-astro/data/scoring_snapshot.public.json',
+              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          required = allowed - {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          lines = subprocess.check_output(['git','status','--porcelain'], text=True).splitlines()
+          changed = set()
+          for line in lines:
+              raw = line[3:] if len(line) >= 4 and line[2] == ' ' else line.split(None, 1)[-1]
+              changed.add(raw.split(' -> ')[-1].strip())
+          if not changed:
+              print('changed=false')
+              with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out: out.write('changed=false\n')
+              raise SystemExit(0)
+          assert required <= changed <= allowed, {'missing': sorted(required-changed), 'unexpected': sorted(changed-allowed)}
+          print('DATA_STAGE_SCOPE=PASS')
+          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a') as out: out.write('changed=true\n')
+          PY
 
-      - name: Commit and push refresh branch
+      - name: Create local data commit
         if: steps.changes.outputs.changed == 'true'
         run: |
-          git add             site/crypto-astro/index.html             site/crypto-astro/data/crypto_astro_snapshot.public.json             site/crypto-astro/data/crypto_astro_snapshot_proof.public.json             site/crypto-astro/data/crypto_astro_module_bindings.public.json             site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json             site/crypto-astro/data/market_field_snapshot.public.v0_1.json             site/crypto-astro/data/scoring_snapshot.public.json             docs/crypto-astro-service/crypto_astro_snapshot_summary.md             docs/crypto-astro-service/crypto_astro_operator_review.md
+          git add \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            docs/crypto-astro-service/crypto_astro_snapshot_summary.md \
+            docs/crypto-astro-service/crypto_astro_operator_review.md
           git commit -m "Crypto-Astro: automated static market snapshot refresh"
-          git push -u origin "$CRYPTO_ASTRO_REFRESH_BRANCH"
+          echo "DATA_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Create review PR
+      - name: Build Snapshot Memory twice from exact accepted pair
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          rm -rf /tmp/crypto-astro-memory-a /tmp/crypto-astro-memory-b
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
+            --repo . --base-ref "$BASE_SHA" --current-ref "$DATA_COMMIT_SHA" \
+            --out-dir /tmp/crypto-astro-memory-a
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
+            --repo . --base-ref "$BASE_SHA" --current-ref "$DATA_COMMIT_SHA" \
+            --out-dir /tmp/crypto-astro-memory-b
+          cmp /tmp/crypto-astro-memory-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json \
+              /tmp/crypto-astro-memory-b/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp /tmp/crypto-astro-memory-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+              /tmp/crypto-astro-memory-b/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          cp /tmp/crypto-astro-memory-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json \
+             site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cp /tmp/crypto-astro-memory-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+             site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+
+      - name: Verify memory, render static UI, and create local materialization commit
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . \
+            --report "$CRYPTO_ASTRO_REFRESH_OUT/snapshot-memory-verification.json"
+          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo . \
+            --report "$CRYPTO_ASTRO_REFRESH_OUT/what-changed-verification.json"
+          python - <<'PY'
+          import subprocess
+          changed = set(subprocess.check_output(['git','diff','--name-only','HEAD'], text=True).splitlines())
+          expected = {
+              'site/crypto-astro/index.html',
+              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+          }
+          assert changed == expected, {'missing': sorted(expected-changed), 'unexpected': sorted(changed-expected)}
+          print('MEMORY_STAGE_SCOPE=PASS')
+          PY
+          git add \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot_registry.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          git commit -m "Crypto-Astro: materialize accepted snapshot memory"
+
+      - name: Prove atomic final branch before any push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          required = {
+              'site/crypto-astro/index.html',
+              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+              'site/crypto-astro/data/scoring_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          changed = set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA'],'HEAD'], text=True).splitlines())
+          assert changed in (required, required | optional), {'missing': sorted(required-changed), 'unexpected': sorted(changed-required-optional)}
+          assert subprocess.check_output(['git','status','--porcelain'], text=True).strip() == ''
+          print('ATOMIC_REFRESH_BRANCH=PASS')
+          PY
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo .
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          git diff --exit-code
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
+
+      - name: Push complete branch only after full PASS
+        if: steps.changes.outputs.changed == 'true'
+        run: git push -u origin "$CRYPTO_ASTRO_REFRESH_BRANCH"
+
+      - name: Open review PR only
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat > /tmp/crypto_astro_refresh_pr_body.md <<'BODY'
-          Static public market snapshot refresh generated by the trusted Crypto-Astro refresh workflow.
+          Atomic static Crypto-Astro refresh generated by manual workflow dispatch.
 
-          Trigger:
-          - `${{ github.event_name }}`
+          Includes the verified public snapshot, proof, bindings, derived static surfaces, dynamic accepted-pair registry/delta, and statically rendered What Changed section.
 
-          Scope:
-          - refresh public snapshot JSON
-          - refresh proof JSON
-          - refresh module bindings
-          - sync market field and scoring snapshots
-          - update Crypto-Astro static HTML values
-          - update operator summary/review docs
-
-          Boundary:
-          - no backend/API activation
-          - no payment activation
-          - no live adapter claim
-          - no trading signal
-          - no forecast
-          - no price target
-          - no investment advice
-
-          Review gate:
-          - this workflow opens a PR only
-          - no auto-merge
-          - no scheduled cron
+          Review boundary:
+          - review PR only; no auto-merge and no deploy command
+          - no cron, backend, API, payment, live-adapter claim, forecast, trading signal, price target, or investment recommendation
+          - no A/E activation, C/T runtime, formula-weight disclosure, or ORION core exposure
           BODY
-          gh pr create             --base main             --head "$CRYPTO_ASTRO_REFRESH_BRANCH"             --title "Crypto-Astro: automated static market snapshot refresh"             --body-file /tmp/crypto_astro_refresh_pr_body.md
+          gh pr create --base main --head "$CRYPTO_ASTRO_REFRESH_BRANCH" \
+            --title "Crypto-Astro: automated static market snapshot refresh" \
+            --body-file /tmp/crypto_astro_refresh_pr_body.md
 
-      - name: Upload refresh report artifact
+      - name: Upload failure or success report
         if: always()
         uses: actions/upload-artifact@v4
         with:

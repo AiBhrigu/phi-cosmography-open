@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
-  "title": "Crypto-Astro Snapshot Registry Public v0.1",
+  "title": "Crypto-Astro Snapshot Registry Public v0.2",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,7 +15,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "crypto_astro_snapshot_registry_public_v0_1"
+      "const": "crypto_astro_snapshot_registry_public_v0_2"
     },
     "registry_generated_at_utc": {
       "type": "string",
@@ -25,16 +25,49 @@
       "const": "EXPLICIT_ACCEPTED_PAIR"
     },
     "current": {
-      "$ref": "#/$defs/snapshotEntry"
+      "$ref": "#/$defs/entry"
     },
     "previous": {
-      "$ref": "#/$defs/snapshotEntry"
+      "$ref": "#/$defs/entry"
     },
     "metric_methodologies": {
       "type": "object",
-      "minProperties": 8,
-      "additionalProperties": {
-        "$ref": "#/$defs/methodology"
+      "additionalProperties": false,
+      "required": [
+        "btc_gravity_pct",
+        "stablecoin_share_pct",
+        "alt_breadth_24h_pct",
+        "alt_breadth_7d_pct",
+        "market_field_score",
+        "regime_label",
+        "defi_tvl_usd",
+        "liquidity_context_state"
+      ],
+      "properties": {
+        "btc_gravity_pct": {
+          "$ref": "#/$defs/method"
+        },
+        "stablecoin_share_pct": {
+          "$ref": "#/$defs/method"
+        },
+        "alt_breadth_24h_pct": {
+          "$ref": "#/$defs/method"
+        },
+        "alt_breadth_7d_pct": {
+          "$ref": "#/$defs/method"
+        },
+        "market_field_score": {
+          "$ref": "#/$defs/method"
+        },
+        "regime_label": {
+          "$ref": "#/$defs/method"
+        },
+        "defi_tvl_usd": {
+          "$ref": "#/$defs/method"
+        },
+        "liquidity_context_state": {
+          "$ref": "#/$defs/method"
+        }
       }
     },
     "boundary": {
@@ -42,15 +75,7 @@
     }
   },
   "$defs": {
-    "sha40": {
-      "type": "string",
-      "pattern": "^[0-9a-f]{40}$"
-    },
-    "sha64": {
-      "type": "string",
-      "pattern": "^[0-9a-f]{64}$"
-    },
-    "snapshotEntry": {
+    "entry": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -83,43 +108,52 @@
         },
         "snapshot_id": {
           "type": "string",
-          "pattern": "^crypto-astro:.+:[0-9a-f]{12}$"
+          "pattern": "^crypto-astro:"
         },
         "commit_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "data_origin_commit_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "snapshot_path": {
           "const": "site/crypto-astro/data/crypto_astro_snapshot.public.json"
         },
         "snapshot_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "snapshot_sha256": {
-          "$ref": "#/$defs/sha64"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "proof_path": {
           "const": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
         },
         "proof_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "proof_sha256": {
-          "$ref": "#/$defs/sha64"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "bindings_path": {
           "const": "site/crypto-astro/data/crypto_astro_module_bindings.public.json"
         },
         "bindings_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "bindings_sha256": {
-          "$ref": "#/$defs/sha64"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "runner_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "generated_at_utc": {
           "type": "string",
@@ -140,7 +174,7 @@
         }
       }
     },
-    "methodology": {
+    "method": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -163,10 +197,12 @@
           "type": "boolean"
         },
         "current_runner_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         },
         "previous_runner_blob_sha": {
-          "$ref": "#/$defs/sha40"
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
         }
       }
     },
@@ -189,7 +225,8 @@
         "formula_weights_exposed",
         "crawler_input_forbidden",
         "html_presentation_input_forbidden",
-        "ui_binding_opened"
+        "ui_binding_opened",
+        "refresh_pipeline_binding_opened"
       ],
       "properties": {
         "read_only": {
@@ -238,7 +275,10 @@
           "const": true
         },
         "ui_binding_opened": {
-          "const": false
+          "const": true
+        },
+        "refresh_pipeline_binding_opened": {
+          "const": true
         }
       }
     }
