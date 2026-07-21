@@ -74,6 +74,11 @@ class WhatChangedTests(unittest.TestCase):
     def test_six_comparable_metrics(self):
         self.assertEqual(renderer.render(self.registry, self.delta).count("data-metric="), 6)
 
+    def test_full_utc_snapshot_timestamps(self):
+        output = renderer.render(self.registry, self.delta)
+        self.assertIn("2026-07-19T18:26:56Z", output)
+        self.assertIn("2026-07-12T22:05:46Z", output)
+
     def test_unavailable_metrics_have_no_numeric_delta(self):
         output = renderer.render(self.registry, self.delta)
         self.assertIn("DeFi TVL · unavailable", output)
