@@ -21,7 +21,7 @@ HISTORICAL_HEADS = {
     "css-modules": "feature/crypto-astro-deterministic-css-modules-v0-1",
     "lt1-import-normalization": "feature/crypto-astro-lt1-import-normalization-v0-1",
     "geometry-truth": "feature/crypto-astro-geometry-truth-repair-v0-1",
-    "editorial-composition": "feature/crypto-astro-editorial-composition-and-cta-v0-1",
+    "editorial-composition": "feature/crypto-astro-editorial-composition-cta-v0-1",
 }
 
 REFRESH_PREFIX = "automation/crypto-astro-static-refresh-"
