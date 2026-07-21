@@ -1,0 +1,417 @@
+name: Crypto-Astro PR-07 Bootstrap
+
+on:
+  push:
+    branches:
+      - agent/crypto-astro-pr07-what-changed-ui
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: agent/crypto-astro-pr07-what-changed-ui
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact base
+        run: test "$(git rev-parse HEAD^)" = "21f0580ada48dec019af6c2108f34c592567c2d3"
+
+      - name: Generate bounded PR-07 implementation
+        run: |
+          mkdir -p tools/crypto_astro_what_changed
+          cat > tools/crypto_astro_what_changed/render_what_changed.py <<'PY'
+          #!/usr/bin/env python3
+          import argparse
+          import html
+          import json
+          import re
+          from pathlib import Path
+
+          METRIC_ORDER = (
+              ('btc_gravity_pct', 'BTC gravity'),
+              ('stablecoin_share_pct', 'Stablecoin share'),
+              ('alt_breadth_24h_pct', 'Alt breadth · 24h'),
+              ('alt_breadth_7d_pct', 'Alt breadth · 7d'),
+              ('market_field_score', 'Market Field Score'),
+              ('regime_label', 'Regime'),
+          )
+          UNIT_LABELS = {'percentage_points': 'percentage points', 'score_points': 'points'}
+
+          def load_json(path: Path):
+              return json.loads(path.read_text(encoding='utf-8'))
+
+          def snapshot_time(snapshot_id: str) -> str:
+              parts = snapshot_id.split(':')
+              if len(parts) < 3:
+                  raise ValueError(f'invalid snapshot id: {snapshot_id}')
+              return parts[1]
+
+          def metric_card(key: str, label: str, metric: dict) -> str:
+              if metric.get('status') != 'COMPARABLE':
+                  raise ValueError(f'{key} is not comparable')
+              current = html.escape(str(metric['current_value']))
+              previous = html.escape(str(metric['previous_value']))
+              if metric.get('type') == 'CATEGORICAL':
+                  delta = html.escape(str(metric['transition']).title())
+                  direction = 'unchanged'
+              else:
+                  delta = f"{html.escape(str(metric['display_delta']))} {html.escape(UNIT_LABELS[metric['delta_unit']])}"
+                  direction = str(metric['direction']).lower()
+              return (
+                  f'      <article class="what-changed-metric-v0-1" data-metric="{key}" data-direction="{direction}">\n'
+                  f'        <span>{label}</span>\n'
+                  f'        <strong>{delta}</strong>\n'
+                  f'        <small>{previous} → {current}</small>\n'
+                  f'      </article>'
+              )
+
+          def render(delta: dict) -> str:
+              if delta.get('schema_version') != 'crypto_astro_snapshot_delta_public_v0_1':
+                  raise ValueError('unexpected delta schema')
+              if delta.get('comparison_status') != 'PARTIAL_COMPARABLE':
+                  raise ValueError('comparison is not partial-comparable')
+              boundary = delta.get('boundary') or {}
+              required = {
+                  'read_only': True,
+                  'static_public_snapshot': True,
+                  'runtime_closed': True,
+                  'backend_api_closed': True,
+                  'payment_closed': True,
+                  'orion_core_protected': True,
+                  'no_forecast': True,
+                  'no_trading_signal': True,
+              }
+              for key, expected in required.items():
+                  if boundary.get(key) is not expected:
+                      raise ValueError(f'boundary mismatch: {key}')
+              cards = '\n'.join(metric_card(key, label, delta['metrics'][key]) for key, label in METRIC_ORDER)
+              unavailable = delta['unavailable_metrics']
+              defi = unavailable['defi_tvl_usd']
+              liquidity = unavailable['liquidity_context_state']
+              if defi.get('delta_value') is not None or liquidity.get('delta_value') is not None:
+                  raise ValueError('unavailable metrics must not contain deltas')
+              current = html.escape(snapshot_time(delta['current_snapshot_id']))
+              previous = html.escape(snapshot_time(delta['previous_snapshot_id']))
+              generated = html.escape(str(delta['generated_at_utc']))
+              return f'''<section id="what-changed" class="editorial-what-changed-v0-1 editorial-chapter-v0-1 what-changed-memory-v0-1" data-editorial-chapter="what-changed" data-what-changed-status="partial-comparable" aria-labelledby="what-changed-title">
+  <div class="what-changed-memory-v0-1__head">
+    <div>
+      <p class="eyebrow">What Changed</p>
+      <h2 id="what-changed-title">Verified change memory</h2>
+      <p>Current and previous accepted snapshots are compared only where source, methodology, universe, and proof bindings remain compatible.</p>
+    </div>
+    <dl class="what-changed-memory-v0-1__snapshots" aria-label="Compared snapshot timestamps">
+      <div><dt>Current</dt><dd>{current}</dd></div>
+      <div><dt>Previous</dt><dd>{previous}</dd></div>
+    </dl>
+  </div>
+  <div class="what-changed-memory-v0-1__grid" aria-label="Verified comparable changes">
+{cards}
+  </div>
+  <div class="what-changed-memory-v0-1__unavailable" role="note" aria-label="Unavailable comparisons">
+    <strong>Methodology boundary preserved</strong>
+    <span>DeFi TVL · unavailable ({html.escape(defi['reason_code'])})</span>
+    <span>Liquidity context · unavailable ({html.escape(liquidity['reason_code'])})</span>
+  </div>
+  <p class="what-changed-memory-v0-1__meta">Static accepted-pair comparison · generated {generated}. No relative percentages, cached reconstruction, live feed, forecast, or trading signal.</p>
+</section>'''
+
+          def apply(repo: Path):
+              delta = load_json(repo / 'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json')
+              registry = load_json(repo / 'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json')
+              if registry.get('schema_version') != 'crypto_astro_snapshot_registry_public_v0_1':
+                  raise ValueError('unexpected registry schema')
+              if registry.get('selection_policy') != 'EXPLICIT_ACCEPTED_PAIR':
+                  raise ValueError('registry selection policy mismatch')
+              html_path = repo / 'site/crypto-astro/index.html'
+              source = html_path.read_text(encoding='utf-8')
+              pattern = re.compile(r'<section id="what-changed".*?</section>\n(?=<!-- BTC_PHI_CYCLE_HUB_SURFACE_LIFT_v0_1:BEGIN -->)', re.S)
+              updated, count = pattern.subn(render(delta) + '\n', source)
+              if count != 1:
+                  raise ValueError(f'What Changed section count mismatch: {count}')
+              css_link = '<link href="../theme/crypto_astro_what_changed.css" rel="stylesheet"/>'
+              if css_link not in updated:
+                  anchor = '<link href="../theme/crypto_astro_surface.css" rel="stylesheet"/>'
+                  if updated.count(anchor) != 1:
+                      raise ValueError('CSS link anchor mismatch')
+                  updated = updated.replace(anchor, anchor + '\n' + css_link)
+              html_path.write_text(updated, encoding='utf-8')
+
+          if __name__ == '__main__':
+              parser = argparse.ArgumentParser()
+              parser.add_argument('--repo', default='.')
+              args = parser.parse_args()
+              apply(Path(args.repo).resolve())
+          PY
+
+          cat > tools/crypto_astro_what_changed/verify_what_changed.py <<'PY'
+          #!/usr/bin/env python3
+          import argparse
+          import hashlib
+          import json
+          import re
+          from pathlib import Path
+
+          EXPECTED = {
+              'btc_gravity_pct': '+0.28 percentage points',
+              'stablecoin_share_pct': '-0.18 percentage points',
+              'alt_breadth_24h_pct': '+8.0 percentage points',
+              'alt_breadth_7d_pct': '-1.3 percentage points',
+              'market_field_score': '+1.0 points',
+              'regime_label': 'Unchanged',
+          }
+
+          def verify(repo: Path):
+              html_path = repo / 'site/crypto-astro/index.html'
+              source = html_path.read_text(encoding='utf-8')
+              failures = []
+              if source.count('data-what-changed-status="partial-comparable"') != 1:
+                  failures.append('status count')
+              for key, display in EXPECTED.items():
+                  if source.count(f'data-metric="{key}"') != 1:
+                      failures.append(f'{key} count')
+                  if source.count(display) != 1:
+                      failures.append(f'{key} display')
+              for code in ('METHODOLOGY_MISMATCH', 'DEPENDENCY_METHODOLOGY_MISMATCH'):
+                  if source.count(code) != 1:
+                      failures.append(f'{code} count')
+              section = re.search(r'<section id="what-changed".*?</section>', source, re.S)
+              if not section:
+                  failures.append('section missing')
+              else:
+                  for term in ('fetch(', 'XMLHttpRequest', 'WebSocket(', 'EventSource('):
+                      if term.lower() in section.group(0).lower():
+                          failures.append(f'forbidden {term}')
+              if source.count('href="https://www.bhrigu.io/crypto-astro/btc"') != 2:
+                  failures.append('BTC CTA drift')
+              if source.count('style="--btc-dominance:56.5%;"') != 1:
+                  failures.append('BTC geometry drift')
+              result = {
+                  'node': 'CRYPTO_ASTRO_PR_07_WHAT_CHANGED_UI_BINDING_IMPLEMENTATION_v0_1',
+                  'status': 'PASS' if not failures else 'FAIL',
+                  'failures': failures,
+                  'html_sha256': hashlib.sha256(html_path.read_bytes()).hexdigest(),
+                  'metric_count': len(EXPECTED),
+                  'unavailable_count': 2,
+                  'browser_fetch': False,
+                  'refresh_pipeline_integration': False,
+              }
+              print(json.dumps(result, indent=2))
+              if failures:
+                  raise SystemExit(1)
+
+          if __name__ == '__main__':
+              parser = argparse.ArgumentParser()
+              parser.add_argument('--repo', default='.')
+              args = parser.parse_args()
+              verify(Path(args.repo).resolve())
+          PY
+
+          cat > tools/crypto_astro_what_changed/test_what_changed.py <<'PY'
+          import importlib.util
+          import unittest
+          from pathlib import Path
+
+          path = Path(__file__).with_name('render_what_changed.py')
+          spec = importlib.util.spec_from_file_location('renderer', path)
+          renderer = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(renderer)
+
+          class WhatChangedTests(unittest.TestCase):
+              @staticmethod
+              def numeric(display, direction, unit):
+                  return {'status':'COMPARABLE','type':'NUMERIC','previous_value':'1','current_value':'2','display_delta':display,'direction':direction,'delta_unit':unit}
+
+              def setUp(self):
+                  self.delta = {
+                      'schema_version':'crypto_astro_snapshot_delta_public_v0_1',
+                      'comparison_status':'PARTIAL_COMPARABLE',
+                      'current_snapshot_id':'crypto-astro:2026-07-19T18:26:56Z:current',
+                      'previous_snapshot_id':'crypto-astro:2026-07-12T22:05:46Z:previous',
+                      'generated_at_utc':'2026-07-19T18:26:56Z',
+                      'boundary':{'read_only':True,'static_public_snapshot':True,'runtime_closed':True,'backend_api_closed':True,'payment_closed':True,'orion_core_protected':True,'no_forecast':True,'no_trading_signal':True},
+                      'metrics':{
+                          'btc_gravity_pct':self.numeric('+0.28','UP','percentage_points'),
+                          'stablecoin_share_pct':self.numeric('-0.18','DOWN','percentage_points'),
+                          'alt_breadth_24h_pct':self.numeric('+8.0','UP','percentage_points'),
+                          'alt_breadth_7d_pct':self.numeric('-1.3','DOWN','percentage_points'),
+                          'market_field_score':self.numeric('+1.0','UP','score_points'),
+                          'regime_label':{'status':'COMPARABLE','type':'CATEGORICAL','previous_value':'Balanced Expansion','current_value':'Balanced Expansion','transition':'UNCHANGED'},
+                      },
+                      'unavailable_metrics':{
+                          'defi_tvl_usd':{'delta_value':None,'reason_code':'METHODOLOGY_MISMATCH'},
+                          'liquidity_context_state':{'delta_value':None,'reason_code':'DEPENDENCY_METHODOLOGY_MISMATCH'},
+                      },
+                  }
+
+              def test_deterministic(self):
+                  self.assertEqual(renderer.render(self.delta), renderer.render(self.delta))
+
+              def test_six_metrics(self):
+                  self.assertEqual(renderer.render(self.delta).count('data-metric='), 6)
+
+              def test_unavailable(self):
+                  output = renderer.render(self.delta)
+                  self.assertIn('DeFi TVL · unavailable', output)
+                  self.assertIn('Liquidity context · unavailable', output)
+
+              def test_boundary_fail_closed(self):
+                  self.delta['boundary']['runtime_closed'] = False
+                  with self.assertRaises(ValueError):
+                      renderer.render(self.delta)
+
+          if __name__ == '__main__':
+              unittest.main()
+          PY
+
+          cat > site/theme/crypto_astro_what_changed.css <<'CSS'
+          /* CRYPTO_ASTRO_PR_07_WHAT_CHANGED_UI_BINDING_v0_1 */
+          .what-changed-memory-v0-1{display:grid;gap:clamp(18px,2.4vw,30px);padding:clamp(24px,4vw,52px);border:1px solid rgba(153,194,222,.18);border-radius:28px;background:linear-gradient(145deg,rgba(11,25,40,.94),rgba(8,15,27,.98));box-shadow:0 24px 70px rgba(0,0,0,.24)}
+          .what-changed-memory-v0-1__head{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:24px;align-items:end}
+          .what-changed-memory-v0-1__head h2{margin:.25rem 0 .6rem}.what-changed-memory-v0-1__head p{max-width:72ch}
+          .what-changed-memory-v0-1__snapshots{display:grid;gap:8px;margin:0;padding:14px;border:1px solid rgba(151,191,217,.14);border-radius:18px;background:rgba(255,255,255,.025)}
+          .what-changed-memory-v0-1__snapshots div{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:center}
+          .what-changed-memory-v0-1__snapshots dt{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#9aa8b5)}
+          .what-changed-memory-v0-1__snapshots dd{margin:0;font:600 .82rem/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+          .what-changed-memory-v0-1__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+          .what-changed-metric-v0-1{min-height:138px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:18px;border:1px solid rgba(151,191,217,.12);border-radius:19px;background:rgba(255,255,255,.025)}
+          .what-changed-metric-v0-1 span{font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#9aa8b5)}
+          .what-changed-metric-v0-1 strong{font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.15}.what-changed-metric-v0-1 small{color:var(--muted,#9aa8b5);overflow-wrap:anywhere}
+          .what-changed-metric-v0-1[data-direction="up"] strong{color:#d9bc78}.what-changed-metric-v0-1[data-direction="down"] strong{color:#9eb9ca}.what-changed-metric-v0-1[data-direction="unchanged"] strong{color:#d7dde2}
+          .what-changed-memory-v0-1__unavailable{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 16px;border-left:2px solid rgba(217,188,120,.5);background:rgba(217,188,120,.045);font-size:.82rem}
+          .what-changed-memory-v0-1__unavailable span{color:var(--muted,#9aa8b5)}.what-changed-memory-v0-1__meta{margin:0;font-size:.78rem;color:var(--muted,#9aa8b5)}
+          @media (max-width:850px){.what-changed-memory-v0-1__head{grid-template-columns:1fr}.what-changed-memory-v0-1__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+          @media (max-width:560px){.what-changed-memory-v0-1{padding:22px 16px;border-radius:22px}.what-changed-memory-v0-1__grid{grid-template-columns:1fr}.what-changed-metric-v0-1{min-height:112px}.what-changed-memory-v0-1__snapshots div{grid-template-columns:64px 1fr}}
+          CSS
+
+          cat > .github/workflows/crypto-astro-what-changed-pr.yml <<'YAML'
+          name: Crypto-Astro What Changed PR
+
+          on:
+            pull_request:
+              paths:
+                - 'site/crypto-astro/index.html'
+                - 'site/theme/crypto_astro_what_changed.css'
+                - 'tools/crypto_astro_what_changed/**'
+                - '.github/workflows/crypto-astro-what-changed-pr.yml'
+                - 'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+                - 'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json'
+
+          permissions:
+            contents: read
+
+          jobs:
+            contract:
+              runs-on: ubuntu-latest
+              timeout-minutes: 12
+              steps:
+                - uses: actions/checkout@v5
+                  with:
+                    fetch-depth: 0
+                - uses: actions/setup-python@v5
+                  with:
+                    python-version: '3.11'
+                - name: Exact PR-07 file scope
+                  env:
+                    BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                    HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  run: |
+                    python - <<'PY'
+                    import os, subprocess
+                    allowed={'.github/workflows/crypto-astro-what-changed-pr.yml','site/crypto-astro/index.html','site/theme/crypto_astro_what_changed.css','tools/crypto_astro_what_changed/render_what_changed.py','tools/crypto_astro_what_changed/verify_what_changed.py','tools/crypto_astro_what_changed/test_what_changed.py'}
+                    changed=set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA'],os.environ['HEAD_SHA']],text=True).splitlines())
+                    assert changed==allowed,{'missing':sorted(allowed-changed),'unexpected':sorted(changed-allowed)}
+                    PY
+                - name: Fixtures
+                  run: python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+                - name: Deterministic render
+                  run: |
+                    cp site/crypto-astro/index.html /tmp/original.html
+                    python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+                    cmp /tmp/original.html site/crypto-astro/index.html
+                    python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+                    cmp /tmp/original.html site/crypto-astro/index.html
+                - name: Verify contract
+                  run: python tools/crypto_astro_what_changed/verify_what_changed.py --repo . | tee what-changed-verification.json
+                - name: Preserve source inputs and refresh pipeline
+                  env:
+                    BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                    HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  run: |
+                    git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- site/crypto-astro/data/crypto_astro_snapshot.public.json site/crypto-astro/data/crypto_astro_snapshot_proof.public.json site/crypto-astro/data/crypto_astro_module_bindings.public.json site/crypto-astro/data/crypto_astro_snapshot_registry.public.json site/crypto-astro/data/crypto_astro_snapshot_delta.public.json tools/crypto_astro_static_refresh
+                - uses: actions/upload-artifact@v4
+                  if: always()
+                  with:
+                    name: crypto-astro-what-changed-contract-${{ github.event.pull_request.number }}
+                    path: what-changed-verification.json
+                    if-no-files-found: error
+
+            visual:
+              runs-on: ubuntu-latest
+              timeout-minutes: 15
+              steps:
+                - uses: actions/checkout@v5
+                - uses: actions/setup-python@v5
+                  with:
+                    python-version: '3.11'
+                - name: Install Playwright
+                  run: |
+                    python -m pip install --disable-pip-version-check playwright==1.55.0
+                    python -m playwright install --with-deps chromium
+                - name: Render desktop and mobile evidence
+                  run: |
+                    mkdir -p artifacts
+                    python -m http.server 4173 --directory site > /tmp/crypto-astro-http.log 2>&1 &
+                    cat > /tmp/visual.py <<'PY'
+                    import json
+                    from pathlib import Path
+                    from playwright.sync_api import sync_playwright
+                    out=Path('artifacts'); report={'views':{},'console_errors':[]}
+                    with sync_playwright() as p:
+                      browser=p.chromium.launch()
+                      for name,width,height in [('desktop',1440,1100),('mobile',390,844)]:
+                        page=browser.new_page(viewport={'width':width,'height':height})
+                        page.on('console',lambda msg: report['console_errors'].append(msg.text) if msg.type=='error' else None)
+                        page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
+                        target=page.locator('#what-changed'); target.scroll_into_view_if_needed(); target.screenshot(path=str(out/f'what-changed-{name}.png'))
+                        report['views'][name]=page.evaluate('''() => ({viewport:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,metrics:document.querySelectorAll('#what-changed [data-metric]').length,unavailable:document.querySelectorAll('#what-changed .what-changed-memory-v0-1__unavailable span').length,primaryCtas:document.querySelectorAll('a[href="https://www.bhrigu.io/crypto-astro/btc"]').length})''')
+                        assert report['views'][name]['scroll']<=report['views'][name]['viewport']
+                        assert report['views'][name]['metrics']==6
+                        assert report['views'][name]['unavailable']==2
+                        assert report['views'][name]['primaryCtas']==2
+                        page.close()
+                      browser.close()
+                    assert not report['console_errors'],report['console_errors']
+                    (out/'visual-report.json').write_text(json.dumps(report,indent=2)+'\n')
+                    PY
+                    python /tmp/visual.py
+                - uses: actions/upload-artifact@v4
+                  if: always()
+                  with:
+                    name: crypto-astro-what-changed-visual-${{ github.event.pull_request.number }}
+                    path: artifacts/
+                    if-no-files-found: error
+          YAML
+
+          python tools/crypto_astro_what_changed/render_what_changed.py --repo .
+          python -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          python tools/crypto_astro_what_changed/verify_what_changed.py --repo .
+          rm .github/workflows/crypto-astro-pr07-bootstrap.yml
+
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add site/crypto-astro/index.html site/theme/crypto_astro_what_changed.css tools/crypto_astro_what_changed/render_what_changed.py tools/crypto_astro_what_changed/verify_what_changed.py tools/crypto_astro_what_changed/test_what_changed.py .github/workflows/crypto-astro-what-changed-pr.yml .github/workflows/crypto-astro-pr07-bootstrap.yml
+          git commit -m 'Crypto-Astro PR-07: bind verified change memory to UI'
+          git push origin HEAD:agent/crypto-astro-pr07-what-changed-ui
