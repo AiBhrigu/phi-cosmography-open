@@ -22,10 +22,21 @@ on:
         description: Concise reason recorded in the review PR
         required: true
         type: string
+      expected_main_sha:
+        description: Optional assistant-dispatch lock for the exact main commit
+        required: false
+        type: string
+        default: ""
+      dispatch_request_issue:
+        description: Optional owner-authenticated assistant-dispatch issue number
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 concurrency:
   group: crypto-astro-static-refresh-manual
@@ -42,6 +53,8 @@ jobs:
       CRYPTO_ASTRO_REFRESH_MODE: ${{ inputs.refresh_mode }}
       CRYPTO_ASTRO_OPERATOR_REF: ${{ inputs.operator_ref }}
       CRYPTO_ASTRO_REFRESH_REASON: ${{ inputs.refresh_reason }}
+      CRYPTO_ASTRO_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE: ${{ inputs.dispatch_request_issue }}
       COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
     steps:
       - name: Checkout exact main source
@@ -63,6 +76,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
 
       - name: Configure Git identity and lock current main
+        id: main_lock
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -72,10 +86,28 @@ jobs:
           MAIN_SHA=$(git rev-parse origin/main)
           test "$LOCAL_SHA" = "$MAIN_SHA"
           echo "BASE_SHA=$LOCAL_SHA" >> "$GITHUB_ENV"
+
+          if [[ -n "$CRYPTO_ASTRO_EXPECTED_MAIN_SHA" || -n "$CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE" ]]; then
+            if [[ -z "$CRYPTO_ASTRO_EXPECTED_MAIN_SHA" || -z "$CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE" ]]; then
+              echo "EXPECTED_MAIN_SHA_REQUIRED_WITH_DISPATCH_ISSUE"
+              exit 1
+            fi
+            if [[ ! "$CRYPTO_ASTRO_EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "EXPECTED_MAIN_SHA_MUST_BE_40_HEX"
+              exit 1
+            fi
+            if [[ ! "$CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE" =~ ^[0-9]+$ ]]; then
+              echo "DISPATCH_REQUEST_ISSUE_MUST_BE_NUMERIC"
+              exit 1
+            fi
+            test "$LOCAL_SHA" = "$CRYPTO_ASTRO_EXPECTED_MAIN_SHA"
+          fi
+
           rm -rf "$CRYPTO_ASTRO_REFRESH_OUT"
           mkdir -p "$CRYPTO_ASTRO_REFRESH_OUT"
 
       - name: Verify operational cadence and single-flight preflight
+        id: preflight
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -132,6 +164,8 @@ jobs:
               "operator_ref": operator_ref,
               "refresh_reason": reason,
               "base_sha": os.environ["BASE_SHA"],
+              "expected_main_sha": os.environ.get("CRYPTO_ASTRO_EXPECTED_MAIN_SHA", ""),
+              "dispatch_request_issue": os.environ.get("CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE", ""),
               "latest_accepted_snapshot_utc": snapshot["generated_at_utc"],
               "snapshot_age_hours": round(age_hours, 4),
               "daily_minimum_interval_hours": daily_minimum_interval_hours,
@@ -143,14 +177,17 @@ jobs:
           PY
 
       - name: Verify DeFi TVL methodology contract
+        id: methodology
         run: python3 tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
 
       - name: Run BHRIGU-compatible hardened static refresh locally
+        id: source_refresh
         run: |
           python3 tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
             "$GITHUB_WORKSPACE" "$CRYPTO_ASTRO_REFRESH_OUT"
 
       - name: Materialize cadence metadata in operator review
+        id: operator_review
         run: |
           python3 - <<'PY'
           import os
@@ -185,6 +222,7 @@ jobs:
           PY
 
       - name: Validate generated bundle with current BHRIGU consumer
+        id: consumer
         run: |
           python3 tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
           rm -rf /tmp/bhrigu-portal-consumer
@@ -229,6 +267,7 @@ jobs:
           PY
 
       - name: Create local data commit
+        id: data_commit
         if: steps.changes.outputs.changed == 'true'
         run: |
           git add \
@@ -245,6 +284,7 @@ jobs:
           echo "DATA_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Build Snapshot Memory twice from exact accepted pair
+        id: memory_build
         if: steps.changes.outputs.changed == 'true'
         run: |
           rm -rf /tmp/crypto-astro-memory-a /tmp/crypto-astro-memory-b
@@ -264,6 +304,7 @@ jobs:
              site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
 
       - name: Verify memory, render static UI, and create local materialization commit
+        id: memory
         if: steps.changes.outputs.changed == 'true'
         run: |
           python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
@@ -291,6 +332,7 @@ jobs:
           git commit -m "Crypto-Astro: materialize accepted snapshot memory"
 
       - name: Prove atomic final branch before any push
+        id: atomic
         if: steps.changes.outputs.changed == 'true'
         run: |
           python - <<'PY'
@@ -320,10 +362,12 @@ jobs:
           python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
 
       - name: Push complete branch only after full PASS
+        id: push_branch
         if: steps.changes.outputs.changed == 'true'
         run: git push -u origin "$CRYPTO_ASTRO_REFRESH_BRANCH"
 
       - name: Open review PR only
+        id: open_pr
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -336,6 +380,7 @@ jobs:
           - Operator reference: ${CRYPTO_ASTRO_OPERATOR_REF}
           - Reason: ${CRYPTO_ASTRO_REFRESH_REASON}
           - Base SHA: ${BASE_SHA}
+          - Assistant dispatch issue: ${CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE:-none}
 
           Includes the verified public snapshot, proof, bindings, derived static surfaces, dynamic accepted-pair registry/delta, and statically rendered What Changed section.
 
@@ -347,14 +392,107 @@ jobs:
           - no cron, backend, API, payment, live-adapter claim, forecast, trading signal, price target, or investment recommendation
           - no A/E activation, C/T runtime, formula-weight disclosure, or ORION core exposure
           BODY
-          gh pr create --base main --head "$CRYPTO_ASTRO_REFRESH_BRANCH" \
+          PR_URL=$(gh pr create --base main --head "$CRYPTO_ASTRO_REFRESH_BRANCH" \
             --title "Crypto-Astro: automated static market snapshot refresh" \
-            --body-file /tmp/crypto_astro_refresh_pr_body.md
+            --body-file /tmp/crypto_astro_refresh_pr_body.md)
+          echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
 
       - name: Upload failure or success report
+        id: report_upload
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: crypto-astro-static-refresh-report
           path: ${{ env.CRYPTO_ASTRO_REFRESH_OUT }}/
           if-no-files-found: ignore
+
+      - name: Return assistant dispatch callback
+        if: ${{ always() && env.CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+          PREFLIGHT_OUTCOME: ${{ steps.preflight.outcome }}
+          METHODOLOGY_OUTCOME: ${{ steps.methodology.outcome }}
+          SOURCE_OUTCOME: ${{ steps.source_refresh.outcome }}
+          CONSUMER_OUTCOME: ${{ steps.consumer.outcome }}
+          SCOPE_OUTCOME: ${{ steps.changes.outcome }}
+          MEMORY_BUILD_OUTCOME: ${{ steps.memory_build.outcome }}
+          MEMORY_OUTCOME: ${{ steps.memory.outcome }}
+          ATOMIC_OUTCOME: ${{ steps.atomic.outcome }}
+          PUSH_OUTCOME: ${{ steps.push_branch.outcome }}
+          OPEN_PR_OUTCOME: ${{ steps.open_pr.outcome }}
+          MATERIAL_CHANGE: ${{ steps.changes.outputs.changed }}
+          GENERATED_PR_URL: ${{ steps.open_pr.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          ISSUE="$CRYPTO_ASTRO_DISPATCH_REQUEST_ISSUE"
+          if [[ ! "$ISSUE" =~ ^[0-9]+$ ]]; then
+            echo "DISPATCH_REQUEST_ISSUE_MUST_BE_NUMERIC"
+            exit 1
+          fi
+
+          gh issue view "$ISSUE" --json body --jq .body > /tmp/crypto_astro_dispatch_issue_body.txt
+          REQUEST_ID=$(python3 - <<'PY'
+          from pathlib import Path
+          values = {}
+          for line in Path("/tmp/crypto_astro_dispatch_issue_body.txt").read_text(encoding="utf-8").splitlines():
+              if "=" in line:
+                  key, value = line.split("=", 1)
+                  values[key] = value
+          request_id = values.get("REQUEST_ID", "UNRESOLVED")
+          if not request_id:
+              request_id = "UNRESOLVED"
+          print(request_id)
+          PY
+          )
+
+          MATERIAL_VALUE=${MATERIAL_CHANGE:-unknown}
+          PR_VALUE=${GENERATED_PR_URL:-none}
+          BASE_VALUE=${BASE_SHA:-unavailable}
+          EXPECTED_VALUE=${CRYPTO_ASTRO_EXPECTED_MAIN_SHA:-unavailable}
+
+          if [ "$JOB_STATUS" = "success" ] && [ "$MATERIAL_VALUE" = "true" ] && [ "$OPEN_PR_OUTCOME" = "success" ]; then
+            FINAL_OUTCOME=PASS_REVIEW_PR_OPENED
+          elif [ "$JOB_STATUS" = "success" ] && [ "$MATERIAL_VALUE" = "false" ]; then
+            FINAL_OUTCOME=PASS_NO_MATERIAL_CHANGE
+          elif [ "$PREFLIGHT_OUTCOME" != "success" ]; then
+            FINAL_OUTCOME=FAIL_PREFLIGHT
+          elif [ "$METHODOLOGY_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_METHODOLOGY
+          elif [ "$SOURCE_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_SOURCE_OR_SCHEMA
+          elif [ "$CONSUMER_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_CONSUMER
+          elif [ "$SCOPE_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_SCOPE
+          elif [ "$MEMORY_BUILD_OUTCOME" = "failure" ] || [ "$MEMORY_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_MEMORY
+          elif [ "$ATOMIC_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_ATOMICITY
+          elif [ "$PUSH_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_PUSH
+          elif [ "$OPEN_PR_OUTCOME" = "failure" ]; then
+            FINAL_OUTCOME=FAIL_PR_OPEN
+          else
+            FINAL_OUTCOME=FAIL_PIPELINE
+          fi
+
+          cat > /tmp/crypto_astro_dispatch_callback.txt <<CALLBACK
+          SCHEMA=crypto_astro_assistant_dispatch_callback_v0_1
+          DISPATCH_REQUEST_ID=${REQUEST_ID}
+          WORKFLOW_RUN_ID=${GITHUB_RUN_ID}
+          WORKFLOW_RUN_URL=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EXPECTED_MAIN_SHA=${EXPECTED_VALUE}
+          ACTUAL_BASE_SHA=${BASE_VALUE}
+          JOB_STATUS=${JOB_STATUS}
+          MATERIAL_CHANGE=${MATERIAL_VALUE}
+          GENERATED_BRANCH=${CRYPTO_ASTRO_REFRESH_BRANCH}
+          GENERATED_PR_URL=${PR_VALUE}
+          FINAL_OUTCOME=${FINAL_OUTCOME}
+          CALLBACK
+
+          gh issue comment "$ISSUE" --body-file /tmp/crypto_astro_dispatch_callback.txt
+          gh issue close "$ISSUE" --reason completed
+          gh issue lock "$ISSUE" --reason resolved
+          echo "ASSISTANT_DISPATCH_CALLBACK=PASS"

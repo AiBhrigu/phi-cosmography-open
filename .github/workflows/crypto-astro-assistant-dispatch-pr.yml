@@ -1,0 +1,101 @@
+name: Crypto-Astro Assistant Dispatch PR
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/crypto-astro-assistant-dispatch.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
+      - ".github/workflows/crypto-astro-static-refresh-manual.yml"
+      - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
+      - "tools/crypto_astro_operations/verify_assistant_dispatch.py"
+      - "tools/crypto_astro_operations/test_verify_assistant_dispatch.py"
+
+permissions:
+  contents: read
+
+jobs:
+  assistant-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Enforce exact assistant-dispatch scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          expected = {
+              ".github/workflows/crypto-astro-assistant-dispatch.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json",
+              "tools/crypto_astro_operations/verify_assistant_dispatch.py",
+              "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
+          }
+          base = subprocess.check_output(
+              ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
+              ).splitlines()
+          )
+          assert changed == expected, {
+              "missing": sorted(expected - changed),
+              "unexpected": sorted(changed - expected),
+          }
+          print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
+          PY
+
+      - name: Run assistant-dispatch fixtures
+        run: python3 -m unittest discover -s tools/crypto_astro_operations -p "test_verify_assistant_dispatch.py" -v
+
+      - name: Verify assistant-dispatch repository contract
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_operations/verify_assistant_dispatch.py verify-repository \
+            --repo . \
+            --report artifacts/assistant-dispatch-verification.json
+
+      - name: Verify operational cadence remains locked
+        run: |
+          python3 tools/crypto_astro_operations/verify_operational_cadence.py \
+            --repo . \
+            --report artifacts/operational-cadence-verification.json
+
+      - name: Prove public data, HTML, and CSS unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Upload assistant-dispatch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-assistant-dispatch-pr-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

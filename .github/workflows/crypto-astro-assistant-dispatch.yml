@@ -1,0 +1,177 @@
+name: Crypto-Astro Assistant Dispatch
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: crypto-astro-assistant-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.issue.title == 'Crypto-Astro assistant dispatch request' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve current main SHA
+        id: main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          echo "sha=$LOCAL_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize public-safe issue body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path("/tmp/crypto_astro_assistant_dispatch_request.txt").write_text(
+              os.environ.get("ISSUE_BODY", ""), encoding="utf-8"
+          )
+          PY
+
+      - name: Validate owner request contract
+        id: request
+        run: |
+          python3 tools/crypto_astro_operations/verify_assistant_dispatch.py validate-request \
+            --body-file /tmp/crypto_astro_assistant_dispatch_request.txt \
+            --title "${{ github.event.issue.title }}" \
+            --actor-login "${{ github.actor }}" \
+            --author-login "${{ github.event.issue.user.login }}" \
+            --author-association "${{ github.event.issue.author_association }}" \
+            --current-main-sha "${{ steps.main.outputs.sha }}" \
+            --github-output "$GITHUB_OUTPUT" \
+            --report artifacts/request-validation.json
+
+      - name: Close invalid owner request fail-closed
+        if: ${{ steps.request.outputs.valid != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REASON_CODE: ${{ steps.request.outputs.reason_code }}
+        run: |
+          set -euo pipefail
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_assistant_dispatch_result_v0_1
+          STATUS=FAIL_VALIDATION
+          REASON_CODE=${REASON_CODE}
+          WORKFLOW_DISPATCH=NO"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Verify single-flight bridge preflight
+        id: preflight
+        if: ${{ steps.request.outputs.valid == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          ACTUAL_MAIN_SHA=$(git rev-parse origin/main)
+          test "$ACTUAL_MAIN_SHA" = "${{ steps.request.outputs.expected_main_sha }}"
+
+          OPEN_DISPATCH_COUNT=$(gh issue list --state open --limit 100 \
+            --json number,title \
+            --jq '[.[] | select(.title == "Crypto-Astro assistant dispatch request")] | length')
+          test "$OPEN_DISPATCH_COUNT" = "1"
+
+          OPEN_REFRESH_COUNT=$(gh pr list --state open --base main \
+            --json number,title,headRefName \
+            --jq '[.[] | select(.title == "Crypto-Astro: automated static market snapshot refresh" or (.headRefName | startswith("automation/crypto-astro-static-refresh-")))] | length')
+          test "$OPEN_REFRESH_COUNT" = "0"
+
+          cat > artifacts/bridge-preflight.txt <<REPORT
+          STATUS=PASS
+          OPEN_DISPATCH_COUNT=${OPEN_DISPATCH_COUNT}
+          OPEN_REFRESH_COUNT=${OPEN_REFRESH_COUNT}
+          ACTUAL_MAIN_SHA=${ACTUAL_MAIN_SHA}
+          REPORT
+
+      - name: Dispatch fixed manual refresh workflow
+        id: dispatch
+        if: ${{ steps.request.outputs.valid == 'true' && steps.preflight.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REFRESH_MODE: ${{ steps.request.outputs.refresh_mode }}
+          OPERATOR_REF: ${{ steps.request.outputs.operator_ref }}
+          REFRESH_REASON: ${{ steps.request.outputs.refresh_reason }}
+          EXPECTED_MAIN_SHA: ${{ steps.request.outputs.expected_main_sha }}
+          DISPATCH_REQUEST_ISSUE: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          gh workflow run crypto-astro-static-refresh-manual.yml \
+            --ref main \
+            -f "refresh_mode=${REFRESH_MODE}" \
+            -f "operator_ref=${OPERATOR_REF}" \
+            -f "refresh_reason=${REFRESH_REASON}" \
+            -f expected_main_sha="${EXPECTED_MAIN_SHA}" \
+            -f dispatch_request_issue="${DISPATCH_REQUEST_ISSUE}"
+
+      - name: Record accepted dispatch
+        if: ${{ steps.request.outputs.valid == 'true' && steps.preflight.outcome == 'success' && steps.dispatch.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_assistant_dispatch_result_v0_1
+          STATUS=DISPATCH_ACCEPTED
+          REQUEST_ID=${{ steps.request.outputs.request_id }}
+          EXPECTED_MAIN_SHA=${{ steps.request.outputs.expected_main_sha }}
+          TARGET_WORKFLOW=crypto-astro-static-refresh-manual.yml
+          TARGET_REF=main"
+
+      - name: Close bridge failure fail-closed
+        if: ${{ steps.request.outputs.valid == 'true' && (steps.preflight.outcome == 'failure' || steps.dispatch.outcome == 'failure') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.preflight.outcome }}" = "failure" ]; then
+            REASON_CODE=FAIL_PREFLIGHT
+          else
+            REASON_CODE=FAIL_DISPATCH
+          fi
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_assistant_dispatch_result_v0_1
+          STATUS=${REASON_CODE}
+          REQUEST_ID=${{ steps.request.outputs.request_id }}
+          WORKFLOW_DISPATCH=NO"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Upload bridge evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-assistant-dispatch-${{ github.event.issue.number }}
+          path: artifacts/
+          if-no-files-found: error
+
+      - name: Fail workflow after safe bridge closure
+        if: ${{ steps.request.outputs.valid == 'true' && (steps.preflight.outcome == 'failure' || steps.dispatch.outcome == 'failure') }}
+        run: exit 1

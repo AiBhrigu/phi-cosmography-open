@@ -1,0 +1,113 @@
+{
+  "schema_version": "crypto_astro_assistant_dispatch_policy_v0_1",
+  "policy_id": "CRYPTO_ASTRO_OWNER_ISSUE_TO_WORKFLOW_DISPATCH_BRIDGE_v0_1",
+  "repository": "AiBhrigu/phi-cosmography-open",
+  "owner_login": "AiBhrigu",
+  "issue_title": "Crypto-Astro assistant dispatch request",
+  "trigger": {
+    "event": "issues",
+    "action": "opened"
+  },
+  "request_contract": {
+    "schema_value": "crypto_astro_assistant_dispatch_request_v0_1",
+    "ordered_keys": [
+      "SCHEMA",
+      "REQUEST_ID",
+      "REFRESH_MODE",
+      "OPERATOR_REF",
+      "REFRESH_REASON",
+      "EXPECTED_MAIN_SHA"
+    ],
+    "exact_line_count": 6,
+    "allowed_modes": [
+      "DAILY_CADENCE",
+      "PRE_REPORT",
+      "MATERIAL_MARKET_EVENT",
+      "REPEATABILITY_PROOF",
+      "SOURCE_OR_SCHEMA_REPAIR"
+    ],
+    "max_lengths": {
+      "REQUEST_ID": 64,
+      "OPERATOR_REF": 80,
+      "REFRESH_REASON": 240
+    },
+    "forbidden_tokens": [
+      "```",
+      "http://",
+      "https://",
+      "www.",
+      "${",
+      "$(",
+      "\t",
+      "\r"
+    ]
+  },
+  "identity": {
+    "author_login": "AiBhrigu",
+    "author_association": "OWNER",
+    "actor_login": "AiBhrigu"
+  },
+  "dispatch": {
+    "target_workflow": "crypto-astro-static-refresh-manual.yml",
+    "target_ref": "main",
+    "fixed_repository": "AiBhrigu/phi-cosmography-open",
+    "required_inputs": [
+      "refresh_mode",
+      "operator_ref",
+      "refresh_reason",
+      "expected_main_sha",
+      "dispatch_request_issue"
+    ],
+    "workflow_target_from_issue_forbidden": true,
+    "repository_from_issue_forbidden": true,
+    "ref_from_issue_forbidden": true,
+    "shell_eval_forbidden": true
+  },
+  "single_flight": {
+    "one_open_dispatch_request": true,
+    "zero_open_refresh_prs_before_dispatch": true,
+    "expected_main_sha_must_equal_current_main": true,
+    "manual_workflow_rechecks_expected_main_sha": true
+  },
+  "permissions": {
+    "contents": "read",
+    "actions": "write",
+    "issues": "write",
+    "pull_requests": "read"
+  },
+  "callback": {
+    "schema_version": "crypto_astro_assistant_dispatch_callback_v0_1",
+    "required_fields": [
+      "DISPATCH_REQUEST_ID",
+      "WORKFLOW_RUN_ID",
+      "WORKFLOW_RUN_URL",
+      "EXPECTED_MAIN_SHA",
+      "ACTUAL_BASE_SHA",
+      "JOB_STATUS",
+      "MATERIAL_CHANGE",
+      "GENERATED_BRANCH",
+      "GENERATED_PR_URL",
+      "FINAL_OUTCOME"
+    ],
+    "close_issue": true,
+    "lock_reason": "resolved"
+  },
+  "boundary": {
+    "temporary_trigger_pr": false,
+    "temporary_trigger_branch": false,
+    "terminal": false,
+    "manual_actions_ui": false,
+    "external_webhook": false,
+    "backend": false,
+    "personal_access_token": false,
+    "new_secret": false,
+    "cron": false,
+    "auto_merge": false,
+    "deploy_command": false,
+    "public_api": false,
+    "payment": false,
+    "a_e_activation": false,
+    "c_t_runtime_expansion": false,
+    "orion_core_exposure": false
+  }
+}
