@@ -15,6 +15,10 @@ EXPECTED = {
     "market_field_score": "+1.0 points",
     "regime_label": "Unchanged",
 }
+EXPECTED_TIMESTAMPS = (
+    "2026-07-19T18:26:56Z",
+    "2026-07-12T22:05:46Z",
+)
 
 
 def verify(repo: Path) -> dict:
@@ -30,6 +34,9 @@ def verify(repo: Path) -> dict:
             failures.append(f"{key} count")
         if source.count(display) != 1:
             failures.append(f"{key} display")
+    for timestamp in EXPECTED_TIMESTAMPS:
+        if timestamp not in source:
+            failures.append(f"full timestamp missing: {timestamp}")
     for code in ("METHODOLOGY_MISMATCH", "DEPENDENCY_METHODOLOGY_MISMATCH"):
         if source.count(f"<code>{code}</code>") != 1:
             failures.append(f"{code} count")
