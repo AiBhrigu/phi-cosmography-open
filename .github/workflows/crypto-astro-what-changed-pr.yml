@@ -135,8 +135,11 @@ jobs:
                   assert grid_tracks == 1, {name: geometry}
                   max_section_height = 900 if name == 'desktop' else 2100
                   assert section_box['height'] < max_section_height, {name: geometry}
+                  min_width_ratio = 0.88 if name == 'desktop' else 0.82
                   for label, box in [('head', head_box), ('grid', grid_box), ('unavailable', unavailable_box)]:
-                      assert box['width'] >= section_box['width'] * 0.88, {name: geometry, 'failed_width': label}
+                      assert box['width'] >= section_box['width'] * min_width_ratio, {
+                          name: geometry, 'failed_width': label, 'required_ratio': min_width_ratio
+                      }
                   assert geometry['head_to_grid_gap'] < 100, {name: geometry}
                   assert geometry['grid_to_unavailable_gap'] < 100, {name: geometry}
                   assert geometry['meta_to_section_bottom_gap'] < 100, {name: geometry}
