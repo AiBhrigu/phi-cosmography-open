@@ -90,17 +90,48 @@ jobs:
           print("HISTORICAL_PR_04_ALLOWED_PATHS=PASS")
           PY
 
-      - name: Run current CSS-module and geometry fixtures
+      - name: Run reusable CSS-module and geometry fixtures
         if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         run: |
           python3 -m unittest discover -s tools/crypto_astro_css_modules -p "test_*.py" -v
           python3 -m unittest discover -s tools/crypto_astro_geometry_truth -p "test_*.py" -v
 
-      - name: Verify current extension bundle and geometry contract
+      - name: Verify current deterministic extension bundle
         if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
+
+      - name: Verify current geometry structure without historical values
+        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' }}
         run: |
-          python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
-          python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          html = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
+          required = {
+              "btc_data_bound_field": 'class="btc-field-v1"',
+              "btc_accessible_geometry": 'role="img" aria-label="BTC current field.',
+              "btc_data_binding": '--btc-dominance:',
+              "aspect_cycle_semantic_canvas": 'class="btc-cycle-canvas-v1"',
+              "geometry_truth_copy": 'Verified geometry:',
+              "what_changed_contract": 'data-what-changed-status=',
+          }
+          checks = {name: marker in html for name, marker in required.items()}
+          checks["duplicate_ids_absent"] = len(re.findall(r'\bid="([^"]+)"', html)) == len(set(re.findall(r'\bid="([^"]+)"', html)))
+          failures = sorted(name for name, passed in checks.items() if not passed)
+          report = {
+              "schema_version": "crypto_astro_current_geometry_invariant_report_v0_1",
+              "status": "PASS" if not failures else "FAIL",
+              "checks": checks,
+              "failures": failures,
+          }
+          Path("artifacts/current-geometry-invariant-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          assert not failures, failures
+          print("CURRENT_GEOMETRY_INVARIANTS=PASS")
+          PY
+
+      - name: Run historical geometry verifier
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
 
       - name: Run current local surface truth
         if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
