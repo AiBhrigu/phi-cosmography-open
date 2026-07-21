@@ -9,6 +9,7 @@ on:
       - "site/theme/crypto_astro/**"
       - "tools/crypto_astro_css_extract/**"
       - "tools/crypto_astro_surface_truth/**"
+      - "tools/crypto_astro_ci/**"
       - ".github/workflows/crypto-astro-css-extraction-pr.yml"
 
 permissions:
@@ -27,15 +28,42 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce PR-02 path scope
-        if: github.head_ref == 'feature/crypto-astro-mechanical-inline-css-extraction-v0-1'
+      - name: Test legacy applicability classifier
+        run: python3 -m unittest discover -s tools/crypto_astro_ci -p "test_*.py" -v
+
+      - name: Classify gate applicability
+        id: applicability
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_ci/classify_legacy_applicability.py \
+            --workflow css-extraction \
+            --head-ref "$HEAD_REF" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --out artifacts/css-extraction-applicability.json
+
+      - name: Record explicit non-applicable pass
+        if: ${{ steps.applicability.outputs.mode != 'HISTORICAL_EXACT' }}
+        run: |
+          echo "CSS_EXTRACTION_PARITY_NOT_APPLICABLE_PASS=${{ steps.applicability.outputs.mode }}"
+          echo "The one-time mechanical extraction completed in PR #130; intentional current changes must not be compared to that historical base."
+
+      - name: Install historical browser dependencies
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+
+      - name: Enforce historical PR-02 path scope
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python3 - <<'PY'
-          import os
-          import subprocess
+          import os, subprocess
           allowed_exact = {
               "site/crypto-astro/index.html",
               "site/theme/crypto_astro_inline_legacy.css",
@@ -43,76 +71,37 @@ jobs:
           }
           allowed_prefix = "tools/crypto_astro_css_extract/"
           changed = subprocess.check_output(
-              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-              text=True,
+              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).splitlines()
-          unexpected = [
-              path for path in changed
-              if path not in allowed_exact and not path.startswith(allowed_prefix)
-          ]
-          assert not unexpected, f"Unexpected PR-02 paths: {unexpected}"
+          unexpected = [p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefix)]
+          assert not unexpected, f"Unexpected historical PR-02 paths: {unexpected}"
           assert "site/crypto-astro/index.html" in changed
           assert "site/theme/crypto_astro_inline_legacy.css" in changed
-          print("PR_02_ALLOWED_PATHS=PASS")
+          print("HISTORICAL_PR_02_ALLOWED_PATHS=PASS")
           PY
 
-      - name: Install test dependencies
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
+      - name: Run historical extractor and comparator fixtures
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        run: python3 -m unittest discover -s tools/crypto_astro_css_extract -p "test_*.py" -v
 
-      - name: Run extractor and comparator fixtures
-        run: |
-          python3 -m unittest discover \
-            -s tools/crypto_astro_css_extract \
-            -p "test_*.py" \
-            -v
+      - name: Verify historical exact mechanical extraction
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 tools/crypto_astro_css_extract/extract_inline_css.py --verify-base-ref "$BASE_SHA"
 
-      - name: Verify exact mechanical extraction
-        if: github.head_ref == 'feature/crypto-astro-mechanical-inline-css-extraction-v0-1'
+      - name: Run historical base/head parity
+        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          python3 tools/crypto_astro_css_extract/extract_inline_css.py \
-            --verify-base-ref "$BASE_SHA"
-
-      - name: Prepare base worktree
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: git worktree add --detach /tmp/crypto-astro-base "$BASE_SHA"
-
-      - name: Capture base and head truth on one origin
-        run: |
-          set -euo pipefail
-          mkdir -p artifacts/base artifacts/head
-          capture() {
-            local root="$1"
-            local out="$2"
-            local log="$3"
-            python3 -m http.server 4173 --directory "$root/site" >"$log" 2>&1 &
-            local pid=$!
-            for attempt in {1..40}; do
-              if curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null; then
-                break
-              fi
-              sleep 0.25
-            done
-            python3 tools/crypto_astro_surface_truth/surface_truth.py \
-              --url http://127.0.0.1:4173/crypto-astro/index.html \
-              --out "$out"
-            kill "$pid"
-            wait "$pid" 2>/dev/null || true
-            sleep 0.5
-          }
-          capture /tmp/crypto-astro-base artifacts/base /tmp/base-surface.log
-          capture "$GITHUB_WORKSPACE" artifacts/head /tmp/head-surface.log
-
-      - name: Compare surface truth
-        run: |
+          git worktree add --detach /tmp/crypto-astro-pr02-base "$BASE_SHA"
+          bash tools/crypto_astro_local_truth/run_local_truth.sh /tmp/crypto-astro-pr02-base artifacts/base 4173
+          bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4174
           python3 tools/crypto_astro_css_extract/compare_surface_truth.py \
-            --base artifacts/base \
-            --head artifacts/head \
-            --out artifacts/css-extraction-parity-report.json
+            --base artifacts/base --head artifacts/head --out artifacts/css-extraction-parity-report.json
 
-      - name: Upload parity evidence
+      - name: Upload CSS extraction applicability evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
