@@ -28,7 +28,8 @@ CURRENT_REQUIRED_HTML_BINDINGS = (
     "alt_map:24h", "alt_map:7d", "alt_map:top10", "timestamp:coingecko_snapshot",
     "btc_hub:gravity", "btc_hub:snapshot", "btc_hub:quiet_gravity",
     "composition:eth", "label:eth_anchor", "alt_map:eth", "alt_map:eth_center",
-    "field:score_orb", "alt_read:data_bound",
+    "timestamp:hero_trust", "btc_hub:field_aria",
+    "field:score_orb", "field:barometer_copy", "alt_read:data_bound",
     "copy_slot:field_state_title", "copy_slot:field_state_badge",
     "copy_slot:field_state_body_1", "copy_slot:field_state_body_2",
     "copy_slot:state_structure_status", "copy_slot:state_pressure_status",
@@ -157,14 +158,43 @@ def patch_html(repo: Path, snapshot: dict) -> dict:
     field = snapshot.get("field_output") or {}
     samples = ((snapshot.get("public_samples") or {}).get("assets") or {})
 
+    generated_at = str(snapshot.get("generated_at_utc") or core.now_iso())
+    hero_time = generated_at[:16].replace("T", " ") + " UTC"
+    market = snapshot.get("market_reality") or {}
+    btc_dom = core.pct(market.get("btc_dominance_pct"), 1)
+    btc_dom_number = btc_dom.removesuffix("%")
+    regime = str(field.get("regime_label") or "Static public context")
     raw_score = field.get("market_field_score")
     field_score = "pending" if raw_score is None else str(int(round(float(raw_score))))
+
+    html = core.replace_counted(
+        html,
+        r'(<p class="editorial-orientation-v0-1__trust">Snapshot · ).*?(<br/>Research context · source proof available</p>)',
+        lambda m: f"{m.group(1)}{hero_time}{m.group(2)}",
+        "timestamp:hero_trust",
+        counts,
+    )
+    html = core.replace_counted(
+        html,
+        r'(<article class="btc-field-v1" role="img" aria-label="BTC current field\. BTC dominance is )[^ ]+( percent\. The gold circumference is data-bound; surrounding trajectories are semantic context lines\.")',
+        lambda m: f"{m.group(1)}{btc_dom_number}{m.group(2)}",
+        "btc_hub:field_aria",
+        counts,
+    )
     html = core.replace_counted(
         html,
         r'(<div class="score-orb field-gauge"[^>]*aria-label="Market Field Score )[^\"]+( out of 100">)[^<]+(</div>)',
         lambda m: f"{m.group(1)}{field_score}{m.group(2)}{field_score}{m.group(3)}",
         "field:score_orb",
         counts,
+    )
+    html = core.replace_counted(
+        html,
+        r'(<div class="barometer-core barometer-semantic-core">.*?<div>\s*<h3>)[^<]+(</h3>\s*<p>Market Field Score: )[^<]+( / 100<br/>Observed state: )[^<]+(</p>)',
+        lambda m: f"{m.group(1)}{regime}{m.group(2)}{field_score}{m.group(3)}{regime}{m.group(4)}",
+        "field:barometer_copy",
+        counts,
+        flags=re.S,
     )
 
     for symbol, visual_label, aria_label, prefix in (
