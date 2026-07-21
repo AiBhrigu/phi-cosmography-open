@@ -70,8 +70,10 @@ jobs:
           )
           if changed == assistant_dispatch_scope:
               mode = "assistant_dispatch"
+              print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
           elif changed == snapshot_memory_repair_scope:
               mode = "snapshot_memory_repair"
+              print("SNAPSHOT_MEMORY_REPAIR_EXACT_SCOPE=PASS")
           else:
               raise AssertionError({
                   "changed": sorted(changed),
