@@ -20,6 +20,85 @@
   },
   "current": {
     "acceptance_status": "ACCEPTED",
+    "bindings_blob_sha": "d7e9dae12b86fb95a502407ee986d6f077fed127",
+    "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+    "bindings_sha256": "ebd07b82445238ef0cd18ad2fe8870cec8c6766d215b03c2e9bc60ddda2a0c98",
+    "commit_sha": "f568149b99968b9d7f256fc154675a4622900ba4",
+    "data_origin_commit_sha": "7c3327f999f74bf4b7eedfde9dc0f3c476f1c6d7",
+    "generated_at_utc": "2026-07-22T08:02:05Z",
+    "proof_blob_sha": "586fc043bd9ae52649cad7b25622aa7ecb54eb2e",
+    "proof_generated_at_utc": "2026-07-22T08:02:05Z",
+    "proof_path": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+    "proof_sha256": "e019d0d63c5d642bd7f986b207780224e3b691c86219ed314b3d4f20084143f9",
+    "role": "current",
+    "runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+    "schema_version": "crypto_astro_snapshot_public_v0_1",
+    "snapshot_blob_sha": "a70e8cf8971f499bd94a214a0d1cfa02a8548855",
+    "snapshot_id": "crypto-astro:2026-07-22T08:02:05Z:bf68411af360",
+    "snapshot_path": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+    "snapshot_sha256": "bf68411af36051c57a9e1944590b7d589477ad907bccbd874e616c2cd5921aa0",
+    "source_mode": "static_public_snapshot"
+  },
+  "metric_methodologies": {
+    "alt_breadth_24h_pct": {
+      "comparable": true,
+      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "alt_breadth_7d_pct": {
+      "comparable": true,
+      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "btc_gravity_pct": {
+      "comparable": true,
+      "current_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "defi_tvl_usd": {
+      "comparable": true,
+      "current_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "liquidity_context_state": {
+      "comparable": true,
+      "current_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "market_field_score": {
+      "comparable": true,
+      "current_methodology_id": "public_market_field_score_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "public_market_field_score_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "regime_label": {
+      "comparable": true,
+      "current_methodology_id": "public_regime_threshold_58_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "public_regime_threshold_58_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    },
+    "stablecoin_share_pct": {
+      "comparable": true,
+      "current_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
+      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
+      "previous_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
+      "previous_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18"
+    }
+  },
+  "previous": {
+    "acceptance_status": "ACCEPTED",
     "bindings_blob_sha": "82e899f668f09208dd36106b8b37a70d085a40a7",
     "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
     "bindings_sha256": "2afe122599a1b659fd60ff3d8f638ba19bf3994b94d46e2f6bb78e8639b29240",
@@ -30,7 +109,7 @@
     "proof_generated_at_utc": "2026-07-21T12:40:11Z",
     "proof_path": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
     "proof_sha256": "7933ca34d4de28625f958594dd88c22d3917949d06748799498389c5e3bb336e",
-    "role": "current",
+    "role": "previous",
     "runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
     "schema_version": "crypto_astro_snapshot_public_v0_1",
     "snapshot_blob_sha": "62855699fceed33005e424117777f60b48b5caa4",
@@ -39,86 +118,7 @@
     "snapshot_sha256": "9281e029f2e550120c7eae3a79b4df133231d445e0f9512379a564619ff69262",
     "source_mode": "static_public_snapshot"
   },
-  "metric_methodologies": {
-    "alt_breadth_24h_pct": {
-      "comparable": true,
-      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "alt_breadth_7d_pct": {
-      "comparable": true,
-      "current_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "btc_gravity_pct": {
-      "comparable": true,
-      "current_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "defi_tvl_usd": {
-      "comparable": true,
-      "current_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "liquidity_context_state": {
-      "comparable": true,
-      "current_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "liquidity_context_state_with_global_ex_double_count_tvl_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "market_field_score": {
-      "comparable": true,
-      "current_methodology_id": "public_market_field_score_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "public_market_field_score_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "regime_label": {
-      "comparable": true,
-      "current_methodology_id": "public_regime_threshold_58_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "public_regime_threshold_58_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    },
-    "stablecoin_share_pct": {
-      "comparable": true,
-      "current_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
-      "current_runner_blob_sha": "30665704c9c0bff77722c9b536c4e640e0a95c18",
-      "previous_methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
-      "previous_runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030"
-    }
-  },
-  "previous": {
-    "acceptance_status": "ACCEPTED",
-    "bindings_blob_sha": "5b3ddff59fa797e3bb61a2043d344248c2e7e23a",
-    "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
-    "bindings_sha256": "d2f7d6fd7c15e0cf7ff252a7a3634c207e025a326efd45fcc8ab6463e86c89ce",
-    "commit_sha": "8f12ee8e4c8748c362568ada4d79ba16b61adde1",
-    "data_origin_commit_sha": "3520e542f6c554888aeb5e95dde2728dc692d239",
-    "generated_at_utc": "2026-07-19T18:26:56Z",
-    "proof_blob_sha": "dde4176b6ac7510c0adbd7f785bc3d82aa1607ab",
-    "proof_generated_at_utc": "2026-07-19T18:26:49Z",
-    "proof_path": "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
-    "proof_sha256": "4034e9ab3693360652ab6b352b1a0e0547608dd6238f4269c9c3ee78273c653c",
-    "role": "previous",
-    "runner_blob_sha": "2a37742fc4d962be4bcbc7e8d925834102de5030",
-    "schema_version": "crypto_astro_snapshot_public_v0_1",
-    "snapshot_blob_sha": "33ded2a6555bdd77549f697d71a0acbfeea3f672",
-    "snapshot_id": "crypto-astro:2026-07-19T18:26:56Z:8fb7e78233ab",
-    "snapshot_path": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
-    "snapshot_sha256": "8fb7e78233ab6ea8fe6b0224cd521fe92e2788c03c44723cd6e1c22e25715b57",
-    "source_mode": "static_public_snapshot"
-  },
-  "registry_generated_at_utc": "2026-07-21T12:40:11Z",
+  "registry_generated_at_utc": "2026-07-22T08:02:05Z",
   "schema_version": "crypto_astro_snapshot_registry_public_v0_2",
   "selection_policy": "EXPLICIT_ACCEPTED_PAIR"
 }
