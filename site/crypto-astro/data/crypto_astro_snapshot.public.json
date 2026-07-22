@@ -1,34 +1,34 @@
 {
   "schema_version": "crypto_astro_snapshot_public_v0_1",
-  "generated_at_utc": "2026-07-22T08:02:05Z",
+  "generated_at_utc": "2026-07-22T12:47:37Z",
   "source_mode": "static_public_snapshot",
   "freshness_status": "FRESH",
   "market_reality": {
-    "total_market_cap_usd": 2324415474308.087,
-    "volume_24h_usd": 70917065869.26118,
-    "market_cap_change_24h_pct": -0.7087090494788164,
-    "btc_dominance_pct": 56.76425005528646,
-    "eth_dominance_pct": 9.92725060447908,
-    "stablecoin_cap_usd": 308961712241.4205,
-    "stablecoin_share_pct": 13.29201752683176
+    "total_market_cap_usd": 2325834978457.117,
+    "volume_24h_usd": 68511540820.19137,
+    "market_cap_change_24h_pct": -0.9557791554088155,
+    "btc_dominance_pct": 56.70661443422236,
+    "eth_dominance_pct": 9.96107840181501,
+    "stablecoin_cap_usd": 309250693060.2349,
+    "stablecoin_share_pct": 13.296329959977715
   },
   "field_output": {
-    "market_field_score": 72.0,
+    "market_field_score": 70.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",
     "confidence_label": "static public context"
   },
   "probability_continuation": {
-    "base_path_pct": 62,
-    "expansion_path_pct": 23,
+    "base_path_pct": 63,
+    "expansion_path_pct": 22,
     "compression_reversal_pct": 15,
     "window_label": "7D",
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },
   "liquidity_tvl": {
-    "stablecoin_cap_usd": 308961712241.4205,
-    "defi_tvl_usd": 76892206306.0,
+    "stablecoin_cap_usd": 309250693060.2349,
+    "defi_tvl_usd": 76969061609.0,
     "defi_tvl_source_label": "defillama_protocols",
     "defi_tvl_canonical_source_id": "defillama_global_tvl_ex_double_count",
     "defi_tvl_source_url": "https://api.llama.fi/v2/historicalChainTvl",
@@ -37,16 +37,16 @@
     "defi_tvl_methodology": "DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking and double-counted TVL.",
     "defi_tvl_excludes_liquid_staking": true,
     "defi_tvl_excludes_double_counted": true,
-    "dex_volume_24h_usd": 6322653786,
+    "dex_volume_24h_usd": 6316060940,
     "liquidity_context_state": "context fresh",
     "calibration_state": "context_only"
   },
   "altcoin_rotation": {
     "universe": "non-stable top-250 crypto assets",
-    "alt_breadth_24h_pct": 35.3,
-    "alt_breadth_7d_pct": 42.0,
-    "eth_rotation_anchor_pct": 9.92725060447908,
-    "top_10_flow_concentration_pct": 67.1
+    "alt_breadth_24h_pct": 32.4,
+    "alt_breadth_7d_pct": 44.1,
+    "eth_rotation_anchor_pct": 9.96107840181501,
+    "top_10_flow_concentration_pct": 65.4
   },
   "public_samples": {
     "assets": {
@@ -54,49 +54,49 @@
         "id": "bitcoin",
         "symbol": "BTC",
         "label": "Bitcoin",
-        "price_usd": 65841,
+        "price_usd": 65756,
         "market_cap_rank": 1,
-        "market_24h_change_pct": -0.4650859662468963,
-        "market_7d_change_pct": 1.6020402938532412,
-        "market_30d_change_pct": 2.9719756270242352,
-        "M": 0.0465,
+        "market_24h_change_pct": -1.0739183658697862,
+        "market_7d_change_pct": 1.785363650868571,
+        "market_30d_change_pct": 1.7983820032091133,
+        "M": 0.1074,
         "membrane_state": "prepared_inactive",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 61.68
+        "score": 61.16
       },
       "ETH": {
         "id": "ethereum",
         "symbol": "ETH",
         "label": "Ethereum",
-        "price_usd": 1913.87,
+        "price_usd": 1920.19,
         "market_cap_rank": 2,
-        "market_24h_change_pct": -0.9912911458241931,
-        "market_7d_change_pct": 2.4177806166805764,
-        "market_30d_change_pct": 9.717946765353025,
-        "M": 0.0991,
+        "market_24h_change_pct": -1.0114126665516094,
+        "market_7d_change_pct": 2.3244804810797643,
+        "market_30d_change_pct": 8.708461173468656,
+        "M": 0.1011,
         "membrane_state": "prepared_inactive",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 62.33
+        "score": 62.17
       },
       "SOL": {
         "id": "solana",
         "symbol": "SOL",
         "label": "Solana",
-        "price_usd": 77.05,
+        "price_usd": 77.17,
         "market_cap_rank": 7,
-        "market_24h_change_pct": -1.839802211346071,
-        "market_7d_change_pct": -0.4404230528914246,
-        "market_30d_change_pct": 4.050436911759518,
-        "M": 0.184,
+        "market_24h_change_pct": -1.5651846568058763,
+        "market_7d_change_pct": -0.16941069491235572,
+        "market_30d_change_pct": 4.087237741834318,
+        "M": 0.1565,
         "membrane_state": "prepared_inactive",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "low_movement",
-        "score": 60.34
+        "score": 60.6
       },
       "TON": {
         "id": "the-open-network",
@@ -104,15 +104,15 @@
         "label": "Gram (prev. Toncoin)",
         "price_usd": 1.51,
         "market_cap_rank": 25,
-        "market_24h_change_pct": 4.366094142602229,
-        "market_7d_change_pct": -6.018482144412297,
-        "market_30d_change_pct": -6.723087169970329,
-        "M": 0.4366,
+        "market_24h_change_pct": 4.413669233938898,
+        "market_7d_change_pct": -6.007208698585444,
+        "market_30d_change_pct": -8.988980197997078,
+        "M": 0.4414,
         "membrane_state": "prepared_inactive",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · prepared membranes inactive",
         "market_context_label": "active_movement",
-        "score": 60.12
+        "score": 59.88
       },
       "ICP": {
         "id": "internet-computer",
@@ -120,15 +120,15 @@
         "label": "Internet Computer",
         "price_usd": 2.18,
         "market_cap_rank": 59,
-        "market_24h_change_pct": -1.9155047274243227,
-        "market_7d_change_pct": -1.1819314508124077,
-        "market_30d_change_pct": -3.6994932581041895,
-        "M": 0.1916,
+        "market_24h_change_pct": -2.0682021193733835,
+        "market_7d_change_pct": -0.6505843373069743,
+        "market_30d_change_pct": -4.696468701657559,
+        "M": 0.2068,
         "membrane_state": "prepared_inactive",
         "M_state": "market_context_active",
         "visible_state_label": "Market context active · prepared membranes inactive",
-        "market_context_label": "low_movement",
-        "score": 53.04
+        "market_context_label": "active_movement",
+        "score": 52.95
       }
     }
   },
