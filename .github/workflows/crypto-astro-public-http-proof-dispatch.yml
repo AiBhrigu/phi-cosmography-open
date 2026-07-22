@@ -92,16 +92,51 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           EXPECTED_MAIN_SHA: ${{ steps.request.outputs.expected_main_sha }}
+          CURRENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -euo pipefail
+          PREFLIGHT_STATUS=FAIL
+          ACTUAL_MAIN_SHA=''
+          CURRENT_ISSUE_STATE=''
+          CURRENT_ISSUE_TITLE=''
+          CURRENT_ISSUE_ID=''
+          OTHER_OPEN_REQUEST_COUNT=''
+          OPEN_REQUEST_COUNT=''
+          ACTIVE_PROOF_RUN_COUNT=''
+          trap '{
+            echo "STATUS=${PREFLIGHT_STATUS}"
+            echo "CURRENT_ISSUE_NUMBER=${CURRENT_ISSUE_NUMBER}"
+            echo "CURRENT_ISSUE_ID=${CURRENT_ISSUE_ID}"
+            echo "CURRENT_ISSUE_STATE=${CURRENT_ISSUE_STATE}"
+            echo "CURRENT_ISSUE_TITLE=${CURRENT_ISSUE_TITLE}"
+            echo "OTHER_OPEN_REQUEST_COUNT=${OTHER_OPEN_REQUEST_COUNT}"
+            echo "OPEN_REQUEST_COUNT=${OPEN_REQUEST_COUNT}"
+            echo "ACTIVE_PROOF_RUN_COUNT=${ACTIVE_PROOF_RUN_COUNT}"
+            echo "ACTUAL_MAIN_SHA=${ACTUAL_MAIN_SHA}"
+            echo "EXPECTED_MAIN_SHA=${EXPECTED_MAIN_SHA}"
+            echo "TARGET_WORKFLOW=${TARGET_WORKFLOW}"
+            echo "TARGET_REF=main"
+          } > artifacts/bridge-preflight.txt' EXIT
+
           git fetch origin main
           ACTUAL_MAIN_SHA=$(git rev-parse origin/main)
           test "$ACTUAL_MAIN_SHA" = "$EXPECTED_MAIN_SHA"
           gh workflow view "$TARGET_WORKFLOW" --ref main >/dev/null
 
-          OPEN_REQUEST_COUNT=$(gh issue list --state open --limit 100 \
-            --json number,title \
-            --jq '[.[] | select(.title == "Crypto-Astro public HTTP proof dispatch request")] | length')
+          CURRENT_ISSUE_JSON=$(gh issue view "$CURRENT_ISSUE_NUMBER" --json number,state,title)
+          CURRENT_ISSUE_ID=$(jq -r '.number' <<< "$CURRENT_ISSUE_JSON")
+          CURRENT_ISSUE_STATE=$(jq -r '.state' <<< "$CURRENT_ISSUE_JSON")
+          CURRENT_ISSUE_TITLE=$(jq -r '.title' <<< "$CURRENT_ISSUE_JSON")
+          test "$CURRENT_ISSUE_ID" = "$CURRENT_ISSUE_NUMBER"
+          test "$CURRENT_ISSUE_STATE" = "OPEN"
+          test "$CURRENT_ISSUE_TITLE" = "Crypto-Astro public HTTP proof dispatch request"
+
+          gh issue list --state open --limit 100 --json number,title > /tmp/open-public-http-proof-dispatch-issues.json
+          OTHER_OPEN_REQUEST_COUNT=$(jq --argjson current "$CURRENT_ISSUE_NUMBER" \
+            '[.[] | select(.title == "Crypto-Astro public HTTP proof dispatch request" and .number != $current)] | length' \
+            /tmp/open-public-http-proof-dispatch-issues.json)
+          test "$OTHER_OPEN_REQUEST_COUNT" = "0"
+          OPEN_REQUEST_COUNT=$((OTHER_OPEN_REQUEST_COUNT + 1))
           test "$OPEN_REQUEST_COUNT" = "1"
 
           ACTIVE_PROOF_RUN_COUNT=$(gh run list --workflow "$TARGET_WORKFLOW" --limit 100 \
@@ -109,14 +144,7 @@ jobs:
             --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
           test "$ACTIVE_PROOF_RUN_COUNT" = "0"
 
-          cat > artifacts/bridge-preflight.txt <<REPORT
-          STATUS=PASS
-          OPEN_REQUEST_COUNT=${OPEN_REQUEST_COUNT}
-          ACTIVE_PROOF_RUN_COUNT=${ACTIVE_PROOF_RUN_COUNT}
-          ACTUAL_MAIN_SHA=${ACTUAL_MAIN_SHA}
-          TARGET_WORKFLOW=${TARGET_WORKFLOW}
-          TARGET_REF=main
-          REPORT
+          PREFLIGHT_STATUS=PASS
 
       - name: Dispatch fixed public HTTP proof workflow
         id: dispatch
