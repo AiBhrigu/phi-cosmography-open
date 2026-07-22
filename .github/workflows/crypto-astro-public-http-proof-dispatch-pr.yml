@@ -1,0 +1,124 @@
+name: Crypto-Astro Public HTTP Proof Dispatch PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-public-http-proof-dispatch.yml'
+      - '.github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml'
+      - 'tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py'
+      - 'tools/crypto_astro_public_http_proof/test_verify_public_http_proof_dispatch.py'
+      - 'docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md'
+
+permissions:
+  contents: read
+
+jobs:
+  public-http-proof-dispatch:
+    name: Validate owner-authenticated proof dispatch bridge
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate exact implementation scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              '.github/workflows/crypto-astro-public-http-proof-dispatch.yml',
+              '.github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml',
+              'tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py',
+              'tools/crypto_astro_public_http_proof/test_verify_public_http_proof_dispatch.py',
+              'docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json',
+              'docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          assert changed == expected, {
+              'missing': sorted(expected - changed),
+              'unexpected': sorted(changed - expected),
+          }
+          report = {
+              'schema_version': 'crypto_astro_public_http_proof_dispatch_pr_scope_v0_1',
+              'status': 'PASS',
+              'base_sha': os.environ['BASE_SHA'],
+              'head_sha': os.environ['HEAD_SHA'],
+              'changed_files': sorted(changed),
+          }
+          Path('artifacts/exact-scope.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print('PUBLIC_HTTP_PROOF_DISPATCH_EXACT_SCOPE=PASS')
+          PY
+
+      - name: Run fail-closed request and repository fixtures
+        run: |
+          python -m py_compile \
+            tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py
+          python -m unittest \
+            tools.crypto_astro_public_http_proof.test_verify_public_http_proof_dispatch -v
+
+      - name: Verify fixed bridge, target, policy and documentation
+        run: |
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py verify-repository \
+            --repo . \
+            --report artifacts/public-http-proof-dispatch-verification.json
+
+      - name: Re-run exact external public HTTP proof
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            --repo . \
+            --report artifacts/crypto-astro-public-http-proof.json \
+            --expected-main-sha "$BASE_SHA" \
+            --timeout 20 \
+            --attempts 6 \
+            --retry-delay 5
+
+      - name: Prove public source and runtime surfaces are unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro \
+            tools/crypto_astro_static_refresh \
+            tools/crypto_astro_snapshot_memory \
+            .github/workflows/crypto-astro-public-http-proof.yml
+
+      - name: Upload dispatch review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-public-http-proof-dispatch-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
