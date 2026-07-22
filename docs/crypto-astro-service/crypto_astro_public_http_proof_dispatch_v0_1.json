@@ -1,0 +1,100 @@
+{
+  "schema_version": "crypto_astro_public_http_proof_dispatch_policy_v0_1",
+  "repository": "AiBhrigu/phi-cosmography-open",
+  "owner_login": "AiBhrigu",
+  "issue_title": "Crypto-Astro public HTTP proof dispatch request",
+  "trigger": {
+    "event": "issues",
+    "action": "opened"
+  },
+  "request_contract": {
+    "schema_value": "crypto_astro_public_http_proof_dispatch_request_v0_1",
+    "ordered_keys": [
+      "SCHEMA",
+      "REQUEST_ID",
+      "OPERATOR_REF",
+      "EXPECTED_MAIN_SHA"
+    ],
+    "exact_line_count": 4,
+    "max_lengths": {
+      "REQUEST_ID": 64,
+      "OPERATOR_REF": 80
+    },
+    "forbidden_tokens": [
+      "```",
+      "http://",
+      "https://",
+      "www.",
+      "${",
+      "$(",
+      "\t",
+      "\r"
+    ]
+  },
+  "identity": {
+    "author_login": "AiBhrigu",
+    "author_association": "OWNER",
+    "actor_login": "AiBhrigu"
+  },
+  "dispatch": {
+    "fixed_repository": "AiBhrigu/phi-cosmography-open",
+    "target_workflow": "crypto-astro-public-http-proof.yml",
+    "target_ref": "main",
+    "required_inputs": [
+      "operator_ref",
+      "expected_main_sha"
+    ],
+    "workflow_target_from_issue_forbidden": true,
+    "repository_from_issue_forbidden": true,
+    "ref_from_issue_forbidden": true,
+    "command_from_issue_forbidden": true,
+    "shell_eval_forbidden": true
+  },
+  "preflight": {
+    "current_main_sha_lock": true,
+    "single_open_request": true,
+    "zero_active_target_runs": true
+  },
+  "run_resolution": {
+    "event": "workflow_dispatch",
+    "branch": "main",
+    "head_sha_lock": true,
+    "created_after_dispatch_lock": true,
+    "single_new_run_required": true
+  },
+  "callback": {
+    "schema_version": "crypto_astro_public_http_proof_dispatch_callback_v0_1",
+    "required_fields": [
+      "REQUEST_ID",
+      "WORKFLOW_RUN_ID",
+      "WORKFLOW_RUN_URL",
+      "EXPECTED_MAIN_SHA",
+      "ACTUAL_HEAD_SHA",
+      "JOB_STATUS",
+      "FINAL_OUTCOME"
+    ],
+    "close_issue": true,
+    "lock_reason": "resolved"
+  },
+  "permissions": {
+    "contents": "read",
+    "actions": "write",
+    "issues": "write"
+  },
+  "boundary": {
+    "schedule": false,
+    "repository_write": false,
+    "pull_request_write": false,
+    "pages_write": false,
+    "deployment": false,
+    "backend": false,
+    "api_activation": false,
+    "payment": false,
+    "a_e_scope": false,
+    "temporal_scope": false,
+    "forecast": false,
+    "trading_signal": false,
+    "price_target": false,
+    "orion_exposure": false
+  }
+}
