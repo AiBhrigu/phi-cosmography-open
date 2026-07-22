@@ -284,6 +284,9 @@ class PublicHttpProofTests(unittest.TestCase):
     def test_workflow_retains_artifact_before_enforcing_failure(self) -> None:
         workflow = Path(__file__).parents[2] / ".github/workflows/crypto-astro-public-http-proof.yml"
         text = workflow.read_text(encoding="utf-8")
+        self.assertIn("name: Validate retained failure fixture", text)
+        self.assertIn("LOCAL_PROOF_TIMESTAMP_MISMATCH", text)
+        self.assertIn("if: github.event_name == 'workflow_dispatch'", text)
         self.assertIn("continue-on-error: true", text)
         self.assertIn("github.run_attempt", text)
         self.assertIn("crypto-astro-public-http-proof.exit-code.txt", text)
