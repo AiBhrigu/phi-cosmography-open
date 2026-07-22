@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce bounded cadence, assistant-dispatch, or Snapshot Memory repair scope
+      - name: Classify bounded cadence, repair, or generated-refresh scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -77,6 +77,26 @@ jobs:
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
               "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
           }
+          generated_refresh_applicability_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
+          generated_refresh_scope = {
+              "site/crypto-astro/index.html",
+              "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+              "site/crypto-astro/data/market_field_snapshot.public.v0_1.json",
+              "site/crypto-astro/data/scoring_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json",
+              "docs/crypto-astro-service/crypto_astro_snapshot_summary.md",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          generated_refresh_optional = {
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -91,6 +111,13 @@ jobs:
               print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
           elif changed == runtime_registry_test_repair_scope:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
+          elif changed == generated_refresh_applicability_repair_scope:
+              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+          elif changed in (
+              generated_refresh_scope,
+              generated_refresh_scope | generated_refresh_optional,
+          ):
+              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
           else:
               unexpected = sorted(changed - cadence_allowed)
               assert not unexpected, f"Unexpected cadence paths: {unexpected}"
