@@ -68,7 +68,7 @@ jobs:
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
               "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
           }
-          generated_refresh_applicability_repair_scope = {
+          workflow_applicability_repair_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
@@ -97,9 +97,9 @@ jobs:
           elif changed == runtime_registry_test_repair_scope:
               mode = "runtime_registry_test_repair"
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_EXACT_SCOPE=PASS")
-          elif changed == generated_refresh_applicability_repair_scope:
-              mode = "operational_cadence_generated_refresh_applicability_repair"
-              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == workflow_applicability_repair_scope:
+              mode = "workflow_applicability_repair"
+              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
           elif changed == timestamp_consistency_repair_scope:
               mode = "timestamp_consistency_repair"
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
@@ -109,8 +109,8 @@ jobs:
                   "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
                   "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
                   "runtime_registry_test_repair_missing": sorted(runtime_registry_test_repair_scope - changed),
-                  "generated_refresh_applicability_repair_missing": sorted(
-                      generated_refresh_applicability_repair_scope - changed
+                  "workflow_applicability_repair_missing": sorted(
+                      workflow_applicability_repair_scope - changed
                   ),
                   "timestamp_consistency_repair_missing": sorted(
                       timestamp_consistency_repair_scope - changed
@@ -120,7 +120,7 @@ jobs:
                       - assistant_dispatch_scope
                       - snapshot_memory_repair_scope
                       - runtime_registry_test_repair_scope
-                      - generated_refresh_applicability_repair_scope
+                      - workflow_applicability_repair_scope
                       - timestamp_consistency_repair_scope
                   ),
               })

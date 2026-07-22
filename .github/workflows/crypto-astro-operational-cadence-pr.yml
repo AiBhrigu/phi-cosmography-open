@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify bounded cadence, repair, timestamp-consistency, or generated-refresh scope
+      - name: Classify bounded cadence, repair, workflow-applicability, timestamp-consistency, or generated-refresh scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -79,7 +79,7 @@ jobs:
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
               "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
           }
-          generated_refresh_applicability_repair_scope = {
+          workflow_applicability_repair_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
@@ -120,8 +120,8 @@ jobs:
               print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
           elif changed == runtime_registry_test_repair_scope:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
-          elif changed == generated_refresh_applicability_repair_scope:
-              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+          elif changed == workflow_applicability_repair_scope:
+              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
           elif changed == timestamp_consistency_repair_scope:
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_FILE_SCOPE=PASS")
           elif changed in (
