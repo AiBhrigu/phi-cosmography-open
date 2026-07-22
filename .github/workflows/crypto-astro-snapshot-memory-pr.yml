@@ -90,6 +90,8 @@ jobs:
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
           timestamp_consistency_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
             'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
             'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
@@ -213,7 +215,7 @@ jobs:
           registry_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
           snapshot_path='site/crypto-astro/data/crypto_astro_snapshot.public.json'
           allowed_registry_fields={
-            'commit_sha', 'data_origin_commit_sha', 'proof_blob_sha',
+            'commit_sha', 'proof_blob_sha',
             'proof_generated_at_utc', 'proof_sha256',
           }
           def show_bytes(ref,path):
@@ -242,9 +244,9 @@ jobs:
           assert current['proof_generated_at_utc']==expected
           assert current['proof_sha256']==proof_sha256
           assert current['proof_blob_sha']==proof_blob_sha
-          assert current['data_origin_commit_sha']==os.environ['BASE_SHA']
+          assert current['data_origin_commit_sha']==base_registry['current']['data_origin_commit_sha']
           provenance=current['commit_sha']
-          subprocess.check_call(['git','merge-base','--is-ancestor',os.environ['BASE_SHA'],provenance])
+          subprocess.check_call(['git','merge-base','--is-ancestor',current['data_origin_commit_sha'],provenance])
           assert show_bytes(provenance,proof_path)==head_proof_bytes
           print('SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR=PASS')
           PY
