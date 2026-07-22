@@ -1,0 +1,132 @@
+name: Crypto-Astro Gate 3 Post-Closure Index PR
+
+on:
+  pull_request:
+    paths:
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json'
+      - 'tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py'
+      - 'tools/crypto_astro_gate_3_closure/test_verify_gate_3_post_closure.py'
+      - '.github/workflows/crypto-astro-gate-3-post-closure-pr.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-gate-3-post-closure:
+    name: Verify Gate 3 source-of-truth and memory handoff
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate exact documentary scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          full_scope = {
+              '.github/workflows/crypto-astro-gate-3-post-closure-pr.yml',
+              'docs/crypto-astro-service/CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_v0_1.md',
+              'docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json',
+              'tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py',
+              'tools/crypto_astro_gate_3_closure/test_verify_gate_3_post_closure.py',
+          }
+          docs_scope = {
+              'docs/crypto-astro-service/CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_v0_1.md',
+              'docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json',
+          }
+          verifier_scope = {
+              '.github/workflows/crypto-astro-gate-3-post-closure-pr.yml',
+              'tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py',
+              'tools/crypto_astro_gate_3_closure/test_verify_gate_3_post_closure.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          allowed = {
+              'FULL_IMPLEMENTATION': full_scope,
+              'DOCS_MAINTENANCE': docs_scope,
+              'VERIFIER_MAINTENANCE': verifier_scope,
+          }
+          scope_name = next(
+              (name for name, paths in allowed.items() if changed == paths),
+              None,
+          )
+          report = {
+              'schema_version': 'crypto_astro_gate_3_post_closure_pr_scope_v0_1',
+              'status': 'PASS' if scope_name else 'FAIL',
+              'scope_name': scope_name,
+              'base_sha': os.environ['BASE_SHA'],
+              'head_sha': os.environ['HEAD_SHA'],
+              'changed_files': sorted(changed),
+          }
+          Path('artifacts/exact-scope.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          if scope_name is None:
+              raise SystemExit(json.dumps(report, sort_keys=True))
+          print(f'GATE_3_POST_CLOSURE_SCOPE={scope_name}')
+          PY
+
+      - name: Run verifier fixtures
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py \
+            tools/crypto_astro_gate_3_closure/test_verify_gate_3_post_closure.py
+          python -m unittest \
+            tools.crypto_astro_gate_3_closure.test_verify_gate_3_post_closure -v \
+            2>&1 | tee artifacts/unit-tests.log
+
+      - name: Verify source-of-truth index and memory capsule
+        run: |
+          set -euo pipefail
+          python tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py \
+            --repo . \
+            --report artifacts/gate-3-post-closure-verification.json \
+            2>&1 | tee artifacts/verifier.log
+
+      - name: Prove operational and public surfaces are unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro \
+            .github/workflows/crypto-astro-public-http-proof.yml \
+            .github/workflows/crypto-astro-public-http-proof-dispatch.yml \
+            .github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml \
+            tools/crypto_astro_public_http_proof
+
+      - name: Upload closure review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-gate-3-post-closure-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
