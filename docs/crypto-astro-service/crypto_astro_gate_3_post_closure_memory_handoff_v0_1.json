@@ -1,0 +1,210 @@
+{
+  "schema_version": "crypto_astro_gate_3_post_closure_memory_handoff_v0_1",
+  "node": "CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_AND_MEMORY_HANDOFF_SCOPE_v0_1",
+  "handoff_status": "READY_FOR_REVIEW",
+  "repository": "AiBhrigu/phi-cosmography-open",
+  "gate_3": {
+    "axis": "PUBLIC_HTTP_PROOF_DISPATCH",
+    "status": "PASS",
+    "production_state": "OWNER_AUTHENTICATED_DISPATCH_BRIDGE_LIVE_VERIFIED",
+    "current_main_sha": "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa",
+    "canonical_snapshot_timestamp": "2026-07-22T08:02:05Z",
+    "closure_observed_at_utc": "2026-07-22T11:08:38Z",
+    "operator_f_manual_actions": "NONE",
+    "boundary": "CLEAN"
+  },
+  "source_of_truth_files": [
+    ".github/workflows/crypto-astro-public-http-proof.yml",
+    ".github/workflows/crypto-astro-public-http-proof-dispatch.yml",
+    ".github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml",
+    "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
+    "tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py",
+    "docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md",
+    "docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json"
+  ],
+  "pr_chain": [
+    {
+      "number": 158,
+      "role": "READ_ONLY_PUBLIC_HTTP_PROOF_FOUNDATION",
+      "state": "merged",
+      "head_sha": "ba798b436accae805d326dc78977a3af05da4dfd",
+      "merge_sha": "4fc4d460587ef434563b0b17b05c68f9caf0ced0",
+      "review_evidence_run_id": 29908527608,
+      "review_evidence_artifact_id": 8524857301,
+      "review_evidence_digest": "sha256:258ce93581cb79967beecc929abe08a67f70aead6b5a02dc9894772c17330342"
+    },
+    {
+      "number": 159,
+      "role": "OWNER_AUTHENTICATED_DISPATCH_BRIDGE_FOUNDATION",
+      "state": "merged",
+      "head_sha": "23cb754ec4c2b4c7de487d19918c58123dd413a9",
+      "merge_sha": "a2da529c075699c82c963befb34f946ba211c1b0",
+      "review_evidence_run_id": 29910847407,
+      "review_evidence_artifact_id": 8525796620,
+      "review_evidence_digest": "sha256:bfe95ab68e26f4469cf116afbc40b52dca9d0d03a72ac527fd5af19570c9272a"
+    },
+    {
+      "number": 162,
+      "role": "PREFLIGHT_ISSUE_COUNT_REPAIR",
+      "state": "merged",
+      "head_sha": "2cd1a43d2004334621a2b5f496d6efa0ce68a418",
+      "merge_sha": "a5d9183da68cfec93eb9fdbaeb57a7469d8454a9",
+      "review_evidence_run_id": 29911860762,
+      "review_evidence_artifact_id": 8526199787,
+      "review_evidence_digest": "sha256:915bf7215c5c210153fd60b0768afbe2e8b97e7e4a0e636f0f25e746bae55780"
+    },
+    {
+      "number": 164,
+      "role": "EXACT_PREFLIGHT_REASON_CALLBACK_REPAIR",
+      "state": "merged",
+      "head_sha": "350b899500dfa27abc10aa80e070833468afa11f",
+      "merge_sha": "ce499d0176b05cacde550f7d3ecf430dc6d1b704",
+      "review_evidence_run_id": 29912803447,
+      "review_evidence_artifact_id": 8526579181,
+      "review_evidence_digest": "sha256:2a2abb598eb6633a6c0576bf44fac7a21a9bc830c553b01c4796232287555a65"
+    },
+    {
+      "number": 166,
+      "role": "DETERMINISTIC_TARGET_WORKFLOW_VISIBILITY_REPAIR",
+      "state": "merged",
+      "head_sha": "5c0d68fbcc2d7cb34eddb924bfaf84935fd31a26",
+      "merge_sha": "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa",
+      "review_evidence_run_id": 29913813145,
+      "review_evidence_artifact_id": 8526996352,
+      "review_evidence_digest": "sha256:ab438dfcfbe386e99b11bf0ece07666f227af3970fd0e018ab0986e97631e3e0"
+    }
+  ],
+  "diagnostic_issue_chain": [
+    {
+      "number": 160,
+      "request_id": "CA-HTTP-20260722-01",
+      "expected_main_sha": "a2da529c075699c82c963befb34f946ba211c1b0",
+      "classification": "SAFE_FAIL_CLOSED_DIAGNOSTIC",
+      "final_outcome": "FAIL_PREFLIGHT",
+      "exact_reason_code": null,
+      "target_workflow_dispatched": false,
+      "workflow_run_id": null,
+      "callback_comment_id": 5044642377
+    },
+    {
+      "number": 161,
+      "request_id": "CA-HTTP-20260722-02",
+      "expected_main_sha": "a2da529c075699c82c963befb34f946ba211c1b0",
+      "classification": "SAFE_FAIL_CLOSED_DIAGNOSTIC",
+      "final_outcome": "FAIL_PREFLIGHT",
+      "exact_reason_code": null,
+      "target_workflow_dispatched": false,
+      "workflow_run_id": null,
+      "callback_comment_id": 5044666925
+    },
+    {
+      "number": 163,
+      "request_id": "CA-HTTP-20260722-03",
+      "expected_main_sha": "a5d9183da68cfec93eb9fdbaeb57a7469d8454a9",
+      "classification": "SAFE_FAIL_CLOSED_DIAGNOSTIC",
+      "final_outcome": "FAIL_PREFLIGHT",
+      "exact_reason_code": null,
+      "target_workflow_dispatched": false,
+      "workflow_run_id": null,
+      "callback_comment_id": 5044735135
+    },
+    {
+      "number": 165,
+      "request_id": "CA-HTTP-20260722-04",
+      "expected_main_sha": "ce499d0176b05cacde550f7d3ecf430dc6d1b704",
+      "classification": "SAFE_FAIL_CLOSED_DIAGNOSTIC",
+      "final_outcome": "FAIL_PREFLIGHT",
+      "exact_reason_code": "FAIL_TARGET_WORKFLOW_VIEW",
+      "target_workflow_dispatched": false,
+      "workflow_run_id": null,
+      "callback_comment_id": 5044861593
+    }
+  ],
+  "accepted_repair_mapping": [
+    {
+      "source_issue_numbers": [
+        160,
+        161
+      ],
+      "repair_pr": 162,
+      "result": "PARTIAL",
+      "finding": "ISSUE_COUNT_REPAIR_DID_NOT_REMOVE_SHARED_PREFLIGHT_BLOCKER"
+    },
+    {
+      "source_issue_numbers": [
+        160,
+        161,
+        163
+      ],
+      "repair_pr": 164,
+      "result": "DIAGNOSTIC_CAPABILITY_ADDED",
+      "finding": "EXACT_REASON_CALLBACK_PROVED_FAIL_TARGET_WORKFLOW_VIEW"
+    },
+    {
+      "source_issue_numbers": [
+        165
+      ],
+      "repair_pr": 166,
+      "result": "ACCEPTED",
+      "finding": "DETERMINISTIC_LOCAL_TARGET_FILE_AND_WORKFLOW_DISPATCH_TRIGGER_CHECK"
+    }
+  ],
+  "production_proof": {
+    "classification": "SOLE_POST_MERGE_OWNER_DISPATCH_PRODUCTION_PASS",
+    "issue_number": 167,
+    "request_id": "CA-HTTP-20260722-05",
+    "operator_ref": "COSMOGRAPHER-HTTP-20260722-05",
+    "dispatch_accepted_comment_id": 5045063716,
+    "callback_comment_id": 5045066607,
+    "workflow_run_id": 29914563042,
+    "workflow_name": "Crypto-Astro Public HTTP Proof",
+    "workflow_file": "crypto-astro-public-http-proof.yml",
+    "event": "workflow_dispatch",
+    "branch": "main",
+    "expected_main_sha": "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa",
+    "actual_head_sha": "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa",
+    "job_status": "success",
+    "final_outcome": "PUBLIC_HTTP_PROOF_PASS",
+    "issue_state": "closed",
+    "issue_state_reason": "completed",
+    "artifact_id": 8527304778,
+    "artifact_name": "crypto-astro-public-http-proof-29914563042",
+    "artifact_digest": "sha256:b692458b3c1fc9ff16d9962d7464326606b4dc251d748ea52913463982e511e9",
+    "http_targets_total": 6,
+    "http_200": 6,
+    "redirects_total": 0
+  },
+  "public_surfaces": [
+    "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html",
+    "https://www.bhrigu.io/crypto-astro/btc"
+  ],
+  "truth_rules": [
+    "Only issue 167 with workflow run 29914563042 is the post-merge owner-dispatch production PASS.",
+    "Issues 160, 161, 163 and 165 are safe fail-closed diagnostics and must never be reclassified as production PASS.",
+    "PR review HTTP proofs establish review evidence; they do not replace the post-merge owner-dispatch production proof.",
+    "Gate 3 changed proof and dispatch infrastructure only; it did not refresh market data or mutate public HTML or JSON.",
+    "Any future Crypto-Astro refresh requires a separate explicit authorization and a new SHA-locked evidence chain."
+  ],
+  "hold": {
+    "state": "HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH",
+    "automatic_refresh": false,
+    "automatic_dispatch": false,
+    "operator_action_required": false
+  },
+  "boundary": {
+    "public_html_change": false,
+    "public_json_change": false,
+    "market_data_refresh": false,
+    "deployment": false,
+    "cron": false,
+    "backend": false,
+    "api_activation": false,
+    "payment": false,
+    "a_e_scope": false,
+    "temporal_scope": false,
+    "forecast": false,
+    "trading_signal": false,
+    "price_target": false,
+    "orion_exposure": false
+  }
+}
