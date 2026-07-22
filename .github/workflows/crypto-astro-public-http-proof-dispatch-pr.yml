@@ -115,7 +115,8 @@ jobs:
               'FAIL_MAIN_FETCH',
               'FAIL_MAIN_SHA_RESOLVE',
               'FAIL_MAIN_SHA_MISMATCH',
-              'FAIL_TARGET_WORKFLOW_VIEW',
+              'FAIL_TARGET_WORKFLOW_FILE_MISSING',
+              'FAIL_TARGET_WORKFLOW_DISPATCH_TRIGGER_MISSING',
               'FAIL_CURRENT_ISSUE_VIEW',
               'FAIL_CURRENT_ISSUE_NUMBER_PARSE',
               'FAIL_CURRENT_ISSUE_STATE_PARSE',
@@ -158,6 +159,49 @@ jobs:
           if failures:
               raise SystemExit(json.dumps(report, sort_keys=True))
           print('PUBLIC_HTTP_PROOF_DISPATCH_REASON_CALLBACK=PASS')
+          PY
+
+      - name: Verify deterministic target workflow visibility contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          bridge = Path('.github/workflows/crypto-astro-public-http-proof-dispatch.yml').read_text(
+              encoding='utf-8'
+          )
+          target_path = Path('.github/workflows/crypto-astro-public-http-proof.yml')
+          target = target_path.read_text(encoding='utf-8')
+          trigger_marker = 'workflow_' + 'dispatch:'
+          required_bridge_markers = [
+              'TARGET_WORKFLOW_PATH: .github/workflows/crypto-astro-public-http-proof.yml',
+              'if [ ! -f "$TARGET_WORKFLOW_PATH" ]',
+              "marker = 'workflow_' + 'dispatch:'",
+              'FAIL_TARGET_WORKFLOW_FILE_MISSING',
+              'FAIL_TARGET_WORKFLOW_DISPATCH_TRIGGER_MISSING',
+          ]
+          failures = [
+              f'missing:{marker}'
+              for marker in required_bridge_markers
+              if marker not in bridge
+          ]
+          if 'gh workflow view' in bridge:
+              failures.append('forbidden:gh_workflow_view')
+          if not any(line.strip() == trigger_marker for line in target.splitlines()):
+              failures.append('target:workflow_dispatch_missing')
+          report = {
+              'schema_version': 'crypto_astro_public_http_proof_dispatch_target_visibility_review_v0_1',
+              'status': 'PASS' if not failures else 'FAIL',
+              'target_workflow_path': str(target_path),
+              'deterministic_local_check': True,
+              'failures': failures,
+          }
+          Path('artifacts/target-workflow-visibility-review.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          if failures:
+              raise SystemExit(json.dumps(report, sort_keys=True))
+          print('PUBLIC_HTTP_PROOF_DISPATCH_TARGET_VISIBILITY=PASS')
           PY
 
       - name: Re-run exact external public HTTP proof
