@@ -1,0 +1,117 @@
+name: Crypto-Astro Controlled Refresh Authorization PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-controlled-refresh-authorization-pr.yml'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_POST_GATE_3_CONTROLLED_REFRESH_AUTHORIZATION_PACKET_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_post_gate_3_controlled_refresh_authorization_packet_v0_1.json'
+      - 'tools/crypto_astro_refresh_authorization/verify_controlled_refresh_authorization.py'
+      - 'tools/crypto_astro_refresh_authorization/test_verify_controlled_refresh_authorization.py'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-authorization-packet:
+    name: Verify controlled refresh authorization packet
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate exact documentary scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              '.github/workflows/crypto-astro-controlled-refresh-authorization-pr.yml',
+              'docs/crypto-astro-service/CRYPTO_ASTRO_POST_GATE_3_CONTROLLED_REFRESH_AUTHORIZATION_PACKET_v0_1.md',
+              'docs/crypto-astro-service/crypto_astro_post_gate_3_controlled_refresh_authorization_packet_v0_1.json',
+              'tools/crypto_astro_refresh_authorization/verify_controlled_refresh_authorization.py',
+              'tools/crypto_astro_refresh_authorization/test_verify_controlled_refresh_authorization.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          status = 'PASS' if changed == expected else 'FAIL'
+          report = {
+              'schema_version': 'crypto_astro_controlled_refresh_authorization_pr_scope_v0_1',
+              'status': status,
+              'scope_name': 'AUTHORIZATION_PACKET_ONLY' if status == 'PASS' else None,
+              'base_sha': os.environ['BASE_SHA'],
+              'head_sha': os.environ['HEAD_SHA'],
+              'changed_files': sorted(changed),
+          }
+          Path('artifacts/exact-scope.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          if status != 'PASS':
+              raise SystemExit(json.dumps(report, sort_keys=True))
+          print('CONTROLLED_REFRESH_AUTHORIZATION_SCOPE=PASS')
+          PY
+
+      - name: Run fail-closed fixtures
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            tools/crypto_astro_refresh_authorization/verify_controlled_refresh_authorization.py \
+            tools/crypto_astro_refresh_authorization/test_verify_controlled_refresh_authorization.py
+          python -m unittest \
+            tools.crypto_astro_refresh_authorization.test_verify_controlled_refresh_authorization -v \
+            2>&1 | tee artifacts/unit-tests.log
+
+      - name: Verify authorization packet
+        run: |
+          set -euo pipefail
+          python tools/crypto_astro_refresh_authorization/verify_controlled_refresh_authorization.py \
+            --repo . \
+            --report artifacts/controlled-refresh-authorization-verification.json \
+            2>&1 | tee artifacts/verifier.log
+
+      - name: Prove refresh and public surfaces are unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            .github/workflows/crypto-astro-public-http-proof.yml \
+            .github/workflows/crypto-astro-public-http-proof-dispatch.yml \
+            tools/crypto_astro_static_refresh \
+            tools/crypto_astro_snapshot_memory \
+            tools/crypto_astro_public_http_proof
+
+      - name: Upload authorization review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-controlled-refresh-authorization-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
