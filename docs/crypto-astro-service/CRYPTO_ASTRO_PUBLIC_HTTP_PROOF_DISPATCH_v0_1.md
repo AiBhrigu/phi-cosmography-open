@@ -106,4 +106,13 @@ The issue is then closed and locked as resolved. A failed proof returns a failed
 
 ## Preserved boundary
 
-This bridge introduces no cron, repository mutation, public API, backend, webhook, personal access token, new secret, auto-merge, deployment command, payment route, A/E activation, Temporal runtime expansion, forecast, trading signal, price target, investment recommendation, or ORION core exposure.
+- no cron;
+- no repository mutation;
+- no contents write;
+- no pull-request or Pages write;
+- no deployment command;
+- no backend, public API, webhook, payment route, or new secret;
+- no A/E activation;
+- no Temporal runtime expansion;
+- no forecast, trading signal, price target, or investment recommendation;
+- no ORION core exposure.
