@@ -84,6 +84,11 @@ jobs:
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
             'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
           }
+          generated_refresh_applicability_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
           maintenance = {
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -140,6 +145,8 @@ jobs:
             mode='squash_merge_ancestry_repair'
           elif changed == runtime_registry_test_repair:
             mode='runtime_registry_test_repair'
+          elif changed == generated_refresh_applicability_repair:
+            mode='operational_cadence_generated_refresh_applicability_repair'
           elif changed == maintenance:
             mode='surface_contract_maintenance'
           elif changed == cadence_maintenance:
@@ -156,12 +163,13 @@ jobs:
               'implementation_missing':sorted(implementation-changed),
               'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
               'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
+              'generated_refresh_applicability_repair_missing':sorted(generated_refresh_applicability_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-generated_refresh_applicability_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -257,6 +265,39 @@ jobs:
             .github/workflows/crypto-astro-static-refresh-manual.yml \
             tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
             tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+      - name: Prove operational cadence generated-refresh applicability repair
+        if: steps.scope.outputs.mode == 'operational_cadence_generated_refresh_applicability_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          path='.github/workflows/crypto-astro-operational-cadence-pr.yml'
+          def show(ref):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True)
+          base=show(os.environ['BASE_SHA'])
+          head=show(os.environ['HEAD_SHA'])
+          assert 'OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS' not in base
+          assert 'OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS' in head
+          for required in (
+              'site/crypto-astro/index.html',
+              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          ):
+              assert required in head
+          print('OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_FALSE_RED_REPAIR=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            tools/crypto_astro_operations \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
             site/theme/crypto_astro_surface.css \

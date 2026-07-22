@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify exact assistant-dispatch or Snapshot Memory repair scope
+      - name: Classify exact assistant-dispatch or bounded repair scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -66,6 +66,11 @@ jobs:
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
               "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
           }
+          generated_refresh_applicability_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -83,17 +88,24 @@ jobs:
           elif changed == runtime_registry_test_repair_scope:
               mode = "runtime_registry_test_repair"
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == generated_refresh_applicability_repair_scope:
+              mode = "operational_cadence_generated_refresh_applicability_repair"
+              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
           else:
               raise AssertionError({
                   "changed": sorted(changed),
                   "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
                   "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
                   "runtime_registry_test_repair_missing": sorted(runtime_registry_test_repair_scope - changed),
+                  "generated_refresh_applicability_repair_missing": sorted(
+                      generated_refresh_applicability_repair_scope - changed
+                  ),
                   "unexpected": sorted(
                       changed
                       - assistant_dispatch_scope
                       - snapshot_memory_repair_scope
                       - runtime_registry_test_repair_scope
+                      - generated_refresh_applicability_repair_scope
                   ),
               })
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
@@ -130,7 +142,7 @@ jobs:
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
 
-      - name: Prove dispatch runtime and public surface unchanged for Snapshot Memory repairs
+      - name: Prove dispatch runtime and public surface unchanged for bounded repairs
         if: steps.scope.outputs.mode != 'assistant_dispatch'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
