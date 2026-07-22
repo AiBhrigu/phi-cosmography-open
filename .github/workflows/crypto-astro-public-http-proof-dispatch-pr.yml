@@ -139,7 +139,8 @@ jobs:
               'fail_preflight()',
               'echo "reason_code=$1" >> "$GITHUB_OUTPUT"',
               'PREFLIGHT_REASON_CODE=${PREFLIGHT_REASON_CODE}',
-              'PREFLIGHT_REASON_CODE: ${{ steps.preflight.outputs.reason_code }}',
+              'PREFLIGHT_REASON_CODE:',
+              'steps.preflight.outputs.reason_code',
               'FINAL_OUTCOME=${REASON_CODE}',
           ]
           for marker in markers:
