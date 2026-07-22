@@ -31,9 +31,6 @@ from build_snapshot_memory import (
     make_bundle,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-EXPECTED_MIGRATED_DATA_ORIGIN = "5cf49934aa22b3ce66629b31b5a39c1c069aa349"
-
 
 def encoded(document):
     return (json.dumps(document, ensure_ascii=False, indent=2) + "\n").encode()
@@ -504,17 +501,31 @@ class SnapshotMemoryTopologyTests(unittest.TestCase):
         self.assertEqual(registry["previous"]["commit_sha"], fixture.provenance_current)
         self.assertEqual(registry["current"]["data_origin_commit_sha"], fixture.accepted_base)
 
-    @unittest.skipUnless((REPO_ROOT / REGISTRY_PATH).exists(), "repository fixture unavailable")
-    def test_current_real_registry_migration(self):
-        registry = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
-        self.assertEqual(
-            registry["current"]["data_origin_commit_sha"],
-            EXPECTED_MIGRATED_DATA_ORIGIN,
+    def test_runtime_generated_registry_uses_dynamic_accepted_base(self):
+        fixture = GitTopologyFixture(squash=True)
+        self.addCleanup(fixture.close)
+        current, previous, evidence = load_pair(
+            fixture.repo,
+            base_ref=fixture.accepted_base,
+            current_ref=fixture.current_data,
         )
-        current, previous, evidence = load_pair(REPO_ROOT)
-        self.assertTrue(current and previous)
+        registry, delta = build_documents(current, previous)
+        write_json(fixture.repo, REGISTRY_PATH, registry)
+        committed_current, committed_previous, committed_evidence = load_pair(fixture.repo)
+
+        self.assertNotEqual(fixture.accepted_base, fixture.old_base)
+        self.assertEqual(registry["current"]["data_origin_commit_sha"], fixture.accepted_base)
+        self.assertEqual(registry["current"]["commit_sha"], fixture.current_data)
+        self.assertEqual(registry["previous"]["commit_sha"], fixture.provenance_current)
+        self.assertEqual(committed_current.data_origin_commit_sha, fixture.accepted_base)
+        self.assertEqual(committed_previous.commit_sha, fixture.provenance_current)
         self.assertEqual(evidence["provenance_hashes"], "PASS")
         self.assertEqual(evidence["base_materialization_hashes"], "PASS")
+        self.assertEqual(committed_evidence["transaction_base_ancestry"], "PASS")
+        self.assertEqual(
+            set(delta["metrics"]) | set(delta["unavailable_metrics"]),
+            set(TRACKED_METRICS),
+        )
 
 
 if __name__ == "__main__":
