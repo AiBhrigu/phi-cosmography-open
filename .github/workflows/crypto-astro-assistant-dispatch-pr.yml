@@ -60,6 +60,12 @@ jobs:
               "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
               "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
           }
+          runtime_registry_test_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -74,12 +80,21 @@ jobs:
           elif changed == snapshot_memory_repair_scope:
               mode = "snapshot_memory_repair"
               print("SNAPSHOT_MEMORY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == runtime_registry_test_repair_scope:
+              mode = "runtime_registry_test_repair"
+              print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_EXACT_SCOPE=PASS")
           else:
               raise AssertionError({
                   "changed": sorted(changed),
                   "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
                   "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
-                  "unexpected": sorted(changed - assistant_dispatch_scope - snapshot_memory_repair_scope),
+                  "runtime_registry_test_repair_missing": sorted(runtime_registry_test_repair_scope - changed),
+                  "unexpected": sorted(
+                      changed
+                      - assistant_dispatch_scope
+                      - snapshot_memory_repair_scope
+                      - runtime_registry_test_repair_scope
+                  ),
               })
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write(f"mode={mode}\n")
@@ -115,8 +130,8 @@ jobs:
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
 
-      - name: Prove dispatch runtime and public surface unchanged for Snapshot Memory repair
-        if: steps.scope.outputs.mode == 'snapshot_memory_repair'
+      - name: Prove dispatch runtime and public surface unchanged for Snapshot Memory repairs
+        if: steps.scope.outputs.mode != 'assistant_dispatch'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
