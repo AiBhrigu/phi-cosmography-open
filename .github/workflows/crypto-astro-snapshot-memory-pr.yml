@@ -78,6 +78,12 @@ jobs:
             'site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json',
             'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
           }
+          runtime_registry_test_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+          }
           maintenance = {
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -132,6 +138,8 @@ jobs:
             mode='implementation'
           elif changed == squash_merge_ancestry_repair:
             mode='squash_merge_ancestry_repair'
+          elif changed == runtime_registry_test_repair:
+            mode='runtime_registry_test_repair'
           elif changed == maintenance:
             mode='surface_contract_maintenance'
           elif changed == cadence_maintenance:
@@ -147,12 +155,13 @@ jobs:
               'changed':sorted(changed),
               'implementation_missing':sorted(implementation-changed),
               'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
+              'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -223,6 +232,35 @@ jobs:
             tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
             tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
             tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
+      - name: Prove runtime registry test repair removes only the one-time migration pin
+        if: steps.scope.outputs.mode == 'runtime_registry_test_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          path='tools/crypto_astro_snapshot_memory/test_snapshot_memory.py'
+          def show(ref):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True)
+          base=show(os.environ['BASE_SHA'])
+          head=show(os.environ['HEAD_SHA'])
+          assert 'EXPECTED_MIGRATED_DATA_ORIGIN' in base
+          assert 'test_current_real_registry_migration' in base
+          assert 'EXPECTED_MIGRATED_DATA_ORIGIN' not in head
+          assert 'test_current_real_registry_migration' not in head
+          assert 'test_runtime_generated_registry_uses_dynamic_accepted_base' in head
+          print('SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_FALSE_RED_REPAIR=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
+            tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
         if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'
         env:
