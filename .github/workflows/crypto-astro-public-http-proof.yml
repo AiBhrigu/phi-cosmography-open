@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/crypto-astro-public-http-proof.yml'
-      - 'tools/crypto_astro_operations/verify_public_http_proof.py'
-      - 'tools/crypto_astro_operations/test_verify_public_http_proof.py'
+      - 'tools/crypto_astro_public_http_proof/verify_public_http_proof.py'
+      - 'tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py'
   workflow_dispatch:
     inputs:
       operator_ref:
@@ -41,8 +41,8 @@ jobs:
 
       - name: Validate verifier implementation
         run: |
-          python -m py_compile tools/crypto_astro_operations/verify_public_http_proof.py
-          python -m unittest tools.crypto_astro_operations.test_verify_public_http_proof -v
+          python -m py_compile tools/crypto_astro_public_http_proof/verify_public_http_proof.py
+          python -m unittest tools.crypto_astro_public_http_proof.test_verify_public_http_proof -v
 
       - name: Lock current main source
         env:
@@ -73,7 +73,7 @@ jobs:
       - name: Verify exact external HTTP proof
         run: |
           mkdir -p artifacts
-          python tools/crypto_astro_operations/verify_public_http_proof.py \
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
             --repo . \
             --report artifacts/crypto-astro-public-http-proof.json \
             --expected-main-sha "$EXPECTED_MAIN_SHA" \
