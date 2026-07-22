@@ -96,6 +96,7 @@ jobs:
         run: |
           set -euo pipefail
           PREFLIGHT_STATUS=FAIL
+          PREFLIGHT_REASON_CODE=FAIL_PREFLIGHT_REASON_UNSET
           ACTUAL_MAIN_SHA=''
           CURRENT_ISSUE_STATE=''
           CURRENT_ISSUE_TITLE=''
@@ -103,8 +104,20 @@ jobs:
           OTHER_OPEN_REQUEST_COUNT=''
           OPEN_REQUEST_COUNT=''
           ACTIVE_PROOF_RUN_COUNT=''
+
+          write_output() {
+            echo "reason_code=$1" >> "$GITHUB_OUTPUT"
+          }
+
+          fail_preflight() {
+            PREFLIGHT_REASON_CODE="$1"
+            write_output "$PREFLIGHT_REASON_CODE"
+            exit 1
+          }
+
           trap '{
             echo "STATUS=${PREFLIGHT_STATUS}"
+            echo "PREFLIGHT_REASON_CODE=${PREFLIGHT_REASON_CODE}"
             echo "CURRENT_ISSUE_NUMBER=${CURRENT_ISSUE_NUMBER}"
             echo "CURRENT_ISSUE_ID=${CURRENT_ISSUE_ID}"
             echo "CURRENT_ISSUE_STATE=${CURRENT_ISSUE_STATE}"
@@ -118,33 +131,61 @@ jobs:
             echo "TARGET_REF=main"
           } > artifacts/bridge-preflight.txt' EXIT
 
-          git fetch origin main
-          ACTUAL_MAIN_SHA=$(git rev-parse origin/main)
-          test "$ACTUAL_MAIN_SHA" = "$EXPECTED_MAIN_SHA"
-          gh workflow view "$TARGET_WORKFLOW" --ref main >/dev/null
+          if ! git fetch origin main; then
+            fail_preflight FAIL_MAIN_FETCH
+          fi
 
-          CURRENT_ISSUE_JSON=$(gh issue view "$CURRENT_ISSUE_NUMBER" --json number,state,title)
-          CURRENT_ISSUE_ID=$(jq -r '.number' <<< "$CURRENT_ISSUE_JSON")
-          CURRENT_ISSUE_STATE=$(jq -r '.state' <<< "$CURRENT_ISSUE_JSON")
-          CURRENT_ISSUE_TITLE=$(jq -r '.title' <<< "$CURRENT_ISSUE_JSON")
-          test "$CURRENT_ISSUE_ID" = "$CURRENT_ISSUE_NUMBER"
-          test "$CURRENT_ISSUE_STATE" = "OPEN"
-          test "$CURRENT_ISSUE_TITLE" = "Crypto-Astro public HTTP proof dispatch request"
+          ACTUAL_MAIN_SHA=$(git rev-parse origin/main) || fail_preflight FAIL_MAIN_SHA_RESOLVE
+          if [ "$ACTUAL_MAIN_SHA" != "$EXPECTED_MAIN_SHA" ]; then
+            fail_preflight FAIL_MAIN_SHA_MISMATCH
+          fi
 
-          gh issue list --state open --limit 100 --json number,title > /tmp/open-public-http-proof-dispatch-issues.json
+          if ! gh workflow view "$TARGET_WORKFLOW" --ref main >/dev/null; then
+            fail_preflight FAIL_TARGET_WORKFLOW_VIEW
+          fi
+
+          if ! CURRENT_ISSUE_JSON=$(gh issue view "$CURRENT_ISSUE_NUMBER" --json number,state,title); then
+            fail_preflight FAIL_CURRENT_ISSUE_VIEW
+          fi
+          CURRENT_ISSUE_ID=$(jq -r '.number' <<< "$CURRENT_ISSUE_JSON") || fail_preflight FAIL_CURRENT_ISSUE_NUMBER_PARSE
+          CURRENT_ISSUE_STATE=$(jq -r '.state' <<< "$CURRENT_ISSUE_JSON") || fail_preflight FAIL_CURRENT_ISSUE_STATE_PARSE
+          CURRENT_ISSUE_TITLE=$(jq -r '.title' <<< "$CURRENT_ISSUE_JSON") || fail_preflight FAIL_CURRENT_ISSUE_TITLE_PARSE
+          if [ "$CURRENT_ISSUE_ID" != "$CURRENT_ISSUE_NUMBER" ]; then
+            fail_preflight FAIL_CURRENT_ISSUE_NUMBER_MISMATCH
+          fi
+          if [ "$CURRENT_ISSUE_STATE" != "OPEN" ]; then
+            fail_preflight FAIL_CURRENT_ISSUE_NOT_OPEN
+          fi
+          if [ "$CURRENT_ISSUE_TITLE" != "Crypto-Astro public HTTP proof dispatch request" ]; then
+            fail_preflight FAIL_CURRENT_ISSUE_TITLE_MISMATCH
+          fi
+
+          if ! gh issue list --state open --limit 100 --json number,title > /tmp/open-public-http-proof-dispatch-issues.json; then
+            fail_preflight FAIL_OPEN_REQUEST_LIST
+          fi
           OTHER_OPEN_REQUEST_COUNT=$(jq --argjson current "$CURRENT_ISSUE_NUMBER" \
             '[.[] | select(.title == "Crypto-Astro public HTTP proof dispatch request" and .number != $current)] | length' \
-            /tmp/open-public-http-proof-dispatch-issues.json)
-          test "$OTHER_OPEN_REQUEST_COUNT" = "0"
+            /tmp/open-public-http-proof-dispatch-issues.json) || fail_preflight FAIL_OPEN_REQUEST_COUNT_PARSE
+          if [ "$OTHER_OPEN_REQUEST_COUNT" != "0" ]; then
+            fail_preflight FAIL_OTHER_OPEN_REQUESTS_PRESENT
+          fi
           OPEN_REQUEST_COUNT=$((OTHER_OPEN_REQUEST_COUNT + 1))
-          test "$OPEN_REQUEST_COUNT" = "1"
+          if [ "$OPEN_REQUEST_COUNT" != "1" ]; then
+            fail_preflight FAIL_EFFECTIVE_OPEN_REQUEST_COUNT
+          fi
 
-          ACTIVE_PROOF_RUN_COUNT=$(gh run list --workflow "$TARGET_WORKFLOW" --limit 100 \
+          if ! ACTIVE_PROOF_RUN_COUNT=$(gh run list --workflow "$TARGET_WORKFLOW" --limit 100 \
             --json status \
-            --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
-          test "$ACTIVE_PROOF_RUN_COUNT" = "0"
+            --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length'); then
+            fail_preflight FAIL_ACTIVE_PROOF_RUN_LIST
+          fi
+          if [ "$ACTIVE_PROOF_RUN_COUNT" != "0" ]; then
+            fail_preflight FAIL_ACTIVE_PROOF_RUNS_PRESENT
+          fi
 
           PREFLIGHT_STATUS=PASS
+          PREFLIGHT_REASON_CODE=PASS
+          write_output "$PREFLIGHT_REASON_CODE"
 
       - name: Dispatch fixed public HTTP proof workflow
         id: dispatch
@@ -272,16 +313,21 @@ jobs:
         if: ${{ steps.request.outputs.valid == 'true' && (steps.preflight.outcome == 'failure' || steps.dispatch.outcome == 'failure' || steps.resolve.outcome == 'failure' || steps.proof.outcome == 'failure') }}
         env:
           GH_TOKEN: ${{ github.token }}
+          PREFLIGHT_REASON_CODE: ${{ steps.preflight.outputs.reason_code }}
         run: |
           set -euo pipefail
           if [ "${{ steps.preflight.outcome }}" = "failure" ]; then
             REASON_CODE=FAIL_PREFLIGHT
+            EXACT_REASON_CODE="${PREFLIGHT_REASON_CODE:-FAIL_PREFLIGHT_REASON_MISSING}"
           elif [ "${{ steps.dispatch.outcome }}" = "failure" ]; then
             REASON_CODE=FAIL_DISPATCH
+            EXACT_REASON_CODE=FAIL_DISPATCH
           elif [ "${{ steps.resolve.outcome }}" = "failure" ]; then
             REASON_CODE=FAIL_RUN_RESOLUTION
+            EXACT_REASON_CODE=FAIL_RUN_RESOLUTION
           else
             REASON_CODE=FAIL_PUBLIC_HTTP_PROOF
+            EXACT_REASON_CODE=FAIL_PUBLIC_HTTP_PROOF
           fi
           gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_public_http_proof_dispatch_callback_v0_1
           REQUEST_ID=${{ steps.request.outputs.request_id }}
@@ -290,7 +336,8 @@ jobs:
           EXPECTED_MAIN_SHA=${{ steps.request.outputs.expected_main_sha }}
           ACTUAL_HEAD_SHA=${{ steps.resolve.outputs.actual_head_sha }}
           JOB_STATUS=failure
-          FINAL_OUTCOME=${REASON_CODE}"
+          FINAL_OUTCOME=${REASON_CODE}
+          PREFLIGHT_REASON_CODE=${EXACT_REASON_CODE}"
           gh issue close "${{ github.event.issue.number }}" --reason completed
           gh issue lock "${{ github.event.issue.number }}" --reason resolved
 

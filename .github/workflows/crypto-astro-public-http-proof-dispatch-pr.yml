@@ -48,7 +48,7 @@ jobs:
               'docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json',
               'docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md',
           }
-          preflight_repair_scope = {
+          bounded_repair_scope = {
               '.github/workflows/crypto-astro-public-http-proof-dispatch.yml',
               '.github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml',
           }
@@ -64,7 +64,7 @@ jobs:
           )
           allowed = {
               'FULL_IMPLEMENTATION': full_scope,
-              'PREFLIGHT_REPAIR': preflight_repair_scope,
+              'BOUNDED_WORKFLOW_REPAIR': bounded_repair_scope,
           }
           scope_name = next((name for name, paths in allowed.items() if changed == paths), None)
           assert scope_name is not None, {
@@ -102,6 +102,63 @@ jobs:
             --repo . \
             --report artifacts/public-http-proof-dispatch-verification.json \
             2>&1 | tee artifacts/repository-verification.log
+
+      - name: Verify exact preflight reason callback contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('.github/workflows/crypto-astro-public-http-proof-dispatch.yml')
+          text = path.read_text(encoding='utf-8')
+          required_codes = [
+              'FAIL_MAIN_FETCH',
+              'FAIL_MAIN_SHA_RESOLVE',
+              'FAIL_MAIN_SHA_MISMATCH',
+              'FAIL_TARGET_WORKFLOW_VIEW',
+              'FAIL_CURRENT_ISSUE_VIEW',
+              'FAIL_CURRENT_ISSUE_NUMBER_PARSE',
+              'FAIL_CURRENT_ISSUE_STATE_PARSE',
+              'FAIL_CURRENT_ISSUE_TITLE_PARSE',
+              'FAIL_CURRENT_ISSUE_NUMBER_MISMATCH',
+              'FAIL_CURRENT_ISSUE_NOT_OPEN',
+              'FAIL_CURRENT_ISSUE_TITLE_MISMATCH',
+              'FAIL_OPEN_REQUEST_LIST',
+              'FAIL_OPEN_REQUEST_COUNT_PARSE',
+              'FAIL_OTHER_OPEN_REQUESTS_PRESENT',
+              'FAIL_EFFECTIVE_OPEN_REQUEST_COUNT',
+              'FAIL_ACTIVE_PROOF_RUN_LIST',
+              'FAIL_ACTIVE_PROOF_RUNS_PRESENT',
+              'FAIL_PREFLIGHT_REASON_MISSING',
+          ]
+          failures = []
+          for code in required_codes:
+              if code not in text:
+                  failures.append(f'missing:{code}')
+          markers = [
+              'fail_preflight()',
+              'echo "reason_code=$1" >> "$GITHUB_OUTPUT"',
+              'PREFLIGHT_REASON_CODE=${PREFLIGHT_REASON_CODE}',
+              'PREFLIGHT_REASON_CODE:',
+              'steps.preflight.outputs.reason_code',
+              'FINAL_OUTCOME=${REASON_CODE}',
+          ]
+          for marker in markers:
+              if marker not in text:
+                  failures.append(f'missing:{marker}')
+          report = {
+              'schema_version': 'crypto_astro_public_http_proof_dispatch_reason_callback_review_v0_1',
+              'status': 'PASS' if not failures else 'FAIL',
+              'required_reason_codes': required_codes,
+              'failures': failures,
+          }
+          Path('artifacts/preflight-reason-callback-review.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          if failures:
+              raise SystemExit(json.dumps(report, sort_keys=True))
+          print('PUBLIC_HTTP_PROOF_DISPATCH_REASON_CALLBACK=PASS')
+          PY
 
       - name: Re-run exact external public HTTP proof
         env:
