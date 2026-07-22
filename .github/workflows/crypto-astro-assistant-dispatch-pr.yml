@@ -29,7 +29,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce exact assistant-dispatch scope
+      - name: Classify exact assistant-dispatch or Snapshot Memory repair scope
+        id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -38,7 +39,7 @@ jobs:
           import os
           import subprocess
 
-          expected = {
+          assistant_dispatch_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch.yml",
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
               ".github/workflows/crypto-astro-static-refresh-manual.yml",
@@ -49,6 +50,16 @@ jobs:
               "tools/crypto_astro_operations/verify_assistant_dispatch.py",
               "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
           }
+          snapshot_memory_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -57,11 +68,22 @@ jobs:
                   ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
               ).splitlines()
           )
-          assert changed == expected, {
-              "missing": sorted(expected - changed),
-              "unexpected": sorted(changed - expected),
-          }
-          print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
+          if changed == assistant_dispatch_scope:
+              mode = "assistant_dispatch"
+              print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
+          elif changed == snapshot_memory_repair_scope:
+              mode = "snapshot_memory_repair"
+              print("SNAPSHOT_MEMORY_REPAIR_EXACT_SCOPE=PASS")
+          else:
+              raise AssertionError({
+                  "changed": sorted(changed),
+                  "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
+                  "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
+                  "unexpected": sorted(changed - assistant_dispatch_scope - snapshot_memory_repair_scope),
+              })
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"mode={mode}\n")
+          print(f"ASSISTANT_DISPATCH_SCOPE={mode}")
           PY
 
       - name: Run assistant-dispatch fixtures
@@ -80,7 +102,8 @@ jobs:
             --repo . \
             --report artifacts/operational-cadence-verification.json
 
-      - name: Prove public data, HTML, and CSS unchanged
+      - name: Prove public data, HTML, and CSS unchanged for assistant-dispatch work
+        if: steps.scope.outputs.mode == 'assistant_dispatch'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -89,6 +112,30 @@ jobs:
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Prove dispatch runtime and public surface unchanged for Snapshot Memory repair
+        if: steps.scope.outputs.mode == 'snapshot_memory_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
 

@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""Offline, fail-closed dynamic accepted-pair builder for Crypto-Astro Snapshot Memory."""
+"""Offline, fail-closed accepted-pair builder for Crypto-Astro Snapshot Memory.
+
+The registry keeps two separate Git axes:
+
+* ``commit_sha`` is the immutable generated-data provenance commit.
+* ``data_origin_commit_sha`` is the accepted base materialization from which
+  that generated-data commit was created.
+
+This distinction preserves exact provenance while remaining compatible with
+review PRs that are accepted through squash merge.
+"""
 from __future__ import annotations
 
 import argparse
@@ -134,17 +144,28 @@ class SnapshotBundle:
     bindings: dict[str, Any]
 
     @property
-    def snapshot_sha256(self) -> str: return hashlib.sha256(self.snapshot_bytes).hexdigest()
+    def snapshot_sha256(self) -> str:
+        return hashlib.sha256(self.snapshot_bytes).hexdigest()
+
     @property
-    def proof_sha256(self) -> str: return hashlib.sha256(self.proof_bytes).hexdigest()
+    def proof_sha256(self) -> str:
+        return hashlib.sha256(self.proof_bytes).hexdigest()
+
     @property
-    def bindings_sha256(self) -> str: return hashlib.sha256(self.bindings_bytes).hexdigest()
+    def bindings_sha256(self) -> str:
+        return hashlib.sha256(self.bindings_bytes).hexdigest()
+
     @property
-    def snapshot_blob_sha(self) -> str: return git_blob_sha(self.snapshot_bytes)
+    def snapshot_blob_sha(self) -> str:
+        return git_blob_sha(self.snapshot_bytes)
+
     @property
-    def proof_blob_sha(self) -> str: return git_blob_sha(self.proof_bytes)
+    def proof_blob_sha(self) -> str:
+        return git_blob_sha(self.proof_bytes)
+
     @property
-    def bindings_blob_sha(self) -> str: return git_blob_sha(self.bindings_bytes)
+    def bindings_blob_sha(self) -> str:
+        return git_blob_sha(self.bindings_bytes)
 
 
 def git_blob_sha(value: bytes) -> str:
@@ -161,7 +182,7 @@ def parse_json(raw: bytes, label: str) -> dict[str, Any]:
     return value
 
 
-def make_bundle(**kwargs) -> SnapshotBundle:
+def make_bundle(**kwargs: Any) -> SnapshotBundle:
     return SnapshotBundle(
         **kwargs,
         snapshot=parse_json(kwargs["snapshot_bytes"], f'{kwargs["role"]} snapshot'),
@@ -170,29 +191,26 @@ def make_bundle(**kwargs) -> SnapshotBundle:
     )
 
 
-def run(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    result = subprocess.run(args, cwd=repo, capture_output=True, check=False)
-    if check and result.returncode:
-        raise ContractError("PREVIOUS_MISSING", " ".join(args))
-    return result
+def run(repo: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(args, cwd=repo, capture_output=True, check=False)
 
 
-def git_show(repo: Path, ref: str, path: str) -> bytes:
-    result = run(repo, "git", "show", f"{ref}:{path}", check=False)
+def resolve_ref(repo: Path, ref: str, reason: str = "PROVENANCE_COMMIT_MISSING") -> str:
+    result = run(repo, "git", "rev-parse", "--verify", f"{ref}^{{commit}}")
     if result.returncode:
-        raise ContractError("PREVIOUS_MISSING", f"{ref}:{path}")
-    return result.stdout
-
-
-def resolve_ref(repo: Path, ref: str) -> str:
-    result = run(repo, "git", "rev-parse", "--verify", ref, check=False)
-    if result.returncode:
-        raise ContractError("PREVIOUS_MISSING", f"ref {ref}")
+        raise ContractError(reason, f"ref {ref}")
     return result.stdout.decode().strip()
 
 
+def git_show(repo: Path, ref: str, path: str, reason: str) -> bytes:
+    result = run(repo, "git", "show", f"{ref}:{path}")
+    if result.returncode:
+        raise ContractError(reason, f"{ref}:{path}")
+    return result.stdout
+
+
 def is_ancestor(repo: Path, previous: str, current: str) -> bool:
-    return run(repo, "git", "merge-base", "--is-ancestor", previous, current, check=False).returncode == 0
+    return run(repo, "git", "merge-base", "--is-ancestor", previous, current).returncode == 0
 
 
 def timestamp(value: Any, label: str) -> datetime:
@@ -205,7 +223,7 @@ def timestamp(value: Any, label: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def at(bundle: SnapshotBundle, path: str):
+def at(bundle: SnapshotBundle, path: str) -> Any:
     value: Any = bundle.snapshot
     for key in path.split("."):
         if not isinstance(value, dict) or key not in value:
@@ -240,8 +258,11 @@ def source_map(bundle: SnapshotBundle) -> dict[str, dict[str, Any]]:
     items = bundle.proof.get("sources")
     if not isinstance(items, list):
         raise ContractError("SCHEMA_MISMATCH", f"{bundle.role} proof.sources")
-    return {item["label"]: item for item in items
-            if isinstance(item, dict) and isinstance(item.get("label"), str)}
+    return {
+        item["label"]: item
+        for item in items
+        if isinstance(item, dict) and isinstance(item.get("label"), str)
+    }
 
 
 def validate_sources(bundle: SnapshotBundle, labels: list[str]) -> None:
@@ -289,8 +310,10 @@ def validate_shape(bundle: SnapshotBundle) -> None:
             raise ContractError("BOUNDARY_MISMATCH", f"{bundle.role} {name}.formula_weights_exposed")
     if bundle.bindings.get("generated_at_utc") != bundle.snapshot.get("generated_at_utc"):
         raise ContractError("SOURCE_BINDING_MISSING", f"{bundle.role} timestamp")
-    skew = abs((timestamp(bundle.snapshot["generated_at_utc"], "snapshot") -
-                timestamp(bundle.proof["generated_at_utc"], "proof")).total_seconds())
+    skew = abs((
+        timestamp(bundle.snapshot["generated_at_utc"], "snapshot")
+        - timestamp(bundle.proof["generated_at_utc"], "proof")
+    ).total_seconds())
     if skew > 120:
         raise ContractError("TIMESTAMP_ORDER_INVALID", f"{bundle.role} skew")
 
@@ -320,66 +343,177 @@ def entry(bundle: SnapshotBundle) -> dict[str, Any]:
     }
 
 
+LOCKED_CONTENT_KEYS = (
+    "snapshot_blob_sha", "snapshot_sha256", "proof_blob_sha", "proof_sha256",
+    "bindings_blob_sha", "bindings_sha256", "generated_at_utc",
+    "proof_generated_at_utc", "source_mode", "schema_version", "acceptance_status",
+)
+
+
+def _sha(value: Any, label: str, reason: str) -> str:
+    text = str(value or "")
+    if len(text) != 40 or any(ch not in "0123456789abcdef" for ch in text):
+        raise ContractError(reason, label)
+    return text
+
+
 def bundle_from_entry(repo: Path, role: str, locked: dict[str, Any]) -> SnapshotBundle:
-    commit_sha = str(locked.get("commit_sha") or "")
-    data_origin = str(locked.get("data_origin_commit_sha") or "")
-    if len(commit_sha) != 40 or len(data_origin) != 40:
-        raise ContractError("HASH_MISMATCH", f"{role} commit")
-    snapshot = git_show(repo, commit_sha, SNAPSHOT_PATH)
-    proof = git_show(repo, commit_sha, PROOF_PATH)
-    bindings = git_show(repo, commit_sha, BINDINGS_PATH)
-    runner = git_show(repo, commit_sha, RUNNER_PATH)
+    """Load and verify the immutable provenance commit recorded in the registry."""
+    commit_sha = _sha(locked.get("commit_sha"), f"{role} commit", "PROVENANCE_COMMIT_MISSING")
+    data_origin = _sha(
+        locked.get("data_origin_commit_sha"),
+        f"{role} data origin",
+        "TRANSACTION_ANCESTRY_INVALID",
+    )
+    resolve_ref(repo, commit_sha, "PROVENANCE_COMMIT_MISSING")
+    resolve_ref(repo, data_origin, "TRANSACTION_ANCESTRY_INVALID")
+    if not is_ancestor(repo, data_origin, commit_sha):
+        raise ContractError("TRANSACTION_ANCESTRY_INVALID", f"{role} data origin")
+
+    snapshot = git_show(repo, commit_sha, SNAPSHOT_PATH, "PROVENANCE_COMMIT_MISSING")
+    proof = git_show(repo, commit_sha, PROOF_PATH, "PROVENANCE_COMMIT_MISSING")
+    bindings = git_show(repo, commit_sha, BINDINGS_PATH, "PROVENANCE_COMMIT_MISSING")
+    runner = git_show(repo, commit_sha, RUNNER_PATH, "PROVENANCE_COMMIT_MISSING")
     bundle = make_bundle(
-        role=role, commit_sha=commit_sha, data_origin_commit_sha=data_origin,
-        runner_blob_sha=git_blob_sha(runner), snapshot_bytes=snapshot,
-        proof_bytes=proof, bindings_bytes=bindings,
+        role=role,
+        commit_sha=commit_sha,
+        data_origin_commit_sha=data_origin,
+        runner_blob_sha=git_blob_sha(runner),
+        snapshot_bytes=snapshot,
+        proof_bytes=proof,
+        bindings_bytes=bindings,
     )
     observed = entry(bundle)
-    for key in (
-        "snapshot_blob_sha", "snapshot_sha256", "proof_blob_sha", "proof_sha256",
-        "bindings_blob_sha", "bindings_sha256", "runner_blob_sha", "generated_at_utc",
-        "proof_generated_at_utc", "source_mode", "schema_version", "acceptance_status",
-    ):
+    for key in (*LOCKED_CONTENT_KEYS, "runner_blob_sha"):
         if locked.get(key) != observed.get(key):
-            raise ContractError("HASH_MISMATCH", f"{role} {key}")
-    if not is_ancestor(repo, data_origin, commit_sha):
-        raise ContractError("ANCESTRY_INVALID", f"{role} data origin")
+            raise ContractError("PROVENANCE_HASH_MISMATCH", f"{role} {key}")
     return bundle
 
 
-def bundle_from_ref(repo: Path, role: str, ref: str) -> SnapshotBundle:
+def materialized_bundle_from_ref(
+    repo: Path,
+    role: str,
+    ref: str,
+    locked: dict[str, Any],
+    provenance: SnapshotBundle,
+) -> SnapshotBundle:
+    """Load accepted bytes from a main-line materialization and hash-lock them."""
+    materialization = resolve_ref(repo, ref, "BASE_MATERIALIZATION_HASH_MISMATCH")
+    bundle = make_bundle(
+        role=role,
+        commit_sha=provenance.commit_sha,
+        data_origin_commit_sha=provenance.data_origin_commit_sha,
+        runner_blob_sha=provenance.runner_blob_sha,
+        snapshot_bytes=git_show(
+            repo, materialization, SNAPSHOT_PATH, "BASE_MATERIALIZATION_HASH_MISMATCH"
+        ),
+        proof_bytes=git_show(
+            repo, materialization, PROOF_PATH, "BASE_MATERIALIZATION_HASH_MISMATCH"
+        ),
+        bindings_bytes=git_show(
+            repo, materialization, BINDINGS_PATH, "BASE_MATERIALIZATION_HASH_MISMATCH"
+        ),
+    )
+    observed = entry(bundle)
+    for key in LOCKED_CONTENT_KEYS:
+        if locked.get(key) != observed.get(key):
+            raise ContractError("BASE_MATERIALIZATION_HASH_MISMATCH", f"{role} {key}")
+    return bundle
+
+
+def bundle_from_ref(
+    repo: Path,
+    role: str,
+    ref: str,
+    *,
+    data_origin_ref: str | None = None,
+) -> SnapshotBundle:
     commit_sha = resolve_ref(repo, ref)
+    data_origin = resolve_ref(repo, data_origin_ref or ref, "TRANSACTION_ANCESTRY_INVALID")
+    if not is_ancestor(repo, data_origin, commit_sha):
+        raise ContractError("TRANSACTION_ANCESTRY_INVALID", f"{role} data origin")
     return make_bundle(
-        role=role, commit_sha=commit_sha, data_origin_commit_sha=commit_sha,
-        runner_blob_sha=git_blob_sha(git_show(repo, commit_sha, RUNNER_PATH)),
-        snapshot_bytes=git_show(repo, commit_sha, SNAPSHOT_PATH),
-        proof_bytes=git_show(repo, commit_sha, PROOF_PATH),
-        bindings_bytes=git_show(repo, commit_sha, BINDINGS_PATH),
+        role=role,
+        commit_sha=commit_sha,
+        data_origin_commit_sha=data_origin,
+        runner_blob_sha=git_blob_sha(
+            git_show(repo, commit_sha, RUNNER_PATH, "PROVENANCE_COMMIT_MISSING")
+        ),
+        snapshot_bytes=git_show(repo, commit_sha, SNAPSHOT_PATH, "CURRENT_MISSING"),
+        proof_bytes=git_show(repo, commit_sha, PROOF_PATH, "CURRENT_MISSING"),
+        bindings_bytes=git_show(repo, commit_sha, BINDINGS_PATH, "CURRENT_MISSING"),
     )
 
 
 def load_registry_at_ref(repo: Path, ref: str) -> dict[str, Any]:
-    return parse_json(git_show(repo, ref, REGISTRY_PATH), f"registry at {ref}")
+    return parse_json(
+        git_show(repo, ref, REGISTRY_PATH, "BASE_MATERIALIZATION_HASH_MISMATCH"),
+        f"registry at {ref}",
+    )
 
 
-def load_pair(repo: Path, *, base_ref: str | None = None, current_ref: str | None = None):
+def load_pair(
+    repo: Path,
+    *,
+    base_ref: str | None = None,
+    current_ref: str | None = None,
+) -> tuple[SnapshotBundle, SnapshotBundle, dict[str, Any]]:
     if bool(base_ref) != bool(current_ref):
         raise ContractError("SCHEMA_MISMATCH", "base-ref and current-ref must be supplied together")
+
     if base_ref and current_ref:
-        base_registry = load_registry_at_ref(repo, base_ref)
-        previous = bundle_from_entry(repo, "previous", base_registry.get("current") or {})
-        current = bundle_from_ref(repo, "current", current_ref)
+        base_sha = resolve_ref(repo, base_ref, "TRANSACTION_ANCESTRY_INVALID")
+        current_sha = resolve_ref(repo, current_ref)
+        if not is_ancestor(repo, base_sha, current_sha):
+            raise ContractError("TRANSACTION_ANCESTRY_INVALID", "base is not ancestor of current")
+        base_registry = load_registry_at_ref(repo, base_sha)
+        locked_previous = base_registry.get("current") or {}
+        provenance_previous = bundle_from_entry(repo, "previous", locked_previous)
+        previous = materialized_bundle_from_ref(
+            repo, "previous", base_sha, locked_previous, provenance_previous
+        )
+        current = bundle_from_ref(
+            repo, "current", current_sha, data_origin_ref=base_sha
+        )
+        mode = "BUILD_FROM_ACCEPTED_BASE"
     else:
         registry = parse_json((repo / REGISTRY_PATH).read_bytes(), "committed registry")
-        current = bundle_from_entry(repo, "current", registry.get("current") or {})
-        previous = bundle_from_entry(repo, "previous", registry.get("previous") or {})
-    return current, previous, is_ancestor(repo, previous.commit_sha, current.commit_sha)
+        locked_current = registry.get("current") or {}
+        locked_previous = registry.get("previous") or {}
+        current = bundle_from_entry(repo, "current", locked_current)
+        previous = bundle_from_entry(repo, "previous", locked_previous)
+        materialized_bundle_from_ref(
+            repo,
+            "previous",
+            current.data_origin_commit_sha,
+            locked_previous,
+            previous,
+        )
+        mode = "VERIFY_COMMITTED_ACCEPTED_PAIR"
+
+    evidence = {
+        "mode": mode,
+        "provenance_hashes": "PASS",
+        "base_materialization_hashes": "PASS",
+        "transaction_base_ancestry": "PASS",
+    }
+    return current, previous, evidence
 
 
-def unavailable(path: str, reason: str, previous_method: str, current_method: str, *, dependency=None):
-    result = {
-        "status": "UNAVAILABLE", "path": path, "reason_code": reason,
-        "previous_methodology_id": previous_method, "current_methodology_id": current_method,
+def unavailable(
+    path: str,
+    reason: str,
+    previous_method: str,
+    current_method: str,
+    *,
+    dependency: str | None = None,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "status": "UNAVAILABLE",
+        "path": path,
+        "reason_code": reason,
+        "previous_methodology_id": previous_method,
+        "current_methodology_id": current_method,
         "delta_value": None,
     }
     if dependency:
@@ -387,31 +521,59 @@ def unavailable(path: str, reason: str, previous_method: str, current_method: st
     return result
 
 
-def numeric_metric(metric_id: str, path: str, unit: str, delta_unit: str, precision: int,
-                   method: str, sources: list[str], current: SnapshotBundle,
-                   previous: SnapshotBundle) -> dict[str, Any]:
-    c, p = number(at(current, path), metric_id), number(at(previous, path), metric_id)
-    delta = c - p
+def numeric_metric(
+    metric_id: str,
+    path: str,
+    unit: str,
+    delta_unit: str,
+    precision: int,
+    method: str,
+    sources: list[str],
+    current: SnapshotBundle,
+    previous: SnapshotBundle,
+) -> dict[str, Any]:
+    current_value = number(at(current, path), metric_id)
+    previous_value = number(at(previous, path), metric_id)
+    delta = current_value - previous_value
     return {
-        "status": "COMPARABLE", "type": "NUMERIC", "path": path,
-        "unit": unit, "delta_unit": delta_unit, "methodology_id": method,
-        "proof_sources": sources, "previous_value": format(p, "f"),
-        "current_value": format(c, "f"), "raw_delta": format(delta, "f"),
-        "display_precision": precision, "display_delta": display_delta(delta, precision),
+        "status": "COMPARABLE",
+        "type": "NUMERIC",
+        "path": path,
+        "unit": unit,
+        "delta_unit": delta_unit,
+        "methodology_id": method,
+        "proof_sources": sources,
+        "previous_value": format(previous_value, "f"),
+        "current_value": format(current_value, "f"),
+        "raw_delta": format(delta, "f"),
+        "display_precision": precision,
+        "display_delta": display_delta(delta, precision),
         "direction": direction(delta),
     }
 
 
-def categorical_metric(path: str, unit: str, method: str, sources: list[str],
-                       current: SnapshotBundle, previous: SnapshotBundle) -> dict[str, Any]:
-    c, p = at(current, path), at(previous, path)
-    if not isinstance(c, str) or not isinstance(p, str):
+def categorical_metric(
+    path: str,
+    unit: str,
+    method: str,
+    sources: list[str],
+    current: SnapshotBundle,
+    previous: SnapshotBundle,
+) -> dict[str, Any]:
+    current_value = at(current, path)
+    previous_value = at(previous, path)
+    if not isinstance(current_value, str) or not isinstance(previous_value, str):
         raise ContractError("SCHEMA_MISMATCH", path)
     return {
-        "status": "COMPARABLE", "type": "CATEGORICAL", "path": path,
-        "unit": unit, "methodology_id": method, "proof_sources": sources,
-        "previous_value": p, "current_value": c,
-        "transition": "UNCHANGED" if c == p else "CHANGED",
+        "status": "COMPARABLE",
+        "type": "CATEGORICAL",
+        "path": path,
+        "unit": unit,
+        "methodology_id": method,
+        "proof_sources": sources,
+        "previous_value": previous_value,
+        "current_value": current_value,
+        "transition": "UNCHANGED" if current_value == previous_value else "CHANGED",
     }
 
 
@@ -447,13 +609,15 @@ def validate_defi_source(bundle: SnapshotBundle, methodology: str) -> None:
         raise ContractError("PROOF_NOT_PASS", f"{bundle.role} defi tvl")
 
 
-def build_documents(current: SnapshotBundle, previous: SnapshotBundle, *, ancestry_ok: bool):
+def build_documents(
+    current: SnapshotBundle,
+    previous: SnapshotBundle,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     for bundle in (current, previous):
         validate_shape(bundle)
-    if not ancestry_ok:
-        raise ContractError("ANCESTRY_INVALID", "previous is not ancestor")
-    if timestamp(current.snapshot["generated_at_utc"], "current") <= \
-       timestamp(previous.snapshot["generated_at_utc"], "previous"):
+    if timestamp(current.snapshot["generated_at_utc"], "current") <= timestamp(
+        previous.snapshot["generated_at_utc"], "previous"
+    ):
         raise ContractError("TIMESTAMP_ORDER_INVALID", "current must be later")
 
     metrics: dict[str, Any] = {}
@@ -472,17 +636,29 @@ def build_documents(current: SnapshotBundle, previous: SnapshotBundle, *, ancest
                 raise ContractError("UNIVERSE_MISMATCH", metric_id)
             if spec["kind"] == "numeric":
                 metrics[metric_id] = numeric_metric(
-                    metric_id, spec["path"], spec["unit"], spec["delta_unit"],
-                    spec["precision"], method, spec["sources"], current, previous,
+                    metric_id,
+                    spec["path"],
+                    spec["unit"],
+                    spec["delta_unit"],
+                    spec["precision"],
+                    method,
+                    spec["sources"],
+                    current,
+                    previous,
                 )
             else:
                 metrics[metric_id] = categorical_metric(
-                    spec["path"], spec["unit"], method, spec["sources"], current, previous,
+                    spec["path"],
+                    spec["unit"],
+                    method,
+                    spec["sources"],
+                    current,
+                    previous,
                 )
         except ContractError as exc:
             reason = exc.reason_code
             unavailable_metrics[metric_id] = unavailable(
-                spec["path"], reason, method, method,
+                spec["path"], reason, method, method
             )
         methods[metric_id] = {
             "current_methodology_id": method,
@@ -492,21 +668,36 @@ def build_documents(current: SnapshotBundle, previous: SnapshotBundle, *, ancest
             "previous_runner_blob_sha": previous.runner_blob_sha,
         }
 
-    current_defi, previous_defi = defi_method(current), defi_method(previous)
+    current_defi = defi_method(current)
+    previous_defi = defi_method(previous)
     defi_reason = None
     try:
-        if current_defi != previous_defi or "unknown" in current_defi or "unknown" in previous_defi:
+        if (
+            current_defi != previous_defi
+            or "unknown" in current_defi
+            or "unknown" in previous_defi
+        ):
             raise ContractError("METHODOLOGY_MISMATCH", "defi_tvl_usd")
         validate_defi_source(current, current_defi)
         validate_defi_source(previous, previous_defi)
         metrics["defi_tvl_usd"] = numeric_metric(
-            "defi_tvl_usd", "liquidity_tvl.defi_tvl_usd", "usd", "usd", 0,
-            current_defi, ["defillama_tvl_methodology_source"], current, previous,
+            "defi_tvl_usd",
+            "liquidity_tvl.defi_tvl_usd",
+            "usd",
+            "usd",
+            0,
+            current_defi,
+            ["defillama_tvl_methodology_source"],
+            current,
+            previous,
         )
     except ContractError as exc:
         defi_reason = exc.reason_code
         unavailable_metrics["defi_tvl_usd"] = unavailable(
-            "liquidity_tvl.defi_tvl_usd", defi_reason, previous_defi, current_defi,
+            "liquidity_tvl.defi_tvl_usd",
+            defi_reason,
+            previous_defi,
+            current_defi,
         )
     methods["defi_tvl_usd"] = {
         "current_methodology_id": current_defi,
@@ -516,37 +707,59 @@ def build_documents(current: SnapshotBundle, previous: SnapshotBundle, *, ancest
         "previous_runner_blob_sha": previous.runner_blob_sha,
     }
 
-    current_liq, previous_liq = liquidity_method(current_defi), liquidity_method(previous_defi)
-    liq_reason = None
+    current_liquidity = liquidity_method(current_defi)
+    previous_liquidity = liquidity_method(previous_defi)
+    liquidity_reason = None
     try:
         if defi_reason is not None:
-            code = "DEPENDENCY_METHODOLOGY_MISMATCH" if defi_reason == "METHODOLOGY_MISMATCH" else "DEPENDENCY_UNAVAILABLE"
+            code = (
+                "DEPENDENCY_METHODOLOGY_MISMATCH"
+                if defi_reason == "METHODOLOGY_MISMATCH"
+                else "DEPENDENCY_UNAVAILABLE"
+            )
             raise ContractError(code, "liquidity_context_state")
-        if current_liq != previous_liq:
+        if current_liquidity != previous_liquidity:
             raise ContractError("METHODOLOGY_MISMATCH", "liquidity_context_state")
         metrics["liquidity_context_state"] = categorical_metric(
-            "liquidity_tvl.liquidity_context_state", "state", current_liq,
-            ["defi_tvl_usd"], current, previous,
+            "liquidity_tvl.liquidity_context_state",
+            "state",
+            current_liquidity,
+            ["defi_tvl_usd"],
+            current,
+            previous,
         )
     except ContractError as exc:
-        liq_reason = exc.reason_code
+        liquidity_reason = exc.reason_code
         unavailable_metrics["liquidity_context_state"] = unavailable(
-            "liquidity_tvl.liquidity_context_state", liq_reason,
-            previous_liq, current_liq, dependency="defi_tvl_usd",
+            "liquidity_tvl.liquidity_context_state",
+            liquidity_reason,
+            previous_liquidity,
+            current_liquidity,
+            dependency="defi_tvl_usd",
         )
     methods["liquidity_context_state"] = {
-        "current_methodology_id": current_liq,
-        "previous_methodology_id": previous_liq,
-        "comparable": liq_reason is None,
+        "current_methodology_id": current_liquidity,
+        "previous_methodology_id": previous_liquidity,
+        "comparable": liquidity_reason is None,
         "current_runner_blob_sha": current.runner_blob_sha,
         "previous_runner_blob_sha": previous.runner_blob_sha,
     }
 
-    if set(metrics) | set(unavailable_metrics) != set(TRACKED_METRICS) or set(metrics) & set(unavailable_metrics):
+    if (
+        set(metrics) | set(unavailable_metrics) != set(TRACKED_METRICS)
+        or set(metrics) & set(unavailable_metrics)
+    ):
         raise ContractError("SCHEMA_MISMATCH", "metric partition")
-    status = "FULL_COMPARABLE" if len(metrics) == len(TRACKED_METRICS) else \
-             "PARTIAL_COMPARABLE" if metrics else "UNAVAILABLE"
-    current_entry, previous_entry = entry(current), entry(previous)
+
+    status = (
+        "FULL_COMPARABLE"
+        if len(metrics) == len(TRACKED_METRICS)
+        else "PARTIAL_COMPARABLE"
+        if metrics
+        else "UNAVAILABLE"
+    )
+    current_entry = entry(current)
+    previous_entry = entry(previous)
     registry = {
         "schema_version": "crypto_astro_snapshot_registry_public_v0_2",
         "registry_generated_at_utc": current.snapshot["generated_at_utc"],
@@ -588,8 +801,10 @@ def main() -> int:
     parser.add_argument("--current-ref")
     args = parser.parse_args()
     repo = args.repo.resolve()
-    current, previous, ancestry = load_pair(repo, base_ref=args.base_ref, current_ref=args.current_ref)
-    registry, delta = build_documents(current, previous, ancestry_ok=ancestry)
+    current, previous, evidence = load_pair(
+        repo, base_ref=args.base_ref, current_ref=args.current_ref
+    )
+    registry, delta = build_documents(current, previous)
     write_documents(args.out_dir.resolve(), registry, delta)
     print(json.dumps({
         "status": "PASS",
@@ -600,6 +815,9 @@ def main() -> int:
         "comparison_status": delta["comparison_status"],
         "comparable_metrics": sorted(delta["metrics"]),
         "unavailable_metrics": sorted(delta["unavailable_metrics"]),
+        "provenance_hashes": evidence["provenance_hashes"],
+        "base_materialization_hashes": evidence["base_materialization_hashes"],
+        "transaction_base_ancestry": evidence["transaction_base_ancestry"],
         "network_requests": 0,
     }, indent=2, sort_keys=True))
     return 0

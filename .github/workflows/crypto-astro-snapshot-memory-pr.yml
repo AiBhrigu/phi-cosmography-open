@@ -44,7 +44,7 @@ jobs:
           python-version: '3.11'
       - name: Install schema validator
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-      - name: Classify exact implementation, maintenance, cadence, assistant-dispatch, consumer-repair, or generated-refresh scope
+      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, or generated-refresh scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -67,6 +67,16 @@ jobs:
             'tools/crypto_astro_what_changed/render_what_changed.py',
             'tools/crypto_astro_what_changed/verify_what_changed.py',
             'tools/crypto_astro_what_changed/test_what_changed.py',
+          }
+          squash_merge_ancestry_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'tools/crypto_astro_snapshot_memory/build_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
           }
           maintenance = {
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
@@ -119,32 +129,35 @@ jobs:
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
           if changed == implementation:
-              mode='implementation'
+            mode='implementation'
+          elif changed == squash_merge_ancestry_repair:
+            mode='squash_merge_ancestry_repair'
           elif changed == maintenance:
-              mode='surface_contract_maintenance'
+            mode='surface_contract_maintenance'
           elif changed == cadence_maintenance:
-              mode='operational_cadence_maintenance'
+            mode='operational_cadence_maintenance'
           elif changed == assistant_dispatch_maintenance:
-              mode='assistant_dispatch_maintenance'
+            mode='assistant_dispatch_maintenance'
           elif changed == consumer_repair:
-              mode='bhrigu_consumer_contract_repair'
+            mode='bhrigu_consumer_contract_repair'
           elif changed in (generated, generated | optional):
-              mode='generated_refresh'
+            mode='generated_refresh'
           else:
-              raise AssertionError({
-                  'changed':sorted(changed),
-                  'implementation_missing':sorted(implementation-changed),
-                  'maintenance_missing':sorted(maintenance-changed),
-                  'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
-                  'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
-                  'consumer_repair_missing':sorted(consumer_repair-changed),
-                  'generated_missing':sorted(generated-changed),
-                  'unexpected':sorted(changed-implementation-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
-              })
+            raise AssertionError({
+              'changed':sorted(changed),
+              'implementation_missing':sorted(implementation-changed),
+              'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
+              'maintenance_missing':sorted(maintenance-changed),
+              'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
+              'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
+              'consumer_repair_missing':sorted(consumer_repair-changed),
+              'generated_missing':sorted(generated-changed),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+            })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
           PY
-      - name: Run deterministic fixtures
+      - name: Run deterministic and topology fixtures
         run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
       - name: Build twice and compare committed contract
         run: |
@@ -155,7 +168,7 @@ jobs:
           cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
           cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
           cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
-      - name: Verify schemas, hashes, ancestry and per-metric status
+      - name: Verify schemas, provenance hashes, accepted materialization, transaction ancestry and per-metric status
         run: |
           python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/final/snapshot-memory-verification.json
           cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/final/
@@ -163,8 +176,55 @@ jobs:
           cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
           cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
           (cd artifacts/final && sha256sum * > SHA256SUMS)
+      - name: Prove squash-merge repair changes only registry provenance semantics
+        if: steps.scope.outputs.mode == 'squash_merge_ancestry_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import copy, json, os, subprocess
+          registry_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+          schema_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json'
+          old='afb3ed7cc0630b26b4a1d49bf128f2f5e08173fc'
+          new='5cf49934aa22b3ce66629b31b5a39c1c069aa349'
+          def show(ref,path):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True)
+          base_registry=json.loads(show(os.environ['BASE_SHA'],registry_path))
+          head_registry=json.loads(show(os.environ['HEAD_SHA'],registry_path))
+          assert base_registry['current']['data_origin_commit_sha']==old
+          assert head_registry['current']['data_origin_commit_sha']==new
+          normalized=copy.deepcopy(head_registry)
+          normalized['current']['data_origin_commit_sha']=old
+          assert normalized==base_registry, 'registry migration changed more than current.data_origin_commit_sha'
+          def strip_descriptions(value):
+            if isinstance(value,dict):
+              return {k:strip_descriptions(v) for k,v in value.items() if k!='description'}
+            if isinstance(value,list): return [strip_descriptions(v) for v in value]
+            return value
+          base_schema=json.loads(show(os.environ['BASE_SHA'],schema_path))
+          head_schema=json.loads(show(os.environ['HEAD_SHA'],schema_path))
+          assert strip_descriptions(base_schema)==strip_descriptions(head_schema)
+          assert head_schema['properties']['schema_version']['const']=='crypto_astro_snapshot_registry_public_v0_2'
+          print('SQUASH_MERGE_ANCESTRY_REGISTRY_MIGRATION=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
+            tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
-        if: steps.scope.outputs.mode != 'generated_refresh'
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

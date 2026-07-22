@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify committed dynamic Snapshot Memory outputs against exact Git truth."""
+"""Verify committed Snapshot Memory against exact provenance and accepted Git truth."""
 from __future__ import annotations
 
 import argparse
@@ -12,8 +12,13 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from build_snapshot_memory import (
-    DELTA_PATH, REGISTRY_PATH, TRACKED_METRICS, build_documents, json_bytes,
-    load_pair, write_documents,
+    DELTA_PATH,
+    REGISTRY_PATH,
+    TRACKED_METRICS,
+    build_documents,
+    json_bytes,
+    load_pair,
+    write_documents,
 )
 
 FORBIDDEN_IMPORT_ROOTS = {"urllib", "requests", "http", "socket", "aiohttp"}
@@ -38,11 +43,15 @@ def validate_no_network_imports(path: Path) -> None:
 
 
 def verify(repo: Path, report_path: Path | None = None) -> dict:
-    current, previous, ancestry = load_pair(repo)
-    registry, delta = build_documents(current, previous, ancestry_ok=ancestry)
+    current, previous, evidence = load_pair(repo)
+    registry, delta = build_documents(current, previous)
 
-    registry_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json")
-    delta_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json")
+    registry_schema = load_json(
+        repo / "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json"
+    )
+    delta_schema = load_json(
+        repo / "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json"
+    )
     Draft202012Validator.check_schema(registry_schema)
     Draft202012Validator.check_schema(delta_schema)
     Draft202012Validator(registry_schema).validate(registry)
@@ -58,7 +67,7 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     with tempfile.TemporaryDirectory() as temp_a, tempfile.TemporaryDirectory() as temp_b:
         out_a, out_b = Path(temp_a), Path(temp_b)
         write_documents(out_a, registry, delta)
-        registry2, delta2 = build_documents(current, previous, ancestry_ok=ancestry)
+        registry2, delta2 = build_documents(current, previous)
         write_documents(out_b, registry2, delta2)
         for relative in (REGISTRY_PATH, DELTA_PATH):
             if (out_a / relative).read_bytes() != (out_b / relative).read_bytes():
@@ -68,8 +77,13 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     unavailable = set(delta["unavailable_metrics"])
     assert metrics | unavailable == set(TRACKED_METRICS)
     assert not (metrics & unavailable)
-    expected_status = "FULL_COMPARABLE" if len(metrics) == len(TRACKED_METRICS) else \
-                      "PARTIAL_COMPARABLE" if metrics else "UNAVAILABLE"
+    expected_status = (
+        "FULL_COMPARABLE"
+        if len(metrics) == len(TRACKED_METRICS)
+        else "PARTIAL_COMPARABLE"
+        if metrics
+        else "UNAVAILABLE"
+    )
     assert delta["comparison_status"] == expected_status
     for metric in delta["metrics"].values():
         if metric["type"] == "NUMERIC":
@@ -85,12 +99,14 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
         validate_no_network_imports(repo / relative)
 
     report = {
-        "schema_version": "crypto_astro_snapshot_memory_verification_v0_2",
+        "schema_version": "crypto_astro_snapshot_memory_verification_v0_3",
         "status": "PASS",
         "registry_schema": "PASS",
         "delta_schema": "PASS",
         "locked_source_hashes": "PASS",
-        "ancestry": "PASS",
+        "provenance_hashes": evidence["provenance_hashes"],
+        "base_materialization_hashes": evidence["base_materialization_hashes"],
+        "transaction_base_ancestry": evidence["transaction_base_ancestry"],
         "deterministic_double_build": "PASS",
         "metric_partition": "PASS",
         "per_metric_fail_closed": "PASS",
@@ -103,7 +119,9 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     }
     if report_path:
         report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        report_path.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     return report
 
 

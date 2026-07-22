@@ -112,11 +112,13 @@
         },
         "commit_sha": {
           "type": "string",
-          "pattern": "^[0-9a-f]{40}$"
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Immutable generated-data provenance commit. This commit may live on the reviewed source branch even when acceptance used squash merge."
         },
         "data_origin_commit_sha": {
           "type": "string",
-          "pattern": "^[0-9a-f]{40}$"
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Accepted base materialization commit from which commit_sha was created. Its public snapshot, proof, and bindings must match the prior accepted registry entry."
         },
         "snapshot_path": {
           "const": "site/crypto-astro/data/crypto_astro_snapshot.public.json"

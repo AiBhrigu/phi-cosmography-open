@@ -24,7 +24,7 @@
     "bindings_path": "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
     "bindings_sha256": "2afe122599a1b659fd60ff3d8f638ba19bf3994b94d46e2f6bb78e8639b29240",
     "commit_sha": "afb3ed7cc0630b26b4a1d49bf128f2f5e08173fc",
-    "data_origin_commit_sha": "afb3ed7cc0630b26b4a1d49bf128f2f5e08173fc",
+    "data_origin_commit_sha": "5cf49934aa22b3ce66629b31b5a39c1c069aa349",
     "generated_at_utc": "2026-07-21T12:40:11Z",
     "proof_blob_sha": "b959c82f105ab7e4213f5cab734d14d9e87db36c",
     "proof_generated_at_utc": "2026-07-21T12:40:11Z",

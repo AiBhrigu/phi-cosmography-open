@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Enforce bounded cadence or assistant-dispatch file scope
+      - name: Enforce bounded cadence, assistant-dispatch, or Snapshot Memory repair scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -61,6 +61,16 @@ jobs:
               "tools/crypto_astro_operations/verify_assistant_dispatch.py",
               "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
           }
+          snapshot_memory_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -71,6 +81,8 @@ jobs:
           )
           if changed == assistant_dispatch_scope:
               print("ASSISTANT_DISPATCH_FILE_SCOPE=PASS")
+          elif changed == snapshot_memory_repair_scope:
+              print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
           else:
               unexpected = sorted(changed - cadence_allowed)
               assert not unexpected, f"Unexpected cadence paths: {unexpected}"
