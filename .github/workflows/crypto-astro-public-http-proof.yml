@@ -70,7 +70,60 @@ jobs:
           echo "EXPECTED_MAIN_SHA=$EXPECTED_MAIN_SHA" >> "$GITHUB_ENV"
           echo "CURRENT_MAIN_SHA=$CURRENT_MAIN_SHA" >> "$GITHUB_ENV"
 
+      - name: Validate retained failure fixture
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts /tmp/crypto-astro-http-proof-fixture/site/crypto-astro/data
+          cat > /tmp/crypto-astro-http-proof-fixture/site/crypto-astro/index.html <<'HTML'
+          <html>fixture</html>
+          HTML
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = Path('/tmp/crypto-astro-http-proof-fixture/site/crypto-astro/data')
+          (data / 'crypto_astro_snapshot.public.json').write_text(
+              json.dumps({'generated_at_utc': '2026-07-22T12:47:37Z'}), encoding='utf-8'
+          )
+          (data / 'crypto_astro_snapshot_proof.public.json').write_text(
+              json.dumps({'generated_at_utc': '2026-07-22T12:47:36Z'}), encoding='utf-8'
+          )
+          (data / 'market_field_snapshot.public.v0_1.json').write_text(
+              json.dumps({'updated_at_utc': '2026-07-22T12:47:37Z'}), encoding='utf-8'
+          )
+          PY
+          set +e
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            --repo /tmp/crypto-astro-http-proof-fixture \
+            --report artifacts/crypto-astro-public-http-proof.json \
+            --expected-main-sha "$EXPECTED_MAIN_SHA" \
+            --timeout 1 \
+            --attempts 1 \
+            --retry-delay 0 \
+            2>&1 | tee artifacts/crypto-astro-public-http-proof.log
+          PROOF_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$PROOF_EXIT_CODE" > artifacts/crypto-astro-public-http-proof.exit-code.txt
+          test "$PROOF_EXIT_CODE" = "1"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('artifacts/crypto-astro-public-http-proof.json').read_text())
+          failure = report.get('failure') or {}
+          assert report.get('status') == 'FAIL', report
+          assert failure.get('reason_code') == 'LOCAL_PROOF_TIMESTAMP_MISMATCH', failure
+          assert failure.get('stage') == 'local_source_validation', failure
+          assert failure.get('target') == 'proof_json', failure
+          assert failure.get('details') == {
+              'actual_timestamp': '2026-07-22T12:47:36Z',
+              'expected_timestamp': '2026-07-22T12:47:37Z',
+          }, failure
+          PY
+
       - name: Verify exact external HTTP proof
+        if: github.event_name == 'workflow_dispatch'
         id: proof
         continue-on-error: true
         run: |
@@ -95,6 +148,7 @@ jobs:
           {
             echo "## Crypto-Astro Public HTTP Proof"
             echo
+            echo "- Event: \`${GITHUB_EVENT_NAME}\`"
             echo "- Expected main SHA: \`${EXPECTED_MAIN_SHA:-unavailable}\`"
             echo "- Run attempt: \`${GITHUB_RUN_ATTEMPT}\`"
             if [[ -f artifacts/crypto-astro-public-http-proof.json ]]; then
@@ -126,7 +180,7 @@ jobs:
           retention-days: 90
 
       - name: Enforce proof outcome
-        if: always()
+        if: always() && github.event_name == 'workflow_dispatch'
         env:
           PROOF_STEP_OUTCOME: ${{ steps.proof.outcome }}
           PROOF_EXIT_CODE: ${{ steps.proof.outputs.exit_code }}
