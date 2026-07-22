@@ -1,0 +1,111 @@
+name: Crypto-Astro Public HTTP Proof
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-public-http-proof.yml'
+      - 'tools/crypto_astro_public_http_proof/verify_public_http_proof.py'
+      - 'tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py'
+  workflow_dispatch:
+    inputs:
+      operator_ref:
+        description: Named operator or authorization reference
+        required: true
+        type: string
+      expected_main_sha:
+        description: Optional exact main SHA lock
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-public-http-proof-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  public-http-proof:
+    name: Verify exact public Pages and BHRIGU routes
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate verifier implementation
+        run: |
+          python -m py_compile tools/crypto_astro_public_http_proof/verify_public_http_proof.py
+          python -m unittest tools.crypto_astro_public_http_proof.test_verify_public_http_proof -v
+
+      - name: Lock current main source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          INPUT_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          CURRENT_MAIN_SHA=$(git rev-parse origin/main)
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            EXPECTED_MAIN_SHA="$PR_BASE_SHA"
+          else
+            EXPECTED_MAIN_SHA="$INPUT_EXPECTED_MAIN_SHA"
+          fi
+
+          if [[ -n "$EXPECTED_MAIN_SHA" ]]; then
+            [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+            test "$CURRENT_MAIN_SHA" = "$EXPECTED_MAIN_SHA"
+          else
+            EXPECTED_MAIN_SHA="$CURRENT_MAIN_SHA"
+          fi
+
+          echo "EXPECTED_MAIN_SHA=$EXPECTED_MAIN_SHA" >> "$GITHUB_ENV"
+          echo "CURRENT_MAIN_SHA=$CURRENT_MAIN_SHA" >> "$GITHUB_ENV"
+
+      - name: Verify exact external HTTP proof
+        run: |
+          mkdir -p artifacts
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            --repo . \
+            --report artifacts/crypto-astro-public-http-proof.json \
+            --expected-main-sha "$EXPECTED_MAIN_SHA" \
+            --timeout 20 \
+            --attempts 6 \
+            --retry-delay 5
+
+      - name: Publish proof summary
+        if: always()
+        run: |
+          {
+            echo "## Crypto-Astro Public HTTP Proof"
+            echo
+            echo "- Expected main SHA: \`${EXPECTED_MAIN_SHA:-unavailable}\`"
+            if [[ -f artifacts/crypto-astro-public-http-proof.json ]]; then
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("artifacts/crypto-astro-public-http-proof.json").read_text())
+          print(f"- Status: `{report['status']}`")
+          print(f"- Snapshot timestamp: `{report['canonical_snapshot_timestamp']}`")
+          print(f"- Targets recorded: `{len(report['targets'])}`")
+          PY
+            else
+              echo "- Status: \`NO_REPORT\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload HTTP proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-public-http-proof-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
