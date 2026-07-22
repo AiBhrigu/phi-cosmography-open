@@ -66,7 +66,7 @@ jobs:
               ).splitlines()
           )
           allowed = {
-              'FULL_IMPLEMENTATION': full_scope,
+              'POST_MERGE_STATE_FINALIZATION': full_scope,
               'DOCS_MAINTENANCE': docs_scope,
               'VERIFIER_MAINTENANCE': verifier_scope,
           }
@@ -101,7 +101,7 @@ jobs:
             tools.crypto_astro_gate_3_closure.test_verify_gate_3_post_closure -v \
             2>&1 | tee artifacts/unit-tests.log
 
-      - name: Verify source-of-truth index and memory capsule
+      - name: Verify finalized source-of-truth and memory capsule
         run: |
           set -euo pipefail
           python tools/crypto_astro_gate_3_closure/verify_gate_3_post_closure.py \

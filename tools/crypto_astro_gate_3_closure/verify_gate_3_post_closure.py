@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed verifier for the Crypto-Astro Gate 3 closure index."""
+"""Fail-closed verifier for the Crypto-Astro Gate 3 post-closure handoff."""
 
 from __future__ import annotations
 
@@ -11,15 +11,21 @@ from typing import Any
 
 SCHEMA = "crypto_astro_gate_3_post_closure_memory_handoff_v0_1"
 NODE = "CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_AND_MEMORY_HANDOFF_SCOPE_v0_1"
+FINALIZATION_NODE = "CRYPTO_ASTRO_GATE_3_POST_CLOSURE_MEMORY_HANDOFF_POST_MERGE_STATE_FINALIZATION_AUTHORIZATION_v0_1"
 REPOSITORY = "AiBhrigu/phi-cosmography-open"
-CURRENT_MAIN_SHA = "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa"
+PRODUCTION_PROOF_MAIN_SHA = "4f00ec234b1bb3db43c5687cf678b77ff5d98eaa"
+HANDOFF_MERGE_SHA = "f46002db6864a069b1340c20fb2c4113e2fef080"
 FINAL_ISSUE = 167
 FINAL_RUN = 29914563042
 FINAL_ARTIFACT = 8527304778
 FINAL_DIGEST = "sha256:b692458b3c1fc9ff16d9962d7464326606b4dc251d748ea52913463982e511e9"
 
-CAPSULE_PATH = Path("docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json")
-INDEX_PATH = Path("docs/crypto-astro-service/CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_v0_1.md")
+CAPSULE_PATH = Path(
+    "docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json"
+)
+INDEX_PATH = Path(
+    "docs/crypto-astro-service/CRYPTO_ASTRO_GATE_3_POST_CLOSURE_SOURCE_OF_TRUTH_INDEX_v0_1.md"
+)
 EXPECTED_SOURCE_FILES = [
     ".github/workflows/crypto-astro-public-http-proof.yml",
     ".github/workflows/crypto-astro-public-http-proof-dispatch.yml",
@@ -34,10 +40,15 @@ EXPECTED_PRS = [
     (159, "23cb754ec4c2b4c7de487d19918c58123dd413a9", "a2da529c075699c82c963befb34f946ba211c1b0"),
     (162, "2cd1a43d2004334621a2b5f496d6efa0ce68a418", "a5d9183da68cfec93eb9fdbaeb57a7469d8454a9"),
     (164, "350b899500dfa27abc10aa80e070833468afa11f", "ce499d0176b05cacde550f7d3ecf430dc6d1b704"),
-    (166, "5c0d68fbcc2d7cb34eddb924bfaf84935fd31a26", CURRENT_MAIN_SHA),
+    (166, "5c0d68fbcc2d7cb34eddb924bfaf84935fd31a26", PRODUCTION_PROOF_MAIN_SHA),
 ]
 EXPECTED_ISSUES = [160, 161, 163, 165]
-EXPECTED_CALLBACKS = {160: 5044642377, 161: 5044666925, 163: 5044735135, 165: 5044861593}
+EXPECTED_CALLBACKS = {
+    160: 5044642377,
+    161: 5044666925,
+    163: 5044735135,
+    165: 5044861593,
+}
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -58,7 +69,8 @@ def validate_capsule(value: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     check(value.get("schema_version") == SCHEMA, "capsule:schema", failures)
     check(value.get("node") == NODE, "capsule:node", failures)
-    check(value.get("handoff_status") == "READY_FOR_REVIEW", "capsule:handoff_status", failures)
+    check(value.get("finalization_node") == FINALIZATION_NODE, "capsule:finalization_node", failures)
+    check(value.get("handoff_status") == "MERGED_CLOSED", "capsule:handoff_status", failures)
     check(value.get("repository") == REPOSITORY, "capsule:repository", failures)
     check(value.get("source_of_truth_files") == EXPECTED_SOURCE_FILES, "capsule:source_files", failures)
 
@@ -67,14 +79,39 @@ def validate_capsule(value: dict[str, Any]) -> list[str]:
         "axis": "PUBLIC_HTTP_PROOF_DISPATCH",
         "status": "PASS",
         "production_state": "OWNER_AUTHENTICATED_DISPATCH_BRIDGE_LIVE_VERIFIED",
-        "current_main_sha": CURRENT_MAIN_SHA,
+        "production_proof_main_sha": PRODUCTION_PROOF_MAIN_SHA,
+        "repository_main_after_handoff_merge": HANDOFF_MERGE_SHA,
         "canonical_snapshot_timestamp": "2026-07-22T08:02:05Z",
         "closure_observed_at_utc": "2026-07-22T11:08:38Z",
+        "handoff_merged_at_utc": "2026-07-22T11:38:55Z",
         "operator_f_manual_actions": "NONE",
         "boundary": "CLEAN",
     }
     check(gate == expected_gate, "gate:exact_state", failures)
-    check(SHA_RE.fullmatch(str(gate.get("current_main_sha", ""))) is not None, "gate:sha_format", failures)
+    check("current_main_sha" not in gate, "gate:ambiguous_current_main_forbidden", failures)
+    for key in ("production_proof_main_sha", "repository_main_after_handoff_merge"):
+        check(SHA_RE.fullmatch(str(gate.get(key, ""))) is not None, f"gate:{key}:format", failures)
+    check(
+        gate.get("production_proof_main_sha") != gate.get("repository_main_after_handoff_merge"),
+        "gate:sha_roles_collapsed",
+        failures,
+    )
+
+    handoff = value.get("handoff_merge") if isinstance(value.get("handoff_merge"), dict) else {}
+    check(
+        handoff
+        == {
+            "pr_number": 168,
+            "reviewed_head_sha": "6ed76e5de17d44cc495e2d6f1267936e1df3c637",
+            "merge_method": "squash",
+            "merge_sha": HANDOFF_MERGE_SHA,
+            "merged_at_utc": "2026-07-22T11:38:55Z",
+            "changed_files": 5,
+            "state": "MERGED_CLOSED",
+        },
+        "handoff:exact_state",
+        failures,
+    )
 
     prs = value.get("pr_chain") if isinstance(value.get("pr_chain"), list) else []
     observed = []
@@ -87,26 +124,54 @@ def validate_capsule(value: dict[str, Any]) -> list[str]:
         check(item.get("state") == "merged", f"pr:{number}:state", failures)
         check(isinstance(item.get("review_evidence_run_id"), int), f"pr:{number}:run", failures)
         check(isinstance(item.get("review_evidence_artifact_id"), int), f"pr:{number}:artifact", failures)
-        check(DIGEST_RE.fullmatch(str(item.get("review_evidence_digest", ""))) is not None, f"pr:{number}:digest", failures)
+        check(
+            DIGEST_RE.fullmatch(str(item.get("review_evidence_digest", ""))) is not None,
+            f"pr:{number}:digest",
+            failures,
+        )
     check(observed == EXPECTED_PRS, "pr:order_or_sha", failures)
 
-    issues = value.get("diagnostic_issue_chain") if isinstance(value.get("diagnostic_issue_chain"), list) else []
-    check([item.get("number") for item in issues if isinstance(item, dict)] == EXPECTED_ISSUES, "issue:order", failures)
+    issues = (
+        value.get("diagnostic_issue_chain")
+        if isinstance(value.get("diagnostic_issue_chain"), list)
+        else []
+    )
+    check(
+        [item.get("number") for item in issues if isinstance(item, dict)] == EXPECTED_ISSUES,
+        "issue:order",
+        failures,
+    )
     for item in issues:
         if not isinstance(item, dict):
             failures.append("issue:item_not_object")
             continue
         number = item.get("number")
-        check(item.get("classification") == "SAFE_FAIL_CLOSED_DIAGNOSTIC", f"issue:{number}:classification", failures)
+        check(
+            item.get("classification") == "SAFE_FAIL_CLOSED_DIAGNOSTIC",
+            f"issue:{number}:classification",
+            failures,
+        )
         check(item.get("final_outcome") == "FAIL_PREFLIGHT", f"issue:{number}:outcome", failures)
         check(item.get("target_workflow_dispatched") is False, f"issue:{number}:dispatch", failures)
         check(item.get("workflow_run_id") is None, f"issue:{number}:run", failures)
-        check(item.get("callback_comment_id") == EXPECTED_CALLBACKS.get(number), f"issue:{number}:callback", failures)
+        check(
+            item.get("callback_comment_id") == EXPECTED_CALLBACKS.get(number),
+            f"issue:{number}:callback",
+            failures,
+        )
         expected_reason = "FAIL_TARGET_WORKFLOW_VIEW" if number == 165 else None
         check(item.get("exact_reason_code") == expected_reason, f"issue:{number}:reason", failures)
 
-    repairs = value.get("accepted_repair_mapping") if isinstance(value.get("accepted_repair_mapping"), list) else []
-    check([item.get("repair_pr") for item in repairs if isinstance(item, dict)] == [162, 164, 166], "repair:order", failures)
+    repairs = (
+        value.get("accepted_repair_mapping")
+        if isinstance(value.get("accepted_repair_mapping"), list)
+        else []
+    )
+    check(
+        [item.get("repair_pr") for item in repairs if isinstance(item, dict)] == [162, 164, 166],
+        "repair:order",
+        failures,
+    )
 
     proof = value.get("production_proof") if isinstance(value.get("production_proof"), dict) else {}
     expected_proof = {
@@ -121,8 +186,8 @@ def validate_capsule(value: dict[str, Any]) -> list[str]:
         "workflow_file": "crypto-astro-public-http-proof.yml",
         "event": "workflow_dispatch",
         "branch": "main",
-        "expected_main_sha": CURRENT_MAIN_SHA,
-        "actual_head_sha": CURRENT_MAIN_SHA,
+        "expected_main_sha": PRODUCTION_PROOF_MAIN_SHA,
+        "actual_head_sha": PRODUCTION_PROOF_MAIN_SHA,
         "job_status": "success",
         "final_outcome": "PUBLIC_HTTP_PROOF_PASS",
         "issue_state": "closed",
@@ -140,18 +205,25 @@ def validate_capsule(value: dict[str, Any]) -> list[str]:
     for marker in (
         "Only issue 167 with workflow run 29914563042",
         "Issues 160, 161, 163 and 165 are safe fail-closed diagnostics",
+        f"production proof main SHA is {PRODUCTION_PROOF_MAIN_SHA}",
+        f"repository main after the documentary handoff merge is {HANDOFF_MERGE_SHA}",
         "did not refresh market data",
         "requires a separate explicit authorization",
     ):
         check(marker in rules, f"rules:missing:{marker}", failures)
 
     hold = value.get("hold") if isinstance(value.get("hold"), dict) else {}
-    check(hold == {
-        "state": "HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH",
-        "automatic_refresh": False,
-        "automatic_dispatch": False,
-        "operator_action_required": False,
-    }, "hold:exact_state", failures)
+    check(
+        hold
+        == {
+            "state": "HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH",
+            "automatic_refresh": False,
+            "automatic_dispatch": False,
+            "operator_action_required": False,
+        },
+        "hold:exact_state",
+        failures,
+    )
 
     boundary = value.get("boundary") if isinstance(value.get("boundary"), dict) else {}
     check(bool(boundary), "boundary:missing", failures)
@@ -163,17 +235,22 @@ def validate_index(text: str) -> list[str]:
     failures: list[str] = []
     markers = [
         "# Crypto-Astro Gate 3 Post-Closure Source-of-Truth Index v0.1",
-        CURRENT_MAIN_SHA,
+        "Handoff status: `MERGED_CLOSED`",
+        f"Production proof main SHA: `{PRODUCTION_PROOF_MAIN_SHA}`",
+        f"Repository main after handoff merge: `{HANDOFF_MERGE_SHA}`",
+        "`production_proof_main_sha`",
+        "`repository_main_after_handoff_merge`",
         "Only issue #167 and run `29914563042`",
         "Issues #160, #161, #163 and #165 remain safe diagnostic failures.",
         "Final outcome: `PUBLIC_HTTP_PROOF_PASS`",
+        "HANDOFF_STATUS=MERGED_CLOSED",
         "STATE=HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH",
         FINAL_DIGEST,
         "They do not prove public-route failure",
     ]
     for marker in markers:
         check(marker in text, f"index:missing:{marker}", failures)
-    for number in (158, 159, 162, 164, 166, 160, 161, 163, 165, 167):
+    for number in (158, 159, 162, 164, 166, 168, 160, 161, 163, 165, 167):
         check(f"#{number}" in text, f"index:missing_number:{number}", failures)
     return failures
 
@@ -197,7 +274,9 @@ def verify_repository(repo: Path) -> dict[str, Any]:
         "schema_version": "crypto_astro_gate_3_post_closure_verification_v0_1",
         "status": "PASS" if not failures else "FAIL",
         "repository": REPOSITORY,
-        "current_main_sha": CURRENT_MAIN_SHA,
+        "handoff_status": "MERGED_CLOSED",
+        "production_proof_main_sha": PRODUCTION_PROOF_MAIN_SHA,
+        "repository_main_after_handoff_merge": HANDOFF_MERGE_SHA,
         "production_issue": FINAL_ISSUE,
         "production_run": FINAL_RUN,
         "production_artifact": FINAL_ARTIFACT,
@@ -212,7 +291,10 @@ def main() -> int:
     args = parser.parse_args()
     report = verify_repository(args.repo.resolve())
     args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.report.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(json.dumps(report, sort_keys=True))
     return 0 if report["status"] == "PASS" else 1
 

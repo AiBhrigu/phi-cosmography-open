@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the Gate 3 post-closure truth index verifier."""
+"""Tests for the Gate 3 post-closure handoff verifier."""
 
 from __future__ import annotations
 
@@ -23,6 +23,34 @@ class Gate3PostClosureVerifierTests(unittest.TestCase):
         report = verifier.verify_repository(self.repo)
         self.assertEqual(report["status"], "PASS", report)
 
+    def test_rejects_review_status_after_merge(self) -> None:
+        value = copy.deepcopy(self.capsule)
+        value["handoff_status"] = "READY_FOR_REVIEW"
+        failures = verifier.validate_capsule(value)
+        self.assertIn("capsule:handoff_status", failures)
+
+    def test_rejects_collapsed_sha_roles(self) -> None:
+        value = copy.deepcopy(self.capsule)
+        value["gate_3"]["repository_main_after_handoff_merge"] = (
+            verifier.PRODUCTION_PROOF_MAIN_SHA
+        )
+        failures = verifier.validate_capsule(value)
+        self.assertIn("gate:exact_state", failures)
+        self.assertIn("gate:sha_roles_collapsed", failures)
+
+    def test_rejects_ambiguous_current_main_field(self) -> None:
+        value = copy.deepcopy(self.capsule)
+        value["gate_3"]["current_main_sha"] = verifier.HANDOFF_MERGE_SHA
+        failures = verifier.validate_capsule(value)
+        self.assertIn("gate:exact_state", failures)
+        self.assertIn("gate:ambiguous_current_main_forbidden", failures)
+
+    def test_rejects_handoff_merge_sha_mismatch(self) -> None:
+        value = copy.deepcopy(self.capsule)
+        value["handoff_merge"]["merge_sha"] = "0" * 40
+        failures = verifier.validate_capsule(value)
+        self.assertIn("handoff:exact_state", failures)
+
     def test_rejects_production_sha_mismatch(self) -> None:
         value = copy.deepcopy(self.capsule)
         value["production_proof"]["actual_head_sha"] = "0" * 40
@@ -41,13 +69,12 @@ class Gate3PostClosureVerifierTests(unittest.TestCase):
         failures = verifier.validate_capsule(value)
         self.assertIn("boundary:opened", failures)
 
-    def test_rejects_missing_hold_marker(self) -> None:
-        text = self.index_text.replace(
-            "STATE=HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH",
-            "STATE=UNLOCKED",
-        )
+    def test_rejects_missing_finalized_hold_marker(self) -> None:
+        text = self.index_text.replace("HANDOFF_STATUS=MERGED_CLOSED", "HANDOFF_STATUS=OPEN")
         failures = verifier.validate_index(text)
-        self.assertTrue(any(item.startswith("index:missing:STATE=") for item in failures))
+        self.assertTrue(
+            any(item.startswith("index:missing:HANDOFF_STATUS=") for item in failures)
+        )
 
     def test_json_is_deterministically_serializable(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
