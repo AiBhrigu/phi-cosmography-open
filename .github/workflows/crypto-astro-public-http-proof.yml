@@ -70,8 +70,64 @@ jobs:
           echo "EXPECTED_MAIN_SHA=$EXPECTED_MAIN_SHA" >> "$GITHUB_ENV"
           echo "CURRENT_MAIN_SHA=$CURRENT_MAIN_SHA" >> "$GITHUB_ENV"
 
-      - name: Verify exact external HTTP proof
+      - name: Validate retained failure fixture
+        if: github.event_name == 'pull_request'
         run: |
+          set -euo pipefail
+          mkdir -p artifacts /tmp/crypto-astro-http-proof-fixture/site/crypto-astro/data
+          cat > /tmp/crypto-astro-http-proof-fixture/site/crypto-astro/index.html <<'HTML'
+          <html>fixture</html>
+          HTML
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = Path('/tmp/crypto-astro-http-proof-fixture/site/crypto-astro/data')
+          (data / 'crypto_astro_snapshot.public.json').write_text(
+              json.dumps({'generated_at_utc': '2026-07-22T12:47:37Z'}), encoding='utf-8'
+          )
+          (data / 'crypto_astro_snapshot_proof.public.json').write_text(
+              json.dumps({'generated_at_utc': '2026-07-22T12:47:36Z'}), encoding='utf-8'
+          )
+          (data / 'market_field_snapshot.public.v0_1.json').write_text(
+              json.dumps({'updated_at_utc': '2026-07-22T12:47:37Z'}), encoding='utf-8'
+          )
+          PY
+          set +e
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            --repo /tmp/crypto-astro-http-proof-fixture \
+            --report artifacts/crypto-astro-public-http-proof.json \
+            --expected-main-sha "$EXPECTED_MAIN_SHA" \
+            --timeout 1 \
+            --attempts 1 \
+            --retry-delay 0 \
+            2>&1 | tee artifacts/crypto-astro-public-http-proof.log
+          PROOF_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$PROOF_EXIT_CODE" > artifacts/crypto-astro-public-http-proof.exit-code.txt
+          test "$PROOF_EXIT_CODE" = "1"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('artifacts/crypto-astro-public-http-proof.json').read_text())
+          failure = report.get('failure') or {}
+          assert report.get('status') == 'FAIL', report
+          assert failure.get('reason_code') == 'LOCAL_PROOF_TIMESTAMP_MISMATCH', failure
+          assert failure.get('stage') == 'local_source_validation', failure
+          assert failure.get('target') == 'proof_json', failure
+          assert failure.get('details') == {
+              'actual_timestamp': '2026-07-22T12:47:36Z',
+              'expected_timestamp': '2026-07-22T12:47:37Z',
+          }, failure
+          PY
+
+      - name: Verify exact external HTTP proof
+        if: github.event_name == 'workflow_dispatch'
+        id: proof
+        continue-on-error: true
+        run: |
+          set +e
           mkdir -p artifacts
           python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
             --repo . \
@@ -79,7 +135,12 @@ jobs:
             --expected-main-sha "$EXPECTED_MAIN_SHA" \
             --timeout 20 \
             --attempts 6 \
-            --retry-delay 5
+            --retry-delay 5 \
+            2>&1 | tee artifacts/crypto-astro-public-http-proof.log
+          PROOF_EXIT_CODE=${PIPESTATUS[0]}
+          printf '%s\n' "$PROOF_EXIT_CODE" > artifacts/crypto-astro-public-http-proof.exit-code.txt
+          echo "exit_code=$PROOF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          exit "$PROOF_EXIT_CODE"
 
       - name: Publish proof summary
         if: always()
@@ -87,14 +148,21 @@ jobs:
           {
             echo "## Crypto-Astro Public HTTP Proof"
             echo
+            echo "- Event: \`${GITHUB_EVENT_NAME}\`"
             echo "- Expected main SHA: \`${EXPECTED_MAIN_SHA:-unavailable}\`"
+            echo "- Run attempt: \`${GITHUB_RUN_ATTEMPT}\`"
             if [[ -f artifacts/crypto-astro-public-http-proof.json ]]; then
               python - <<'PY'
           import json
           from pathlib import Path
           report = json.loads(Path("artifacts/crypto-astro-public-http-proof.json").read_text())
+          failure = report.get("failure") or {}
           print(f"- Status: `{report['status']}`")
-          print(f"- Snapshot timestamp: `{report['canonical_snapshot_timestamp']}`")
+          print(f"- Snapshot timestamp: `{report.get('canonical_snapshot_timestamp') or 'unavailable'}`")
+          print(f"- Current stage: `{report.get('current_stage') or 'unavailable'}`")
+          print(f"- Current target: `{report.get('current_target') or 'unavailable'}`")
+          print(f"- Failure reason: `{failure.get('reason_code') or 'none'}`")
+          print(f"- Failure URL: `{failure.get('url') or 'none'}`")
           print(f"- Targets recorded: `{len(report['targets'])}`")
           PY
             else
@@ -106,6 +174,40 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: crypto-astro-public-http-proof-${{ github.run_id }}
+          name: crypto-astro-public-http-proof-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/
           if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce proof outcome
+        if: always() && github.event_name == 'workflow_dispatch'
+        env:
+          PROOF_STEP_OUTCOME: ${{ steps.proof.outcome }}
+          PROOF_EXIT_CODE: ${{ steps.proof.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          test -f artifacts/crypto-astro-public-http-proof.json
+          test -f artifacts/crypto-astro-public-http-proof.log
+          test -f artifacts/crypto-astro-public-http-proof.exit-code.txt
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path("artifacts/crypto-astro-public-http-proof.json").read_text())
+          exit_code = Path("artifacts/crypto-astro-public-http-proof.exit-code.txt").read_text().strip()
+          step_outcome = os.environ.get("PROOF_STEP_OUTCOME", "")
+          output_exit_code = os.environ.get("PROOF_EXIT_CODE", "")
+
+          if output_exit_code and output_exit_code != exit_code:
+              raise SystemExit(f"PROOF_EXIT_CODE_OUTPUT_MISMATCH:{output_exit_code}:{exit_code}")
+          if report.get("status") != "PASS" or exit_code != "0" or step_outcome != "success":
+              failure = report.get("failure") or {}
+              reason = failure.get("reason_code") or "UNKNOWN_FAILURE"
+              stage = failure.get("stage") or report.get("current_stage") or "unknown"
+              target = failure.get("target") or report.get("current_target") or "unknown"
+              url = failure.get("url") or "unknown"
+              raise SystemExit(
+                  f"PUBLIC_HTTP_PROOF_FAIL_CLOSED:{reason}:stage={stage}:target={target}:url={url}"
+              )
+          PY
