@@ -308,7 +308,10 @@ def verify_bridge_workflow(text: str) -> list[str]:
     check("eval " not in text and "bash -c" not in text and "sh -c" not in text, "bridge:shell_eval")
     check("gh api" not in text, "bridge:arbitrary_gh_api")
     check(text.count(f"gh workflow run {TARGET_WORKFLOW}") == 1, "bridge:fixed_target_count")
-    check("--repo" not in text, "bridge:repository_override")
+    check(
+        re.search(r"(^|\s)--repo(?:\s|=)", text) is None,
+        "bridge:repository_override",
+    )
     return failures
 
 
