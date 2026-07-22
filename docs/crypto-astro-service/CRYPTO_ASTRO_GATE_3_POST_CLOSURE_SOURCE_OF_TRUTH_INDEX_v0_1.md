@@ -4,7 +4,7 @@
 
 Freeze the accepted evidence chain for the Crypto-Astro Gate 3 owner-authenticated public HTTP proof corridor.
 
-This index separates review evidence, safe diagnostic failures, accepted repairs, and the sole post-merge production proof. It prevents later work from reopening completed repairs or treating a fail-closed diagnostic request as a successful public proof.
+This index separates review evidence, safe diagnostic failures, accepted repairs, the sole post-merge production proof, and the later documentary handoff merge. It prevents later work from reopening completed repairs, treating a fail-closed diagnostic request as a successful public proof, or confusing the proof SHA with the repository SHA produced by documentation-only closure.
 
 ## Locked closure state
 
@@ -12,10 +12,20 @@ This index separates review evidence, safe diagnostic failures, accepted repairs
 - Gate: `PUBLIC_HTTP_PROOF_DISPATCH`
 - Gate 3 status: `PASS`
 - Production state: `OWNER_AUTHENTICATED_DISPATCH_BRIDGE_LIVE_VERIFIED`
-- Current accepted `main`: `4f00ec234b1bb3db43c5687cf678b77ff5d98eaa`
+- Handoff status: `MERGED_CLOSED`
+- Production proof main SHA: `4f00ec234b1bb3db43c5687cf678b77ff5d98eaa`
+- Repository main after handoff merge: `f46002db6864a069b1340c20fb2c4113e2fef080`
+- Handoff PR: `#168`
+- Handoff merge method: `squash`
+- Handoff merged at: `2026-07-22T11:38:55Z`
 - Canonical snapshot timestamp: `2026-07-22T08:02:05Z`
 - Operator F manual actions: `NONE`
 - Boundary: `CLEAN`
+
+The two SHA fields have different meanings and must not be collapsed:
+
+1. `production_proof_main_sha` is the exact `main` tested by issue #167 and run `29914563042`.
+2. `repository_main_after_handoff_merge` is the documentation-only repository state created by PR #168 after the proof completed.
 
 ## Accepted pull-request chain
 
@@ -26,8 +36,9 @@ This index separates review evidence, safe diagnostic failures, accepted repairs
 | #162 | Current-issue and other-open-request preflight repair | `2cd1a43d2004334621a2b5f496d6efa0ce68a418` | `a5d9183da68cfec93eb9fdbaeb57a7469d8454a9` | run `29911860762`, artifact `8526199787` |
 | #164 | Exact preflight reason callback repair | `350b899500dfa27abc10aa80e070833468afa11f` | `ce499d0176b05cacde550f7d3ecf430dc6d1b704` | run `29912803447`, artifact `8526579181` |
 | #166 | Deterministic target-workflow visibility repair | `5c0d68fbcc2d7cb34eddb924bfaf84935fd31a26` | `4f00ec234b1bb3db43c5687cf678b77ff5d98eaa` | run `29913813145`, artifact `8526996352` |
+| #168 | Post-closure Source-of-Truth and memory handoff | `6ed76e5de17d44cc495e2d6f1267936e1df3c637` | `f46002db6864a069b1340c20fb2c4113e2fef080` | run `29916213732`, artifact `8527972728` |
 
-PR review proofs are evidence for implementation review. They are not substitutes for the final post-merge owner-dispatch production proof.
+PR review proofs are implementation-review evidence. They are not substitutes for the final post-merge owner-dispatch production proof.
 
 ## Safe diagnostic issue chain
 
@@ -68,6 +79,21 @@ The only accepted production proof for this closure is:
 - Redirects: `0`
 - Issue closure: `closed / completed`
 
+## Documentary handoff merge
+
+The post-closure package was merged separately from the production proof:
+
+- PR: `#168`
+- Reviewed head: `6ed76e5de17d44cc495e2d6f1267936e1df3c637`
+- Merge SHA: `f46002db6864a069b1340c20fb2c4113e2fef080`
+- Merge method: `squash`
+- Merged at: `2026-07-22T11:38:55Z`
+- Scope: five documentation/verifier/PR-gate files
+- Public HTML changed: `NO`
+- Public JSON changed: `NO`
+- Market data changed: `NO`
+- Production workflow changed: `NO`
+
 ## Source-of-truth files
 
 - `.github/workflows/crypto-astro-public-http-proof.yml`
@@ -78,23 +104,19 @@ The only accepted production proof for this closure is:
 - `docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md`
 - `docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json`
 
-## Memory handoff
-
-Machine-readable capsule:
-
-`docs/crypto-astro-service/crypto_astro_gate_3_post_closure_memory_handoff_v0_1.json`
-
-Memory rules:
+## Memory rules
 
 1. Only issue #167 and run `29914563042` are the post-merge owner-dispatch production PASS.
 2. Issues #160, #161, #163 and #165 remain safe diagnostic failures.
-3. Gate 3 did not refresh market values and did not mutate public HTML or JSON.
-4. No cron, backend, public API, payment, A/E, Temporal, forecast, trading signal, price target or ORION scope was opened.
-5. The next refresh requires separate explicit authorization and a new SHA-locked proof chain.
+3. Production proof SHA `4f00ec234b1bb3db43c5687cf678b77ff5d98eaa` and handoff merge SHA `f46002db6864a069b1340c20fb2c4113e2fef080` are separate immutable anchors.
+4. Gate 3 did not refresh market values and did not mutate public HTML or JSON.
+5. No cron, backend, public API, payment, A/E, Temporal, forecast, trading signal, price target or ORION scope was opened.
+6. The next refresh requires separate explicit authorization and a new SHA-locked proof chain.
 
 ## Hold state
 
 ```text
+HANDOFF_STATUS=MERGED_CLOSED
 STATE=HOLD_UNTIL_NEXT_AUTHORIZED_CRYPTO_ASTRO_REFRESH
 AUTOMATIC_REFRESH=NO
 AUTOMATIC_DISPATCH=NO
