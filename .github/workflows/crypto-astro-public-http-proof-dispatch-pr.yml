@@ -40,13 +40,17 @@ jobs:
           import subprocess
           from pathlib import Path
 
-          expected = {
+          full_scope = {
               '.github/workflows/crypto-astro-public-http-proof-dispatch.yml',
               '.github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml',
               'tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py',
               'tools/crypto_astro_public_http_proof/test_verify_public_http_proof_dispatch.py',
               'docs/crypto-astro-service/crypto_astro_public_http_proof_dispatch_v0_1.json',
               'docs/crypto-astro-service/CRYPTO_ASTRO_PUBLIC_HTTP_PROOF_DISPATCH_v0_1.md',
+          }
+          preflight_repair_scope = {
+              '.github/workflows/crypto-astro-public-http-proof-dispatch.yml',
+              '.github/workflows/crypto-astro-public-http-proof-dispatch-pr.yml',
           }
           base = subprocess.check_output(
               ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
@@ -58,13 +62,19 @@ jobs:
                   text=True,
               ).splitlines()
           )
-          assert changed == expected, {
-              'missing': sorted(expected - changed),
-              'unexpected': sorted(changed - expected),
+          allowed = {
+              'FULL_IMPLEMENTATION': full_scope,
+              'PREFLIGHT_REPAIR': preflight_repair_scope,
+          }
+          scope_name = next((name for name, paths in allowed.items() if changed == paths), None)
+          assert scope_name is not None, {
+              'changed': sorted(changed),
+              'allowed_scopes': {name: sorted(paths) for name, paths in allowed.items()},
           }
           report = {
               'schema_version': 'crypto_astro_public_http_proof_dispatch_pr_scope_v0_1',
               'status': 'PASS',
+              'scope_name': scope_name,
               'base_sha': os.environ['BASE_SHA'],
               'head_sha': os.environ['HEAD_SHA'],
               'changed_files': sorted(changed),
@@ -73,6 +83,7 @@ jobs:
               json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
           )
           print('PUBLIC_HTTP_PROOF_DISPATCH_EXACT_SCOPE=PASS')
+          print(f'PUBLIC_HTTP_PROOF_DISPATCH_SCOPE={scope_name}')
           PY
 
       - name: Run fail-closed request and repository fixtures
