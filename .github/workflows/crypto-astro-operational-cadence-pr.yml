@@ -8,6 +8,8 @@ on:
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
       - ".github/workflows/crypto-astro-assistant-dispatch.yml"
       - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
+      - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
@@ -31,7 +33,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify bounded cadence, repair, or generated-refresh scope
+      - name: Classify bounded cadence, repair, timestamp-consistency, or generated-refresh scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -82,6 +84,13 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          timestamp_consistency_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           generated_refresh_scope = {
               "site/crypto-astro/index.html",
               "site/crypto-astro/data/crypto_astro_snapshot.public.json",
@@ -113,6 +122,8 @@ jobs:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
           elif changed == generated_refresh_applicability_repair_scope:
               print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+          elif changed == timestamp_consistency_repair_scope:
+              print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_FILE_SCOPE=PASS")
           elif changed in (
               generated_refresh_scope,
               generated_refresh_scope | generated_refresh_optional,
