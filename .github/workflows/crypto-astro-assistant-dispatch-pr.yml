@@ -8,6 +8,8 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-manual.yml"
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
       - "tools/crypto_astro_operations/verify_assistant_dispatch.py"
@@ -71,6 +73,13 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          timestamp_consistency_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -91,6 +100,9 @@ jobs:
           elif changed == generated_refresh_applicability_repair_scope:
               mode = "operational_cadence_generated_refresh_applicability_repair"
               print("OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == timestamp_consistency_repair_scope:
+              mode = "timestamp_consistency_repair"
+              print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
           else:
               raise AssertionError({
                   "changed": sorted(changed),
@@ -100,12 +112,16 @@ jobs:
                   "generated_refresh_applicability_repair_missing": sorted(
                       generated_refresh_applicability_repair_scope - changed
                   ),
+                  "timestamp_consistency_repair_missing": sorted(
+                      timestamp_consistency_repair_scope - changed
+                  ),
                   "unexpected": sorted(
                       changed
                       - assistant_dispatch_scope
                       - snapshot_memory_repair_scope
                       - runtime_registry_test_repair_scope
                       - generated_refresh_applicability_repair_scope
+                      - timestamp_consistency_repair_scope
                   ),
               })
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
@@ -143,7 +159,7 @@ jobs:
             site/theme/crypto_astro
 
       - name: Prove dispatch runtime and public surface unchanged for bounded repairs
-        if: steps.scope.outputs.mode != 'assistant_dispatch'
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -159,6 +175,29 @@ jobs:
             site/crypto-astro/index.html \
             site/crypto-astro/data/crypto_astro_snapshot.public.json \
             site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Prove dispatch runtime and unaffected public surface unchanged for timestamp consistency repair
+        if: steps.scope.outputs.mode == 'timestamp_consistency_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
             site/crypto-astro/data/crypto_astro_module_bindings.public.json \
             site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
             site/crypto-astro/data/market_field_snapshot.public.v0_1.json \

@@ -44,7 +44,7 @@ jobs:
           python-version: '3.11'
       - name: Install schema validator
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, or generated-refresh scope
+      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, timestamp-consistency, or generated-refresh scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -88,6 +88,13 @@ jobs:
             '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
             '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          timestamp_consistency_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
           }
           maintenance = {
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
@@ -147,6 +154,8 @@ jobs:
             mode='runtime_registry_test_repair'
           elif changed == generated_refresh_applicability_repair:
             mode='operational_cadence_generated_refresh_applicability_repair'
+          elif changed == timestamp_consistency_repair:
+            mode='timestamp_consistency_repair'
           elif changed == maintenance:
             mode='surface_contract_maintenance'
           elif changed == cadence_maintenance:
@@ -164,12 +173,13 @@ jobs:
               'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
               'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
               'generated_refresh_applicability_repair_missing':sorted(generated_refresh_applicability_repair-changed),
+              'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-generated_refresh_applicability_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-generated_refresh_applicability_repair-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -193,6 +203,64 @@ jobs:
           cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
           cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
           (cd artifacts/final && sha256sum * > SHA256SUMS)
+      - name: Prove snapshot/proof timestamp consistency repair
+        if: steps.scope.outputs.mode == 'timestamp_consistency_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import copy, hashlib, json, os, subprocess
+          proof_path='site/crypto-astro/data/crypto_astro_snapshot_proof.public.json'
+          registry_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+          snapshot_path='site/crypto-astro/data/crypto_astro_snapshot.public.json'
+          allowed_registry_fields={
+            'commit_sha', 'proof_blob_sha',
+            'proof_generated_at_utc', 'proof_sha256',
+          }
+          def show_bytes(ref,path):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'])
+          def show_json(ref,path):
+            return json.loads(show_bytes(ref,path))
+          base_proof=show_json(os.environ['BASE_SHA'],proof_path)
+          head_proof=show_json(os.environ['HEAD_SHA'],proof_path)
+          base_registry=show_json(os.environ['BASE_SHA'],registry_path)
+          head_registry=show_json(os.environ['HEAD_SHA'],registry_path)
+          snapshot=show_json(os.environ['HEAD_SHA'],snapshot_path)
+          expected=snapshot['generated_at_utc']
+          assert base_proof['generated_at_utc'] != expected
+          assert head_proof['generated_at_utc'] == expected
+          normalized_proof=copy.deepcopy(head_proof)
+          normalized_proof['generated_at_utc']=base_proof['generated_at_utc']
+          assert normalized_proof==base_proof, 'proof changed beyond generated_at_utc'
+          normalized_registry=copy.deepcopy(head_registry)
+          for field in allowed_registry_fields:
+            normalized_registry['current'][field]=base_registry['current'][field]
+          assert normalized_registry==base_registry, 'registry changed beyond allowed current fields'
+          head_proof_bytes=show_bytes(os.environ['HEAD_SHA'],proof_path)
+          proof_sha256=hashlib.sha256(head_proof_bytes).hexdigest()
+          proof_blob_sha=hashlib.sha1(f'blob {len(head_proof_bytes)}\0'.encode()+head_proof_bytes).hexdigest()
+          current=head_registry['current']
+          assert current['proof_generated_at_utc']==expected
+          assert current['proof_sha256']==proof_sha256
+          assert current['proof_blob_sha']==proof_blob_sha
+          assert current['data_origin_commit_sha']==base_registry['current']['data_origin_commit_sha']
+          provenance=current['commit_sha']
+          subprocess.check_call(['git','merge-base','--is-ancestor',current['data_origin_commit_sha'],provenance])
+          assert show_bytes(provenance,proof_path)==head_proof_bytes
+          print('SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            docs/crypto-astro-service/crypto_astro_snapshot_summary.md \
+            docs/crypto-astro-service/crypto_astro_operator_review.md \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py
       - name: Prove squash-merge repair changes only registry provenance semantics
         if: steps.scope.outputs.mode == 'squash_merge_ancestry_repair'
         env:
@@ -285,12 +353,12 @@ jobs:
           assert 'OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS' not in base
           assert 'OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS' in head
           for required in (
-              'site/crypto-astro/index.html',
-              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
-              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+            'site/crypto-astro/index.html',
+            'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+            'docs/crypto-astro-service/crypto_astro_operator_review.md',
           ):
-              assert required in head
+            assert required in head
           print('OPERATIONAL_CADENCE_GENERATED_REFRESH_APPLICABILITY_FALSE_RED_REPAIR=PASS')
           PY
           BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
@@ -303,7 +371,7 @@ jobs:
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
-        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
