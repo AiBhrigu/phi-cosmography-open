@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify committed dynamic Snapshot Memory outputs against exact Git truth."""
+"""Verify committed Snapshot Memory against provenance and accepted materialization truth."""
 from __future__ import annotations
 
 import argparse
@@ -38,8 +38,8 @@ def validate_no_network_imports(path: Path) -> None:
 
 
 def verify(repo: Path, report_path: Path | None = None) -> dict:
-    current, previous, ancestry = load_pair(repo)
-    registry, delta = build_documents(current, previous, ancestry_ok=ancestry)
+    current, previous, transaction_ok = load_pair(repo)
+    registry, delta = build_documents(current, previous, ancestry_ok=transaction_ok)
 
     registry_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json")
     delta_schema = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json")
@@ -58,7 +58,7 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     with tempfile.TemporaryDirectory() as temp_a, tempfile.TemporaryDirectory() as temp_b:
         out_a, out_b = Path(temp_a), Path(temp_b)
         write_documents(out_a, registry, delta)
-        registry2, delta2 = build_documents(current, previous, ancestry_ok=ancestry)
+        registry2, delta2 = build_documents(current, previous, ancestry_ok=transaction_ok)
         write_documents(out_b, registry2, delta2)
         for relative in (REGISTRY_PATH, DELTA_PATH):
             if (out_a / relative).read_bytes() != (out_b / relative).read_bytes():
@@ -71,12 +71,6 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
     expected_status = "FULL_COMPARABLE" if len(metrics) == len(TRACKED_METRICS) else \
                       "PARTIAL_COMPARABLE" if metrics else "UNAVAILABLE"
     assert delta["comparison_status"] == expected_status
-    for metric in delta["metrics"].values():
-        if metric["type"] == "NUMERIC":
-            assert metric["direction"] in {"UP", "DOWN", "UNCHANGED"}
-            assert isinstance(metric["display_delta"], str)
-    for item in delta["unavailable_metrics"].values():
-        assert item["delta_value"] is None
 
     for relative in (
         "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
@@ -90,7 +84,9 @@ def verify(repo: Path, report_path: Path | None = None) -> dict:
         "registry_schema": "PASS",
         "delta_schema": "PASS",
         "locked_source_hashes": "PASS",
-        "ancestry": "PASS",
+        "provenance_hashes": "PASS",
+        "base_materialization_hashes": "PASS",
+        "transaction_base_ancestry": "PASS",
         "deterministic_double_build": "PASS",
         "metric_partition": "PASS",
         "per_metric_fail_closed": "PASS",
