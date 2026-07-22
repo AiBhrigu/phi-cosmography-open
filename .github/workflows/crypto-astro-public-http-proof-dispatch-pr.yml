@@ -77,16 +77,20 @@ jobs:
 
       - name: Run fail-closed request and repository fixtures
         run: |
+          set -o pipefail
           python -m py_compile \
             tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py
           python -m unittest \
-            tools.crypto_astro_public_http_proof.test_verify_public_http_proof_dispatch -v
+            tools.crypto_astro_public_http_proof.test_verify_public_http_proof_dispatch -v \
+            2>&1 | tee artifacts/unit-tests.log
 
       - name: Verify fixed bridge, target, policy and documentation
         run: |
+          set -o pipefail
           python tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py verify-repository \
             --repo . \
-            --report artifacts/public-http-proof-dispatch-verification.json
+            --report artifacts/public-http-proof-dispatch-verification.json \
+            2>&1 | tee artifacts/repository-verification.log
 
       - name: Re-run exact external public HTTP proof
         env:
