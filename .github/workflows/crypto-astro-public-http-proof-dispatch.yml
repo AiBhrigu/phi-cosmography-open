@@ -24,6 +24,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_WORKFLOW: crypto-astro-public-http-proof.yml
+      TARGET_WORKFLOW_PATH: .github/workflows/crypto-astro-public-http-proof.yml
     steps:
       - name: Checkout exact main
         uses: actions/checkout@v5
@@ -128,6 +129,7 @@ jobs:
             echo "ACTUAL_MAIN_SHA=${ACTUAL_MAIN_SHA}"
             echo "EXPECTED_MAIN_SHA=${EXPECTED_MAIN_SHA}"
             echo "TARGET_WORKFLOW=${TARGET_WORKFLOW}"
+            echo "TARGET_WORKFLOW_PATH=${TARGET_WORKFLOW_PATH}"
             echo "TARGET_REF=main"
           } > artifacts/bridge-preflight.txt' EXIT
 
@@ -140,8 +142,19 @@ jobs:
             fail_preflight FAIL_MAIN_SHA_MISMATCH
           fi
 
-          if ! gh workflow view "$TARGET_WORKFLOW" --ref main >/dev/null; then
-            fail_preflight FAIL_TARGET_WORKFLOW_VIEW
+          if [ ! -f "$TARGET_WORKFLOW_PATH" ]; then
+            fail_preflight FAIL_TARGET_WORKFLOW_FILE_MISSING
+          fi
+          if ! python3 - "$TARGET_WORKFLOW_PATH" <<'PY'
+          import sys
+          from pathlib import Path
+          workflow = Path(sys.argv[1]).read_text(encoding='utf-8')
+          marker = 'workflow_' + 'dispatch:'
+          if not any(line.strip() == marker for line in workflow.splitlines()):
+              raise SystemExit(1)
+          PY
+          then
+            fail_preflight FAIL_TARGET_WORKFLOW_DISPATCH_TRIGGER_MISSING
           fi
 
           if ! CURRENT_ISSUE_JSON=$(gh issue view "$CURRENT_ISSUE_NUMBER" --json number,state,title); then
