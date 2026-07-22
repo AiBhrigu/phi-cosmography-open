@@ -1,0 +1,279 @@
+name: Crypto-Astro Public HTTP Proof Dispatch
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+concurrency:
+  group: crypto-astro-public-http-proof-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.issue.title == 'Crypto-Astro public HTTP proof dispatch request' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_WORKFLOW: crypto-astro-public-http-proof.yml
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Resolve current main SHA
+        id: main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          echo "sha=$LOCAL_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize public-safe issue body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          mkdir -p artifacts
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path('/tmp/crypto_astro_public_http_proof_dispatch_request.txt').write_text(
+              os.environ.get('ISSUE_BODY', ''), encoding='utf-8'
+          )
+          PY
+
+      - name: Validate owner request contract
+        id: request
+        run: |
+          python3 tools/crypto_astro_public_http_proof/verify_public_http_proof_dispatch.py validate-request \
+            --body-file /tmp/crypto_astro_public_http_proof_dispatch_request.txt \
+            --title "${{ github.event.issue.title }}" \
+            --actor-login "${{ github.actor }}" \
+            --author-login "${{ github.event.issue.user.login }}" \
+            --author-association "${{ github.event.issue.author_association }}" \
+            --current-main-sha "${{ steps.main.outputs.sha }}" \
+            --github-output "$GITHUB_OUTPUT" \
+            --report artifacts/request-validation.json
+
+      - name: Close invalid owner request fail-closed
+        if: ${{ steps.request.outputs.valid != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REASON_CODE: ${{ steps.request.outputs.reason_code }}
+        run: |
+          set -euo pipefail
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_public_http_proof_dispatch_result_v0_1
+          STATUS=FAIL_VALIDATION
+          REASON_CODE=${REASON_CODE}
+          WORKFLOW_DISPATCH=NO"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Verify single-flight proof preflight
+        id: preflight
+        if: ${{ steps.request.outputs.valid == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_MAIN_SHA: ${{ steps.request.outputs.expected_main_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          ACTUAL_MAIN_SHA=$(git rev-parse origin/main)
+          test "$ACTUAL_MAIN_SHA" = "$EXPECTED_MAIN_SHA"
+          gh workflow view "$TARGET_WORKFLOW" --ref main >/dev/null
+
+          OPEN_REQUEST_COUNT=$(gh issue list --state open --limit 100 \
+            --json number,title \
+            --jq '[.[] | select(.title == "Crypto-Astro public HTTP proof dispatch request")] | length')
+          test "$OPEN_REQUEST_COUNT" = "1"
+
+          ACTIVE_PROOF_RUN_COUNT=$(gh run list --workflow "$TARGET_WORKFLOW" --limit 100 \
+            --json status \
+            --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
+          test "$ACTIVE_PROOF_RUN_COUNT" = "0"
+
+          cat > artifacts/bridge-preflight.txt <<REPORT
+          STATUS=PASS
+          OPEN_REQUEST_COUNT=${OPEN_REQUEST_COUNT}
+          ACTIVE_PROOF_RUN_COUNT=${ACTIVE_PROOF_RUN_COUNT}
+          ACTUAL_MAIN_SHA=${ACTUAL_MAIN_SHA}
+          TARGET_WORKFLOW=${TARGET_WORKFLOW}
+          TARGET_REF=main
+          REPORT
+
+      - name: Dispatch fixed public HTTP proof workflow
+        id: dispatch
+        if: ${{ steps.request.outputs.valid == 'true' && steps.preflight.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OPERATOR_REF: ${{ steps.request.outputs.operator_ref }}
+          EXPECTED_MAIN_SHA: ${{ steps.request.outputs.expected_main_sha }}
+        run: |
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "dispatched_at=${DISPATCHED_AT}" >> "$GITHUB_OUTPUT"
+          gh workflow run crypto-astro-public-http-proof.yml \
+            --ref main \
+            -f operator_ref="${OPERATOR_REF}" \
+            -f expected_main_sha="${EXPECTED_MAIN_SHA}"
+
+      - name: Record accepted dispatch
+        if: ${{ steps.request.outputs.valid == 'true' && steps.dispatch.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_public_http_proof_dispatch_result_v0_1
+          STATUS=DISPATCH_ACCEPTED
+          REQUEST_ID=${{ steps.request.outputs.request_id }}
+          EXPECTED_MAIN_SHA=${{ steps.request.outputs.expected_main_sha }}
+          TARGET_WORKFLOW=crypto-astro-public-http-proof.yml
+          TARGET_REF=main"
+
+      - name: Resolve the single new proof run
+        id: resolve
+        if: ${{ steps.request.outputs.valid == 'true' && steps.dispatch.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_MAIN_SHA: ${{ steps.request.outputs.expected_main_sha }}
+          DISPATCHED_AT: ${{ steps.dispatch.outputs.dispatched_at }}
+        run: |
+          set -euo pipefail
+          RESOLUTION=''
+          for attempt in {1..30}; do
+            gh run list --workflow "$TARGET_WORKFLOW" --event workflow_dispatch --branch main --limit 50 \
+              --json databaseId,createdAt,headSha,url,status,conclusion > /tmp/public-http-proof-runs.json
+            set +e
+            RESOLUTION=$(python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+
+          def parse(value):
+              return datetime.fromisoformat(value.replace('Z', '+00:00'))
+
+          runs = json.loads(Path('/tmp/public-http-proof-runs.json').read_text())
+          expected = os.environ['EXPECTED_MAIN_SHA']
+          dispatched = parse(os.environ['DISPATCHED_AT'])
+          candidates = [
+              run for run in runs
+              if run.get('headSha') == expected
+              and parse(run['createdAt']) >= dispatched
+          ]
+          if not candidates:
+              raise SystemExit(3)
+          if len(candidates) != 1:
+              raise SystemExit(4)
+          run = candidates[0]
+          print(f"{run['databaseId']}|{run['url']}|{run['headSha']}")
+          PY
+            )
+            RC=$?
+            set -e
+            if [ "$RC" = "0" ]; then
+              break
+            fi
+            if [ "$RC" != "3" ]; then
+              exit "$RC"
+            fi
+            sleep 2
+          done
+          test -n "$RESOLUTION"
+          IFS='|' read -r RUN_ID RUN_URL ACTUAL_HEAD_SHA <<< "$RESOLUTION"
+          test "$ACTUAL_HEAD_SHA" = "$EXPECTED_MAIN_SHA"
+          echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "run_url=${RUN_URL}" >> "$GITHUB_OUTPUT"
+          echo "actual_head_sha=${ACTUAL_HEAD_SHA}" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$RESOLUTION" > artifacts/resolved-proof-run.txt
+
+      - name: Wait for exact proof result
+        id: proof
+        if: ${{ steps.request.outputs.valid == 'true' && steps.resolve.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.resolve.outputs.run_id }}
+        run: |
+          set +e
+          gh run watch "$RUN_ID" --exit-status --interval 5
+          WATCH_STATUS=$?
+          set -e
+          gh run view "$RUN_ID" --json databaseId,workflowName,event,headBranch,headSha,status,conclusion,url \
+            > artifacts/proof-run.json
+          exit "$WATCH_STATUS"
+
+      - name: Record successful proof callback
+        if: ${{ steps.request.outputs.valid == 'true' && steps.proof.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          JOB_STATUS=$(jq -r '.conclusion' artifacts/proof-run.json)
+          test "$JOB_STATUS" = "success"
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_public_http_proof_dispatch_callback_v0_1
+          REQUEST_ID=${{ steps.request.outputs.request_id }}
+          WORKFLOW_RUN_ID=${{ steps.resolve.outputs.run_id }}
+          WORKFLOW_RUN_URL=${{ steps.resolve.outputs.run_url }}
+          EXPECTED_MAIN_SHA=${{ steps.request.outputs.expected_main_sha }}
+          ACTUAL_HEAD_SHA=${{ steps.resolve.outputs.actual_head_sha }}
+          JOB_STATUS=${JOB_STATUS}
+          FINAL_OUTCOME=PUBLIC_HTTP_PROOF_PASS"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Close bridge failure fail-closed
+        if: ${{ steps.request.outputs.valid == 'true' && (steps.preflight.outcome == 'failure' || steps.dispatch.outcome == 'failure' || steps.resolve.outcome == 'failure' || steps.proof.outcome == 'failure') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.preflight.outcome }}" = "failure" ]; then
+            REASON_CODE=FAIL_PREFLIGHT
+          elif [ "${{ steps.dispatch.outcome }}" = "failure" ]; then
+            REASON_CODE=FAIL_DISPATCH
+          elif [ "${{ steps.resolve.outcome }}" = "failure" ]; then
+            REASON_CODE=FAIL_RUN_RESOLUTION
+          else
+            REASON_CODE=FAIL_PUBLIC_HTTP_PROOF
+          fi
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_public_http_proof_dispatch_callback_v0_1
+          REQUEST_ID=${{ steps.request.outputs.request_id }}
+          WORKFLOW_RUN_ID=${{ steps.resolve.outputs.run_id }}
+          WORKFLOW_RUN_URL=${{ steps.resolve.outputs.run_url }}
+          EXPECTED_MAIN_SHA=${{ steps.request.outputs.expected_main_sha }}
+          ACTUAL_HEAD_SHA=${{ steps.resolve.outputs.actual_head_sha }}
+          JOB_STATUS=failure
+          FINAL_OUTCOME=${REASON_CODE}"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Upload bridge evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-public-http-proof-dispatch-${{ github.event.issue.number }}
+          path: artifacts/
+          if-no-files-found: error
+
+      - name: Fail workflow after safe bridge closure
+        if: ${{ steps.request.outputs.valid == 'true' && (steps.preflight.outcome == 'failure' || steps.dispatch.outcome == 'failure' || steps.resolve.outcome == 'failure' || steps.proof.outcome == 'failure') }}
+        run: exit 1
