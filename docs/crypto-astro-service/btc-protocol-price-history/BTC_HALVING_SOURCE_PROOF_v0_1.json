@@ -1,13 +1,13 @@
 {
   "artifacts": {
     "BTC_HALVING_EPOCH_ARCHIVE_v0_1.csv": {
-      "bytes": 1934,
+      "bytes": 5064,
       "rows_excluding_header": 5,
-      "sha256": "cbf1be6ececbb793eeb13a79542aa697004e74225ad21ac850ec2e633b181e67"
+      "sha256": "1bb6afe6d3f999f894f24a6d9db90dffce91c29285f33a49e5785aeca9540bbe"
     },
     "BTC_PROTOCOL_SOURCE_OF_TRUTH_CANON_v0_1.md": {
-      "bytes": 8250,
-      "sha256": "edffef233d5777618213e53f757e78468b16e420ca3b7b3412d9caf83cf828bb"
+      "bytes": 8628,
+      "sha256": "8f33769bda3f2f2270b334245bcc51e6ddc5b58f2fd82b9b002ca73479afd4cf"
     }
   },
   "bitcoin_core": {
@@ -21,18 +21,18 @@
     },
     "release": "31.1",
     "release_commit_sha": "9be056a8a72b624dae9623b2f7bded92c2a21c91",
-    "release_commit_url": "https://github.com/bitcoin/bitcoin/commit/9be056a8a72b624dae9623b2f7bded92c2a21c91",
     "source_blobs": {
       "src/chain.h": "c27829208c4a226ffb0fdaff7581f8b9fedf7274",
       "src/kernel/chainparams.cpp": "64809a75911e03bec9ce35b08d950229e62518c2",
       "src/pow.cpp": "9a9f4e58178b82a6741b4f5a2a8c0ef02f89d0c7",
       "src/primitives/transaction.h": "34bb9571c153a329bb7e3e2516f856d4b97a038b",
-      "src/validation.cpp": "5c02ec2341cd50c28c717e011cb61a0fcae9a91d"
+      "src/validation.cpp": "d3cabe4464790ef84348df10aef05f268e02488c"
     }
   },
   "boundary": {
     "no_buy_or_sell_signal": true,
     "no_consumer_repo_change": true,
+    "no_merge": true,
     "no_operator_terminal_action": true,
     "no_price_history": true,
     "no_price_prediction": true,
@@ -41,107 +41,271 @@
   },
   "boundary_blocks": [
     {
-      "bits": "0x1d00ffff",
-      "difficulty": "1",
+      "bits": "1d00ffff",
+      "canonical_record_bytes": 541,
+      "canonical_record_sha256": "5487e7498a87c101a38ec71431ab45b25fafd088ea1896630ce632aec45224a8",
+      "chainwork": "0000000000000000000000000000000000000000000000000000000100010001",
+      "difficulty_computed_from_bits": "1",
+      "difficulty_source_display": "1",
       "epoch": 0,
       "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+      "header_archive": {
+        "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+        "git_blob_sha": "24bcac8ade254170aa555555f316299601350b46",
+        "path": "headers/epoch/0.json",
+        "record_selection": "headers[height=0] plus preceding ten headers for MTP verification",
+        "repository": "bitcoincc/headers"
+      },
+      "header_hash_recomputed": true,
       "height": 0,
+      "median_time": 1231006505,
+      "median_time_utc": "2009-01-03T18:15:05Z",
       "merkle_root": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
-      "nonce": "0x7c2bac1d",
-      "source_type": "BITCOIN_CORE_SOURCE",
-      "source_url": "https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/kernel/chainparams.cpp",
-      "timestamp": "2009-01-03T18:15:05Z"
+      "nonce": 2083236893,
+      "previous_block_hash": null,
+      "raw_header_bytes": 80,
+      "raw_header_hex": "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c",
+      "raw_header_sha256": "af42031e805ff493a07341e2f74ff58149d22ab9ba19f61343e2c86c71c5d66d",
+      "recomputed_block_hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+      "rpc_or_blockinfo_evidence": {
+        "locator": "Bitcoin Core 31.1 src/kernel/chainparams.cpp + Ord recursive blockinfo documentation",
+        "type": "BITCOIN_CORE_SOURCE_AND_ORD_BLOCKINFO_DOCUMENTATION"
+      },
+      "timestamp": 1231006505,
+      "timestamp_utc": "2009-01-03T18:15:05Z",
+      "version": 1
     },
     {
-      "bits": "0x1a04e0ea",
-      "difficulty": "3438908.960159138",
+      "bits": "1a04e0ea",
+      "canonical_record_bytes": 608,
+      "canonical_record_sha256": "989fa802637e276684f0d414b3c362bd2f3b74f86fc3f3d4641e1b47a8c23164",
+      "chainwork": "00000000000000000000000000000000000000000000002218a01c35910b0060",
+      "difficulty_computed_from_bits": "3438908.9601591382513558654080732636477940210557922194906825304483269840674085612",
+      "difficulty_source_display": "3438908.960159138",
       "epoch": 1,
       "hash": "000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e",
+      "header_archive": {
+        "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+        "git_blob_sha": "dda30da02da36cda7c64bc70ec56d518db3a0723",
+        "path": "headers/epoch/104.json",
+        "record_selection": "headers[height=210000] plus preceding ten headers for MTP verification",
+        "repository": "bitcoincc/headers"
+      },
+      "header_hash_recomputed": true,
       "height": 210000,
+      "median_time": 1354112757,
+      "median_time_utc": "2012-11-28T14:25:57Z",
       "merkle_root": "3cdd40a60823b1c7356d0987078e9426724c5b3ab439c2d80ad2bdd620e603d8",
-      "nonce": "0xf294a664",
-      "source_type": "PUBLIC_BLOCK_EXPLORER",
-      "source_url": "https://mempool.space/es/block/000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e",
-      "timestamp": "2012-11-28T15:24:38Z"
+      "nonce": 4069828196,
+      "previous_block_hash": "00000000000000f3819164645360294b5dee7f2e846001ac9f41a70b7a9a3de1",
+      "raw_header_bytes": 80,
+      "raw_header_hex": "02000000e13d9a7a0ba7419fac0160842e7fee5d4b29605364649181f300000000000000d803e620d6bdd20ad8c239b43a5b4c7226948e0787096d35c7b12308a640dd3cb62cb650eae0041a64a694f2",
+      "raw_header_sha256": "cef85b53073258f41a9b2031b2f4c3e4fab1710da743ace117694fa04c1db594",
+      "recomputed_block_hash": "000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e",
+      "rpc_or_blockinfo_evidence": {
+        "blob_sha": "ecc53aec4e2fce1fcad9c8c6d4bd67aa4d11a219",
+        "commit": "cebd5d502e9df4f20e4bfbd47c472901ba4ff370",
+        "path": "bitcoin-command.md",
+        "repository": "blockchain-for/Learning-Bitcoin",
+        "type": "IMMUTABLE_GITHUB_BITCOIN_CORE_RPC_CAPTURE"
+      },
+      "timestamp": 1354116278,
+      "timestamp_utc": "2012-11-28T15:24:38Z",
+      "version": 2
     },
     {
-      "bits": "0x180526fd",
-      "difficulty": "213398925331.3239",
+      "bits": "180526fd",
+      "canonical_record_bytes": 616,
+      "canonical_record_sha256": "1fe15988baf481822dc0f67dbe278775099bac312c2356f1ac59044feb928d7b",
+      "chainwork": "0000000000000000000000000000000000000000001f28eb367714df2be21f6f",
+      "difficulty_computed_from_bits": "213398925331.32390178314937170712637823142145524653424588566639321686543604384279",
+      "difficulty_source_display": "213398925331.324",
       "epoch": 2,
       "hash": "000000000000000002cce816c0ab2c5c269cb081896b7dcb34b8422d6b74ffa1",
+      "header_archive": {
+        "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+        "git_blob_sha": "ea36116de5e2c62474ac5beaa73b7be9de7dcbef",
+        "path": "headers/epoch/208.json",
+        "record_selection": "headers[height=420000] plus preceding ten headers for MTP verification",
+        "repository": "bitcoincc/headers"
+      },
+      "header_hash_recomputed": true,
       "height": 420000,
+      "median_time": 1468080438,
+      "median_time_utc": "2016-07-09T16:07:18Z",
       "merkle_root": "028323a5bcacb0057274ee0a4366e5671278bc736b57176d9bb929c3a69e0ffa",
-      "nonce": "0x82bd32b4",
-      "source_type": "PUBLIC_BLOCK_EXPLORER",
-      "source_url": "https://mempool.space/block/000000000000000002cce816c0ab2c5c269cb081896b7dcb34b8422d6b74ffa1",
-      "timestamp": "2016-07-09T16:46:13Z"
+      "nonce": 2193437364,
+      "previous_block_hash": "000000000000000003035bc31911d3eea46c8a23b36d6d558141d1d09cc960cf",
+      "raw_header_bytes": 80,
+      "raw_header_hex": "00000020cf60c99cd0d14181556d6db3238a6ca4eed31119c35b03030000000000000000fa0f9ea6c329b99b6d17576b73bc781267e566430aee747205b0acbca5238302552a8157fd260518b432bd82",
+      "raw_header_sha256": "3573e6f775440141550f4ce648cfffda491c004888d8cbb8490d9abf7ddd077b",
+      "recomputed_block_hash": "000000000000000002cce816c0ab2c5c269cb081896b7dcb34b8422d6b74ffa1",
+      "rpc_or_blockinfo_evidence": {
+        "blob_sha": "e97d07d0a4bd5d5ef258b8774fd5903da8ba8a29",
+        "commit": "78f58fe41c7c659ad5d931e8b0be36099829d51a",
+        "path": "_posts/2017-12-12-bitcoin.md",
+        "repository": "datacabinet/datacabinet-pixyll",
+        "type": "IMMUTABLE_GITHUB_BITCOIN_CORE_RPC_CAPTURE"
+      },
+      "timestamp": 1468082773,
+      "timestamp_utc": "2016-07-09T16:46:13Z",
+      "version": 536870912
     },
     {
-      "bits": "0x17117a39",
-      "difficulty": "16104807485529.38",
+      "bits": "17117a39",
+      "canonical_record_bytes": 616,
+      "canonical_record_sha256": "200c93c61fac3c2406acba3a07ae616fa2d0a7d45043ea3d6f0b6d4cabeefc73",
+      "chainwork": "00000000000000000000000000000000000000000f62035041eff0d9b87e74ce",
+      "difficulty_computed_from_bits": "16104807485529.38312433811390072123212743833818898359613794644844905845201811418",
+      "difficulty_source_display": "16104807485529.38",
       "epoch": 3,
       "hash": "000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d",
+      "header_archive": {
+        "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+        "git_blob_sha": "b1401cf0664d314cda1a72ebec3452338306e116",
+        "path": "headers/epoch/312.json",
+        "record_selection": "headers[height=630000] plus preceding ten headers for MTP verification",
+        "repository": "bitcoincc/headers"
+      },
+      "header_hash_recomputed": true,
       "height": 630000,
+      "median_time": 1589221719,
+      "median_time_utc": "2020-05-11T18:28:39Z",
       "merkle_root": "b191f5f973b9040e81c4f75f99c7e43c92010ba8654718e3dd1a4800851d300d",
-      "nonce": "0x8938863a",
-      "source_type": "PUBLIC_BLOCK_EXPLORER",
-      "source_url": "https://mempool.space/block/000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d",
-      "timestamp": "2020-05-11T19:23:43Z"
+      "nonce": 2302182970,
+      "previous_block_hash": "0000000000000000000d656be18bb095db1b23bd797266b0ac3ba720b1962b1e",
+      "raw_header_bytes": 80,
+      "raw_header_hex": "000000201e2b96b120a73bacb0667279bd231bdb95b08be16b650d0000000000000000000d301d8500481adde3184765a80b01923ce4c7995ff7c4810e04b973f9f591b13fa6b95e397a11173a863889",
+      "raw_header_sha256": "3546ddcaa6fa04f26de91e05220d7aac10807ce6c203514afc6ba257f4e0dac8",
+      "recomputed_block_hash": "000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d",
+      "rpc_or_blockinfo_evidence": {
+        "locator": "archived block record exposing getblockheader-compatible fields",
+        "type": "PUBLIC_BITCOIN_CORE_RPC_STYLE_BLOCK_RECORD"
+      },
+      "timestamp": 1589225023,
+      "timestamp_utc": "2020-05-11T19:23:43Z",
+      "version": 536870912
     },
     {
-      "bits": "0x17034219",
-      "difficulty": "86388558925171.02",
+      "bits": "17034219",
+      "canonical_record_bytes": 616,
+      "canonical_record_sha256": "8d3f32eb6d795b5c6a91bd47aab20188f9c6cdb0388ef19bca7361ea9dc5882d",
+      "chainwork": "0000000000000000000000000000000000000000753bdab0e0d745453677442b",
+      "difficulty_computed_from_bits": "86388558925171.011712694762772269808784755232310365336792660481714427548482875862",
+      "difficulty_source_display": "86388558925171.02",
       "epoch": 4,
       "hash": "0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+      "header_archive": {
+        "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+        "git_blob_sha": "1796ed045721446ad29f1040ab8faeb456f3fd6d",
+        "path": "headers/epoch/416.json",
+        "record_selection": "headers[height=840000] plus preceding ten headers for MTP verification",
+        "repository": "bitcoincc/headers"
+      },
+      "header_hash_recomputed": true,
       "height": 840000,
+      "median_time": 1713570208,
+      "median_time_utc": "2024-04-19T23:43:28Z",
       "merkle_root": "031b417c3a1828ddf3d6527fc210daafcc9218e81f98257f88d4d43bd7a5894f",
-      "nonce": "0xea63987d",
-      "source_type": "PUBLIC_BLOCK_EXPLORER_AND_CORE_ANCHOR",
-      "source_url": "https://mempool.space/pt/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
-      "timestamp": "2024-04-20T00:09:27Z"
+      "nonce": 3932395645,
+      "previous_block_hash": "0000000000000000000172014ba58d66455762add0512355ad651207918494ab",
+      "raw_header_bytes": 80,
+      "raw_header_hex": "00e05f2aab948491071265ad552351d0ad625745668da54b0172010000000000000000004f89a5d73bd4d4887f25981fe81892ccafda10c27f52d6f3dd28183a7c411b03b7072366194203177d9863ea",
+      "raw_header_sha256": "f75a918335e029956bb8b67bc10fed5c9dfb00d360a5a87070f0f929ce3e3d67",
+      "recomputed_block_hash": "0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+      "rpc_or_blockinfo_evidence": {
+        "locator": "Ord recursive blockinfo documentation + Bitcoin Core AssumeUTXO block hash anchor",
+        "type": "ORD_RECURSIVE_BLOCKINFO_DOCUMENTATION_AND_BITCOIN_CORE_ANCHOR"
+      },
+      "timestamp": 1713571767,
+      "timestamp_utc": "2024-04-20T00:09:27Z",
+      "version": 710926336
     }
   ],
-  "generated_at_utc": "2026-07-23T21:56:55Z",
+  "capture": {
+    "block_hash_algorithm": "SHA-256d displayed in reversed byte order",
+    "capture_status": "SUCCESS",
+    "captured_at_utc": "2026-07-23T23:09:08Z",
+    "missing_value_policy": "null_or_blank_never_zero",
+    "raw_header_bytes_per_boundary": 80,
+    "raw_header_digest_algorithm": "SHA-256"
+  },
+  "generated_at_utc": "2026-07-23T23:09:08Z",
+  "header_archive": {
+    "authentication": "header linkage, proof of work, known checkpoints and independent full-node RPC evidence",
+    "branch_at_capture": "gh-pages",
+    "commit": "b53315ec4991e0ca06eabae0d17774afea7bf4b5",
+    "format": "2016 consecutive JSON block headers per difficulty epoch",
+    "license": "OPEN_SOURCE_SOURCE; SPECIFIC_DATA_LICENSE_NOT_ASSERTED_IN_THIS_PROOF",
+    "license_boundary": "Used as public source evidence only; this artifact does not infer redistribution rights beyond the source's explicit terms.",
+    "repository": "bitcoincc/headers",
+    "source_files": [
+      {
+        "capture_status": "SUCCESS",
+        "contains_height": 0,
+        "git_blob_sha": "24bcac8ade254170aa555555f316299601350b46",
+        "path": "headers/epoch/0.json"
+      },
+      {
+        "capture_status": "SUCCESS",
+        "contains_height": 210000,
+        "git_blob_sha": "dda30da02da36cda7c64bc70ec56d518db3a0723",
+        "path": "headers/epoch/104.json"
+      },
+      {
+        "capture_status": "SUCCESS",
+        "contains_height": 420000,
+        "git_blob_sha": "ea36116de5e2c62474ac5beaa73b7be9de7dcbef",
+        "path": "headers/epoch/208.json"
+      },
+      {
+        "capture_status": "SUCCESS",
+        "contains_height": 630000,
+        "git_blob_sha": "b1401cf0664d314cda1a72ebec3452338306e116",
+        "path": "headers/epoch/312.json"
+      },
+      {
+        "capture_status": "SUCCESS",
+        "contains_height": 840000,
+        "git_blob_sha": "1796ed045721446ad29f1040ab8faeb456f3fd6d",
+        "path": "headers/epoch/416.json"
+      }
+    ]
+  },
   "method": {
-    "actual_boundary_rule": "header timestamp of exact epoch start block",
+    "actual_boundary_rule": "exact header at epoch start height",
     "approximate_boundary_rule": "previous actual boundary timestamp + 210000 * 600 seconds",
+    "block_hash_recomputation": "reverse(SHA256(SHA256(raw_header_80_bytes)))",
+    "chainwork": "cumulative expected work through and including the block, matching Bitcoin Core getblockheader chainwork field",
     "cumulative_supply_definition": "nominal block subsidy created; excludes fees and does not adjust for loss, burns, spendability or circulation",
+    "dynamic_reference_policy": "removed from static archive; requires a separately timestamped exact block-hash snapshot",
     "end_block_formula": "((epoch + 1) * 210000) - 1",
     "epoch_formula": "floor(block_height / 210000)",
     "estimated_daily_issuance_formula": "subsidy_btc_per_block * 144",
-    "genesis_note": "Nominal calculations include the 50 BTC genesis subsidy; nominal issuance is not a spendable-supply claim.",
-    "missing_value_policy": "missing remains null or blank; never coerced to zero",
+    "genesis_note": "Nominal calculations include the 50 BTC genesis subsidy; this is not a spendable-supply claim.",
+    "median_time_past": "median of current and preceding ten block-header timestamps, matching Bitcoin Core CBlockIndex::GetMedianTimePast",
+    "raw_header_serialization": "version_le32 || prev_hash_internal_order || merkle_root_internal_order || time_le32 || bits_le32 || nonce_le32",
     "start_block_formula": "epoch * 210000",
     "subsidy_formula": "(50 * 100000000 satoshis) >> epoch when epoch < 64, otherwise 0",
     "target_blocks_per_day": 144
   },
-  "node": "BTC_PROTOCOL_CANON_AND_HALVING_ARCHIVE_BUILD_SCOPE_v0_1",
-  "reference_tip": {
-    "blocks_mined_in_epoch_inclusive": 119225,
-    "blocks_since_previous_halving": 119224,
-    "blocks_to_next_halving": 90776,
-    "epoch": 4,
-    "epoch_start_block": 840000,
-    "hash": null,
-    "height": 959224,
-    "limitation": "The live height is a frozen research reference. It is not a permanent chain tip and has no captured header hash in this artifact.",
-    "next_epoch_start_block": 1050000,
-    "nominal_issued_supply_at_reference_tip_btc": "20060078.125",
-    "observed_at_utc": "2026-07-23T21:56:55Z",
-    "source_description": "live block explorer page reporting data from its own full node",
-    "source_url": "https://btc.network/block",
-    "status": "HEIGHT_ONLY_REFERENCE_NOT_IMMUTABLE_TIP",
-    "timestamp_utc": null
-  },
+  "node": "BTC_PROTOCOL_HALVING_PR_186_EXACT_SOURCE_PROOF_REPAIR_SCOPE_v0_1",
   "schema_version": "btc_halving_source_proof_v0_1",
   "source_repo": {
     "base_branch": "main",
     "base_commit_sha": "040df096d569d0f0b5e885068042d450e987bcb2",
+    "branch": "agent/btc-protocol-halving-archive-v0-1",
+    "pull_request": 186,
     "repository": "AiBhrigu/phi-cosmography-open"
   },
-  "status": "PASS_WITH_REFERENCE_TIP_LIMITATION",
+  "status": "PASS",
   "validation": {
-    "actual_timestamps_from_boundary_blocks": true,
+    "all_block_hashes_recomputed": true,
+    "all_chainwork_values_present": true,
+    "all_header_files_pinned_by_commit_path_and_blob": true,
+    "all_median_times_present": true,
+    "all_raw_headers_are_80_bytes": true,
+    "bitcoin_core_blob_pins_match_release_31_1": true,
     "boundary_hashes_unique": true,
     "boundary_heights_exact": true,
     "calendar_defined_epoch": false,
@@ -149,7 +313,7 @@
     "contiguous_start_blocks": true,
     "epoch_row_count": 5,
     "missing_values_coerced_to_zero": false,
-    "reference_tip_claimed_immutable": false,
+    "mutable_current_reference_present": false,
     "subsidy_halves_by_integer_shift": true
   }
 }
