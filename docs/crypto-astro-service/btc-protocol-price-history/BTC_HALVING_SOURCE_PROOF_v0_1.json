@@ -1,0 +1,155 @@
+{
+  "artifacts": {
+    "BTC_HALVING_EPOCH_ARCHIVE_v0_1.csv": {
+      "bytes": 1934,
+      "rows_excluding_header": 5,
+      "sha256": "cbf1be6ececbb793eeb13a79542aa697004e74225ad21ac850ec2e633b181e67"
+    },
+    "BTC_PROTOCOL_SOURCE_OF_TRUTH_CANON_v0_1.md": {
+      "bytes": 8250,
+      "sha256": "edffef233d5777618213e53f757e78468b16e420ca3b7b3412d9caf83cf828bb"
+    }
+  },
+  "bitcoin_core": {
+    "consensus_parameters": {
+      "difficulty_adjustment_interval_blocks": 2016,
+      "mainnet_min_difficulty_blocks": false,
+      "mainnet_no_retargeting": false,
+      "pow_target_spacing_seconds": 600,
+      "pow_target_timespan_seconds": 1209600,
+      "subsidy_halving_interval_blocks": 210000
+    },
+    "release": "31.1",
+    "release_commit_sha": "9be056a8a72b624dae9623b2f7bded92c2a21c91",
+    "release_commit_url": "https://github.com/bitcoin/bitcoin/commit/9be056a8a72b624dae9623b2f7bded92c2a21c91",
+    "source_blobs": {
+      "src/chain.h": "c27829208c4a226ffb0fdaff7581f8b9fedf7274",
+      "src/kernel/chainparams.cpp": "64809a75911e03bec9ce35b08d950229e62518c2",
+      "src/pow.cpp": "9a9f4e58178b82a6741b4f5a2a8c0ef02f89d0c7",
+      "src/primitives/transaction.h": "34bb9571c153a329bb7e3e2516f856d4b97a038b",
+      "src/validation.cpp": "5c02ec2341cd50c28c717e011cb61a0fcae9a91d"
+    }
+  },
+  "boundary": {
+    "no_buy_or_sell_signal": true,
+    "no_consumer_repo_change": true,
+    "no_operator_terminal_action": true,
+    "no_price_history": true,
+    "no_price_prediction": true,
+    "no_public_surface_change": true,
+    "no_target_price": true
+  },
+  "boundary_blocks": [
+    {
+      "bits": "0x1d00ffff",
+      "difficulty": "1",
+      "epoch": 0,
+      "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+      "height": 0,
+      "merkle_root": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+      "nonce": "0x7c2bac1d",
+      "source_type": "BITCOIN_CORE_SOURCE",
+      "source_url": "https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/kernel/chainparams.cpp",
+      "timestamp": "2009-01-03T18:15:05Z"
+    },
+    {
+      "bits": "0x1a04e0ea",
+      "difficulty": "3438908.960159138",
+      "epoch": 1,
+      "hash": "000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e",
+      "height": 210000,
+      "merkle_root": "3cdd40a60823b1c7356d0987078e9426724c5b3ab439c2d80ad2bdd620e603d8",
+      "nonce": "0xf294a664",
+      "source_type": "PUBLIC_BLOCK_EXPLORER",
+      "source_url": "https://mempool.space/es/block/000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e",
+      "timestamp": "2012-11-28T15:24:38Z"
+    },
+    {
+      "bits": "0x180526fd",
+      "difficulty": "213398925331.3239",
+      "epoch": 2,
+      "hash": "000000000000000002cce816c0ab2c5c269cb081896b7dcb34b8422d6b74ffa1",
+      "height": 420000,
+      "merkle_root": "028323a5bcacb0057274ee0a4366e5671278bc736b57176d9bb929c3a69e0ffa",
+      "nonce": "0x82bd32b4",
+      "source_type": "PUBLIC_BLOCK_EXPLORER",
+      "source_url": "https://mempool.space/block/000000000000000002cce816c0ab2c5c269cb081896b7dcb34b8422d6b74ffa1",
+      "timestamp": "2016-07-09T16:46:13Z"
+    },
+    {
+      "bits": "0x17117a39",
+      "difficulty": "16104807485529.38",
+      "epoch": 3,
+      "hash": "000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d",
+      "height": 630000,
+      "merkle_root": "b191f5f973b9040e81c4f75f99c7e43c92010ba8654718e3dd1a4800851d300d",
+      "nonce": "0x8938863a",
+      "source_type": "PUBLIC_BLOCK_EXPLORER",
+      "source_url": "https://mempool.space/block/000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d",
+      "timestamp": "2020-05-11T19:23:43Z"
+    },
+    {
+      "bits": "0x17034219",
+      "difficulty": "86388558925171.02",
+      "epoch": 4,
+      "hash": "0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+      "height": 840000,
+      "merkle_root": "031b417c3a1828ddf3d6527fc210daafcc9218e81f98257f88d4d43bd7a5894f",
+      "nonce": "0xea63987d",
+      "source_type": "PUBLIC_BLOCK_EXPLORER_AND_CORE_ANCHOR",
+      "source_url": "https://mempool.space/pt/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+      "timestamp": "2024-04-20T00:09:27Z"
+    }
+  ],
+  "generated_at_utc": "2026-07-23T21:56:55Z",
+  "method": {
+    "actual_boundary_rule": "header timestamp of exact epoch start block",
+    "approximate_boundary_rule": "previous actual boundary timestamp + 210000 * 600 seconds",
+    "cumulative_supply_definition": "nominal block subsidy created; excludes fees and does not adjust for loss, burns, spendability or circulation",
+    "end_block_formula": "((epoch + 1) * 210000) - 1",
+    "epoch_formula": "floor(block_height / 210000)",
+    "estimated_daily_issuance_formula": "subsidy_btc_per_block * 144",
+    "genesis_note": "Nominal calculations include the 50 BTC genesis subsidy; nominal issuance is not a spendable-supply claim.",
+    "missing_value_policy": "missing remains null or blank; never coerced to zero",
+    "start_block_formula": "epoch * 210000",
+    "subsidy_formula": "(50 * 100000000 satoshis) >> epoch when epoch < 64, otherwise 0",
+    "target_blocks_per_day": 144
+  },
+  "node": "BTC_PROTOCOL_CANON_AND_HALVING_ARCHIVE_BUILD_SCOPE_v0_1",
+  "reference_tip": {
+    "blocks_mined_in_epoch_inclusive": 119225,
+    "blocks_since_previous_halving": 119224,
+    "blocks_to_next_halving": 90776,
+    "epoch": 4,
+    "epoch_start_block": 840000,
+    "hash": null,
+    "height": 959224,
+    "limitation": "The live height is a frozen research reference. It is not a permanent chain tip and has no captured header hash in this artifact.",
+    "next_epoch_start_block": 1050000,
+    "nominal_issued_supply_at_reference_tip_btc": "20060078.125",
+    "observed_at_utc": "2026-07-23T21:56:55Z",
+    "source_description": "live block explorer page reporting data from its own full node",
+    "source_url": "https://btc.network/block",
+    "status": "HEIGHT_ONLY_REFERENCE_NOT_IMMUTABLE_TIP",
+    "timestamp_utc": null
+  },
+  "schema_version": "btc_halving_source_proof_v0_1",
+  "source_repo": {
+    "base_branch": "main",
+    "base_commit_sha": "040df096d569d0f0b5e885068042d450e987bcb2",
+    "repository": "AiBhrigu/phi-cosmography-open"
+  },
+  "status": "PASS_WITH_REFERENCE_TIP_LIMITATION",
+  "validation": {
+    "actual_timestamps_from_boundary_blocks": true,
+    "boundary_hashes_unique": true,
+    "boundary_heights_exact": true,
+    "calendar_defined_epoch": false,
+    "constant_epoch_span_blocks": true,
+    "contiguous_start_blocks": true,
+    "epoch_row_count": 5,
+    "missing_values_coerced_to_zero": false,
+    "reference_tip_claimed_immutable": false,
+    "subsidy_halves_by_integer_shift": true
+  }
+}
