@@ -1,29 +1,30 @@
 # BTC Protocol Source of Truth Canon v0.1
 
-NODE=`BTC_PROTOCOL_CANON_AND_HALVING_ARCHIVE_BUILD_SCOPE_v0_1`  
+NODE=`BTC_PROTOCOL_HALVING_PR_186_EXACT_SOURCE_PROOF_REPAIR_SCOPE_v0_1`  
 STATUS=`PASS`  
-GENERATED_AT_UTC=`2026-07-23T21:56:55Z`  
+GENERATED_AT_UTC=`2026-07-23T23:09:08Z`  
 SOURCE_REPO_BASE_SHA=`040df096d569d0f0b5e885068042d450e987bcb2`  
 BITCOIN_CORE_RELEASE=`31.1`  
 BITCOIN_CORE_RELEASE_COMMIT=`9be056a8a72b624dae9623b2f7bded92c2a21c91`
 
-## Scope and boundary
+## Scope and truth layers
 
-This canon separates three layers:
+This canon separates:
 
 1. **Original design:** Satoshi Nakamoto's 2008 white paper.
 2. **Consensus implementation:** Bitcoin Core 31.1, pinned to an exact release commit.
-3. **Derived research method:** transparent calculations that do not modify or replace consensus truth.
+3. **Header evidence:** immutable 80-byte mainnet headers pinned by Git commit and independently verified by proof of work.
+4. **Derived research method:** transparent calculations that do not modify consensus truth.
 
-This document is descriptive. It is not a price forecast, trading signal, target price, investment recommendation, or claim that a halving causes a particular market outcome.
+This document is descriptive. It is not a price forecast, trading signal, price target, investment recommendation, or claim that a halving causes a specific market outcome.
 
 ## 1. Transaction and UTXO model
 
-A Bitcoin transaction consumes previously created, unspent transaction outputs and creates new outputs. Each input identifies a previous output and supplies the unlocking data required by that output's script. Each output contains an amount and locking script.
+A Bitcoin transaction consumes previously created unspent transaction outputs and creates new outputs. Each input identifies a previous output and supplies unlocking data. Each output contains an amount and locking script.
 
-The canonical state is therefore not an account-balance table. It is the set of currently unspent outputs accepted by the active chain. A full-validating node verifies that referenced inputs exist, are unspent, satisfy value and script rules, and are not spent twice in the same accepted history.
+The validated state is therefore not an account-balance table. It is the set of unspent outputs accepted by the active chain. A full-validating node verifies that referenced inputs exist, remain unspent, satisfy value and script rules, and are not spent twice in the accepted history.
 
-**Implementation anchors**
+Implementation anchors:
 
 - `src/primitives/transaction.h`
 - `src/coins.h`
@@ -32,23 +33,23 @@ The canonical state is therefore not an account-balance table. It is the set of 
 
 ## 2. Blocks, proof of work and chain selection
 
-A block header commits to the previous block hash and the Merkle root of its transactions, and carries a timestamp, compact target (`nBits`) and nonce. A valid proof of work requires the numeric block hash to be less than or equal to the target derived from `nBits`.
+A block header commits to the previous block hash and transaction Merkle root and carries a timestamp, compact target (`nBits`) and nonce. A valid proof of work requires the numeric double-SHA-256 header hash to be less than or equal to the target derived from `nBits`.
 
-Bitcoin Core tracks cumulative chain work. The active chain is selected by the valid branch with the most accumulated proof of work, not by the largest block count alone. The white paper's “longest chain” wording is interpreted operationally as the chain carrying the greatest cumulative proof-of-work effort.
+Bitcoin Core tracks cumulative chainwork. The active chain is selected from valid candidates by accumulated proof of work, not raw block count alone. The white paper's “longest chain” wording is therefore interpreted operationally as the valid chain carrying the most accumulated work.
 
 ## 3. Difficulty adjustment
 
-Mainnet parameters in Bitcoin Core 31.1 are:
+Bitcoin Core 31.1 mainnet parameters are:
 
 - target block spacing: `600` seconds;
-- target timespan: `1,209,600` seconds, or 14 days;
+- target timespan: `1,209,600` seconds;
 - adjustment interval: `2,016` blocks;
-- minimum-difficulty exception: disabled on mainnet;
+- minimum-difficulty exception: disabled;
 - retargeting: enabled.
 
-At an adjustment boundary, Core compares the elapsed header time over the prior interval with the target timespan. The effective elapsed timespan is bounded to one quarter through four times the target before calculating the new target. Outside an adjustment boundary, mainnet retains the previous target.
+At an adjustment boundary, Core compares elapsed header time over the prior interval with the target timespan. The effective elapsed timespan is bounded to one quarter through four times the target before the new target is calculated. Outside an adjustment boundary, mainnet retains the prior target.
 
-Block timestamps are consensus fields supplied by miners and constrained by protocol rules; they are not exact wall-clock attestations. Halving epoch identity therefore comes from height, never from calendar time.
+Block timestamps are miner-supplied consensus fields constrained by protocol rules, not exact wall-clock attestations. Halving epoch identity therefore comes from block height, never calendar time.
 
 ## 4. Block subsidy implementation
 
@@ -58,7 +59,7 @@ Mainnet sets:
 nSubsidyHalvingInterval = 210000
 ```
 
-For block height `h`:
+For height `h`:
 
 ```text
 epoch = floor(h / 210000)
@@ -66,23 +67,23 @@ subsidy_satoshis = (50 * 100000000) >> epoch, when epoch < 64
 subsidy_satoshis = 0, when epoch >= 64
 ```
 
-The right shift is integer arithmetic in satoshis. The subsidy changes at exact start heights:
+The right shift uses integer satoshis. Subsidy changes at exact start heights:
 
 ```text
 0, 210000, 420000, 630000, 840000, 1050000, ...
 ```
 
-The target estimate of four years is a consequence of `210000 × 600 seconds`; it is not the consensus trigger.
+The approximate four-year cadence follows from `210000 × 600 seconds`; it is not the consensus trigger.
 
-The exact nominal subsidy sum over all 64 nonzero/defined shift epochs is:
+The exact nominal subsidy sum across all positive-subsidy epochs, under Bitcoin Core's 64-halving shift guard, is:
 
 ```text
 20,999,999.9769 BTC
 ```
 
-This is distinct from spendable supply, circulating supply, lost coins, provably unspendable outputs, and transaction fees.
+This nominal amount is distinct from spendable supply, circulating supply, lost coins, provably unspendable outputs, and fees.
 
-## 5. Incentive and fee transition
+## 5. Miner incentive and fees
 
 A valid coinbase transaction may claim no more than:
 
@@ -90,33 +91,33 @@ A valid coinbase transaction may claim no more than:
 block subsidy + transaction fees in the block
 ```
 
-The subsidy is newly issued value. Fees are transfers of already existing value, calculated from transaction inputs minus outputs. As subsidy approaches zero, the protocol's direct miner compensation shifts toward fees; this is an incentive architecture, not a guarantee about future hash rate, fee levels, or security budget.
+Subsidy is newly issued value. Fees transfer existing value and are calculated from transaction inputs minus outputs. As subsidy approaches zero, direct protocol compensation shifts toward fees. This is an incentive structure, not a guarantee of future hash rate, fees, or security budget.
 
-## 6. Chain selection and finality assumptions
+## 6. Probabilistic settlement
 
-Bitcoin has **probabilistic settlement**, not instant deterministic finality. A block can be displaced by a valid competing branch with more accumulated work. Each additional block built on top increases the work an attacker would need to replace the history, but no fixed confirmation count creates mathematical irreversibility.
+Bitcoin does not provide instant deterministic finality. A block can be displaced by a valid competing branch with more accumulated work. Additional confirmations increase the work required to replace history, but no fixed confirmation count creates mathematical irreversibility.
 
-Operational conclusions must therefore state a confirmation depth and threat model rather than claiming absolute finality.
+Operational statements must specify confirmation depth and threat model rather than claim absolute finality.
 
-## 7. Full-node verification boundary
+## 7. Full-node boundary
 
-A full-validating node independently applies consensus rules to blocks and transactions and maintains a verified UTXO state. Peer agreement does not make an invalid block valid.
+A full-validating node independently applies consensus rules to blocks and transactions and maintains verified UTXO state. Peer agreement cannot make an invalid block valid.
 
-`defaultAssumeValid` and AssumeUTXO are synchronization optimizations with explicit pinned anchors. They must not be described as authority replacing consensus. A canon consumer that requires independent historical validation should use a fully validated chainstate and record the node version, chain tip and validation mode.
+`defaultAssumeValid` and AssumeUTXO are synchronization optimizations with explicit anchors. They are not consensus authorities. Independent historical validation should record node version, chain tip, chainstate mode and whether background validation is complete.
 
 ## 8. SPV boundary
 
-Simplified Payment Verification retains the proof-of-work header chain and obtains a Merkle branch showing that a transaction is committed to a block. It does **not** independently execute every transaction and script rule for the block.
+Simplified Payment Verification retains a proof-of-work header chain and obtains a Merkle branch showing transaction inclusion in a block. It does not independently execute every block transaction and script rule.
 
 Therefore:
 
-- SPV can verify inclusion under a proof-of-work-chain assumption;
+- SPV can verify inclusion under a header-chain proof-of-work assumption;
 - SPV cannot provide the same invalid-transaction detection boundary as a full node;
-- an SPV result must not be represented as full consensus validation.
+- SPV evidence must not be represented as full consensus validation.
 
 ## 9. Consensus versus policy
 
-Consensus rules determine whether blocks and transactions can belong to the valid chain. Relay and mempool policy determine what an individual node will normally accept into its mempool or relay before confirmation. A policy-rejected transaction can still be consensus-valid if mined into a valid block.
+Consensus rules determine whether a block and its transactions can belong to the valid chain. Relay and mempool policy determine what a particular node normally accepts before confirmation. A transaction rejected by current policy can still be consensus-valid if included in a valid block.
 
 Research artifacts must not promote current policy defaults into permanent consensus rules.
 
@@ -127,43 +128,61 @@ For epoch `e`:
 ```text
 start_block = e × 210000
 end_block = ((e + 1) × 210000) − 1
-subsidy = 50 BTC / 2^e, executed as an integer satoshi right shift
+subsidy = integer-satoshi right shift of 50 BTC
 target_blocks_per_day = 86400 / 600 = 144
 estimated_daily_issuance = subsidy × 144
 ```
 
-Actual boundary timestamps are read from the exact epoch-start block. Protocol-target timestamp estimates are calculated only as:
+Actual boundary timestamps and Median Time Past are attached to exact boundary blocks. Protocol-target timestamp estimates are calculated only as:
 
 ```text
 previous actual boundary timestamp + 210000 × 600 seconds
 ```
 
-They are labelled estimates and never replace block height or the actual header timestamp.
+They remain labelled estimates and never replace height or header time.
+
+Every archived boundary records:
+
+- exact 80-byte serialized header;
+- single-SHA-256 digest of those 80 bytes;
+- double-SHA-256 recomputed block hash;
+- Median Time Past;
+- cumulative chainwork;
+- pinned header repository commit, path and Git blob SHA;
+- normalized canonical-record SHA-256.
+
+## 11. Dynamic current-state exclusion
+
+A mutable “current tip” does not belong in this static archival canon. PR #186 therefore contains no current height, current hash, blocks-to-next-halving or current-supply observation.
+
+Those fields may be introduced only through a separately timestamped dynamic snapshot that captures an exact block hash, header, source digest and applicability interval.
 
 ## Source index
 
-| Source | Pin |
+| Source | Exact pin |
 |---|---|
-| Bitcoin white paper | https://bitcoin.org/bitcoin.pdf |
-| Bitcoin Core 31.1 release commit | https://github.com/bitcoin/bitcoin/commit/9be056a8a72b624dae9623b2f7bded92c2a21c91 |
-| Mainnet parameters | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/kernel/chainparams.cpp |
-| Subsidy and validation | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/validation.cpp |
-| Proof-of-work and retargeting | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/pow.cpp |
-| Block-index chain work and header time | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/chain.h |
-| Transaction primitives | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/primitives/transaction.h |
-| UTXO views | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/coins.h |
-| Block-template incentive construction | https://github.com/bitcoin/bitcoin/blob/9be056a8a72b624dae9623b2f7bded92c2a21c91/src/node/miner.cpp |
-| Halving archive | `BTC_HALVING_EPOCH_ARCHIVE_v0_1.csv` |
-| Halving proof | `BTC_HALVING_SOURCE_PROOF_v0_1.json` |
+| Bitcoin white paper | `bitcoin.org/bitcoin.pdf` |
+| Bitcoin Core release | `9be056a8a72b624dae9623b2f7bded92c2a21c91` |
+| Mainnet parameters | Bitcoin Core `9be056a8a72b624dae9623b2f7bded92c2a21c91` · `src/kernel/chainparams.cpp` |
+| Subsidy and validation | Bitcoin Core `9be056a8a72b624dae9623b2f7bded92c2a21c91` · `src/validation.cpp` |
+| Proof of work | Bitcoin Core `9be056a8a72b624dae9623b2f7bded92c2a21c91` · `src/pow.cpp` |
+| Chainwork and MTP semantics | Bitcoin Core `9be056a8a72b624dae9623b2f7bded92c2a21c91` · `src/chain.h` |
+| Transaction primitives | Bitcoin Core `9be056a8a72b624dae9623b2f7bded92c2a21c91` · `src/primitives/transaction.h` |
+| Immutable header archive | `bitcoincc/headers` · commit `b53315ec4991e0ca06eabae0d17774afea7bf4b5` |
+| Height 210000 RPC capture | `blockchain-for/Learning-Bitcoin` · commit `cebd5d502e9df4f20e4bfbd47c472901ba4ff370` |
+| Height 420000 RPC capture | `datacabinet/datacabinet-pixyll` · commit `78f58fe41c7c659ad5d931e8b0be36099829d51a` |
+| Boundary archive | `BTC_HALVING_EPOCH_ARCHIVE_v0_1.csv` |
+| Source proof | `BTC_HALVING_SOURCE_PROOF_v0_1.json` |
 
 ## Closure
 
 ```text
 PROTOCOL_CANON_STATUS=PASS
-WHITEPAPER_AS_IMPLEMENTATION_SOURCE=NO
-CURRENT_CORE_PINNED=YES
+BITCOIN_CORE_PINNED=YES
+RAW_HEADERS_RECOMPUTED=YES
 HALVING_BY_HEIGHT=YES
 CALENDAR_TRIGGER=NO
+MUTABLE_CURRENT_REFERENCE=REMOVED
 UNSUPPORTED_CAUSALITY=NO
 PRICE_PREDICTION=NO
 TRADING_SIGNAL=NO
