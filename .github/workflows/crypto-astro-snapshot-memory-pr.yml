@@ -44,7 +44,7 @@ jobs:
           python-version: '3.11'
       - name: Install schema validator
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, workflow-applicability, public-service, timestamp-consistency, or generated-refresh scope
+      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, workflow-applicability, BTC Φ geometry, public-service, timestamp-consistency, or generated-refresh scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -88,6 +88,17 @@ jobs:
             '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
             '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          # Exact visual-only contract: the classifier must fail closed if any
+          # public HTML, snapshot data, runtime, or unrelated theme file changes.
+          btc_phi_semantic_geometry = {
+            '.github/workflows/btc-poster-motion-budget-pr.yml',
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/theme/btc_phi_semantic_geometry.css',
+            'site/theme/system.css',
           }
           public_service_truth_alignment = {
             'site/crypto-astro/index.html',
@@ -158,6 +169,9 @@ jobs:
           elif changed == workflow_applicability_repair:
             mode='workflow_applicability_repair'
             print('CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')
+          elif changed == btc_phi_semantic_geometry:
+            mode='btc_phi_semantic_geometry'
+            print('SNAPSHOT_MEMORY_BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS')
           elif changed == public_service_truth_alignment:
             mode='public_service_truth_alignment'
             print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')
@@ -180,6 +194,7 @@ jobs:
               'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
               'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
               'workflow_applicability_repair_missing':sorted(workflow_applicability_repair-changed),
+              'btc_phi_semantic_geometry_missing':sorted(btc_phi_semantic_geometry-changed),
               'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),
               'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
@@ -187,7 +202,7 @@ jobs:
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-public_service_truth_alignment-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')

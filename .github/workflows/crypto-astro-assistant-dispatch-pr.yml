@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify exact assistant-dispatch or bounded repair scope
+      - name: Classify exact assistant-dispatch, BTC Φ geometry, or bounded repair scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -73,6 +73,15 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          btc_phi_semantic_geometry_scope = {
+              ".github/workflows/btc-poster-motion-budget-pr.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+              "site/theme/btc_phi_semantic_geometry.css",
+              "site/theme/system.css",
+          }
           timestamp_consistency_repair_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
@@ -100,6 +109,9 @@ jobs:
           elif changed == workflow_applicability_repair_scope:
               mode = "workflow_applicability_repair"
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == btc_phi_semantic_geometry_scope:
+              mode = "btc_phi_semantic_geometry"
+              print("BTC_PHI_SEMANTIC_GEOMETRY_EXACT_SCOPE=PASS")
           elif changed == timestamp_consistency_repair_scope:
               mode = "timestamp_consistency_repair"
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
@@ -112,6 +124,9 @@ jobs:
                   "workflow_applicability_repair_missing": sorted(
                       workflow_applicability_repair_scope - changed
                   ),
+                  "btc_phi_semantic_geometry_missing": sorted(
+                      btc_phi_semantic_geometry_scope - changed
+                  ),
                   "timestamp_consistency_repair_missing": sorted(
                       timestamp_consistency_repair_scope - changed
                   ),
@@ -121,6 +136,7 @@ jobs:
                       - snapshot_memory_repair_scope
                       - runtime_registry_test_repair_scope
                       - workflow_applicability_repair_scope
+                      - btc_phi_semantic_geometry_scope
                       - timestamp_consistency_repair_scope
                   ),
               })
