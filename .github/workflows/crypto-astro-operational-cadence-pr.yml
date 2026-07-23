@@ -140,6 +140,7 @@ jobs:
               generated_refresh_scope | generated_refresh_optional,
           ):
               print("OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
+              print("CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY=PASS")
           else:
               unexpected = sorted(changed - cadence_allowed)
               assert not unexpected, f"Unexpected cadence paths: {unexpected}"
