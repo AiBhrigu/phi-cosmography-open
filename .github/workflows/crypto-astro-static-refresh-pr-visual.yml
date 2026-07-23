@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - 'site/crypto-astro/**'
+      - 'site/theme/system.css'
+      - 'site/theme/phi_theme.css'
+      - 'site/theme/btc_poster_grade.css'
+      - 'site/theme/btc_motion_budget.css'
+      - 'site/theme/ip_semantic_seal.css'
+      - 'site/theme/btc_phi_semantic_geometry.css'
       - 'site/theme/crypto_astro_what_changed.css'
       - 'tools/crypto_astro_static_refresh/**'
       - 'tools/crypto_astro_snapshot_memory/**'
@@ -62,6 +68,21 @@ jobs:
           from playwright.sync_api import sync_playwright
           snapshot=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
           delta=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_delta.public.json').read_text())
+          system=Path('site/theme/system.css').read_text()
+          geometry=Path('site/theme/btc_phi_semantic_geometry.css').read_text()
+          poster="@import url('./btc_poster_grade.css');"
+          motion="@import url('./btc_motion_budget.css');"
+          seal="@import url('./ip_semantic_seal.css');"
+          phi_geometry="@import url('./btc_phi_semantic_geometry.css');"
+          assert system.index(poster) < system.index(motion) < system.index(seal) < system.index(phi_geometry)
+          assert 'CRYPTO_ASTRO_BTC_PHI_SEMANTIC_GEOMETRY_v0_1' in geometry
+          assert '--btc-phi-ratio: 1.61803398875' in geometry
+          assert '--btc-phi-major: 61.803398875%' in geometry
+          assert '--btc-phi-minor: 38.196601125%' in geometry
+          assert 'counter-increment: btc-semantic-step' in geometry
+          assert 'Φ' not in geometry
+          assert '@keyframes' not in geometry
+          assert 'animation:' not in geometry
           generated=snapshot['generated_at_utc']
           hero_timestamp=generated[:16].replace('T',' ')+' UTC'
           expected_status=delta['comparison_status'].lower().replace('_','-')
@@ -86,6 +107,38 @@ jobs:
               core=page.locator('.btc-quiet-phi-core-v0-3')
               core_text=core.text_content() or ''
               core_style=core.get_attribute('style')
+              field=page.locator('.btc-field-v1')
+              cycle=page.locator('.btc-cycle-canvas-v1')
+              semantic_nodes=page.locator('.btc-node-v1')
+              phi_geometry_state=page.evaluate("""() => {
+                const field=document.querySelector('.btc-field-v1');
+                const core=document.querySelector('.btc-quiet-phi-core-v0-3');
+                const cycle=document.querySelector('.btc-cycle-canvas-v1');
+                const route=document.querySelector('.btc-cycle-route-v1');
+                const nodes=[...document.querySelectorAll('.btc-node-v1')];
+                const fr=field.getBoundingClientRect();
+                const cr=core.getBoundingClientRect();
+                const yr=cycle.getBoundingClientRect();
+                const nodeStyles=nodes.map(node => {
+                  const style=getComputedStyle(node);
+                  return {
+                    gridColumnStart:style.gridColumnStart,
+                    gridRowStart:style.gridRowStart,
+                    position:style.position,
+                  };
+                });
+                return {
+                  fieldRatio:fr.width/fr.height,
+                  coreX:(cr.left+cr.width/2-fr.left)/fr.width,
+                  coreY:(cr.top+cr.height/2-fr.top)/fr.height,
+                  cycleRatio:yr.width/yr.height,
+                  cycleColumns:getComputedStyle(cycle).gridTemplateColumns,
+                  cycleRows:getComputedStyle(cycle).gridTemplateRows,
+                  membraneDisplay:getComputedStyle(cycle,'::before').display,
+                  routeDisplay:getComputedStyle(route).display,
+                  nodeStyles,
+                };
+              }""")
               barometer=page.locator('.barometer-core.barometer-semantic-core')
               barometer_text=barometer.text_content() or ''
               orb=barometer.locator('.score-orb.field-gauge')
@@ -106,6 +159,8 @@ jobs:
                 'core_dominance_present':dominance in core_text,
                 'core_style':core_style,
                 'expected_core_style':f'--btc-dominance:{dominance};',
+                'phi_geometry':phi_geometry_state,
+                'semantic_node_count':semantic_nodes.count(),
                 'barometer_score_present':f'Market Field Score: {score} / 100' in barometer_text,
                 'barometer_regime_present':f'Observed state: {regime}' in barometer_text,
                 'orb_text':orb_text,
@@ -126,6 +181,19 @@ jobs:
               assert cta_count==2, evidence
               assert dominance in core_text, evidence
               assert core_style==f'--btc-dominance:{dominance};', evidence
+              assert semantic_nodes.count()==5, evidence
+              assert abs(phi_geometry_state['coreX']-0.61803398875) < 0.025, evidence
+              assert abs(phi_geometry_state['coreY']-0.38196601125) < 0.025, evidence
+              assert phi_geometry_state['routeDisplay']=='none', evidence
+              assert phi_geometry_state['membraneDisplay']!='none', evidence
+              if name=='desktop':
+                assert abs(phi_geometry_state['fieldRatio']-1.61803398875) < 0.025, evidence
+                assert abs(phi_geometry_state['cycleRatio']-1.61803398875) < 0.025, evidence
+                assert [n['gridColumnStart'] for n in phi_geometry_state['nodeStyles']]==['2','1','3','1','3'], evidence
+                assert [n['gridRowStart'] for n in phi_geometry_state['nodeStyles']]==['1','2','2','3','3'], evidence
+              else:
+                assert all(n['gridColumnStart']=='2' for n in phi_geometry_state['nodeStyles']), evidence
+                assert all(n['position']=='relative' for n in phi_geometry_state['nodeStyles']), evidence
               assert f'Market Field Score: {score} / 100' in barometer_text, evidence
               assert f'Observed state: {regime}' in barometer_text, evidence
               assert orb_text==score, evidence

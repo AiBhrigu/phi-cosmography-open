@@ -8,6 +8,7 @@ on:
       - "site/theme/phi_theme.css"
       - "site/theme/btc_poster_grade.css"
       - "site/theme/btc_motion_budget.css"
+      - "site/theme/btc_phi_semantic_geometry.css"
       - ".github/workflows/btc-poster-motion-budget-pr.yml"
 
 permissions:
@@ -29,14 +30,20 @@ jobs:
           p = "@import url('./btc_poster_grade.css');"
           m = "@import url('./btc_motion_budget.css');"
           s = "@import url('./ip_semantic_seal.css');"
-          assert p in system and m in system and s in system
-          assert system.index(p) < system.index(m) < system.index(s)
+          g = "@import url('./btc_phi_semantic_geometry.css');"
+          assert p in system and m in system and s in system and g in system
+          assert system.index(p) < system.index(m) < system.index(s) < system.index(g)
           assert 'BTC_POSTER_CPU_AND_ANIMATION_BUDGET_REPAIR_v0_1' in budget
           assert 'Φ' not in budget
           assert 'content-visibility: auto' in budget
           assert 'contain: layout paint style' in budget
           assert 'animation-name: none !important' in budget
           assert 'animation-play-state: paused !important' in budget
+          geometry = Path('site/theme/btc_phi_semantic_geometry.css').read_text()
+          assert 'CRYPTO_ASTRO_BTC_PHI_SEMANTIC_GEOMETRY_v0_1' in geometry
+          assert 'Φ' not in geometry
+          assert '@keyframes' not in geometry
+          assert 'animation:' not in geometry
           print('BTC_MOTION_BUDGET_SOURCE=PASS')
           PY
 
