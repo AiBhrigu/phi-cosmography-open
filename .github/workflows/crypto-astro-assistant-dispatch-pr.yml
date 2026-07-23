@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify exact assistant-dispatch, BTC Φ geometry, or bounded repair scope
+      - name: Classify exact assistant-dispatch, generated-refresh, BTC Φ geometry, or bounded repair scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -89,6 +89,21 @@ jobs:
               "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
               "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
           }
+          generated_refresh_scope = {
+              "site/crypto-astro/index.html",
+              "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+              "site/crypto-astro/data/market_field_snapshot.public.v0_1.json",
+              "site/crypto-astro/data/scoring_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json",
+              "docs/crypto-astro-service/crypto_astro_snapshot_summary.md",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          generated_refresh_optional = {
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -115,6 +130,12 @@ jobs:
           elif changed == timestamp_consistency_repair_scope:
               mode = "timestamp_consistency_repair"
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed in (
+              generated_refresh_scope,
+              generated_refresh_scope | generated_refresh_optional,
+          ):
+              mode = "generated_refresh"
+              print("ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
           else:
               raise AssertionError({
                   "changed": sorted(changed),
@@ -130,6 +151,7 @@ jobs:
                   "timestamp_consistency_repair_missing": sorted(
                       timestamp_consistency_repair_scope - changed
                   ),
+                  "generated_refresh_missing": sorted(generated_refresh_scope - changed),
                   "unexpected": sorted(
                       changed
                       - assistant_dispatch_scope
@@ -138,6 +160,8 @@ jobs:
                       - workflow_applicability_repair_scope
                       - btc_phi_semantic_geometry_scope
                       - timestamp_consistency_repair_scope
+                      - generated_refresh_scope
+                      - generated_refresh_optional
                   ),
               })
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
@@ -175,7 +199,7 @@ jobs:
             site/theme/crypto_astro
 
       - name: Prove dispatch runtime and public surface unchanged for bounded repairs
-        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair'
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -220,6 +244,22 @@ jobs:
             site/crypto-astro/data/scoring_snapshot.public.json \
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
+
+      - name: Prove generated refresh leaves assistant-dispatch runtime unchanged
+        if: steps.scope.outputs.mode == 'generated_refresh'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py
+          echo ASSISTANT_DISPATCH_GENERATED_REFRESH_RUNTIME_UNCHANGED=PASS
 
       - name: Upload assistant-dispatch evidence
         if: always()
