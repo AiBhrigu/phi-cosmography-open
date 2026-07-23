@@ -89,6 +89,8 @@ jobs:
             '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
+          # Exact visual-only contract: the classifier must fail closed if any
+          # public HTML, snapshot data, runtime, or unrelated theme file changes.
           btc_phi_semantic_geometry = {
             '.github/workflows/btc-poster-motion-budget-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
