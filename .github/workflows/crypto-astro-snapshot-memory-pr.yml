@@ -187,6 +187,7 @@ jobs:
             mode='bhrigu_consumer_contract_repair'
           elif changed in (generated, generated | optional):
             mode='generated_refresh'
+            print('SNAPSHOT_MEMORY_GENERATED_REFRESH_APPLICABILITY=PASS')
           else:
             raise AssertionError({
               'changed':sorted(changed),
@@ -360,7 +361,7 @@ jobs:
             site/crypto-astro/data \
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
-      - name: Prove cross-workflow applicability repair exposes exact public-service mode
+      - name: Prove cross-workflow generated-refresh applicability repair
         if: steps.scope.outputs.mode == 'workflow_applicability_repair'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -376,16 +377,12 @@ jobs:
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml' \
             > /tmp/crypto-astro-applicability-expected.txt
           diff -u /tmp/crypto-astro-applicability-expected.txt /tmp/crypto-astro-applicability-changed.txt
-          grep -Fq 'mode = "workflow_applicability_repair"' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
-          grep -Fq 'CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
-          grep -Fq 'workflow_applicability_repair_scope = {' .github/workflows/crypto-astro-operational-cadence-pr.yml
-          grep -Fq 'CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS' .github/workflows/crypto-astro-operational-cadence-pr.yml
-          grep -Fq "workflow_applicability_repair = {" .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          grep -Fq "public_service_truth_alignment = {" .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          grep -Fq "mode='public_service_truth_alignment'" .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          grep -Fq 'SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS' .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          grep -Fq 'SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT=PASS' .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          ! git show "$BASE_SHA:.github/workflows/crypto-astro-snapshot-memory-pr.yml" | grep -Fq "public_service_truth_alignment = {"
+          grep -Fq 'mode = "generated_refresh"' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_RUNTIME_UNCHANGED=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY=PASS' .github/workflows/crypto-astro-operational-cadence-pr.yml
+          grep -Fq "SNAPSHOT_MEMORY_GENERATED_REFRESH_APPLICABILITY=PASS" .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          ! git show "$BASE_SHA:.github/workflows/crypto-astro-assistant-dispatch-pr.yml" | grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS'
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
@@ -395,8 +392,9 @@ jobs:
             .github/workflows/crypto-astro-static-refresh-manual.yml \
             .github/workflows/crypto-astro-static-refresh-pr-visual.yml \
             .github/workflows/crypto-astro-what-changed-pr.yml \
-            .github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml
-          echo SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_APPLICABILITY_REPAIR=PASS
+            .github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml \
+            .github/workflows/crypto-astro-assistant-dispatch.yml
+          echo CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY_REPAIR=PASS
       - name: Prove public-service truth alignment changes only public HTML
         if: steps.scope.outputs.mode == 'public_service_truth_alignment'
         env:
