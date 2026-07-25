@@ -1,0 +1,195 @@
+name: Crypto-Astro BTC Visual Integrity Public Proof PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-btc-visual-integrity-public-proof-pr.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-btc-visual-integrity-public-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  public-proof:
+    name: Verify live semantic BTC visual integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Verify canonical live publication and capture scroll evidence
+        env:
+          PUBLIC_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
+          INTEGRITY_CSS_URL: https://aibhrigu.github.io/phi-cosmography-open/theme/btc_phi_visual_integrity.css
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python - <<'PY'
+          import json, os, time
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from playwright.sync_api import sync_playwright
+
+          page_url = os.environ['PUBLIC_URL']
+          css_url = os.environ['INTEGRITY_CSS_URL']
+          required_css = [
+              'CRYPTO_ASTRO_BTC_VISUAL_INTEGRITY_v0_1',
+              '--btc-integrity-major: 61.803398875%',
+              '--btc-integrity-minor: 38.196601125%',
+              'content-visibility: visible',
+              '#market [data-geometry-truth="decorative"]',
+              'grid-template-columns: 61.803398875fr 38.196601125fr',
+              'grid-template-columns: 38.196601125fr 61.803398875fr',
+          ]
+          required_html = [
+              'Crypto-Astro Market Field',
+              'Bitcoin gravity and cycle context',
+              'Aspect-Cycle Core',
+              'https://www.bhrigu.io/crypto-astro/btc',
+          ]
+          forbidden_html = ['Crypto-Astro Research Launch Shell', 'Runtime NOT ACTIVE']
+          http_report = {'status':'FAIL','attempts':[],'page_url':page_url,'css_url':css_url}
+          html = css = ''
+
+          for attempt in range(1, 31):
+              try:
+                  req = Request(page_url, headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'btc-visual-integrity-public-proof-v0-1'})
+                  with urlopen(req, timeout=20) as response:
+                      html = response.read().decode('utf-8')
+                      html_status = response.status
+                      html_headers = dict(response.headers.items())
+                  req = Request(css_url, headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'btc-visual-integrity-public-proof-v0-1'})
+                  with urlopen(req, timeout=20) as response:
+                      css = response.read().decode('utf-8')
+                      css_status = response.status
+                      css_headers = dict(response.headers.items())
+                  missing_html = [x for x in required_html if x not in html]
+                  forbidden_present = [x for x in forbidden_html if x in html]
+                  missing_css = [x for x in required_css if x not in css]
+                  evidence = {
+                      'attempt': attempt,
+                      'html_status': html_status,
+                      'css_status': css_status,
+                      'missing_html': missing_html,
+                      'forbidden_html': forbidden_present,
+                      'missing_css': missing_css,
+                      'html_bytes': len(html.encode()),
+                      'css_bytes': len(css.encode()),
+                      'html_last_modified': html_headers.get('Last-Modified'),
+                      'css_last_modified': css_headers.get('Last-Modified'),
+                  }
+                  http_report['attempts'].append(evidence)
+                  if html_status == 200 and css_status == 200 and not missing_html and not forbidden_present and not missing_css:
+                      http_report['status'] = 'PASS'
+                      http_report['accepted_attempt'] = attempt
+                      break
+              except Exception as exc:
+                  http_report['attempts'].append({'attempt':attempt,'error':type(exc).__name__+':'+str(exc)})
+              time.sleep(10)
+
+          Path('artifacts/live-index.html').write_text(html, encoding='utf-8')
+          Path('artifacts/live-btc-visual-integrity.css').write_text(css, encoding='utf-8')
+          Path('artifacts/publication-http-proof.json').write_text(json.dumps(http_report, indent=2)+'\n')
+          if http_report['status'] != 'PASS':
+              raise SystemExit('LIVE_VISUAL_INTEGRITY_HTTP_PROOF_FAIL')
+
+          PHI=1.61803398875
+          MAJOR=0.61803398875
+          MINOR=0.38196601125
+          visual={'status':'FAIL','viewports':{}}
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
+                  page=browser.new_page(viewport={'width':width,'height':height})
+                  errors=[]
+                  page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+                  page.goto(page_url,wait_until='networkidle',timeout=60000)
+                  hub=page.locator('#btc-phi-cycle-hub')
+                  hub.scroll_into_view_if_needed()
+                  page.wait_for_timeout(500)
+                  state=page.evaluate("""() => {
+                    const rect=(el)=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+                    const field=document.querySelector('.btc-field-v1');
+                    const core=document.querySelector('.btc-quiet-phi-core-v0-3');
+                    const cycle=document.querySelector('.btc-cycle-canvas-v1');
+                    const nodes=[...document.querySelectorAll('.btc-node-v1')];
+                    const fr=rect(field), cr=rect(core);
+                    const first=[...document.querySelectorAll('#market .market-first-screen > *')].map(rect);
+                    const timing=document.querySelector('#market .market-lower-grid > .editorial-astromodule-v0-1');
+                    const synthesis=document.querySelector('#market #read');
+                    const decorative=[...document.querySelectorAll('#market [data-geometry-truth="decorative"]')].filter(el=>getComputedStyle(el).display!=='none');
+                    return {
+                      title:document.title,
+                      contentVisibility:getComputedStyle(document.querySelector('.btc-deep-v1')).contentVisibility,
+                      field:fr,
+                      core:cr,
+                      coreX:(cr.left+cr.width/2-fr.left)/fr.width,
+                      coreY:(cr.top+cr.height/2-fr.top)/fr.height,
+                      cycle:rect(cycle),
+                      nodes:nodes.map(el=>({rect:rect(el),column:getComputedStyle(el).gridColumnStart,position:getComputedStyle(el).position})),
+                      first,
+                      timing:timing?rect(timing):null,
+                      synthesis:synthesis?rect(synthesis):null,
+                      decorativeVisible:decorative.length,
+                      scrollWidth:document.documentElement.scrollWidth,
+                      clientWidth:document.documentElement.clientWidth,
+                    };
+                  }""")
+                  checks={
+                    'title':state['title']=='Crypto-Astro · Φ Service Surface',
+                    'core_phi_x':abs(state['coreX']-MAJOR)<0.03,
+                    'core_phi_y':abs(state['coreY']-MINOR)<0.03,
+                    'five_nodes':len(state['nodes'])==5 and all(n['rect']['width']>0 and n['rect']['height']>0 for n in state['nodes']),
+                    'decorative_hidden':state['decorativeVisible']==0,
+                    'no_horizontal_overflow':state['scrollWidth']<=state['clientWidth']+1,
+                    'console_errors_none':not errors,
+                  }
+                  if name=='desktop':
+                      checks.update({
+                        'field_phi_ratio':abs(state['field']['width']/state['field']['height']-PHI)<0.03,
+                        'market_phi_ratio':len(state['first'])==2 and abs(state['first'][0]['width']/state['first'][1]['width']-PHI)<0.08,
+                        'synthesis_phi_ratio':state['timing'] is not None and state['synthesis'] is not None and abs(state['synthesis']['width']/state['timing']['width']-PHI)<0.08,
+                      })
+                      page.screenshot(path='artifacts/live-desktop-full.png',full_page=True)
+                  else:
+                      checks.update({
+                        'real_mobile_render':state['contentVisibility']=='visible',
+                        'compact_field':330<=state['field']['height']<=430,
+                        'compact_cycle':state['cycle']['height']<=700,
+                        'nodes_reading_lane':all(n['column']=='2' for n in state['nodes']),
+                        'nodes_relative':all(n['position']=='relative' for n in state['nodes']),
+                      })
+                      page.locator('.btc-field-v1').screenshot(path='artifacts/live-mobile-btc-field.png')
+                      page.locator('.btc-entry-v1').screenshot(path='artifacts/live-mobile-btc-gateway.png')
+                      page.locator('.btc-cycle-v1').screenshot(path='artifacts/live-mobile-aspect-cycle.png')
+                      page.screenshot(path='artifacts/live-mobile-full.png',full_page=True)
+                  visual['viewports'][name]={'state':state,'checks':checks,'console_errors':errors}
+                  failed=[key for key,value in checks.items() if not value]
+                  if failed:
+                      raise AssertionError({name:failed,'state':state})
+                  page.close()
+              browser.close()
+          visual['status']='PASS'
+          Path('artifacts/publication-visual-proof.json').write_text(json.dumps(visual,indent=2)+'\n')
+          PY
+
+      - name: Upload public proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-btc-visual-integrity-public-proof-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
