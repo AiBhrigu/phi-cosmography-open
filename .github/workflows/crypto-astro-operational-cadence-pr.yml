@@ -84,6 +84,19 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          producer_identity_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-editorial-composition-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+              "site/crypto-astro/index.html",
+              "tools/crypto_astro_editorial_composition/apply_editorial_composition.py",
+              "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
+              "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
+              "tools/crypto_astro_what_changed/verify_what_changed.py",
+              "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
+          }
           btc_phi_semantic_geometry_scope = {
               ".github/workflows/btc-poster-motion-budget-pr.yml",
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
@@ -131,6 +144,8 @@ jobs:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
           elif changed == workflow_applicability_repair_scope:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+          elif changed == producer_identity_scope:
+              print("MARKET_COSMOGRAPHER_PRODUCER_IDENTITY_FILE_SCOPE=PASS")
           elif changed == btc_phi_semantic_geometry_scope:
               print("BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS")
           elif changed == timestamp_consistency_repair_scope:
