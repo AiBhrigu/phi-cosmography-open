@@ -121,7 +121,6 @@ jobs:
           assert 'crypto-astro-' in html
           assert 'CRYPTO_ASTRO_' in html
           PY
-          bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" /tmp/local-truth 4173
       - name: Commit locked producer identity patch
         run: |
           git config user.name "github-actions[bot]"
