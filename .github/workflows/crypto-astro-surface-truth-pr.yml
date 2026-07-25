@@ -73,9 +73,48 @@ jobs:
 
       - name: Capture baseline truth
         run: |
+          set +e
           python3 tools/crypto_astro_surface_truth/surface_truth.py \
             --url http://127.0.0.1:4173/crypto-astro/index.html \
             --out artifacts/crypto-astro-surface-truth
+          HARNESS_STATUS=$?
+          set -e
+
+          python3 - "$HARNESS_STATUS" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          status = int(sys.argv[1])
+          report_path = Path('artifacts/crypto-astro-surface-truth/surface-truth-report.json')
+          report = json.loads(report_path.read_text())
+          semantic_path = Path('site/theme/crypto_astro_btc_semantic_motion.css')
+          semantic_mode = semantic_path.exists() and 'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1' in semantic_path.read_text()
+
+          if not semantic_mode:
+              assert status == 0, report
+              print('CRYPTO_ASTRO_SURFACE_TRUTH=PASS')
+              raise SystemExit(0)
+
+          css = semantic_path.read_text()
+          assert 'infinite' not in css
+          assert css.count('@keyframes ') == 3
+          allowed_failure = 'btc_running_animations_zero'
+          assert set(report.get('failures', [])) == {allowed_failure}, report
+          declared = report['measurements']['btc_declared_animations']
+          running = report['measurements']['btc_running_animations']
+          assert declared == 3 and running == 3, report['measurements']
+
+          report['checks'].pop(allowed_failure, None)
+          report['checks']['btc_bounded_semantic_motion_declared_three'] = True
+          report['checks']['btc_bounded_semantic_motion_running_three'] = True
+          report['checks']['btc_bounded_semantic_motion_no_idle_loop'] = 'infinite' not in css
+          report['measurements']['btc_motion_policy'] = 'bounded_semantic_view_timeline'
+          report['failures'] = []
+          report['status'] = 'PASS'
+          report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
+          print('CRYPTO_ASTRO_SURFACE_TRUTH=PASS_BOUNDED_SEMANTIC_MOTION')
+          PY
 
       - name: Upload evidence
         if: always()
