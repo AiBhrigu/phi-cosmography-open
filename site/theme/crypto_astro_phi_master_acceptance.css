@@ -235,7 +235,7 @@
       0 0 0 1.45rem rgba(118, 172, 239, 0.1),
       0 0 4.5rem rgba(242, 206, 114, 0.12);
     opacity: 1;
-    animation: none !important;
+    animation-name: none !important;
     z-index: 1;
   }
 
@@ -253,7 +253,7 @@
       0 0 0 2.3rem rgba(242, 206, 114, 0.012),
       0 0 0 2.35rem rgba(242, 206, 114, 0.055);
     opacity: 0.92;
-    animation: none !important;
+    animation-name: none !important;
     z-index: 0;
   }
 
