@@ -15,35 +15,40 @@
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1 {
   isolation: isolate;
   overflow: hidden;
-  border-color: rgba(244,207,114,.46);
+  border-color: rgba(244,207,114,.48);
   background:
-    radial-gradient(circle at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(255,242,188,.13) 0 4%,transparent 22%),
-    radial-gradient(ellipse 42% 62% at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(244,207,114,.11),transparent 66%),
-    linear-gradient(90deg,transparent calc(var(--btc-motion-core-x) - .05%),rgba(244,207,114,.25) var(--btc-motion-core-x),transparent calc(var(--btc-motion-core-x) + .05%)),
-    linear-gradient(180deg,transparent calc(var(--btc-motion-core-y) - .05%),rgba(130,183,255,.2) var(--btc-motion-core-y),transparent calc(var(--btc-motion-core-y) + .05%)),
+    radial-gradient(ellipse 93% 56% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 39%,rgba(244,207,114,.23) 39.35% 39.75%,transparent 40.1%),
+    radial-gradient(ellipse 75% 43% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 42%,rgba(130,183,255,.19) 42.35% 42.75%,transparent 43.1%),
+    radial-gradient(ellipse 54% 83% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 40%,rgba(244,207,114,.18) 40.35% 40.75%,transparent 41.1%),
+    radial-gradient(ellipse 42% 66% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 43%,rgba(130,183,255,.17) 43.35% 43.75%,transparent 44.1%),
+    radial-gradient(circle at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(255,242,188,.15) 0 4%,transparent 23%),
+    radial-gradient(ellipse 42% 62% at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(244,207,114,.12),transparent 67%),
+    linear-gradient(90deg,transparent calc(var(--btc-motion-core-x) - .05%),rgba(244,207,114,.27) var(--btc-motion-core-x),transparent calc(var(--btc-motion-core-x) + .05%)),
+    linear-gradient(180deg,transparent calc(var(--btc-motion-core-y) - .05%),rgba(130,183,255,.21) var(--btc-motion-core-y),transparent calc(var(--btc-motion-core-y) + .05%)),
     linear-gradient(145deg,#020711 0%,#07162f 52%,#020711 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025),inset 0 0 110px rgba(55,104,188,.08),0 28px 76px rgba(0,0,0,.38);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025),inset 0 0 110px rgba(55,104,188,.085),0 28px 76px rgba(0,0,0,.38);
 }
 
 /* Dominance ring consumes the inline --btc-dominance value. */
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {
   content:"";
   position:absolute;
-  inset:3.5%;
+  inset:2.75%;
   z-index:3;
   pointer-events:none;
   border:0;
   border-radius:50%;
-  background: conic-gradient(from -90deg at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(244,207,114,.98) 0 var(--btc-dominance),rgba(130,183,255,.14) var(--btc-dominance) 100%);
-  -webkit-mask: radial-gradient(circle 10.25rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 81%,#000 82% 86%,transparent 87%);
-  mask: radial-gradient(circle 10.25rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 81%,#000 82% 86%,transparent 87%);
-  opacity:.96;
+  background:conic-gradient(from -90deg at var(--btc-motion-core-x) var(--btc-motion-core-y),rgba(255,226,143,1) 0 var(--btc-dominance),rgba(71,113,173,.36) var(--btc-dominance) 100%);
+  -webkit-mask:radial-gradient(circle 10.5rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 80%,#000 81% 86%,transparent 87%);
+  mask:radial-gradient(circle 10.5rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 80%,#000 81% 86%,transparent 87%);
+  filter:drop-shadow(0 0 8px rgba(244,207,114,.52));
+  opacity:.98;
   transform:scale(1);
   transform-origin:var(--btc-motion-core-x) var(--btc-motion-core-y);
   will-change:opacity,transform;
 }
 
-/* Gold structure membranes and blue liquidity/timing membranes. */
+/* Four directional paths explain structure, liquidity, review and timing. */
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {
   content:"";
   position:absolute;
@@ -53,13 +58,14 @@
   border:0;
   border-radius:34px 55px;
   background:
-    radial-gradient(ellipse 94% 58% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 22%,rgba(244,207,114,.24) 22.3% 22.65%,transparent 23% 33%,rgba(130,183,255,.18) 33.3% 33.65%,transparent 34% 44%,rgba(244,207,114,.16) 44.3% 44.6%,transparent 45%),
-    radial-gradient(ellipse 56% 88% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 21%,rgba(130,183,255,.17) 21.3% 21.65%,transparent 22% 32%,rgba(244,207,114,.19) 32.3% 32.65%,transparent 33% 43%,rgba(130,183,255,.13) 43.3% 43.6%,transparent 44%),
-    linear-gradient(24deg,transparent 0 46.5%,rgba(244,207,114,.26) 46.85% 47.05%,transparent 47.4%),
-    linear-gradient(156deg,transparent 0 46.5%,rgba(244,207,114,.21) 46.85% 47.05%,transparent 47.4%),
-    linear-gradient(336deg,transparent 0 46.5%,rgba(130,183,255,.22) 46.85% 47.05%,transparent 47.4%),
-    linear-gradient(204deg,transparent 0 46.5%,rgba(130,183,255,.18) 46.85% 47.05%,transparent 47.4%);
-  opacity:.94;
+    radial-gradient(ellipse 90% 54% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 23%,rgba(244,207,114,.17) 23.3% 23.65%,transparent 24% 35%,rgba(130,183,255,.14) 35.3% 35.65%,transparent 36%),
+    radial-gradient(ellipse 52% 86% at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 22%,rgba(130,183,255,.15) 22.3% 22.65%,transparent 23% 34%,rgba(244,207,114,.16) 34.3% 34.65%,transparent 35%),
+    linear-gradient(24deg,transparent 0 46.2%,rgba(244,207,114,.32) 46.65% 47.05%,transparent 47.5%),
+    linear-gradient(156deg,transparent 0 46.2%,rgba(244,207,114,.27) 46.65% 47.05%,transparent 47.5%),
+    linear-gradient(336deg,transparent 0 46.2%,rgba(130,183,255,.28) 46.65% 47.05%,transparent 47.5%),
+    linear-gradient(204deg,transparent 0 46.2%,rgba(130,183,255,.23) 46.65% 47.05%,transparent 47.5%);
+  mix-blend-mode:screen;
+  opacity:.96;
   transform:scale(1);
   transform-origin:var(--btc-motion-core-x) var(--btc-motion-core-y);
   will-change:opacity,transform;
@@ -70,29 +76,30 @@
   width:clamp(11.5rem,17vw,13.75rem);
   height:auto !important;
   aspect-ratio:1 / 1 !important;
-  border-color:rgba(255,239,190,.96);
+  border-color:rgba(255,239,190,.98);
   border-radius:50%;
   background:
     radial-gradient(circle at 33% 25%,rgba(255,255,255,.98) 0 1.5%,transparent 14%),
-    radial-gradient(circle at 50% 50%,#fff7d3 0 17%,#f4cf72 49%,#c5cbd4 100%);
-  box-shadow:0 0 18px rgba(255,238,184,.94),0 0 62px rgba(244,207,114,.68),0 0 148px rgba(244,207,114,.25),0 0 230px rgba(130,183,255,.11);
+    radial-gradient(circle at 50% 50%,#fff8d8 0 17%,#f4cf72 49%,#c5cbd4 100%);
+  box-shadow:0 0 18px rgba(255,238,184,.96),0 0 64px rgba(244,207,114,.72),0 0 154px rgba(244,207,114,.27),0 0 238px rgba(130,183,255,.12);
   transition:transform 620ms cubic-bezier(.22,1,.36,1),box-shadow 620ms ease,filter 620ms ease;
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-quiet-phi-core-v0-3::before {
-  inset:-1.35rem;
-  background:conic-gradient(from -90deg,rgba(244,207,114,.98) 0 var(--btc-dominance),rgba(130,183,255,.16) var(--btc-dominance) 100%);
-  -webkit-mask:radial-gradient(circle,transparent 0 72%,#000 73% 79%,transparent 80%);
-  mask:radial-gradient(circle,transparent 0 72%,#000 73% 79%,transparent 80%);
-  filter:drop-shadow(0 0 9px rgba(244,207,114,.62));
+  inset:-1.55rem;
+  background:conic-gradient(from -90deg,rgba(255,226,143,1) 0 var(--btc-dominance),rgba(63,106,166,.42) var(--btc-dominance) 100%);
+  -webkit-mask:radial-gradient(circle,transparent 0 71%,#000 72% 80%,transparent 81%);
+  mask:radial-gradient(circle,transparent 0 71%,#000 72% 80%,transparent 81%);
+  filter:drop-shadow(0 0 10px rgba(244,207,114,.7));
+  opacity:1;
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-quiet-phi-core-v0-3::after {
   inset:10%;
-  background:repeating-conic-gradient(from -90deg,rgba(66,91,134,.27) 0 .5deg,transparent .7deg 15deg),radial-gradient(circle,transparent 0 20%,rgba(255,255,255,.17) 21% 22%,transparent 23% 54%,rgba(130,183,255,.15) 55% 56%,transparent 57%);
+  background:repeating-conic-gradient(from -90deg,rgba(66,91,134,.3) 0 .5deg,transparent .7deg 15deg),radial-gradient(circle,transparent 0 20%,rgba(255,255,255,.19) 21% 22%,transparent 23% 54%,rgba(130,183,255,.17) 55% 56%,transparent 57%);
   -webkit-mask:radial-gradient(circle,transparent 0 16%,#000 17% 76%,transparent 77%);
   mask:radial-gradient(circle,transparent 0 16%,#000 17% 76%,transparent 77%);
-  opacity:.64;
+  opacity:.68;
 }
 
 /* Semantic terminals, not empty cards. */
@@ -108,18 +115,18 @@
   box-shadow:none;
   transition:color 420ms ease,opacity 420ms ease,transform 520ms cubic-bezier(.22,1,.36,1);
 }
-#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1 span {padding:.24rem .38rem;border-radius:0;background:rgba(2,7,17,.42);box-shadow:none;}
-#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1::after {inset:auto 0 0;height:1px;border:0;background:linear-gradient(90deg,rgba(244,207,114,.78),rgba(130,183,255,.35),transparent);transform:scaleX(.62);transform-origin:left center;transition:transform 520ms cubic-bezier(.22,1,.36,1),opacity 420ms ease;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1 span {padding:.24rem .38rem;border-radius:0;background:rgba(2,7,17,.46);box-shadow:none;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1::after {inset:auto 0 0;height:1px;border:0;background:linear-gradient(90deg,rgba(244,207,114,.82),rgba(130,183,255,.38),transparent);transform:scaleX(.62);transform-origin:left center;transition:transform 520ms cubic-bezier(.22,1,.36,1),opacity 420ms ease;}
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1.liquid::after,
-#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1.time::after {background:linear-gradient(90deg,transparent,rgba(130,183,255,.4),rgba(244,207,114,.75));transform-origin:right center;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1.time::after {background:linear-gradient(90deg,transparent,rgba(130,183,255,.43),rgba(244,207,114,.8));transform-origin:right center;}
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1:hover,
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1:focus-visible {color:#fff5d2;transform:translateY(-2px);outline:none;}
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1:hover::after,
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1:focus-visible::after {transform:scaleX(1);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:hover)::after,
-#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible)::after {transform:scale(.972);opacity:1;filter:brightness(1.18);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible)::after {transform:scale(.968);opacity:1;filter:brightness(1.24);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:hover) .btc-quiet-phi-core-v0-3,
-#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible) .btc-quiet-phi-core-v0-3 {transform:translate(-50%,-50%) scale(1.035);filter:saturate(1.05) contrast(1.05);box-shadow:0 0 22px rgba(255,238,184,.98),0 0 76px rgba(244,207,114,.76),0 0 168px rgba(244,207,114,.3),0 0 250px rgba(130,183,255,.14);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible) .btc-quiet-phi-core-v0-3 {transform:translate(-50%,-50%) scale(1.04);filter:saturate(1.06) contrast(1.05);box-shadow:0 0 23px rgba(255,238,184,1),0 0 80px rgba(244,207,114,.8),0 0 176px rgba(244,207,114,.32),0 0 260px rgba(130,183,255,.15);}
 
 /* TELESCOPE-LIKE BTC FIELD READ GATEWAY */
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 {
@@ -131,30 +138,38 @@
   grid-template-areas:"aperture optics title focus" "aperture optics subtitle focus";
   column-gap:clamp(.8rem,2vw,1.45rem);
   padding:1rem 1.15rem;
-  border-color:rgba(244,207,114,.62);
+  border-color:rgba(244,207,114,.66);
   border-radius:34px 55px;
-  background:radial-gradient(ellipse at 7% 50%,rgba(244,207,114,.25),transparent 19%),radial-gradient(ellipse at 91% 50%,rgba(130,183,255,.14),transparent 27%),linear-gradient(90deg,rgba(244,207,114,.1),rgba(12,35,70,.18) 61%,rgba(2,7,17,.96));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),inset 0 0 82px rgba(130,183,255,.055),0 22px 56px rgba(0,0,0,.3);
+  background:
+    radial-gradient(ellipse 4.6rem 78% at 7% 50%,transparent 0 57%,rgba(244,207,114,.35) 58% 60%,transparent 61%),
+    radial-gradient(ellipse 4rem 70% at 88% 50%,transparent 0 58%,rgba(130,183,255,.24) 59% 61%,transparent 62%),
+    radial-gradient(ellipse at 7% 50%,rgba(244,207,114,.26),transparent 19%),
+    radial-gradient(ellipse at 91% 50%,rgba(130,183,255,.15),transparent 27%),
+    linear-gradient(90deg,rgba(244,207,114,.11),rgba(12,35,70,.19) 61%,rgba(2,7,17,.96));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),inset 0 0 86px rgba(130,183,255,.06),0 22px 56px rgba(0,0,0,.3);
   transition:border-color 520ms ease,box-shadow 620ms ease,transform 620ms cubic-bezier(.22,1,.36,1);
 }
 
+/* Visible source trajectories taper into the focus plane. */
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::before {
   content:"";
   position:absolute;
   left:5.55rem;
   right:4.35rem;
-  top:12%;
-  bottom:12%;
+  top:10%;
+  bottom:10%;
   z-index:0;
   background:
-    repeating-radial-gradient(ellipse 1.25rem 56% at 96% 50%,transparent 0 24%,rgba(244,207,114,.28) 25% 27%,transparent 28% 45%),
-    linear-gradient(9deg,transparent 0 48.6%,rgba(244,207,114,.48) 48.9% 49.25%,transparent 49.55%),
-    linear-gradient(4.5deg,transparent 0 48.7%,rgba(130,183,255,.34) 49% 49.3%,transparent 49.6%),
-    linear-gradient(0deg,transparent 0 48.8%,rgba(255,230,153,.58) 49.05% 49.4%,transparent 49.7%),
-    linear-gradient(-4.5deg,transparent 0 48.7%,rgba(130,183,255,.31) 49% 49.3%,transparent 49.6%),
-    linear-gradient(-9deg,transparent 0 48.6%,rgba(244,207,114,.44) 48.9% 49.25%,transparent 49.55%);
-  clip-path:polygon(0 3%,100% 42%,100% 58%,0 97%);
-  opacity:.78;
+    repeating-radial-gradient(ellipse 2rem 63% at 94% 50%,transparent 0 18%,rgba(244,207,114,.32) 19% 21%,transparent 22% 34%),
+    linear-gradient(90deg,rgba(244,207,114,.13),rgba(255,229,151,.28) 52%,rgba(255,240,190,.58) 86%,rgba(244,207,114,.15)),
+    linear-gradient(10deg,transparent 0 47.9%,rgba(244,207,114,.56) 48.4% 49%,transparent 49.5%),
+    linear-gradient(5deg,transparent 0 48.1%,rgba(130,183,255,.42) 48.55% 49.05%,transparent 49.5%),
+    linear-gradient(0deg,transparent 0 48.2%,rgba(255,238,181,.72) 48.7% 49.25%,transparent 49.75%),
+    linear-gradient(-5deg,transparent 0 48.1%,rgba(130,183,255,.39) 48.55% 49.05%,transparent 49.5%),
+    linear-gradient(-10deg,transparent 0 47.9%,rgba(244,207,114,.52) 48.4% 49%,transparent 49.5%);
+  clip-path:polygon(0 2%,100% 43%,100% 57%,0 98%);
+  mix-blend-mode:screen;
+  opacity:.82;
   transform:scaleX(.94);
   transform-origin:right center;
   transition:clip-path 680ms cubic-bezier(.22,1,.36,1),opacity 520ms ease,transform 680ms cubic-bezier(.22,1,.36,1),filter 620ms ease;
@@ -164,14 +179,14 @@
   content:"";
   position:absolute;
   right:4.55rem;
-  top:14%;
-  bottom:14%;
+  top:12%;
+  bottom:12%;
   width:2px;
   z-index:1;
-  background:linear-gradient(transparent,rgba(130,183,255,.35),rgba(255,230,153,.98),rgba(130,183,255,.35),transparent);
-  box-shadow:0 0 20px rgba(244,207,114,.44),0 0 52px rgba(130,183,255,.17);
-  opacity:.76;
-  transform:scaleY(.72);
+  background:linear-gradient(transparent,rgba(130,183,255,.42),rgba(255,235,171,1),rgba(130,183,255,.42),transparent);
+  box-shadow:0 0 24px rgba(244,207,114,.54),0 0 60px rgba(130,183,255,.2);
+  opacity:.82;
+  transform:scaleY(.74);
   transition:opacity 520ms ease,transform 620ms cubic-bezier(.22,1,.36,1),box-shadow 620ms ease;
 }
 
@@ -187,30 +202,30 @@
   display:grid;
   place-items:center;
   align-self:center;
-  border:1px solid rgba(244,207,114,.82);
+  border:1px solid rgba(244,207,114,.86);
   border-radius:50%;
-  background:radial-gradient(circle,rgba(244,207,114,.23) 0 10%,transparent 11% 31%,rgba(130,183,255,.17) 32% 35%,transparent 36%),rgba(3,9,20,.9);
-  box-shadow:0 0 0 .64rem rgba(130,183,255,.03),0 0 0 .69rem rgba(130,183,255,.13),0 0 32px rgba(244,207,114,.22);
+  background:radial-gradient(circle,rgba(244,207,114,.24) 0 10%,transparent 11% 31%,rgba(130,183,255,.18) 32% 35%,transparent 36%),rgba(3,9,20,.9);
+  box-shadow:0 0 0 .64rem rgba(130,183,255,.03),0 0 0 .69rem rgba(130,183,255,.14),0 0 34px rgba(244,207,114,.24);
   color:transparent;
   transition:transform 620ms cubic-bezier(.22,1,.36,1),box-shadow 620ms ease;
 }
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1::before {content:"Φ";color:var(--btc-motion-gold);font:700 1.2rem/1 Georgia,serif;text-shadow:0 0 15px rgba(244,207,114,.42);}
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 strong {grid-area:title;align-self:end;font-size:0;background:transparent;box-shadow:none;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1::before {content:"Φ";color:var(--btc-motion-gold);font:700 1.2rem/1 Georgia,serif;text-shadow:0 0 15px rgba(244,207,114,.44);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 strong {grid-area:title;align-self:end;font-size:0;background:rgba(2,7,17,.28);box-shadow:0 0 24px rgba(2,7,17,.45);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 strong::after {content:"ENTER BTC FIELD READ";font-size:clamp(.84rem,1.2vw,1rem);line-height:1.25;letter-spacing:.11em;}
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 em {grid-area:subtitle;align-self:start;font-size:0;background:transparent;box-shadow:none;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 em {grid-area:subtitle;align-self:start;font-size:0;background:rgba(2,7,17,.2);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 em::after {content:"Ask one source-bound BTC question";font-size:clamp(.73rem,1vw,.86rem);line-height:1.35;}
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {grid-area:focus;width:3rem;height:3rem;align-self:center;border-color:rgba(244,207,114,.58);background:radial-gradient(circle,rgba(244,207,114,.2),rgba(3,9,20,.96) 68%);transition:transform 620ms cubic-bezier(.22,1,.36,1),border-color 520ms ease,box-shadow 620ms ease;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {grid-area:focus;width:3rem;height:3rem;align-self:center;border-color:rgba(244,207,114,.62);background:radial-gradient(circle,rgba(244,207,114,.22),rgba(3,9,20,.96) 68%);transition:transform 620ms cubic-bezier(.22,1,.36,1),border-color 520ms ease,box-shadow 620ms ease;}
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover,
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible {border-color:rgba(244,207,114,.94);transform:translateY(-2px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.045),inset 0 0 92px rgba(130,183,255,.08),0 30px 74px rgba(0,0,0,.36),0 0 50px rgba(244,207,114,.11);outline:none;}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible {border-color:rgba(244,207,114,.96);transform:translateY(-2px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.045),inset 0 0 96px rgba(130,183,255,.085),0 30px 74px rgba(0,0,0,.36),0 0 54px rgba(244,207,114,.13);outline:none;}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover::before,
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::before {clip-path:polygon(0 27%,100% 46%,100% 54%,0 73%);opacity:1;transform:scaleX(1);filter:brightness(1.28);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::before {clip-path:polygon(0 30%,100% 46%,100% 54%,0 70%);opacity:1;transform:scaleX(1);filter:brightness(1.35) saturate(1.12);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover::after,
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::after {opacity:1;transform:scaleY(1);box-shadow:0 0 30px rgba(244,207,114,.72),0 0 72px rgba(130,183,255,.24);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::after {opacity:1;transform:scaleY(1);box-shadow:0 0 34px rgba(244,207,114,.8),0 0 80px rgba(130,183,255,.28);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover .btc-field-read-entry-glyph-v0-1,
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-field-read-entry-glyph-v0-1 {transform:scale(1.055);box-shadow:0 0 0 .52rem rgba(130,183,255,.04),0 0 0 .58rem rgba(130,183,255,.18),0 0 40px rgba(244,207,114,.36);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-field-read-entry-glyph-v0-1 {transform:scale(1.06);box-shadow:0 0 0 .52rem rgba(130,183,255,.04),0 0 0 .58rem rgba(130,183,255,.19),0 0 44px rgba(244,207,114,.4);}
 #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover .btc-entry-arrow-v1,
-#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-entry-arrow-v1 {transform:translateX(.34rem) scale(1.055);border-color:rgba(244,207,114,.9);box-shadow:0 0 34px rgba(244,207,114,.28);}
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-entry-arrow-v1 {transform:translateX(.38rem) scale(1.06);border-color:rgba(244,207,114,.94);box-shadow:0 0 38px rgba(244,207,114,.32);}
 
 /* ASPECT-CYCLE OPTICAL BALANCE */
 @media (min-width:761px) {
@@ -226,9 +241,9 @@
 }
 
 /* BOUNDED VIEWPORT MOTION: scroll-linked one pass, no idle loop. */
-@keyframes btcGravityResolveV01 {from{opacity:.18;transform:scale(.94)}to{opacity:.96;transform:scale(1)}}
-@keyframes btcFieldConvergeV01 {from{opacity:.28;transform:scale(1.05)}to{opacity:.94;transform:scale(1)}}
-@keyframes btcGatewayFocusV01 {from{opacity:.22;transform:scaleX(.9)}to{opacity:.78;transform:scaleX(.94)}}
+@keyframes btcGravityResolveV01 {from{opacity:.18;transform:scale(.94)}to{opacity:.98;transform:scale(1)}}
+@keyframes btcFieldConvergeV01 {from{opacity:.3;transform:scale(1.05)}to{opacity:.96;transform:scale(1)}}
+@keyframes btcGatewayFocusV01 {from{opacity:.22;transform:scaleX(.9)}to{opacity:.82;transform:scaleX(.94)}}
 @supports (animation-timeline:view()) {
   #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {animation-name:btcGravityResolveV01 !important;animation-duration:1s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;animation-timeline:view(block);animation-range:entry 4% cover 32%;}
   #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {animation-name:btcFieldConvergeV01 !important;animation-duration:1s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;animation-timeline:view(block);animation-range:entry 6% cover 36%;}
@@ -237,8 +252,8 @@
 
 /* RESPONSIVE CONTRACT */
 @media (max-width:760px) {
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {-webkit-mask:radial-gradient(circle 7.25rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 79%,#000 80% 85%,transparent 86%);mask:radial-gradient(circle 7.25rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 79%,#000 80% 85%,transparent 86%);}
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {inset:2%;border-radius:21px 34px;}
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {-webkit-mask:radial-gradient(circle 7.4rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 79%,#000 80% 85%,transparent 86%);mask:radial-gradient(circle 7.4rem at var(--btc-motion-core-x) var(--btc-motion-core-y),transparent 0 79%,#000 80% 85%,transparent 86%);}
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {inset:1.5%;border-radius:21px 34px;}
   #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-t-v1 {width:38.196601125%;min-height:3rem;padding:.3rem .35rem;}
   #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 {min-height:16rem;grid-template-columns:4rem minmax(0,1fr) 3rem;grid-template-rows:4rem 5rem auto;grid-template-areas:"aperture optics focus" "aperture optics focus" "title title title" "subtitle subtitle subtitle";row-gap:.55rem;padding:1rem;border-radius:21px 34px;}
   #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::before {left:4.5rem;right:3.5rem;top:1rem;bottom:auto;height:8rem;clip-path:polygon(0 4%,100% 42%,100% 58%,0 96%);}
@@ -266,9 +281,9 @@
   #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::after,
   #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1,
   #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {animation-name:none !important;animation-duration:0s !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {opacity:.96;transform:none;}
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {opacity:.94;transform:scale(1);}
-  #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::before {opacity:.78;transform:scaleX(.94);}
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::before {opacity:.98;transform:none;}
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-field-v1::after {opacity:.96;transform:scale(1);}
+  #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::before {opacity:.82;transform:scaleX(.94);}
 }
 
 /* CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1:END */
