@@ -1,0 +1,94 @@
+/* CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1:BEGIN
+   Final pre-publication compatibility and mobile-density contract.
+   No content, data, route, provider or module semantics are changed. */
+
+/* Preserve the accepted What Changed desktop proof: three readable evidence tracks. */
+#what-changed .what-changed-memory-v0-1__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  #what-changed .what-changed-memory-v0-1__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  #what-changed .what-changed-memory-v0-1__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Keep a visible semantic membrane on mobile instead of removing the field axis. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: calc(var(--ca-minor) - 0.5px);
+    right: auto;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    width: 1px;
+    height: auto;
+    transform: none;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(
+      transparent,
+      rgba(242, 206, 114, 0.46),
+      rgba(118, 172, 239, 0.34),
+      rgba(242, 206, 114, 0.38),
+      transparent
+    );
+    box-shadow: none;
+    z-index: 0;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+    display: none;
+  }
+
+  /* Icons and ordered indices live in the 38.2% support lane; text uses the full reading lane. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    min-height: 4.65rem;
+    gap: 0.38rem;
+    padding: 0.68rem 0.62rem;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::before {
+    left: -4.15rem !important;
+    top: 50% !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::after {
+    left: -30.901699438%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 span {
+    font-size: 0.62rem;
+    line-height: 1.2;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 strong {
+    font-size: 0.75rem;
+    line-height: 1.32;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
+    gap: 0.52rem 0;
+    padding: 0.72rem;
+  }
+}
+
+/* CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1:END */
