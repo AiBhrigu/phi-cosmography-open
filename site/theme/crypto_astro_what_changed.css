@@ -142,3 +142,10 @@
   .what-changed-memory-v0-1__grid { grid-template-columns: 1fr; }
   .what-changed-memory-v0-1__snapshots div { grid-template-columns: 1fr; gap: 0.25rem; }
 }
+
+/* CRYPTO_ASTRO_TARGETED_ASPECT_STATIC_COMPATIBILITY_v0_1
+   The accepted static surface keeps the legacy SVG hidden; the visible cycle is carried by the
+   semantic eye, orbit membrane, golden topology and explicit 01→05 reading order. */
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-route-v1 {
+  display: none !important;
+}
