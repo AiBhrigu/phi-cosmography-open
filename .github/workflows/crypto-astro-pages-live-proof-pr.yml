@@ -1,0 +1,114 @@
+name: Crypto-Astro Pages Live Proof PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-pages-live-proof-pr.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-pages-live-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  live-proof:
+    name: Verify mature Pages mirror live
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Verify exact live publication and capture evidence
+        env:
+          PUBLIC_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
+          EXPECTED_TIMESTAMP: 2026-07-25T05:23:18Z
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python - <<'PY'
+          import json, os, time
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from playwright.sync_api import sync_playwright
+
+          base=os.environ['PUBLIC_URL']
+          expected_timestamp=os.environ['EXPECTED_TIMESTAMP']
+          required=[
+              'Crypto-Astro Market Field',
+              'Verified change memory',
+              expected_timestamp,
+              'Bitcoin gravity and cycle context',
+              'Market structure around Bitcoin',
+              'Cosmographer Read',
+              'Altcoin Rotation Field',
+              'Trust &amp; Access',
+              'https://www.bhrigu.io/crypto-astro/btc',
+          ]
+          forbidden=['Crypto-Astro Research Launch Shell','Runtime NOT ACTIVE','CCI Launch Shell']
+          report={'url':base,'attempts':[],'status':'FAIL'}
+          html=''
+          for attempt in range(1,31):
+              url=f'{base}?publication-proof={os.environ.get("GITHUB_RUN_ID","local")}-{attempt}'
+              req=Request(url,headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'crypto-astro-pages-proof-v0-1'})
+              try:
+                  with urlopen(req,timeout=20) as response:
+                      html=response.read().decode('utf-8')
+                      status=response.status
+                  missing=[item for item in required if item not in html]
+                  present_forbidden=[item for item in forbidden if item in html]
+                  report['attempts'].append({'attempt':attempt,'http_status':status,'missing':missing,'forbidden':present_forbidden,'bytes':len(html.encode())})
+                  if status==200 and not missing and not present_forbidden:
+                      report['status']='PASS'
+                      report['accepted_attempt']=attempt
+                      break
+              except Exception as exc:
+                  report['attempts'].append({'attempt':attempt,'error':type(exc).__name__+':'+str(exc)})
+              time.sleep(10)
+          Path('artifacts/live-index.html').write_text(html,encoding='utf-8')
+          Path('artifacts/publication-http-proof.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+          if report['status']!='PASS':
+              raise SystemExit('PUBLICATION_HTTP_PROOF_FAIL')
+
+          visual={'status':'FAIL','viewports':{}}
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
+                  page=browser.new_page(viewport={'width':width,'height':height})
+                  errors=[]
+                  page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+                  page.goto(f'{base}?visual-proof={os.environ.get("GITHUB_RUN_ID","local")}-{name}',wait_until='networkidle',timeout=60000)
+                  page.screenshot(path=f'artifacts/crypto-astro-pages-{name}.png',full_page=True)
+                  checks={
+                      'title':page.title()=='Crypto-Astro · Φ Service Surface',
+                      'what_changed':page.locator('#what-changed').count()==1,
+                      'btc_field':page.locator('#btc-phi-cycle-hub').count()==1,
+                      'wider_market':page.locator('#market').count()==1,
+                      'trust_access':page.locator('#trust-access').count()==1,
+                      'btc_cta':page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()>=2,
+                      'old_shell_absent':page.locator('text=Crypto-Astro Research Launch Shell').count()==0,
+                      'no_horizontal_overflow':page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'),
+                      'console_errors_none':not errors,
+                  }
+                  visual['viewports'][name]={'checks':checks,'console_errors':errors,'title':page.title()}
+              browser.close()
+          visual['status']='PASS' if all(all(v['checks'].values()) for v in visual['viewports'].values()) else 'FAIL'
+          Path('artifacts/publication-visual-proof.json').write_text(json.dumps(visual,indent=2),encoding='utf-8')
+          if visual['status']!='PASS':
+              raise SystemExit('PUBLICATION_VISUAL_PROOF_FAIL')
+          PY
+      - name: Upload live proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-pages-live-proof-pr-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
