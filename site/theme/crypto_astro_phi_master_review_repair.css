@@ -1,0 +1,415 @@
+/* CRYPTO_ASTRO_PHI_MASTER_REVIEW_REPAIR_v0_2:BEGIN
+   Review repair for the pre-publication master refinement.
+   Loads after the legacy surface and restores semantic density without changing content. */
+
+/* What Changed is the final stylesheet in the document, so use the chapter id to keep the 4×2 evidence rhythm. */
+#what-changed.editorial-what-changed-v0-1.what-changed-memory-v0-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+#what-changed .what-changed-memory-v0-1__head {
+  grid-template-columns: minmax(0, 61.803398875fr) minmax(16rem, 38.196601125fr);
+}
+
+#what-changed .what-changed-memory-v0-1__grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+#what-changed .what-changed-memory-v0-1__unavailable {
+  grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+}
+
+/* Aspect-Cycle: exact golden canvas, central semantic eye, five large meaning nodes. */
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
+  position: relative;
+  min-height: 0;
+  aspect-ratio: 1.61803398875;
+  display: grid;
+  grid-template-columns: 38.196601125fr 23.60679775fr 38.196601125fr;
+  grid-template-rows: 38.196601125fr 23.60679775fr 38.196601125fr;
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow: hidden;
+  border-radius: var(--ca-radius-m);
+  background:
+    linear-gradient(90deg, transparent calc(var(--ca-minor) - 0.04%), rgba(118, 172, 239, 0.14) var(--ca-minor), transparent calc(var(--ca-minor) + 0.04%)),
+    linear-gradient(90deg, transparent calc(var(--ca-major) - 0.04%), rgba(242, 206, 114, 0.14) var(--ca-major), transparent calc(var(--ca-major) + 0.04%)),
+    linear-gradient(180deg, transparent calc(var(--ca-minor) - 0.04%), rgba(118, 172, 239, 0.13) var(--ca-minor), transparent calc(var(--ca-minor) + 0.04%)),
+    linear-gradient(180deg, transparent calc(var(--ca-major) - 0.04%), rgba(242, 206, 114, 0.13) var(--ca-major), transparent calc(var(--ca-major) + 0.04%)),
+    radial-gradient(circle at 50% 50%, rgba(242, 206, 114, 0.12), transparent 16%),
+    linear-gradient(180deg, rgba(6, 15, 31, 0.98), rgba(3, 9, 19, 0.99));
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(7.5rem, 14vw, 11rem);
+  height: clamp(7.5rem, 14vw, 11rem);
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(242, 206, 114, 0.42);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, rgba(242, 206, 114, 0.34) 0 7%, rgba(7, 17, 34, 0.98) 8% 28%, rgba(118, 172, 239, 0.12) 29% 31%, rgba(4, 10, 21, 0.96) 32% 56%, transparent 57%),
+    radial-gradient(circle, rgba(242, 206, 114, 0.12), transparent 68%);
+  box-shadow:
+    0 0 0 1.15rem rgba(118, 172, 239, 0.025),
+    0 0 4.5rem rgba(242, 206, 114, 0.08);
+  z-index: 1;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72%;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, rgba(242, 206, 114, 0.34), rgba(118, 172, 239, 0.22), rgba(242, 206, 114, 0.34), transparent);
+  z-index: 0;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+  position: relative;
+  align-self: center;
+  justify-self: stretch;
+  width: auto;
+  min-width: 0;
+  min-height: 8.4rem;
+  display: grid;
+  align-content: center;
+  gap: 0.55rem;
+  padding: 1rem 1rem 1rem 5.25rem;
+  transform: none !important;
+  border: 1px solid rgba(145, 181, 228, 0.14) !important;
+  border-left-color: rgba(242, 206, 114, 0.34) !important;
+  border-radius: var(--ca-radius-s) !important;
+  background: linear-gradient(145deg, rgba(13, 25, 44, 0.9), rgba(4, 10, 20, 0.94)) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18) !important;
+  backdrop-filter: none !important;
+  z-index: 2;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect {
+  grid-column: 2;
+  grid-row: 1;
+  width: min(100%, 21rem);
+  justify-self: center;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::before {
+  left: 1rem !important;
+  top: 50% !important;
+  width: 3.35rem !important;
+  height: 3.35rem !important;
+  transform: translateY(-50%) !important;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::after {
+  left: 0.7rem;
+  top: 0.55rem;
+  width: auto;
+  height: auto;
+  transform: none;
+  border: 0;
+  background: transparent;
+}
+
+/* The market corridor uses independent full-width evidence rows where unequal heights would create dead space. */
+@media (min-width: 981px) {
+  #market .market-field-shell {
+    grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+    grid-template-areas:
+      "first first"
+      "timing synthesis"
+      "liquidity liquidity"
+      "rotation rotation";
+    align-items: stretch;
+  }
+
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+    grid-area: liquidity;
+  }
+
+  #market .alt-rotation-module {
+    grid-area: rotation;
+  }
+}
+
+/* Timing fills its supporting lane with the four accepted categorical states. */
+#market .editorial-astromodule-v0-1 {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--ca-space-3);
+  align-self: stretch;
+}
+
+#market .editorial-astromodule-v0-1 .editorial-astromodule-v0-1__states {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  height: 100%;
+  align-content: stretch;
+}
+
+#market .editorial-astromodule-v0-1 .editorial-astromodule-v0-1__states > div {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-content: space-between;
+  padding: 1rem;
+  border-radius: var(--ca-radius-s);
+}
+
+#market .editorial-astromodule-v0-1 .editorial-astromodule-v0-1__states strong {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  font-size: clamp(0.9rem, 1.15vw, 1.04rem);
+  line-height: 1.35;
+}
+
+/* Field Synthesis consumes the whole major lane; no hidden third legacy column remains. */
+#market #read.cosmographer-console-v0-2 {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+#market #read .cosmographer-console-head-v0-2,
+#market #read .cosmographer-console-grid-v0-2,
+#market #read .cosmographer-watch-v0-2,
+#market #read .cosmographer-field-canvas-v0-2 {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+#market #read .cosmographer-console-title-v0-2 {
+  max-width: none;
+  font-size: clamp(2.45rem, 4vw, 3.85rem);
+  line-height: 0.94;
+}
+
+#market #read .cosmographer-console-grid-v0-2 {
+  grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+  grid-template-areas:
+    "state synthesis"
+    "method method";
+  gap: 0.85rem;
+  justify-items: stretch;
+}
+
+#market #read .cosmographer-console-panel-v0-2:nth-child(1) { grid-area: state; }
+#market #read .cosmographer-console-panel-v0-2:nth-child(2) { grid-area: synthesis; }
+#market #read .cosmographer-console-panel-v0-2:nth-child(3) { grid-area: method; }
+
+#market #read .cosmographer-mini-grid-v0-2 {
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+#market #read .cosmographer-mini-v0-2 {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#market #read .cosmographer-mini-v0-2 strong {
+  margin-top: 0;
+  text-align: right;
+}
+
+#market #read .cosmographer-keyword-grid-v0-2 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+#market #read .cosmographer-keyword-v0-2 {
+  min-width: 0;
+  padding: 0.65rem 0.55rem;
+  text-align: left;
+}
+
+#market #read .cosmographer-keyword-v0-2 span,
+#market #read .cosmographer-keyword-v0-2 strong {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+#market #read .cosmographer-method-list-v0-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#market #read .cosmographer-field-canvas-v0-2 {
+  min-height: 13rem;
+  height: 13rem;
+}
+
+/* Liquidity becomes one horizontal evidence band: meaning at 38.2%, facts at 61.8%. */
+#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+  display: grid;
+  grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+  grid-template-areas:
+    "eyebrow eyebrow"
+    "intro facts"
+    "method facts";
+  gap: 0.8rem var(--ca-space-3);
+  align-items: start;
+  padding: 1.35rem;
+}
+
+#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) > .eyebrow {
+  grid-area: eyebrow;
+}
+
+#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) > p:not(.eyebrow):not(.small) {
+  grid-area: intro;
+  margin: 0;
+}
+
+#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) > .field-list {
+  grid-area: facts;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: stretch;
+}
+
+#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) > .small {
+  grid-area: method;
+  align-self: end;
+}
+
+/* Rotation has enough width to show all four measures and the directional map without stacking noise. */
+#market .alt-rotation-module > .market-reality-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+#market .alt-rotation-map {
+  grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+}
+
+#market .alt-read-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  #what-changed .what-changed-memory-v0-1__head,
+  #what-changed .what-changed-memory-v0-1__unavailable {
+    grid-template-columns: 1fr;
+  }
+
+  #what-changed .what-changed-memory-v0-1__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
+    aspect-ratio: auto;
+    grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::before,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+    display: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    grid-column: 2;
+    grid-row: auto;
+    width: 100%;
+    min-height: 5.4rem;
+    padding: 0.8rem 0.65rem 0.8rem 4.15rem;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::before {
+    left: 0.55rem !important;
+    top: 50% !important;
+    width: 2.9rem !important;
+    height: 2.9rem !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::after {
+    left: -30.901699438%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  #market .editorial-astromodule-v0-1 .editorial-astromodule-v0-1__states,
+  #market .alt-rotation-module > .market-reality-grid,
+  #market .alt-read-grid,
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1),
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) > .field-list,
+  #market #read .cosmographer-keyword-grid-v0-2 {
+    grid-template-columns: 1fr;
+  }
+
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+    grid-template-areas:
+      "eyebrow"
+      "intro"
+      "facts"
+      "method";
+  }
+
+  #market #read .cosmographer-console-grid-v0-2 {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "state"
+      "synthesis"
+      "method";
+  }
+
+  #market #read .cosmographer-method-list-v0-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  #what-changed .what-changed-memory-v0-1__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CRYPTO_ASTRO_PHI_MASTER_REVIEW_REPAIR_v0_2:END */
