@@ -1,10 +1,71 @@
 /* CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1:BEGIN
-   Final pre-publication compatibility and mobile-density contract.
+   Final pre-publication compatibility and density contract.
    No content, data, route, provider or module semantics are changed. */
 
 /* Preserve the accepted What Changed desktop proof: three readable evidence tracks. */
 #what-changed .what-changed-memory-v0-1__grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (min-width: 981px) {
+  /* Inputs precede synthesis: timing supports liquidity, then the full-width read closes the field. */
+  #market .market-field-shell {
+    grid-template-columns: minmax(0, 38.196601125fr) minmax(0, 61.803398875fr);
+    grid-template-areas:
+      "first first"
+      "timing liquidity"
+      "synthesis synthesis"
+      "rotation rotation";
+  }
+
+  #market .market-lower-grid > .editorial-astromodule-v0-1 {
+    grid-area: timing;
+  }
+
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+    grid-area: liquidity;
+  }
+
+  #market .market-lower-grid > #read {
+    grid-area: synthesis;
+  }
+
+  #market .alt-rotation-module {
+    grid-area: rotation;
+  }
+
+  #market .editorial-astromodule-v0-1 {
+    align-self: stretch;
+  }
+
+  #market .editorial-astromodule-v0-1 .editorial-astromodule-v0-1__states {
+    height: auto;
+    grid-template-rows: repeat(2, minmax(7rem, auto));
+    align-content: end;
+  }
+
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+    align-self: stretch;
+    align-content: center;
+  }
+
+  #market #read.cosmographer-console-v0-2 {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (min-width: 761px) {
+  /* Five semantic nodes occupy their golden cells; the canvas no longer reserves empty quadrants. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    align-self: stretch;
+    min-height: 0;
+  }
 }
 
 @media (max-width: 900px) {
