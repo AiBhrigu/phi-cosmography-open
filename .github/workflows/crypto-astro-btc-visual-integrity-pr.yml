@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+      - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - 'site/theme/btc_phi_visual_integrity.css'
+      - 'site/theme/crypto_astro_btc_semantic_motion.css'
       - 'site/theme/system.css'
 
 permissions:
@@ -36,12 +38,29 @@ jobs:
           set -euo pipefail
           BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
           git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
+
           printf '%s\n' \
             '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
             'site/theme/btc_phi_visual_integrity.css' \
             'site/theme/system.css' \
-            > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
+            | sort > /tmp/foundation.txt
+
+          printf '%s\n' \
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
+            'site/theme/crypto_astro_btc_semantic_motion.css' \
+            'site/theme/system.css' \
+            | sort > /tmp/semantic-motion.txt
+
+          if diff -u /tmp/foundation.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=FOUNDATION >> "$GITHUB_ENV"
+          elif diff -u /tmp/semantic-motion.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+          else
+            echo 'BTC visual scope is not an accepted exact file set.' >&2
+            exit 1
+          fi
+
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
@@ -55,16 +74,19 @@ jobs:
       - name: Verify source contract
         run: |
           python - <<'PY'
+          import os
           from pathlib import Path
 
           system = Path('site/theme/system.css').read_text()
           integrity = Path('site/theme/btc_phi_visual_integrity.css').read_text()
+          semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
           imports = [
               "@import url('./btc_poster_grade.css');",
               "@import url('./btc_motion_budget.css');",
               "@import url('./ip_semantic_seal.css');",
               "@import url('./btc_phi_semantic_geometry.css');",
               "@import url('./btc_phi_visual_integrity.css');",
+              "@import url('./crypto_astro_btc_semantic_motion.css');",
           ]
           assert all(item in system for item in imports)
           assert [system.index(item) for item in imports] == sorted(system.index(item) for item in imports)
@@ -77,6 +99,24 @@ jobs:
           assert 'content-visibility: visible' in integrity
           assert 'grid-template-columns: 61.803398875fr 38.196601125fr' in integrity
           assert 'grid-template-columns: 38.196601125fr 61.803398875fr' in integrity
+
+          if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
+              required = [
+                  'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1',
+                  '--btc-motion-core-x: 61.803398875%',
+                  '--btc-motion-core-y: 38.196601125%',
+                  'var(--btc-dominance)',
+                  'ENTER BTC FIELD READ',
+                  'Ask one source-bound BTC question',
+                  'animation-timeline: view(block)',
+                  '@media (prefers-reduced-motion: reduce)',
+              ]
+              for marker in required:
+                  assert marker in semantic, marker
+              assert 'infinite' not in semantic
+              assert '#market' not in semantic
+              assert 'body {' not in semantic
+              assert 'animation-iteration-count: 1' in semantic
           print('BTC_VISUAL_INTEGRITY_SOURCE=PASS')
           PY
 
@@ -215,7 +255,7 @@ jobs:
                           'field_compact_height': 330 <= state['field']['height'] <= 430,
                           'context_lanes_clear_core': not label_overlap,
                           'metrics_golden_split': metric_ratio is not None and abs(metric_ratio - MINOR / MAJOR) < 0.08,
-                          'cta_compact_height': state['cta']['height'] <= 130,
+                          'cta_semantic_height': state['cta']['height'] <= 300,
                           'cycle_compact_height': state['cycle']['height'] <= 700,
                           'nodes_reading_lane': all(n['gridColumnStart'] == '2' for n in state['nodes']),
                           'nodes_relative': all(n['position'] == 'relative' for n in state['nodes']),
