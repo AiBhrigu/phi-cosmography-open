@@ -6,6 +6,7 @@ on:
       - '.github/workflows/crypto-astro-phi-master-refinement-pr.yml'
       - 'site/theme/crypto_astro_phi_master_refinement.css'
       - 'site/theme/crypto_astro_phi_master_review_repair.css'
+      - 'site/theme/crypto_astro_phi_master_acceptance.css'
       - 'site/theme/crypto_astro_what_changed.css'
 
 permissions:
@@ -39,6 +40,7 @@ jobs:
           git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
           printf '%s\n' \
             '.github/workflows/crypto-astro-phi-master-refinement-pr.yml' \
+            'site/theme/crypto_astro_phi_master_acceptance.css' \
             'site/theme/crypto_astro_phi_master_refinement.css' \
             'site/theme/crypto_astro_phi_master_review_repair.css' \
             'site/theme/crypto_astro_what_changed.css' \
@@ -65,11 +67,15 @@ jobs:
           binding = Path('site/theme/crypto_astro_what_changed.css').read_text()
           master_css = Path('site/theme/crypto_astro_phi_master_refinement.css').read_text()
           repair_css = Path('site/theme/crypto_astro_phi_master_review_repair.css').read_text()
+          acceptance_css = Path('site/theme/crypto_astro_phi_master_acceptance.css').read_text()
 
-          master_import = "@import url('./crypto_astro_phi_master_refinement.css');"
-          repair_import = "@import url('./crypto_astro_phi_master_review_repair.css');"
-          assert master_import in binding and repair_import in binding
-          assert binding.index(master_import) < binding.index(repair_import)
+          imports = [
+              "@import url('./crypto_astro_phi_master_refinement.css');",
+              "@import url('./crypto_astro_phi_master_review_repair.css');",
+              "@import url('./crypto_astro_phi_master_acceptance.css');",
+          ]
+          assert all(item in binding for item in imports)
+          assert [binding.index(item) for item in imports] == sorted(binding.index(item) for item in imports)
 
           master_required = [
               'CRYPTO_ASTRO_PHI_MASTER_REFINEMENT_v0_1',
@@ -88,11 +94,19 @@ jobs:
               '"state synthesis"',
               '"method method"',
           ]
+          acceptance_required = [
+              'CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1',
+              'repeat(3, minmax(0, 1fr))',
+              'left: calc(var(--ca-minor) - 0.5px)',
+              'left: -4.15rem !important',
+          ]
           for marker in master_required:
               assert marker in master_css, marker
           for marker in repair_required:
               assert marker in repair_css, marker
-          for css in (master_css, repair_css):
+          for marker in acceptance_required:
+              assert marker in acceptance_css, marker
+          for css in (master_css, repair_css, acceptance_css):
               assert '@keyframes' not in css
               assert 'animation:' not in css
           print('CRYPTO_ASTRO_PHI_MASTER_SOURCE=PASS')
@@ -139,14 +153,10 @@ jobs:
               loc.screenshot(path=str(out / filename))
 
           def capture_union(page, selectors, filename):
-              first = page.locator(selectors[0])
-              first.scroll_into_view_if_needed()
+              page.locator(selectors[0]).scroll_into_view_if_needed()
               page.wait_for_timeout(120)
-              boxes = []
-              for selector in selectors:
-                  box = page.locator(selector).bounding_box()
-                  if box:
-                      boxes.append(box)
+              boxes = [page.locator(selector).bounding_box() for selector in selectors]
+              boxes = [box for box in boxes if box]
               assert boxes, selectors
               left = min(box['x'] for box in boxes)
               top = min(box['y'] for box in boxes)
@@ -154,12 +164,7 @@ jobs:
               bottom = max(box['y'] + box['height'] for box in boxes)
               page.screenshot(
                   path=str(out / filename),
-                  clip={
-                      'x': left,
-                      'y': top,
-                      'width': right - left,
-                      'height': bottom - top,
-                  },
+                  clip={'x': left, 'y': top, 'width': right-left, 'height': bottom-top},
               )
 
           def overflow_items(page, selectors):
@@ -209,14 +214,11 @@ jobs:
                     const trustText=document.querySelector('#trust-access > div:first-child');
                     const trustActions=document.querySelector('#trust-access .editorial-trust-access-v0-1__actions');
                     return {
-                      page:{
-                        scrollWidth:document.documentElement.scrollWidth,
-                        clientWidth:document.documentElement.clientWidth,
-                        scrollHeight:document.documentElement.scrollHeight,
-                      },
+                      page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,scrollHeight:document.documentElement.scrollHeight},
                       entry:rect(entry),
                       marketLink:rect(marketLink),
                       cycle:rect(cycle),
+                      membraneDisplay:getComputedStyle(cycle,'::before').display,
                       nodeRects:nodes.map(rect),
                       nodeColumns:nodes.map(el=>getComputedStyle(el).gridColumnStart),
                       nodeRows:nodes.map(el=>getComputedStyle(el).gridRowStart),
@@ -238,15 +240,11 @@ jobs:
                   }""")
 
                   key_overflow = overflow_items(page, [
-                      '.btc-entry-v1',
-                      '.btc-market-link-v1',
-                      '.btc-node-v1',
+                      '.btc-entry-v1', '.btc-market-link-v1', '.btc-node-v1',
                       '.editorial-astromodule-v0-1__states > div',
                       '#read .cosmographer-console-panel-v0-2',
                       '#read .cosmographer-method-item-v0-2',
-                      '.market-metric',
-                      '.alt-read-node',
-                      '#trust-access > div',
+                      '.market-metric', '.alt-read-node', '#trust-access > div',
                   ])
 
                   checks = {
@@ -256,6 +254,7 @@ jobs:
                       'five_semantic_nodes': len(state['nodeRects']) == 5,
                       'all_nodes_visible': all(r['width'] > 0 and r['height'] > 0 for r in state['nodeRects']),
                       'decorative_marks_hidden': state['decorativeVisible'] == 0,
+                      'semantic_membrane_visible': state['membraneDisplay'] != 'none',
                   }
 
                   if name == 'desktop':
@@ -278,7 +277,7 @@ jobs:
                           'nested_state_synthesis_phi': close(inner_ratio, INV_PHI, 0.07),
                           'method_full_width': state['synthPanels'][2]['width'] >= state['synthesis']['width'] * 0.88,
                           'timing_two_columns': len(timing_x) == 2,
-                          'what_changed_four_columns': len(changed_x) == 4,
+                          'what_changed_three_columns': len(changed_x) == 3,
                           'trust_phi_ratio': close(trust_ratio, PHI, 0.1),
                           'market_lower_display_contents': state['displayLower'] == 'contents',
                       })
@@ -287,20 +286,12 @@ jobs:
                       capture(page, '#surface', 'orientation-desktop.png')
                       capture(page, '#what-changed', 'what-changed-desktop.png')
                       capture(page, '.btc-grid-v1', 'btc-field-desktop.png')
-                      capture_union(
-                          page,
-                          ['#btc-phi-cycle-hub > .btc-entry-v1', '#btc-phi-cycle-hub > .btc-market-link-v1'],
-                          'btc-gateway-desktop.png',
-                      )
+                      capture_union(page, ['#btc-phi-cycle-hub > .btc-entry-v1', '#btc-phi-cycle-hub > .btc-market-link-v1'], 'btc-gateway-desktop.png')
                       capture(page, '.btc-cycle-v1', 'aspect-cycle-core-desktop.png')
                       capture(page, '#market .market-first-screen', 'wider-market-desktop.png')
                       capture(page, '.editorial-astromodule-v0-1', 'timing-context-desktop.png')
                       capture(page, '#read', 'field-synthesis-desktop.png')
-                      capture(
-                          page,
-                          '#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1)',
-                          'liquidity-tvl-desktop.png',
-                      )
+                      capture(page, '#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1)', 'liquidity-tvl-desktop.png')
                       capture(page, '#market .alt-rotation-module', 'altcoin-rotation-desktop.png')
                       capture(page, '#trust-access', 'trust-access-desktop.png')
                   else:
