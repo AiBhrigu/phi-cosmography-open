@@ -149,3 +149,259 @@
 .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-route-v1 {
   display: none !important;
 }
+
+/* CRYPTO_ASTRO_MOBILE_MODULE_HARMONY_v0_1:BEGIN
+   Mobile modules use distinct semantic patterns instead of repeating cards.
+   Rotation = directional rails and orbit. Synthesis = open constellation. */
+@media (max-width: 760px) {
+  #market .alt-rotation-module {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1rem;
+    padding: 1rem;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 68% 42%, rgba(118, 172, 239, 0.08), transparent 42%),
+      linear-gradient(180deg, rgba(8, 16, 28, 0.96), rgba(3, 9, 18, 0.98));
+  }
+
+  #market .alt-rotation-module > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #market .alt-rotation-module > h3 {
+    margin-bottom: 0;
+    font-size: clamp(1.7rem, 8vw, 2.2rem);
+    line-height: 1.02;
+  }
+
+  #market .alt-rotation-module > p:not(.small) {
+    margin: 0;
+    max-width: 34rem;
+    line-height: 1.55;
+  }
+
+  #market .alt-rotation-module > .market-reality-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0;
+    border-top: 1px solid rgba(145, 181, 228, 0.16);
+    border-bottom: 1px solid rgba(145, 181, 228, 0.16);
+  }
+
+  #market .alt-rotation-module > .market-reality-grid .market-metric {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    padding: 0.72rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.1);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #market .alt-rotation-module > .market-reality-grid .market-metric:last-child {
+    border-bottom: 0;
+  }
+
+  #market .alt-rotation-module > .market-reality-grid .market-metric span,
+  #market .alt-rotation-module > .market-reality-grid .market-metric strong {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  #market .alt-rotation-module > .market-reality-grid .metric-rail {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 0.2rem;
+  }
+
+  #market .alt-rotation-map {
+    display: flex !important;
+    flex-direction: column;
+    grid-template-columns: none !important;
+    gap: 0.85rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    overflow: visible;
+  }
+
+  #market .alt-rotation-map > div:first-child {
+    display: block;
+    min-width: 0;
+  }
+
+  #market .alt-rotation-map > div:first-child > .eyebrow,
+  #market .alt-rotation-map > div:first-child > p:not(.eyebrow) {
+    display: none;
+  }
+
+  #market .alt-rotation-screen {
+    order: -1;
+    width: 100%;
+    min-width: 0;
+    min-height: 17rem;
+    aspect-ratio: 1.15 / 1;
+    border-radius: 34px 55px;
+  }
+
+  #market .alt-map-labels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid rgba(145, 181, 228, 0.14);
+  }
+
+  #market .alt-map-label {
+    min-width: 0;
+    display: grid;
+    gap: 0.18rem;
+    padding: 0.72rem 0.55rem;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.1);
+    border-radius: 0;
+    background: none;
+  }
+
+  #market .alt-map-label:nth-child(odd) {
+    border-right: 1px solid rgba(145, 181, 228, 0.1);
+  }
+
+  #market .alt-map-label span,
+  #market .alt-map-label strong {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  #market .alt-read-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0;
+    border-top: 1px solid rgba(242, 206, 114, 0.2);
+  }
+
+  #market .alt-read-node {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(4.5rem, 38.196601125fr) minmax(0, 61.803398875fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.8rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.11);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #market .alt-read-node strong,
+  #market .alt-read-node span {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  #market .alt-read-node strong {
+    color: rgba(242, 206, 114, 0.86);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  #market .alt-rotation-module > .small {
+    margin: 0;
+    padding-left: 0.75rem;
+    border-left: 1px solid rgba(145, 181, 228, 0.16);
+    color: rgba(196, 209, 226, 0.62);
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  #market #read .cosmographer-field-canvas-v0-2 {
+    min-height: 25rem;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 4.25rem 0.85rem 1rem;
+    overflow: hidden;
+    border-radius: 34px 55px;
+  }
+
+  #market #read .cosmographer-field-node-v0-2,
+  #market #read .cosmographer-field-node-v0-2[data-node="stable"],
+  #market #read .cosmographer-field-node-v0-2[data-node="rotation"],
+  #market #read .cosmographer-field-node-v0-2[data-node="btc"],
+  #market #read .cosmographer-field-node-v0-2[data-node="liquidity"],
+  #market #read .cosmographer-field-node-v0-2[data-node="timing"],
+  #market #read .cosmographer-field-node-v0-2[data-node="freshness"] {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    min-height: 4.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.65rem 0.45rem;
+    transform: none;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.14);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    white-space: normal;
+  }
+
+  #market #read .cosmographer-field-node-v0-2:nth-of-type(odd) {
+    border-right: 1px solid rgba(145, 181, 228, 0.1);
+  }
+
+  #market #read .cosmographer-field-node-v0-2[data-node="btc"] {
+    grid-column: 1 / -1;
+    justify-content: center;
+    border-right: 0;
+    border-bottom-color: rgba(242, 206, 114, 0.22);
+    color: rgba(242, 221, 164, 0.92);
+  }
+
+  #market #read .cosmographer-field-node-v0-2[data-node="freshness"] {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  #market #read .cosmographer-field-legend-v0-2 {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    grid-column: 1 / -1;
+    max-width: none;
+    margin: 0.5rem 0 0;
+    padding: 0.75rem 0 0;
+    border: 0;
+    border-top: 1px solid rgba(242, 206, 114, 0.18);
+    border-radius: 0;
+    background: none;
+    text-align: center;
+    line-height: 1.5;
+  }
+}
+/* CRYPTO_ASTRO_MOBILE_MODULE_HARMONY_v0_1:END */
