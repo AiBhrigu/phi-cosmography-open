@@ -104,6 +104,7 @@ jobs:
 
           if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
               semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
+              compact = ''.join(semantic.split())
               target_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
               assert target_import in system and system.index(imports[-1]) < system.index(target_import)
               required = [
@@ -113,11 +114,12 @@ jobs:
                   'var(--btc-dominance)',
                   'ENTER BTC FIELD READ',
                   'Ask one source-bound BTC question',
-                  'animation-timeline: view(block)',
-                  '@media (prefers-reduced-motion: reduce)',
               ]
               for marker in required:
                   assert marker in semantic, marker
+              assert 'animation-timeline:view(block)' in compact
+              assert '@media(prefers-reduced-motion:reduce)' in compact
+              assert compact.count('animation-iteration-count:1') >= 3
               assert 'infinite' not in semantic
               assert '#market' not in semantic
               assert 'body {' not in semantic
