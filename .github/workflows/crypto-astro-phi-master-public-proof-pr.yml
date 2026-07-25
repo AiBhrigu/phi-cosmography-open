@@ -1,0 +1,175 @@
+name: Crypto-Astro Phi Master Public Proof PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-phi-master-public-proof-pr.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-phi-master-public-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  public-proof:
+    name: Verify live Phi master mirror
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Verify canonical publication and visual truth
+        env:
+          PUBLIC_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
+          THEME_BASE: https://aibhrigu.github.io/phi-cosmography-open/theme
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python - <<'PY'
+          import json, os, time
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from playwright.sync_api import sync_playwright
+
+          page_url = os.environ['PUBLIC_URL']
+          theme_base = os.environ['THEME_BASE']
+          css_contract = {
+              'crypto_astro_phi_master_refinement.css': 'CRYPTO_ASTRO_PHI_MASTER_REFINEMENT_v0_1',
+              'crypto_astro_phi_master_review_repair.css': 'CRYPTO_ASTRO_PHI_MASTER_REVIEW_REPAIR_v0_2',
+              'crypto_astro_phi_master_acceptance.css': 'CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1',
+              'crypto_astro_phi_mobile_harmony.css': 'CRYPTO_ASTRO_PHI_MOBILE_HARMONY_v0_1',
+          }
+          required_html = [
+              'Crypto-Astro Market Field',
+              'Bitcoin gravity and cycle context',
+              'Aspect-Cycle Core',
+              'Field Synthesis',
+              'Altcoin Rotation Field',
+              'https://www.bhrigu.io/crypto-astro/btc',
+          ]
+          forbidden_html = ['Crypto-Astro Research Launch Shell', 'Runtime NOT ACTIVE']
+          http = {'status':'FAIL','attempts':[],'page_url':page_url}
+          html = ''
+
+          for attempt in range(1, 37):
+              row = {'attempt': attempt, 'css': {}}
+              try:
+                  req = Request(page_url, headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'phi-master-public-proof-v0-1'})
+                  with urlopen(req, timeout=20) as response:
+                      html = response.read().decode('utf-8')
+                      row['html_status'] = response.status
+                      row['html_last_modified'] = response.headers.get('Last-Modified')
+                  row['missing_html'] = [x for x in required_html if x not in html]
+                  row['forbidden_html'] = [x for x in forbidden_html if x in html]
+                  css_ok = True
+                  for name, marker in css_contract.items():
+                      url = f'{theme_base}/{name}'
+                      req = Request(url, headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'phi-master-public-proof-v0-1'})
+                      with urlopen(req, timeout=20) as response:
+                          text = response.read().decode('utf-8')
+                          proof = {
+                              'status': response.status,
+                              'marker': marker in text,
+                              'bytes': len(text.encode()),
+                              'last_modified': response.headers.get('Last-Modified'),
+                          }
+                      row['css'][name] = proof
+                      css_ok = css_ok and proof['status'] == 200 and proof['marker']
+                  http['attempts'].append(row)
+                  if row['html_status'] == 200 and not row['missing_html'] and not row['forbidden_html'] and css_ok:
+                      http['status'] = 'PASS'
+                      http['accepted_attempt'] = attempt
+                      break
+              except Exception as exc:
+                  row['error'] = type(exc).__name__ + ':' + str(exc)
+                  http['attempts'].append(row)
+              time.sleep(10)
+
+          Path('artifacts/live-index.html').write_text(html, encoding='utf-8')
+          Path('artifacts/publication-http-proof.json').write_text(json.dumps(http, indent=2) + '\n')
+          if http['status'] != 'PASS':
+              raise SystemExit('PUBLICATION_HTTP_PROOF_FAIL')
+
+          visual = {'status':'FAIL','viewports':{}}
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              for name, width, height in [('desktop',1440,1000),('mobile',390,844)]:
+                  page = browser.new_page(viewport={'width':width,'height':height})
+                  errors = []
+                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                  page.goto(page_url, wait_until='networkidle', timeout=60000)
+                  page.wait_for_timeout(600)
+                  page.locator('#read').scroll_into_view_if_needed()
+                  page.wait_for_timeout(300)
+                  state = page.evaluate("""() => {
+                    const rect = el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; };
+                    const canvas=document.querySelector('#read .cosmographer-field-canvas-v0-2');
+                    const legend=document.querySelector('#read .cosmographer-field-legend-v0-2');
+                    const timing=[...document.querySelectorAll('.editorial-astromodule-v0-1__states > div')];
+                    const altDuplicate=document.querySelector('.alt-rotation-module > .market-reality-grid');
+                    const keyword=document.querySelector('#read .cosmographer-keyword-grid-v0-2');
+                    const method=document.querySelector('#read .cosmographer-method-item-v0-2');
+                    const ls=getComputedStyle(legend);
+                    return {
+                      title:document.title,
+                      page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth},
+                      canvas:rect(canvas),
+                      legend:rect(legend),
+                      legendStyle:{borderRadius:ls.borderRadius,backgroundImage:ls.backgroundImage,textAlign:ls.textAlign},
+                      timingRadius:timing.length ? getComputedStyle(timing[0]).borderRadius : null,
+                      altDuplicateDisplay:altDuplicate ? getComputedStyle(altDuplicate).display : null,
+                      keywordDisplay:keyword ? getComputedStyle(keyword).display : null,
+                      methodRadius:method ? getComputedStyle(method).borderRadius : null,
+                    };
+                  }""")
+                  checks = {
+                    'title': state['title'] == 'Crypto-Astro · Φ Service Surface',
+                    'no_horizontal_overflow': state['page']['scrollWidth'] <= state['page']['clientWidth'] + 1,
+                    'no_console_errors': not errors,
+                  }
+                  if name == 'desktop':
+                      page.screenshot(path='artifacts/live-desktop-full.png', full_page=True)
+                  else:
+                      legend_center = abs((state['legend']['left'] + state['legend']['width']/2) - (state['canvas']['left'] + state['canvas']['width']/2))
+                      checks.update({
+                        'legend_centered': legend_center <= 2,
+                        'legend_full_axis': state['legend']['width'] >= state['canvas']['width'] * 0.88,
+                        'legend_flat': state['legendStyle']['borderRadius'] == '0px' and state['legendStyle']['backgroundImage'] == 'none',
+                        'legend_text_centered': state['legendStyle']['textAlign'] == 'center',
+                        'timing_membrane_flat': state['timingRadius'] == '0px',
+                        'rotation_duplicate_hidden': state['altDuplicateDisplay'] == 'none',
+                        'synthesis_keyword_hidden': state['keywordDisplay'] == 'none',
+                        'method_rows_flat': state['methodRadius'] == '0px',
+                      })
+                      page.locator('#read').screenshot(path='artifacts/live-field-synthesis-mobile.png')
+                      page.locator('.alt-rotation-module').screenshot(path='artifacts/live-altcoin-rotation-mobile.png')
+                      page.screenshot(path='artifacts/live-mobile-full.png', full_page=True)
+                  failed = [key for key,value in checks.items() if not value]
+                  visual['viewports'][name] = {'state':state,'checks':checks,'failures':failed,'console_errors':errors}
+                  if failed:
+                      raise AssertionError({name:failed,'state':state})
+                  page.close()
+              browser.close()
+          visual['status']='PASS'
+          Path('artifacts/publication-visual-proof.json').write_text(json.dumps(visual, indent=2) + '\n')
+          PY
+
+      - name: Upload public proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-phi-master-public-proof-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
