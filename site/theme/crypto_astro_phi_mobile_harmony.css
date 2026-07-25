@@ -22,15 +22,15 @@
     align-content: center;
     gap: 0.38rem;
     padding: 0.85rem 0.6rem;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   #market .editorial-astromodule-v0-1__states > div:nth-child(odd) {
     padding-right: 0.9rem;
-    border-right: 1px solid rgba(145, 181, 228, 0.12);
+    border-right: 1px solid rgba(145, 181, 228, 0.12) !important;
   }
 
   #market .editorial-astromodule-v0-1__states > div:nth-child(even) {
@@ -38,7 +38,7 @@
   }
 
   #market .editorial-astromodule-v0-1__states > div:nth-child(-n+2) {
-    border-bottom: 1px solid rgba(145, 181, 228, 0.12);
+    border-bottom: 1px solid rgba(145, 181, 228, 0.12) !important;
   }
 
   #market .editorial-astromodule-v0-1__states span,
@@ -66,11 +66,11 @@
     min-height: 3.2rem;
     margin: 0;
     padding: 0.72rem 0.25rem 0.72rem 1rem;
-    border: 0;
-    border-bottom: 1px solid rgba(91, 211, 176, 0.13);
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(91, 211, 176, 0.13) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) .field-list li::before {
@@ -91,9 +91,104 @@
     box-shadow: 0 0 14px rgba(242, 206, 114, 0.2);
   }
 
-  /* FIELD SYNTHESIS — values already appear in prose and the light field; remove the third repetition. */
+  /* FIELD SYNTHESIS — one reading field, not panels nested inside panels. */
+  #market #read .cosmographer-console-badge-v0-2 {
+    justify-self: start;
+    padding: 0.5rem 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    text-align: left;
+  }
+
+  #market #read .cosmographer-console-grid-v0-2 {
+    display: block;
+    margin-top: 1rem;
+  }
+
+  #market #read .cosmographer-console-panel-v0-2 {
+    min-width: 0;
+    margin: 0;
+    padding: 1.15rem 0;
+    border: 0 !important;
+    border-top: 1px solid rgba(145, 181, 228, 0.15) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #market #read .cosmographer-console-pill-v0-2 {
+    display: block;
+    margin-top: 0.35rem;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: rgba(126, 220, 194, 0.7);
+  }
+
+  #market #read .cosmographer-mini-grid-v0-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 0.9rem;
+    border-top: 1px solid rgba(145, 181, 228, 0.13);
+  }
+
+  #market #read .cosmographer-mini-v0-2 {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.62rem 0;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.11) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Values already appear in prose and the light field; remove the third repetition. */
   #market #read .cosmographer-keyword-grid-v0-2 {
     display: none;
+  }
+
+  #market #read .cosmographer-method-list-v0-2 {
+    display: grid;
+    gap: 0;
+    margin-top: 0.7rem;
+    border-top: 1px solid rgba(145, 181, 228, 0.13);
+  }
+
+  #market #read .cosmographer-method-item-v0-2 {
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.55rem;
+    padding: 0.7rem 0;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.11) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #market #read .cosmographer-method-item-v0-2 span,
+  #market #read .cosmographer-method-item-v0-2 strong {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  #market #read .cosmographer-watch-v0-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+    padding: 1rem 0;
+    border: 0 !important;
+    border-top: 1px solid rgba(242, 206, 114, 0.17) !important;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.13) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
   }
 }
 
