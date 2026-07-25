@@ -21,6 +21,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import subprocess
 
           route_old = "https://www.bhrigu.io/crypto-astro/btc"
           route_new = "https://www.bhrigu.io/market-cosmographer"
@@ -49,25 +50,17 @@ jobs:
               ("Crypto-Astro orientation", "Market Cosmographer orientation"),
               ("Crypto-Astro Market Field", "Market Cosmographer Market Field"),
             ],
-            "tools/crypto_astro_editorial_composition/verify_editorial_composition.py": [
-              (route_old, route_new),
-            ],
+            "tools/crypto_astro_editorial_composition/verify_editorial_composition.py": [(route_old, route_new)],
             "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py": [
               (route_old, route_new),
               ('>Crypto-Astro</a>', '>Market Cosmographer</a>'),
             ],
-            "tools/crypto_astro_what_changed/verify_what_changed.py": [
-              (route_old, route_new),
-            ],
+            "tools/crypto_astro_what_changed/verify_what_changed.py": [(route_old, route_new)],
             "tools/crypto_astro_public_http_proof/verify_public_http_proof.py": [
               ('BHRIGU_ROOT = "https://www.bhrigu.io/crypto-astro/btc"', 'BHRIGU_ROOT = "https://www.bhrigu.io/market-cosmographer"'),
             ],
-            ".github/workflows/crypto-astro-editorial-composition-pr.yml": [
-              (route_old, route_new),
-            ],
-            ".github/workflows/crypto-astro-static-refresh-pr-visual.yml": [
-              (route_old, route_new),
-            ],
+            ".github/workflows/crypto-astro-editorial-composition-pr.yml": [(route_old, route_new)],
+            ".github/workflows/crypto-astro-static-refresh-pr-visual.yml": [(route_old, route_new)],
           }
 
           for name, pairs in replacements.items():
@@ -92,16 +85,42 @@ jobs:
             ".github/workflows/crypto-astro-editorial-composition-pr.yml",
             ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
           }
-          import subprocess
           changed = set(subprocess.check_output(["git", "diff", "--name-only"], text=True).splitlines())
           assert changed == expected, (changed, expected)
           PY
-      - name: Run identity and contract verification
+      - name: Run identity and current contract verification
         run: |
           python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p 'test_*.py' -v
           python3 -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
-          python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py --out /tmp/editorial.json
           python3 tools/crypto_astro_what_changed/verify_what_changed.py --repo . --report /tmp/what-changed.json
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('site/crypto-astro/index.html').read_text(encoding='utf-8')
+          expected = [
+            ('surface','orientation'),
+            ('what-changed','what-changed'),
+            ('btc-phi-cycle-hub','btc-field'),
+            ('market','wider-market'),
+            ('trust-access','trust-access'),
+          ]
+          chapters = re.findall(r'<section id="([^"]+)"[^>]*data-editorial-chapter="([^"]+)"', html)
+          nav = re.search(r'<nav class="crypto-astro-primary-nav".*?</nav>', html, re.S)
+          hrefs = re.findall(r'href="(#[^"]+)"', nav.group(0)) if nav else []
+          ids = re.findall(r'\bid="([^"]+)"', html)
+          assert chapters == expected, chapters
+          assert hrefs == ['#surface','#surface','#what-changed','#btc-phi-cycle-hub','#market','#trust-access'], hrefs
+          assert html.count('href="https://www.bhrigu.io/market-cosmographer"') == 2
+          assert 'href="https://www.bhrigu.io/crypto-astro/btc"' not in html
+          assert '<title>Market Cosmographer · Φ Service Surface</title>' in html
+          assert '>Market Cosmographer</a>' in html
+          assert '<h1>Market Cosmographer Market Field</h1>' in html
+          assert 'Crypto-Astro' not in html
+          assert len(ids) == len(set(ids))
+          assert 'data-crypto-astro-' in html
+          assert 'crypto-astro-' in html
+          assert 'CRYPTO_ASTRO_' in html
+          PY
           bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" /tmp/local-truth 4173
       - name: Commit locked producer identity patch
         run: |
