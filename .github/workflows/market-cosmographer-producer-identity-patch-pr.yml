@@ -1,0 +1,175 @@
+name: Market Cosmographer Producer Identity Patch
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/market-cosmographer-producer-identity-patch-pr.yml"
+      - "site/crypto-astro/index.html"
+      - "tools/crypto_astro_editorial_composition/apply_editorial_composition.py"
+      - "tools/crypto_astro_editorial_composition/verify_editorial_composition.py"
+      - "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py"
+      - "tools/crypto_astro_what_changed/verify_what_changed.py"
+      - "tools/crypto_astro_public_http_proof/verify_public_http_proof.py"
+      - ".github/workflows/crypto-astro-editorial-composition-pr.yml"
+      - ".github/workflows/crypto-astro-static-refresh-pr-visual.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply locked identity-only patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          OLD_ROUTE = "https://www.bhrigu.io/crypto-astro/btc"
+          NEW_ROUTE = "https://www.bhrigu.io/market-cosmographer"
+
+          allowed = {
+              "site/crypto-astro/index.html",
+              "tools/crypto_astro_editorial_composition/apply_editorial_composition.py",
+              "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
+              "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
+              "tools/crypto_astro_what_changed/verify_what_changed.py",
+              "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
+              ".github/workflows/crypto-astro-editorial-composition-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+          }
+
+          def read(path: str) -> str:
+              return Path(path).read_text(encoding="utf-8")
+
+          def write(path: str, text: str) -> None:
+              Path(path).write_text(text, encoding="utf-8")
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected 1 match, found {count}")
+              return text.replace(old, new, 1)
+
+          # Public HTML: every literal human-facing identity occurrence is replaced;
+          # technical crypto_astro / CRYPTO_ASTRO identifiers remain untouched.
+          html_path = "site/crypto-astro/index.html"
+          html = read(html_path)
+          if html.count(OLD_ROUTE) != 2:
+              raise SystemExit(f"producer CTA route count drift: {html.count(OLD_ROUTE)}")
+          if html.count("Crypto-Astro") < 1:
+              raise SystemExit("visible producer identity missing")
+          html = html.replace(OLD_ROUTE, NEW_ROUTE)
+          html = html.replace("Crypto-Astro", "Market Cosmographer")
+          assert html.count(OLD_ROUTE) == 0
+          assert html.count(NEW_ROUTE) == 2
+          assert "Crypto-Astro" not in html
+          assert "CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1" in html
+          assert 'data-crypto-astro-phi-service-surface="v0_1"' in html
+          assert 'class="crypto-astro-primary-nav"' in html
+          assert "site/crypto-astro" not in html  # no path text introduced into markup
+          write(html_path, html)
+
+          # Deterministic applicator: update only emitted identity/CTA strings.
+          apply_path = "tools/crypto_astro_editorial_composition/apply_editorial_composition.py"
+          apply = read(apply_path)
+          for old, new, label in [
+              ('aria-label="Crypto-Astro primary navigation"', 'aria-label="Market Cosmographer primary navigation"', "generated nav aria"),
+              ('<a class="crypto-astro-primary-nav__brand" href="#surface">Crypto-Astro</a>', '<a class="crypto-astro-primary-nav__brand" href="#surface">Market Cosmographer</a>', "generated nav brand"),
+              ('aria-label="Crypto-Astro orientation"', 'aria-label="Market Cosmographer orientation"', "generated orientation aria"),
+              ('<h1>Crypto-Astro Market Field</h1>', '<h1>Market Cosmographer Market Field</h1>', "generated H1"),
+              ('<a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a>', '<a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/market-cosmographer">Ask one BTC field question</a>', "generated hero CTA"),
+              ('<a class="btc-field-read-entry-v0-1 btc-entry-v1" href="https://www.bhrigu.io/crypto-astro/btc" aria-label="Ask one BTC field question">', '<a class="btc-field-read-entry-v0-1 btc-entry-v1" href="https://www.bhrigu.io/market-cosmographer" aria-label="Ask one BTC field question">', "generated BTC CTA"),
+          ]:
+              apply = replace_once(apply, old, new, label)
+          # Historical source match patterns remain intentionally unchanged.
+          assert 'aria-label="Crypto-Astro Market Field public-safe surface"' in apply
+          assert r'https://www\.bhrigu\.io/crypto-astro/btc' in apply
+          write(apply_path, apply)
+
+          # Route-bearing verifiers and fixtures switch atomically.
+          route_files = [
+              "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
+              "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
+              "tools/crypto_astro_what_changed/verify_what_changed.py",
+              "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
+              ".github/workflows/crypto-astro-editorial-composition-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+          ]
+          for path in route_files:
+              text = read(path)
+              count = text.count(OLD_ROUTE)
+              if count < 1:
+                  raise SystemExit(f"{path}: canonical route target not found")
+              text = text.replace(OLD_ROUTE, NEW_ROUTE)
+              assert OLD_ROUTE not in text
+              write(path, text)
+
+          test_path = "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py"
+          test_text = read(test_path)
+          test_text = replace_once(
+              test_text,
+              '<a class="crypto-astro-primary-nav__brand" href="#surface">Crypto-Astro</a>',
+              '<a class="crypto-astro-primary-nav__brand" href="#surface">Market Cosmographer</a>',
+              "brand fixture",
+          )
+          write(test_path, test_text)
+
+          # Final contract assertions.
+          final_html = read(html_path)
+          assert '<title>Market Cosmographer · Φ Service Surface</title>' in final_html
+          assert '>Market Cosmographer</a>' in final_html
+          assert '<h1>Market Cosmographer Market Field</h1>' in final_html
+          assert final_html.count(f'href="{NEW_ROUTE}"') == 2
+          assert 'href="https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html"' not in final_html
+
+          # The patch itself may touch only the locked eight files.
+          import subprocess
+          changed = set(subprocess.check_output(["git", "diff", "--name-only"], text=True).splitlines())
+          if changed != allowed:
+              raise SystemExit(f"changed file set mismatch: {sorted(changed)}")
+          print("LOCKED_IDENTITY_PATCH=PASS")
+          print(f"CHANGED_FILES={len(changed)}")
+          PY
+
+      - name: Compile and run bounded verifier tests
+        run: |
+          python3 -m py_compile \
+            tools/crypto_astro_editorial_composition/apply_editorial_composition.py \
+            tools/crypto_astro_editorial_composition/verify_editorial_composition.py \
+            tools/crypto_astro_what_changed/verify_what_changed.py \
+            tools/crypto_astro_public_http_proof/verify_public_http_proof.py
+          python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p 'test_*.py' -v
+          python3 -m unittest discover -s tools/crypto_astro_what_changed -p 'test_*.py' -v
+          python3 tools/crypto_astro_what_changed/verify_what_changed.py --repo . --report /tmp/what-changed.json
+
+      - name: Commit locked producer identity patch
+        run: |
+          changed="$(git diff --name-only)"
+          if [ -z "$changed" ]; then
+            echo "Patch already present"
+            exit 0
+          fi
+          expected="$(cat <<'EOF'
+          .github/workflows/crypto-astro-editorial-composition-pr.yml
+          .github/workflows/crypto-astro-static-refresh-pr-visual.yml
+          site/crypto-astro/index.html
+          tools/crypto_astro_editorial_composition/apply_editorial_composition.py
+          tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py
+          tools/crypto_astro_editorial_composition/verify_editorial_composition.py
+          tools/crypto_astro_public_http_proof/verify_public_http_proof.py
+          tools/crypto_astro_what_changed/verify_what_changed.py
+          EOF
+          )"
+          test "$(printf '%s\n' "$changed" | sort)" = "$(printf '%s\n' "$expected" | sort)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $changed
+          git commit -m "Market Cosmographer: complete producer public identity"
+          git push origin "HEAD:${{ github.head_ref }}"
