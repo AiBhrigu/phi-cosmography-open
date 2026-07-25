@@ -59,8 +59,6 @@ jobs:
             "tools/crypto_astro_public_http_proof/verify_public_http_proof.py": [
               ('BHRIGU_ROOT = "https://www.bhrigu.io/crypto-astro/btc"', 'BHRIGU_ROOT = "https://www.bhrigu.io/market-cosmographer"'),
             ],
-            ".github/workflows/crypto-astro-editorial-composition-pr.yml": [(route_old, route_new)],
-            ".github/workflows/crypto-astro-static-refresh-pr-visual.yml": [(route_old, route_new)],
           }
 
           for name, pairs in replacements.items():
@@ -82,8 +80,6 @@ jobs:
             "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
             "tools/crypto_astro_what_changed/verify_what_changed.py",
             "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
-            ".github/workflows/crypto-astro-editorial-composition-pr.yml",
-            ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
           }
           changed = set(subprocess.check_output(["git", "diff", "--name-only"], text=True).splitlines())
           assert changed == expected, (changed, expected)
@@ -131,8 +127,6 @@ jobs:
             tools/crypto_astro_editorial_composition/verify_editorial_composition.py \
             tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py \
             tools/crypto_astro_what_changed/verify_what_changed.py \
-            tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
-            .github/workflows/crypto-astro-editorial-composition-pr.yml \
-            .github/workflows/crypto-astro-static-refresh-pr-visual.yml
+            tools/crypto_astro_public_http_proof/verify_public_http_proof.py
           git commit -m "Market Cosmographer: complete producer public identity"
           git push origin "HEAD:${{ github.head_ref }}"
