@@ -1,0 +1,239 @@
+name: Crypto-Astro BTC Semantic Motion Public Proof PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-btc-semantic-motion-public-proof-pr.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-btc-semantic-motion-public-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  public-proof:
+    name: Verify live BTC core, gateway, and bounded motion
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Verify canonical publication and capture live evidence
+        env:
+          PUBLIC_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
+          SYSTEM_CSS_URL: https://aibhrigu.github.io/phi-cosmography-open/theme/system.css
+          MOTION_CSS_URL: https://aibhrigu.github.io/phi-cosmography-open/theme/crypto_astro_btc_semantic_motion.css
+          BTC_ROUTE: https://www.bhrigu.io/crypto-astro/btc
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python - <<'PY'
+          import json, os, time
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from playwright.sync_api import sync_playwright
+
+          public_url = os.environ['PUBLIC_URL']
+          system_css_url = os.environ['SYSTEM_CSS_URL']
+          motion_css_url = os.environ['MOTION_CSS_URL']
+          btc_route = os.environ['BTC_ROUTE']
+
+          required_html = [
+              'Bitcoin gravity and cycle context',
+              'Aspect-Cycle Core',
+              'ASK ONE BTC FIELD QUESTION',
+              btc_route,
+          ]
+          required_system = [
+              "@import url('./crypto_astro_btc_semantic_motion.css');",
+              'BTC_SEMANTIC_GATEWAY_RENDER_FIX_v0_1',
+              '61.803398875%',
+          ]
+          required_motion = [
+              'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1',
+              '--btc-motion-core-x: 61.803398875%',
+              '--btc-motion-core-y: 38.196601125%',
+              'var(--btc-dominance)',
+              'prefers-reduced-motion: reduce',
+              'view(block)',
+          ]
+
+          def fetch_text(url):
+              req = Request(url, headers={
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache',
+                  'User-Agent': 'btc-semantic-motion-public-proof-v0-1',
+              })
+              with urlopen(req, timeout=25) as response:
+                  return response.status, dict(response.headers.items()), response.read().decode('utf-8')
+
+          http = {'status': 'FAIL', 'attempts': []}
+          html = system_css = motion_css = ''
+          for attempt in range(1, 37):
+              try:
+                  hs, hh, html = fetch_text(public_url)
+                  ss, sh, system_css = fetch_text(system_css_url)
+                  ms, mh, motion_css = fetch_text(motion_css_url)
+                  missing_html = [x for x in required_html if x not in html]
+                  missing_system = [x for x in required_system if x not in system_css]
+                  missing_motion = [x for x in required_motion if x not in motion_css]
+                  entry = {
+                      'attempt': attempt,
+                      'html_status': hs,
+                      'system_status': ss,
+                      'motion_status': ms,
+                      'missing_html': missing_html,
+                      'missing_system': missing_system,
+                      'missing_motion': missing_motion,
+                      'html_last_modified': hh.get('Last-Modified'),
+                      'system_last_modified': sh.get('Last-Modified'),
+                      'motion_last_modified': mh.get('Last-Modified'),
+                  }
+                  http['attempts'].append(entry)
+                  if hs == ss == ms == 200 and not missing_html and not missing_system and not missing_motion:
+                      http['status'] = 'PASS'
+                      http['accepted_attempt'] = attempt
+                      break
+              except Exception as exc:
+                  http['attempts'].append({'attempt': attempt, 'error': type(exc).__name__ + ':' + str(exc)})
+              time.sleep(10)
+
+          Path('artifacts/live-index.html').write_text(html, encoding='utf-8')
+          Path('artifacts/live-system.css').write_text(system_css, encoding='utf-8')
+          Path('artifacts/live-semantic-motion.css').write_text(motion_css, encoding='utf-8')
+          Path('artifacts/publication-http-proof.json').write_text(json.dumps(http, indent=2) + '\n')
+          if http['status'] != 'PASS':
+              raise SystemExit('PUBLICATION_HTTP_PROOF_FAIL')
+
+          PHI_X = 0.61803398875
+          PHI_Y = 0.38196601125
+          visual = {'status': 'FAIL', 'viewports': {}}
+
+          def rect_js():
+              return """el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; }"""
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              for name, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
+                  page = browser.new_page(viewport={'width': width, 'height': height})
+                  errors = []
+                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                  page.goto(public_url, wait_until='networkidle', timeout=60000)
+                  hub = page.locator('#btc-phi-cycle-hub')
+                  hub.scroll_into_view_if_needed()
+                  page.wait_for_timeout(900)
+
+                  state = page.evaluate("""(btcRoute) => {
+                    const rect = el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; };
+                    const hub=document.querySelector('#btc-phi-cycle-hub');
+                    const field=hub.querySelector('.btc-field-v1');
+                    const core=hub.querySelector('.btc-quiet-phi-core-v0-3');
+                    const gateway=hub.querySelector('.btc-entry-v1');
+                    const phase=hub.querySelector('.btc-node-v1.phase');
+                    const memory=hub.querySelector('.btc-node-v1.memory');
+                    const fr=rect(field), cr=rect(core), pr=rect(phase), mr=rect(memory);
+                    const css=getComputedStyle(gateway);
+                    const before=getComputedStyle(gateway,'::before');
+                    return {
+                      title:document.title,
+                      field:fr,
+                      core:cr,
+                      coreX:(cr.left+cr.width/2-fr.left)/fr.width,
+                      coreY:(cr.top+cr.height/2-fr.top)/fr.height,
+                      coreRadiusRatio:cr.width/cr.height,
+                      phase:pr,
+                      memory:mr,
+                      phaseMemoryYDelta:Math.abs((pr.top+pr.height/2)-(mr.top+mr.height/2)),
+                      phaseCoreDistance:Math.abs((pr.left+pr.width/2)-(cr.left+cr.width/2)),
+                      memoryCoreDistance:Math.abs((mr.left+mr.width/2)-(cr.left+cr.width/2)),
+                      gateway:rect(gateway),
+                      gatewayHref:gateway.href,
+                      gatewayBackground:css.backgroundImage,
+                      gatewayBorderRadius:css.borderRadius,
+                      gatewayBeforeAnimationName:before.animationName,
+                      gatewayBeforeAnimationTimeline:before.animationTimeline || '',
+                      dominanceVar:getComputedStyle(hub).getPropertyValue('--btc-dominance').trim(),
+                      scrollWidth:document.documentElement.scrollWidth,
+                      clientWidth:document.documentElement.clientWidth,
+                    };
+                  }""", btc_route)
+
+                  checks = {
+                      'title': state['title'] == 'Crypto-Astro · Φ Service Surface',
+                      'btc_route_unchanged': state['gatewayHref'] == btc_route,
+                      'core_phi_x': abs(state['coreX'] - PHI_X) < 0.035,
+                      'core_phi_y': abs(state['coreY'] - PHI_Y) < 0.035,
+                      'core_circular': abs(state['coreRadiusRatio'] - 1) < 0.08,
+                      'dominance_bound': state['dominanceVar'] == '56.5%',
+                      'phase_memory_axis': state['phaseMemoryYDelta'] < 5,
+                      'phase_memory_radial_balance': abs(state['phaseCoreDistance'] - state['memoryCoreDistance']) < 28,
+                      'gateway_telescope_visible': state['gatewayBackground'].count('radial-gradient') >= 5,
+                      'gateway_phi_focus_marker': '61.803398875%' in system_css,
+                      'no_horizontal_overflow': state['scrollWidth'] <= state['clientWidth'] + 1,
+                      'console_errors_none': not errors,
+                  }
+
+                  gateway = page.locator('#btc-phi-cycle-hub > .btc-entry-v1')
+                  field = page.locator('#btc-phi-cycle-hub .btc-field-v1')
+                  aspect = page.locator('#btc-phi-cycle-hub .btc-cycle-v1')
+                  gateway.screenshot(path=f'artifacts/live-btc-gateway-{name}-static.png')
+                  field.screenshot(path=f'artifacts/live-btc-core-{name}-static.png')
+                  aspect.screenshot(path=f'artifacts/live-aspect-cycle-{name}.png')
+
+                  gateway.focus()
+                  page.wait_for_timeout(500)
+                  gateway.screenshot(path=f'artifacts/live-btc-gateway-{name}-focus.png')
+
+                  page.screenshot(path=f'artifacts/live-{name}-full.png', full_page=True)
+
+                  visual['viewports'][name] = {'state': state, 'checks': checks, 'console_errors': errors}
+                  failed = [key for key, value in checks.items() if not value]
+                  assert not failed, {name: failed, 'state': state}
+                  page.close()
+
+              for name, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
+                  page = browser.new_page(viewport={'width': width, 'height': height}, reduced_motion='reduce')
+                  page.goto(public_url, wait_until='networkidle', timeout=60000)
+                  page.locator('#btc-phi-cycle-hub').scroll_into_view_if_needed()
+                  page.wait_for_timeout(300)
+                  reduced = page.evaluate("""() => {
+                    const hub=document.querySelector('#btc-phi-cycle-hub');
+                    const before=getComputedStyle(hub.querySelector('.btc-entry-v1'),'::before');
+                    const fieldBefore=getComputedStyle(hub.querySelector('.btc-field-v1'),'::before');
+                    return {
+                      gatewayAnimation:before.animationName,
+                      fieldAnimation:fieldBefore.animationName,
+                      gatewayOpacity:before.opacity,
+                      fieldOpacity:fieldBefore.opacity,
+                    };
+                  }""")
+                  assert reduced['gatewayAnimation'] == 'none', reduced
+                  assert reduced['fieldAnimation'] == 'none', reduced
+                  page.locator('#btc-phi-cycle-hub').screenshot(path=f'artifacts/live-btc-section-{name}-reduced-motion.png')
+                  visual.setdefault('reduced_motion', {})[name] = reduced
+                  page.close()
+              browser.close()
+
+          visual['status'] = 'PASS'
+          Path('artifacts/publication-visual-proof.json').write_text(json.dumps(visual, indent=2) + '\n')
+          PY
+
+      - name: Upload public proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-btc-semantic-motion-public-proof-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
