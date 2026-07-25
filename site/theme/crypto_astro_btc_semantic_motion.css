@@ -1,0 +1,593 @@
+/* CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1:BEGIN
+   Targeted BTC-only visual and motion layer.
+   BTC dominance is the only quantitative binding.
+   Golden geometry carries reading hierarchy, never market magnitude.
+   Motion is bounded to viewport progress or direct interaction; idle state is static. */
+
+#btc-phi-cycle-hub {
+  --btc-motion-gold: #f4cf72;
+  --btc-motion-blue: #82b7ff;
+  --btc-motion-ink: #020711;
+  --btc-motion-core-x: 61.803398875%;
+  --btc-motion-core-y: 38.196601125%;
+  --btc-motion-major: 61.803398875%;
+  --btc-motion-minor: 38.196601125%;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   DATA-BOUND BTC GRAVITY FIELD
+   ────────────────────────────────────────────────────────────── */
+
+#btc-phi-cycle-hub .btc-field-v1 {
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(244, 207, 114, 0.42);
+  background:
+    radial-gradient(ellipse 34% 48% at var(--btc-motion-core-x) var(--btc-motion-core-y), rgba(244, 207, 114, 0.18), transparent 58%),
+    radial-gradient(ellipse 61.803398875% 38.196601125% at var(--btc-motion-core-x) var(--btc-motion-core-y), transparent 0 55%, rgba(130, 183, 255, 0.08) 55.3% 55.8%, transparent 56.1%),
+    linear-gradient(90deg, transparent calc(var(--btc-motion-core-x) - 0.05%), rgba(244, 207, 114, 0.24) var(--btc-motion-core-x), transparent calc(var(--btc-motion-core-x) + 0.05%)),
+    linear-gradient(180deg, transparent calc(var(--btc-motion-core-y) - 0.05%), rgba(130, 183, 255, 0.18) var(--btc-motion-core-y), transparent calc(var(--btc-motion-core-y) + 0.05%)),
+    linear-gradient(145deg, #020711 0%, #07152c 54%, #020711 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 0 96px rgba(55, 104, 188, 0.075),
+    0 28px 76px rgba(0, 0, 0, 0.38);
+}
+
+/* The gold arc is bound to the inline --btc-dominance:56.5% value. */
+#btc-phi-cycle-hub .btc-field-v1::before {
+  content: "";
+  position: absolute;
+  inset: 5.5%;
+  z-index: 1;
+  pointer-events: none;
+  border: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from -90deg at var(--btc-motion-core-x) var(--btc-motion-core-y),
+      rgba(244, 207, 114, 0.98) 0 var(--btc-dominance),
+      rgba(130, 183, 255, 0.12) var(--btc-dominance) 100%
+    );
+  -webkit-mask:
+    radial-gradient(ellipse 28% 43% at var(--btc-motion-core-x) var(--btc-motion-core-y), transparent 0 73%, #000 74% 77%, transparent 78%);
+  mask:
+    radial-gradient(ellipse 28% 43% at var(--btc-motion-core-x) var(--btc-motion-core-y), transparent 0 73%, #000 74% 77%, transparent 78%);
+  box-shadow: none;
+  opacity: 0.92;
+  transform: none;
+  will-change: opacity, transform;
+}
+
+/* Gold structure lines and blue liquidity/timing lines converge on the verified core. */
+#btc-phi-cycle-hub .btc-field-v1::after {
+  content: "";
+  position: absolute;
+  inset: 7%;
+  z-index: 0;
+  pointer-events: none;
+  border: 0;
+  border-radius: 34px 55px;
+  background:
+    linear-gradient(24deg, transparent 0 42%, rgba(244, 207, 114, 0.14) 42.2% 42.45%, transparent 42.7% 100%),
+    linear-gradient(156deg, transparent 0 42%, rgba(244, 207, 114, 0.11) 42.2% 42.45%, transparent 42.7% 100%),
+    linear-gradient(336deg, transparent 0 42%, rgba(130, 183, 255, 0.12) 42.2% 42.45%, transparent 42.7% 100%),
+    linear-gradient(204deg, transparent 0 42%, rgba(130, 183, 255, 0.1) 42.2% 42.45%, transparent 42.7% 100%),
+    radial-gradient(ellipse 36% 56% at var(--btc-motion-core-x) var(--btc-motion-core-y), transparent 0 57%, rgba(244, 207, 114, 0.16) 57.4% 57.8%, transparent 58.2%),
+    radial-gradient(ellipse 54% 34% at var(--btc-motion-core-x) var(--btc-motion-core-y), transparent 0 58%, rgba(130, 183, 255, 0.13) 58.4% 58.8%, transparent 59.2%);
+  box-shadow: none;
+  opacity: 0.92;
+  transform: scale(1);
+  transform-origin: var(--btc-motion-core-x) var(--btc-motion-core-y);
+  will-change: opacity, transform;
+}
+
+#btc-phi-cycle-hub .btc-quiet-phi-core-v0-3 {
+  width: clamp(11.25rem, 18vw, 13.75rem);
+  border-color: rgba(255, 239, 190, 0.94);
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.98) 0 1.8%, transparent 16%),
+    radial-gradient(circle at 50% 50%, #fff4c6 0 17%, #f4cf72 48%, #c7cbd0 100%);
+  box-shadow:
+    0 0 18px rgba(255, 238, 184, 0.92),
+    0 0 58px rgba(244, 207, 114, 0.66),
+    0 0 142px rgba(244, 207, 114, 0.24),
+    0 0 220px rgba(130, 183, 255, 0.1);
+  transition:
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 620ms ease,
+    filter 620ms ease;
+}
+
+#btc-phi-cycle-hub .btc-quiet-phi-core-v0-3::before {
+  inset: -1.75rem;
+  background:
+    conic-gradient(from -90deg, rgba(244, 207, 114, 0.92) 0 var(--btc-dominance), rgba(130, 183, 255, 0.14) var(--btc-dominance) 100%);
+  -webkit-mask: radial-gradient(circle, transparent 0 71%, #000 72% 78%, transparent 79%);
+  mask: radial-gradient(circle, transparent 0 71%, #000 72% 78%, transparent 79%);
+  filter: drop-shadow(0 0 8px rgba(244, 207, 114, 0.56));
+}
+
+#btc-phi-cycle-hub .btc-quiet-phi-core-v0-3::after {
+  inset: 12%;
+  background:
+    repeating-conic-gradient(from -90deg, rgba(74, 98, 139, 0.25) 0 0.55deg, transparent 0.7deg 15deg),
+    radial-gradient(circle, transparent 0 21%, rgba(255, 255, 255, 0.15) 22% 23%, transparent 24% 52%, rgba(130, 183, 255, 0.13) 53% 54%, transparent 55%);
+  -webkit-mask: radial-gradient(circle, transparent 0 17%, #000 18% 74%, transparent 75%);
+  mask: radial-gradient(circle, transparent 0 17%, #000 18% 74%, transparent 75%);
+  opacity: 0.58;
+}
+
+/* Context rails are semantic terminals, not cards. */
+#btc-phi-cycle-hub .btc-t-v1 {
+  width: 29%;
+  min-height: 3.6rem;
+  height: auto;
+  padding: 0.45rem 0.58rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+  transition:
+    color 420ms ease,
+    opacity 420ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#btc-phi-cycle-hub .btc-t-v1 span {
+  padding: 0.24rem 0.38rem;
+  border-radius: 0;
+  background: rgba(2, 7, 17, 0.34);
+  box-shadow: none;
+}
+
+#btc-phi-cycle-hub .btc-t-v1::after {
+  inset: auto 0 0;
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, rgba(244, 207, 114, 0.68), rgba(130, 183, 255, 0.28), transparent);
+  transform: scaleX(0.62);
+  transform-origin: left center;
+  transition:
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease;
+}
+
+#btc-phi-cycle-hub .btc-t-v1.liquid::after,
+#btc-phi-cycle-hub .btc-t-v1.time::after {
+  background: linear-gradient(90deg, transparent, rgba(130, 183, 255, 0.32), rgba(244, 207, 114, 0.62));
+  transform-origin: right center;
+}
+
+#btc-phi-cycle-hub .btc-t-v1:hover,
+#btc-phi-cycle-hub .btc-t-v1:focus-visible {
+  color: #fff5d2;
+  transform: translateY(-2px);
+  outline: none;
+}
+
+#btc-phi-cycle-hub .btc-t-v1:hover::after,
+#btc-phi-cycle-hub .btc-t-v1:focus-visible::after {
+  transform: scaleX(1);
+}
+
+#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:hover)::after,
+#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible)::after {
+  transform: scale(0.985);
+  opacity: 1;
+}
+
+#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:hover) .btc-quiet-phi-core-v0-3,
+#btc-phi-cycle-hub .btc-field-v1:has(.btc-t-v1:focus-visible) .btc-quiet-phi-core-v0-3 {
+  transform: translate(-50%, -50%) scale(1.025);
+  filter: saturate(1.03) contrast(1.05);
+  box-shadow:
+    0 0 20px rgba(255, 238, 184, 0.96),
+    0 0 68px rgba(244, 207, 114, 0.72),
+    0 0 154px rgba(244, 207, 114, 0.28),
+    0 0 230px rgba(130, 183, 255, 0.12);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TELESCOPE-LIKE BTC FIELD READ GATEWAY
+   ────────────────────────────────────────────────────────────── */
+
+#btc-phi-cycle-hub > .btc-entry-v1 {
+  position: relative;
+  isolation: isolate;
+  min-height: 8.6rem;
+  overflow: hidden;
+  grid-template-columns: 4.5rem minmax(0, 0.72fr) minmax(12rem, 1fr) 3.25rem;
+  grid-template-areas:
+    "aperture optics title focus"
+    "aperture optics subtitle focus";
+  column-gap: clamp(0.8rem, 2vw, 1.45rem);
+  padding: 1rem 1.15rem;
+  border-color: rgba(244, 207, 114, 0.58);
+  border-radius: 34px 55px;
+  background:
+    radial-gradient(ellipse at 6% 50%, rgba(244, 207, 114, 0.22), transparent 18%),
+    radial-gradient(ellipse at 84% 50%, rgba(130, 183, 255, 0.11), transparent 28%),
+    linear-gradient(90deg, rgba(244, 207, 114, 0.09), rgba(16, 38, 73, 0.16) 58%, rgba(2, 7, 17, 0.94));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 0 76px rgba(130, 183, 255, 0.045),
+    0 22px 56px rgba(0, 0, 0, 0.28);
+  transition:
+    border-color 520ms ease,
+    box-shadow 620ms ease,
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Source trajectories: five bounded optical paths that compress toward the focus plane. */
+#btc-phi-cycle-hub > .btc-entry-v1::before {
+  content: "";
+  position: absolute;
+  left: 5.4rem;
+  right: 4.2rem;
+  top: 15%;
+  bottom: 15%;
+  z-index: -1;
+  width: auto;
+  height: auto;
+  background:
+    linear-gradient(8deg, transparent 0 48.8%, rgba(244, 207, 114, 0.28) 49% 49.35%, transparent 49.55%),
+    linear-gradient(4deg, transparent 0 48.8%, rgba(130, 183, 255, 0.2) 49% 49.3%, transparent 49.5%),
+    linear-gradient(0deg, transparent 0 49%, rgba(244, 207, 114, 0.34) 49.15% 49.45%, transparent 49.65%),
+    linear-gradient(-4deg, transparent 0 48.8%, rgba(130, 183, 255, 0.18) 49% 49.3%, transparent 49.5%),
+    linear-gradient(-8deg, transparent 0 48.8%, rgba(244, 207, 114, 0.24) 49% 49.35%, transparent 49.55%);
+  clip-path: polygon(0 8%, 100% 42%, 100% 58%, 0 92%);
+  opacity: 0.58;
+  transform: scaleX(0.94);
+  transform-origin: right center;
+  transition:
+    clip-path 680ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms ease,
+    transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Focus plane. */
+#btc-phi-cycle-hub > .btc-entry-v1::after {
+  content: "";
+  position: absolute;
+  right: 4.45rem;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  z-index: -1;
+  background: linear-gradient(transparent, rgba(130, 183, 255, 0.24), rgba(244, 207, 114, 0.86), rgba(130, 183, 255, 0.24), transparent);
+  box-shadow:
+    0 0 18px rgba(244, 207, 114, 0.36),
+    0 0 42px rgba(130, 183, 255, 0.12);
+  opacity: 0.68;
+  transform: scaleY(0.72);
+  transition:
+    opacity 520ms ease,
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 620ms ease;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
+  grid-area: aperture;
+  width: 4rem;
+  height: 4rem;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  border: 1px solid rgba(244, 207, 114, 0.76);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(244, 207, 114, 0.2) 0 11%, transparent 12% 34%, rgba(130, 183, 255, 0.13) 35% 37%, transparent 38%),
+    rgba(3, 9, 20, 0.86);
+  box-shadow:
+    0 0 0 0.62rem rgba(130, 183, 255, 0.025),
+    0 0 0 0.66rem rgba(130, 183, 255, 0.1),
+    0 0 26px rgba(244, 207, 114, 0.16);
+  color: transparent;
+  transition:
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 620ms ease;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1::before {
+  content: "Φ";
+  color: var(--btc-motion-gold);
+  font: 700 1.15rem/1 Georgia, serif;
+  text-shadow: 0 0 14px rgba(244, 207, 114, 0.36);
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 strong {
+  grid-area: title;
+  align-self: end;
+  font-size: 0;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 strong::after {
+  content: "ENTER BTC FIELD READ";
+  font-size: clamp(0.82rem, 1.2vw, 0.98rem);
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 em {
+  grid-area: subtitle;
+  align-self: start;
+  font-size: 0;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 em::after {
+  content: "Ask one source-bound BTC question";
+  font-size: clamp(0.72rem, 1vw, 0.84rem);
+  line-height: 1.35;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {
+  grid-area: focus;
+  width: 2.9rem;
+  height: 2.9rem;
+  align-self: center;
+  border-color: rgba(244, 207, 114, 0.52);
+  background: radial-gradient(circle, rgba(244, 207, 114, 0.16), rgba(3, 9, 20, 0.94) 68%);
+  transition:
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 520ms ease,
+    box-shadow 620ms ease;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1:hover,
+#btc-phi-cycle-hub > .btc-entry-v1:focus-visible {
+  border-color: rgba(244, 207, 114, 0.88);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 0 82px rgba(130, 183, 255, 0.065),
+    0 28px 70px rgba(0, 0, 0, 0.34),
+    0 0 42px rgba(244, 207, 114, 0.08);
+  outline: none;
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1:hover::before,
+#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::before {
+  clip-path: polygon(0 24%, 100% 46%, 100% 54%, 0 76%);
+  opacity: 0.92;
+  transform: scaleX(1);
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1:hover::after,
+#btc-phi-cycle-hub > .btc-entry-v1:focus-visible::after {
+  opacity: 1;
+  transform: scaleY(1);
+  box-shadow:
+    0 0 24px rgba(244, 207, 114, 0.56),
+    0 0 58px rgba(130, 183, 255, 0.18);
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1:hover .btc-field-read-entry-glyph-v0-1,
+#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-field-read-entry-glyph-v0-1 {
+  transform: scale(1.045);
+  box-shadow:
+    0 0 0 0.5rem rgba(130, 183, 255, 0.035),
+    0 0 0 0.55rem rgba(130, 183, 255, 0.15),
+    0 0 34px rgba(244, 207, 114, 0.28);
+}
+
+#btc-phi-cycle-hub > .btc-entry-v1:hover .btc-entry-arrow-v1,
+#btc-phi-cycle-hub > .btc-entry-v1:focus-visible .btc-entry-arrow-v1 {
+  transform: translateX(0.3rem) scale(1.035);
+  border-color: rgba(244, 207, 114, 0.82);
+  box-shadow: 0 0 28px rgba(244, 207, 114, 0.18);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   ASPECT-CYCLE OPTICAL BALANCE
+   ────────────────────────────────────────────────────────────── */
+
+@media (min-width: 761px) {
+  #btc-phi-cycle-hub .btc-cycle-canvas-v1 {
+    grid-template-columns: 38.196601125fr 23.60679775fr 38.196601125fr;
+    grid-template-rows: 38.196601125fr 23.60679775fr 38.196601125fr;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.phase,
+  #btc-phi-cycle-hub .btc-node-v1.memory {
+    width: min(100%, 15.5rem);
+    min-height: 5.9rem;
+    align-self: center;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.phase {
+    justify-self: end;
+    padding: 0.85rem 4.2rem 0.85rem 0.35rem;
+    text-align: right;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.memory {
+    justify-self: start;
+    padding: 0.85rem 0.35rem 0.85rem 4.2rem;
+    text-align: left;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.phase::before {
+    left: auto !important;
+    right: 0.25rem !important;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.memory::before {
+    left: 0.25rem !important;
+    right: auto !important;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.phase::after {
+    left: auto;
+    right: 4.2rem;
+  }
+
+  #btc-phi-cycle-hub .btc-node-v1.memory::after {
+    left: 4.2rem;
+    right: auto;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   BOUNDED VIEWPORT MOTION — scroll-linked, one pass, no idle loop
+   ────────────────────────────────────────────────────────────── */
+
+@keyframes btcGravityResolveV01 {
+  from { opacity: 0.18; transform: scale(0.94); }
+  to { opacity: 0.92; transform: scale(1); }
+}
+
+@keyframes btcFieldConvergeV01 {
+  from { opacity: 0.3; transform: scale(1.045); }
+  to { opacity: 0.92; transform: scale(1); }
+}
+
+@keyframes btcGatewayFocusV01 {
+  from { opacity: 0.2; transform: scaleX(0.9); }
+  to { opacity: 0.58; transform: scaleX(0.94); }
+}
+
+@supports (animation-timeline: view()) {
+  #btc-phi-cycle-hub .btc-field-v1::before {
+    animation-name: btcGravityResolveV01 !important;
+    animation-duration: 1s !important;
+    animation-iteration-count: 1 !important;
+    animation-fill-mode: both !important;
+    animation-play-state: running !important;
+    animation-timeline: view(block);
+    animation-range: entry 4% cover 32%;
+  }
+
+  #btc-phi-cycle-hub .btc-field-v1::after {
+    animation-name: btcFieldConvergeV01 !important;
+    animation-duration: 1s !important;
+    animation-iteration-count: 1 !important;
+    animation-fill-mode: both !important;
+    animation-play-state: running !important;
+    animation-timeline: view(block);
+    animation-range: entry 6% cover 36%;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1::before {
+    animation-name: btcGatewayFocusV01 !important;
+    animation-duration: 1s !important;
+    animation-iteration-count: 1 !important;
+    animation-fill-mode: both !important;
+    animation-play-state: running !important;
+    animation-timeline: view(block);
+    animation-range: entry 4% cover 28%;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RESPONSIVE CONTRACT
+   ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 760px) {
+  #btc-phi-cycle-hub .btc-field-v1::before {
+    inset: 3%;
+    -webkit-mask: radial-gradient(ellipse 36% 31% at 50% 50%, transparent 0 72%, #000 73% 77%, transparent 78%);
+    mask: radial-gradient(ellipse 36% 31% at 50% 50%, transparent 0 72%, #000 73% 77%, transparent 78%);
+  }
+
+  #btc-phi-cycle-hub .btc-field-v1::after {
+    inset: 5%;
+    border-radius: 21px 34px;
+  }
+
+  #btc-phi-cycle-hub .btc-t-v1 {
+    width: 38.196601125%;
+    min-height: 3rem;
+    padding: 0.3rem 0.35rem;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 {
+    min-height: 16.5rem;
+    grid-template-columns: 4rem minmax(0, 1fr) 3rem;
+    grid-template-rows: 4rem 5.4rem auto;
+    grid-template-areas:
+      "aperture optics focus"
+      "aperture optics focus"
+      "title title title"
+      "subtitle subtitle subtitle";
+    row-gap: 0.55rem;
+    padding: 1rem;
+    border-radius: 21px 34px;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1::before {
+    left: 4.5rem;
+    right: 3.5rem;
+    top: 1rem;
+    bottom: auto;
+    height: 8.4rem;
+    clip-path: polygon(0 5%, 100% 42%, 100% 58%, 0 95%);
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1::after {
+    right: 3.65rem;
+    top: 1.2rem;
+    bottom: auto;
+    height: 7.9rem;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 strong,
+  #btc-phi-cycle-hub > .btc-entry-v1 em {
+    justify-self: stretch;
+    text-align: center;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 strong::after {
+    font-size: 0.82rem;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 em::after {
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 420px) {
+  #btc-phi-cycle-hub > .btc-entry-v1 {
+    min-height: 15.6rem;
+    grid-template-columns: 3.6rem minmax(0, 1fr) 2.8rem;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
+    width: 3.45rem;
+    height: 3.45rem;
+  }
+
+  #btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {
+    width: 2.55rem;
+    height: 2.55rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   REDUCED MOTION — complete information, immediate final state
+   ────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  #btc-phi-cycle-hub .btc-field-v1::before,
+  #btc-phi-cycle-hub .btc-field-v1::after,
+  #btc-phi-cycle-hub .btc-quiet-phi-core-v0-3,
+  #btc-phi-cycle-hub .btc-t-v1,
+  #btc-phi-cycle-hub .btc-t-v1::after,
+  #btc-phi-cycle-hub > .btc-entry-v1,
+  #btc-phi-cycle-hub > .btc-entry-v1::before,
+  #btc-phi-cycle-hub > .btc-entry-v1::after,
+  #btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1,
+  #btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {
+    animation-name: none !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  #btc-phi-cycle-hub .btc-field-v1::before { opacity: 0.92; transform: none; }
+  #btc-phi-cycle-hub .btc-field-v1::after { opacity: 0.92; transform: scale(1); }
+  #btc-phi-cycle-hub > .btc-entry-v1::before { opacity: 0.58; transform: scaleX(0.94); }
+}
+
+/* CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1:END */
