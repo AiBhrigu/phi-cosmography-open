@@ -21,7 +21,7 @@ jobs:
 
       - name: Apply producer identity applicability repair
         run: |
-          python3 - <<'PY'
+          python3 - <<'OUTERPY'
           from pathlib import Path
 
           path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
@@ -107,7 +107,7 @@ jobs:
           assert text.count("mode='producer_public_identity'") == 1
           assert text.count('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS') == 1
           assert text.count("steps.scope.outputs.mode != 'producer_public_identity'") == 1
-          PY
+          OUTERPY
 
       - name: Validate exact one-file repair
         run: |
