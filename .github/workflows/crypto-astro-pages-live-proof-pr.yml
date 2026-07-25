@@ -26,7 +26,7 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright==1.55.0
           python -m playwright install --with-deps chromium
-      - name: Verify exact live publication and capture evidence
+      - name: Verify canonical live publication and capture evidence
         env:
           PUBLIC_URL: https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/index.html
           EXPECTED_TIMESTAMP: 2026-07-25T05:23:18Z
@@ -53,18 +53,18 @@ jobs:
               'https://www.bhrigu.io/crypto-astro/btc',
           ]
           forbidden=['Crypto-Astro Research Launch Shell','Runtime NOT ACTIVE','CCI Launch Shell']
-          report={'url':base,'attempts':[],'status':'FAIL'}
+          report={'url':base,'cache_bust':False,'attempts':[],'status':'FAIL'}
           html=''
           for attempt in range(1,31):
-              url=f'{base}?publication-proof={os.environ.get("GITHUB_RUN_ID","local")}-{attempt}'
-              req=Request(url,headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'crypto-astro-pages-proof-v0-1'})
+              req=Request(base,headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'crypto-astro-pages-canonical-proof-v0-1'})
               try:
                   with urlopen(req,timeout=20) as response:
                       html=response.read().decode('utf-8')
                       status=response.status
+                      headers={'etag':response.headers.get('ETag'),'last_modified':response.headers.get('Last-Modified'),'cache_control':response.headers.get('Cache-Control')}
                   missing=[item for item in required if item not in html]
                   present_forbidden=[item for item in forbidden if item in html]
-                  report['attempts'].append({'attempt':attempt,'http_status':status,'missing':missing,'forbidden':present_forbidden,'bytes':len(html.encode())})
+                  report['attempts'].append({'attempt':attempt,'http_status':status,'missing':missing,'forbidden':present_forbidden,'bytes':len(html.encode()),'headers':headers})
                   if status==200 and not missing and not present_forbidden:
                       report['status']='PASS'
                       report['accepted_attempt']=attempt
@@ -75,16 +75,16 @@ jobs:
           Path('artifacts/live-index.html').write_text(html,encoding='utf-8')
           Path('artifacts/publication-http-proof.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
           if report['status']!='PASS':
-              raise SystemExit('PUBLICATION_HTTP_PROOF_FAIL')
+              raise SystemExit('CANONICAL_PUBLICATION_HTTP_PROOF_FAIL')
 
-          visual={'status':'FAIL','viewports':{}}
+          visual={'status':'FAIL','url':base,'viewports':{}}
           with sync_playwright() as p:
               browser=p.chromium.launch()
               for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
                   page=browser.new_page(viewport={'width':width,'height':height})
                   errors=[]
                   page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
-                  page.goto(f'{base}?visual-proof={os.environ.get("GITHUB_RUN_ID","local")}-{name}',wait_until='networkidle',timeout=60000)
+                  page.goto(base,wait_until='networkidle',timeout=60000)
                   page.screenshot(path=f'artifacts/crypto-astro-pages-{name}.png',full_page=True)
                   checks={
                       'title':page.title()=='Crypto-Astro · Φ Service Surface',
@@ -97,12 +97,12 @@ jobs:
                       'no_horizontal_overflow':page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'),
                       'console_errors_none':not errors,
                   }
-                  visual['viewports'][name]={'checks':checks,'console_errors':errors,'title':page.title()}
+                  visual['viewports'][name]={'checks':checks,'console_errors':errors,'title':page.title(),'document_height':page.evaluate('document.documentElement.scrollHeight')}
               browser.close()
           visual['status']='PASS' if all(all(v['checks'].values()) for v in visual['viewports'].values()) else 'FAIL'
           Path('artifacts/publication-visual-proof.json').write_text(json.dumps(visual,indent=2),encoding='utf-8')
           if visual['status']!='PASS':
-              raise SystemExit('PUBLICATION_VISUAL_PROOF_FAIL')
+              raise SystemExit('CANONICAL_PUBLICATION_VISUAL_PROOF_FAIL')
           PY
       - name: Upload live proof
         if: always()
