@@ -1,11 +1,11 @@
 /* CRYPTO_ASTRO_PHI_MOBILE_HARMONY_v0_1:BEGIN
-   Mobile modules must express their own meaning instead of repeating one card language.
+   Mobile modules express their own meaning instead of repeating one card language.
    Timing = categorical membrane.
    Liquidity = open source-aligned flow rows.
-   Synthesis = continuous reading field.
-   Rotation = directional orbit and numbered reading path. */
+   Synthesis = continuous reading field. */
 
 @media (max-width: 760px) {
+  /* TIMING CONTEXT — one four-part membrane, not four independent cards. */
   #market .editorial-astromodule-v0-1__states {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -33,8 +33,13 @@
     border-right: 1px solid rgba(145, 181, 228, 0.12);
   }
 
-  #market .editorial-astromodule-v0-1__states > div:nth-child(even) { padding-left: 0.9rem; }
-  #market .editorial-astromodule-v0-1__states > div:nth-child(-n+2) { border-bottom: 1px solid rgba(145, 181, 228, 0.12); }
+  #market .editorial-astromodule-v0-1__states > div:nth-child(even) {
+    padding-left: 0.9rem;
+  }
+
+  #market .editorial-astromodule-v0-1__states > div:nth-child(-n+2) {
+    border-bottom: 1px solid rgba(145, 181, 228, 0.12);
+  }
 
   #market .editorial-astromodule-v0-1__states span,
   #market .editorial-astromodule-v0-1__states strong {
@@ -44,6 +49,7 @@
     hyphens: none;
   }
 
+  /* LIQUIDITY — source-aligned currents, not four green capsules. */
   #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) .field-list {
     display: grid;
     gap: 0;
@@ -85,102 +91,9 @@
     box-shadow: 0 0 14px rgba(242, 206, 114, 0.2);
   }
 
-  #market #read .cosmographer-console-badge-v0-2 {
-    justify-self: start;
-    padding: 0.5rem 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    text-align: left;
-  }
-
-  #market #read .cosmographer-console-grid-v0-2 {
-    display: block;
-    margin-top: 1rem;
-  }
-
-  #market #read .cosmographer-console-panel-v0-2 {
-    min-width: 0;
-    margin: 0;
-    padding: 1.15rem 0;
-    border: 0;
-    border-top: 1px solid rgba(145, 181, 228, 0.15);
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  #market #read .cosmographer-console-state-row-v0-2 { align-items: center; gap: 0.85rem; }
-
-  #market #read .cosmographer-console-pill-v0-2 {
-    display: block;
-    margin-top: 0.35rem;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: rgba(126, 220, 194, 0.7);
-  }
-
-  #market #read .cosmographer-mini-grid-v0-2 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-    margin-top: 0.9rem;
-    border-top: 1px solid rgba(145, 181, 228, 0.13);
-  }
-
-  #market #read .cosmographer-mini-v0-2 {
-    min-width: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.6rem;
-    align-items: center;
-    padding: 0.62rem 0;
-    border: 0;
-    border-bottom: 1px solid rgba(145, 181, 228, 0.11);
-    border-radius: 0;
-    background: transparent;
-  }
-
-  #market #read .cosmographer-keyword-grid-v0-2 { display: none; }
-
-  #market #read .cosmographer-method-list-v0-2 {
-    display: grid;
-    gap: 0;
-    margin-top: 0.7rem;
-    border-top: 1px solid rgba(145, 181, 228, 0.13);
-  }
-
-  #market #read .cosmographer-method-item-v0-2 {
-    min-width: 0;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 0.55rem;
-    padding: 0.7rem 0;
-    border: 0;
-    border-bottom: 1px solid rgba(145, 181, 228, 0.11);
-    border-radius: 0;
-    background: transparent;
-  }
-
-  #market #read .cosmographer-method-item-v0-2 span,
-  #market #read .cosmographer-method-item-v0-2 strong {
-    min-width: 0;
-    overflow-wrap: normal;
-    word-break: normal;
-    hyphens: none;
-  }
-
-  #market #read .cosmographer-watch-v0-2 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.45rem;
-    padding: 1rem 0;
-    border: 0;
-    border-top: 1px solid rgba(242, 206, 114, 0.17);
-    border-bottom: 1px solid rgba(145, 181, 228, 0.13);
-    border-radius: 0;
-    background: transparent;
+  /* FIELD SYNTHESIS — values already appear in prose and the light field; remove the third repetition. */
+  #market #read .cosmographer-keyword-grid-v0-2 {
+    display: none;
   }
 }
 
