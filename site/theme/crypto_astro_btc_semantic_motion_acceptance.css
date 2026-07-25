@@ -1,0 +1,22 @@
+/* CRYPTO_ASTRO_BTC_SEMANTIC_MOTION_ACCEPTANCE_v0_1:BEGIN
+   Final stacking contract for the telescope gateway.
+   Optical trajectories remain below interactive content but above the gateway background. */
+
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::before {
+  z-index: 1;
+  mix-blend-mode: normal;
+  filter: drop-shadow(0 0 9px rgba(244, 207, 114, 0.22));
+}
+
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1::after {
+  z-index: 2;
+}
+
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-field-read-entry-glyph-v0-1,
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 strong,
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 em,
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 .btc-entry-arrow-v1 {
+  z-index: 3;
+}
+
+/* CRYPTO_ASTRO_BTC_SEMANTIC_MOTION_ACCEPTANCE_v0_1:END */
