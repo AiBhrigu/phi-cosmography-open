@@ -179,6 +179,27 @@
     hyphens: none;
   }
 
+  /* The field legend is a centered caption axis, not one more floating capsule. */
+  #market #read .cosmographer-field-legend-v0-2 {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    width: 100%;
+    max-width: none !important;
+    margin: 0.7rem 0 0;
+    padding: 0.8rem 0 0;
+    border: 0 !important;
+    border-top: 1px solid rgba(242, 206, 114, 0.18) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align: center;
+    line-height: 1.45;
+  }
+
   #market #read .cosmographer-watch-v0-2 {
     display: grid;
     grid-template-columns: 1fr;
