@@ -52,12 +52,13 @@ jobs:
 
           if semantic_path.exists() and 'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1' in semantic_path.read_text():
               semantic = semantic_path.read_text()
+              compact = ''.join(semantic.split())
               assert t in system and system.index(v) < system.index(t)
               assert 'infinite' not in semantic
               assert semantic.count('@keyframes ') == 3
-              assert semantic.count('animation-iteration-count: 1') >= 3
-              assert 'animation-timeline: view(block)' in semantic
-              assert '@media (prefers-reduced-motion: reduce)' in semantic
+              assert compact.count('animation-iteration-count:1') >= 3
+              assert 'animation-timeline:view(block)' in compact
+              assert '@media(prefers-reduced-motion:reduce)' in compact
               print('BTC_MOTION_MODE=BOUNDED_SEMANTIC')
           else:
               assert t not in system
