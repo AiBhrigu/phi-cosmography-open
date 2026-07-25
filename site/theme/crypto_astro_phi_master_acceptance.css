@@ -58,7 +58,7 @@
 @media (min-width: 761px) {
   /* Focus the semantic machine instead of stretching it across the whole chapter. */
   .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
-    width: min(100%, 66rem);
+    width: min(100%, 60rem);
     margin-inline: auto;
   }
 
@@ -176,3 +176,329 @@
 }
 
 /* CRYPTO_ASTRO_PHI_MASTER_ACCEPTANCE_v0_1:END */
+
+/* CRYPTO_ASTRO_TARGETED_ASPECT_SYNTHESIS_REPAIR_v0_1:BEGIN
+   Targeted pre-publication repair only:
+   1. Aspect-Cycle is an understandable five-stage cycle, not a card board.
+   2. Field Synthesis light field remains spacious and its stations never collide. */
+
+/* Explain the public reading order before the visual map. */
+.btc-deep-v1.btc-deep-v1 .btc-cycle-head-v1 {
+  align-items: end;
+}
+
+.btc-deep-v1.btc-deep-v1 .btc-cycle-head-v1 p {
+  max-width: 38rem;
+  font-size: clamp(0.92rem, 1.25vw, 1.05rem);
+  line-height: 1.58;
+}
+
+.btc-deep-v1.btc-deep-v1 .btc-cycle-head-v1 p::after {
+  content: "01 Pressure  →  02 Phase  →  03 Memory  →  04 BTC confirmation  →  05 Review";
+  display: block;
+  margin-top: 0.85rem;
+  color: rgba(242, 206, 114, 0.76);
+  font: 700 0.68rem/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 761px) {
+  /* The map keeps exact Phi proportion but reads as one connected orbit. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
+    position: relative;
+    padding: clamp(1rem, 2vw, 1.45rem);
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 52%, rgba(242, 206, 114, 0.13) 0 6%, transparent 18%),
+      radial-gradient(ellipse at 50% 52%, transparent 0 24%, rgba(118, 172, 239, 0.1) 24.2% 24.7%, transparent 25% 39%, rgba(242, 206, 114, 0.08) 39.2% 39.6%, transparent 40%),
+      linear-gradient(90deg, transparent calc(var(--ca-minor) - 0.04%), rgba(118, 172, 239, 0.1) var(--ca-minor), transparent calc(var(--ca-minor) + 0.04%)),
+      linear-gradient(90deg, transparent calc(var(--ca-major) - 0.04%), rgba(242, 206, 114, 0.1) var(--ca-major), transparent calc(var(--ca-major) + 0.04%)),
+      linear-gradient(180deg, rgba(5, 13, 27, 0.99), rgba(2, 8, 18, 0.99));
+  }
+
+  /* Restore a quiet semantic eye: public reading surrounds a sealed protected center. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::before {
+    display: block;
+    left: 50%;
+    top: 52%;
+    width: clamp(8.5rem, 12vw, 10.5rem);
+    height: clamp(5.25rem, 7.5vw, 6.5rem);
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(242, 206, 114, 0.38);
+    border-radius: 52% 48% 52% 48% / 58% 58% 42% 42%;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(242, 206, 114, 0.88) 0 5%, rgba(8, 18, 34, 0.98) 6% 23%, rgba(118, 172, 239, 0.16) 24% 27%, rgba(3, 9, 20, 0.98) 28% 55%, transparent 56%),
+      radial-gradient(ellipse at center, rgba(242, 206, 114, 0.18), transparent 68%);
+    box-shadow:
+      0 0 0 1.4rem rgba(118, 172, 239, 0.025),
+      0 0 0 1.45rem rgba(118, 172, 239, 0.1),
+      0 0 4.5rem rgba(242, 206, 114, 0.12);
+    opacity: 1;
+    animation: none !important;
+    z-index: 1;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+    display: block;
+    left: 50%;
+    top: 52%;
+    width: 47%;
+    height: 58%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(118, 172, 239, 0.2);
+    border-radius: 50%;
+    background: transparent;
+    box-shadow:
+      0 0 0 2.3rem rgba(242, 206, 114, 0.012),
+      0 0 0 2.35rem rgba(242, 206, 114, 0.055);
+    opacity: 0.92;
+    animation: none !important;
+    z-index: 0;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-route-v1 {
+    display: block !important;
+    position: absolute;
+    inset: 7% 5%;
+    width: 90%;
+    height: 86%;
+    opacity: 0.48;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-route-v1 path {
+    fill: none;
+    stroke: rgba(242, 206, 114, 0.42);
+    stroke-width: 1.25;
+    stroke-dasharray: 7 12;
+    filter: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-route-v1 .s {
+    stroke: rgba(118, 172, 239, 0.34);
+    stroke-width: 1;
+    stroke-dasharray: 2 13;
+  }
+
+  /* Open stations replace heavy black cards. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    width: min(100%, 15.5rem);
+    min-width: 0;
+    min-height: 0;
+    align-self: center;
+    padding: 0.85rem 0.35rem 0.85rem 4.2rem;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.2) !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect {
+    align-self: center;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::before {
+    left: 0.25rem !important;
+    top: 50% !important;
+    width: 2.95rem !important;
+    height: 2.95rem !important;
+    transform: translateY(-50%) !important;
+    box-shadow: 0 0 1.8rem rgba(118, 172, 239, 0.12) !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::after {
+    left: 4.2rem;
+    top: 0.12rem;
+    transform: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 span {
+    font-size: 0.66rem;
+    line-height: 1.25;
+    letter-spacing: 0.12em;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 strong {
+    font-size: clamp(0.75rem, 0.9vw, 0.86rem);
+    line-height: 1.38;
+  }
+}
+
+.btc-deep-v1.btc-deep-v1 .btc-cycle-seal-v0-1 {
+  display: grid;
+  gap: 0.28rem;
+  justify-items: center;
+}
+
+.btc-deep-v1.btc-deep-v1 .btc-cycle-seal-v0-1::before {
+  content: "Pressure → Phase → Memory → BTC confirmation → Human review";
+  color: rgba(222, 232, 244, 0.62);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* Field Synthesis regains a spacious, harmonious light field. */
+#market #read .cosmographer-field-canvas-v0-2 {
+  width: 100%;
+  min-height: 20rem;
+  height: clamp(20rem, 26vw, 24rem);
+  margin-top: 1.35rem;
+  border: 1px solid rgba(145, 181, 228, 0.11);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(var(--field-gold), calc(var(--field-gravity) * 0.18)), transparent 18%),
+    radial-gradient(ellipse at 22% 46%, rgba(var(--field-teal), calc(var(--field-membrane) * 0.1)), transparent 31%),
+    radial-gradient(ellipse at 79% 48%, rgba(var(--field-blue), calc(var(--field-spread) * 0.12)), transparent 34%),
+    linear-gradient(180deg, rgba(2, 8, 15, 0.28), rgba(2, 8, 15, 0.7));
+}
+
+#market #read .cosmographer-field-thread-v0-2 {
+  left: 5%;
+  right: 5%;
+  height: 92px;
+  opacity: 0.68;
+}
+
+/* Six stations sit around the field rather than colliding in black capsules. */
+#market #read .cosmographer-field-node-v0-2 {
+  min-width: 7.2rem;
+  max-width: 9.25rem;
+  justify-content: flex-start;
+  padding: 0.55rem 0.68rem;
+  border: 1px solid rgba(145, 181, 228, 0.16);
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(9, 20, 34, 0.82), rgba(4, 11, 21, 0.72));
+  color: rgba(235, 244, 250, 0.82);
+  font-size: 0.72rem;
+  line-height: 1.22;
+  white-space: normal;
+  text-align: left;
+  backdrop-filter: none;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="stable"] {
+  left: 7%;
+  top: 15%;
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="rotation"] {
+  left: 7%;
+  top: auto;
+  bottom: 16%;
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="btc"] {
+  left: 50%;
+  top: 8%;
+  transform: translateX(-50%);
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="liquidity"] {
+  left: 50%;
+  top: auto;
+  bottom: 8%;
+  transform: translateX(-50%);
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="timing"] {
+  left: auto;
+  right: 21%;
+  top: auto;
+  bottom: 18%;
+}
+
+#market #read .cosmographer-field-node-v0-2[data-node="freshness"] {
+  left: auto;
+  right: 6%;
+  top: 24%;
+}
+
+#market #read .cosmographer-field-legend-v0-2 {
+  left: 1.1rem;
+  bottom: 0.9rem;
+  max-width: 62%;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  /* The cycle remains open and readable on mobile as a 38.2 / 61.8 sequence. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    border: 0 !important;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.18) !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1 .btc-cycle-head-v1 p::after {
+    font-size: 0.6rem;
+    line-height: 1.55;
+  }
+
+  #market #read .cosmographer-field-canvas-v0-2 {
+    min-height: 0;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    padding: 4.5rem 0.85rem 1rem;
+    overflow: hidden;
+  }
+
+  #market #read .cosmographer-field-node-v0-2,
+  #market #read .cosmographer-field-node-v0-2[data-node="stable"],
+  #market #read .cosmographer-field-node-v0-2[data-node="rotation"],
+  #market #read .cosmographer-field-node-v0-2[data-node="btc"],
+  #market #read .cosmographer-field-node-v0-2[data-node="liquidity"],
+  #market #read .cosmographer-field-node-v0-2[data-node="timing"],
+  #market #read .cosmographer-field-node-v0-2[data-node="freshness"] {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    transform: none;
+    justify-self: stretch;
+  }
+
+  #market #read .cosmographer-field-node-v0-2[data-node="btc"] {
+    grid-column: 1 / -1;
+    width: 61.803398875%;
+    justify-self: center;
+  }
+
+  #market #read .cosmographer-field-node-v0-2[data-node="freshness"] {
+    grid-column: 1 / -1;
+  }
+
+  #market #read .cosmographer-field-legend-v0-2 {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    grid-column: 1 / -1;
+    max-width: none;
+    margin-top: 0.25rem;
+  }
+}
+
+/* CRYPTO_ASTRO_TARGETED_ASPECT_SYNTHESIS_REPAIR_v0_1:END */
