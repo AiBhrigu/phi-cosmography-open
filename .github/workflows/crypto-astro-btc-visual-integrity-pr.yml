@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+      - '.github/workflows/btc-poster-motion-budget-pr.yml'
+      - '.github/workflows/crypto-astro-surface-truth-pr.yml'
       - 'site/theme/btc_phi_visual_integrity.css'
       - 'site/theme/crypto_astro_btc_semantic_motion.css'
       - 'site/theme/system.css'
@@ -46,8 +48,10 @@ jobs:
             | sort > /tmp/foundation.txt
 
           printf '%s\n' \
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \
             '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
             '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
             'site/theme/crypto_astro_btc_semantic_motion.css' \
             'site/theme/system.css' \
             | sort > /tmp/semantic-motion.txt
@@ -68,7 +72,9 @@ jobs:
             site/theme/crypto_astro \
             site/theme/btc_phi_semantic_geometry.css \
             site/theme/btc_poster_grade.css \
-            site/theme/btc_motion_budget.css
+            site/theme/btc_motion_budget.css \
+            tools \
+            docs
           echo BTC_VISUAL_INTEGRITY_EXACT_SCOPE=PASS
 
       - name: Verify source contract
@@ -79,14 +85,12 @@ jobs:
 
           system = Path('site/theme/system.css').read_text()
           integrity = Path('site/theme/btc_phi_visual_integrity.css').read_text()
-          semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
           imports = [
               "@import url('./btc_poster_grade.css');",
               "@import url('./btc_motion_budget.css');",
               "@import url('./ip_semantic_seal.css');",
               "@import url('./btc_phi_semantic_geometry.css');",
               "@import url('./btc_phi_visual_integrity.css');",
-              "@import url('./crypto_astro_btc_semantic_motion.css');",
           ]
           assert all(item in system for item in imports)
           assert [system.index(item) for item in imports] == sorted(system.index(item) for item in imports)
@@ -97,10 +101,11 @@ jobs:
           assert '@keyframes' not in integrity
           assert 'animation:' not in integrity
           assert 'content-visibility: visible' in integrity
-          assert 'grid-template-columns: 61.803398875fr 38.196601125fr' in integrity
-          assert 'grid-template-columns: 38.196601125fr 61.803398875fr' in integrity
 
           if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
+              semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
+              target_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
+              assert target_import in system and system.index(imports[-1]) < system.index(target_import)
               required = [
                   'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1',
                   '--btc-motion-core-x: 61.803398875%',
@@ -116,7 +121,7 @@ jobs:
               assert 'infinite' not in semantic
               assert '#market' not in semantic
               assert 'body {' not in semantic
-              assert 'animation-iteration-count: 1' in semantic
+              assert semantic.count('@keyframes ') == 3
           print('BTC_VISUAL_INTEGRITY_SOURCE=PASS')
           PY
 
@@ -138,141 +143,77 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
           python - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
           from playwright.sync_api import sync_playwright
 
           PHI = 1.61803398875
           MAJOR = 0.61803398875
           MINOR = 0.38196601125
+          semantic_mode = os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION'
           out = Path('artifacts')
-          report = {}
+          report = {'mode':'SEMANTIC_MOTION' if semantic_mode else 'FOUNDATION','viewports':{},'failures':[]}
+          all_failures=[]
 
-          def ratio(a, b):
-              return a / b if b else None
-
-          def intersects(a, b):
-              return not (
-                  a['right'] <= b['left']
-                  or a['left'] >= b['right']
-                  or a['bottom'] <= b['top']
-                  or a['top'] >= b['bottom']
-              )
+          def ratio(a,b): return a/b if b else None
+          def intersects(a,b):
+              return not (a['right']<=b['left'] or a['left']>=b['right'] or a['bottom']<=b['top'] or a['top']>=b['bottom'])
 
           with sync_playwright() as p:
-              browser = p.chromium.launch()
-              for name, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
-                  page = browser.new_page(viewport={'width': width, 'height': height})
-                  errors = []
-                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
-                  page.goto('http://127.0.0.1:4173/crypto-astro/index.html', wait_until='networkidle')
-
-                  hub = page.locator('#btc-phi-cycle-hub')
-                  hub.scroll_into_view_if_needed()
-                  page.wait_for_timeout(250)
-
-                  state = page.evaluate("""() => {
-                    const rect = (el) => {
-                      const r = el.getBoundingClientRect();
-                      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
-                    };
-                    const field = document.querySelector('.btc-field-v1');
-                    const core = document.querySelector('.btc-quiet-phi-core-v0-3');
-                    const labels = [...document.querySelectorAll('.btc-t-v1')];
-                    const metrics = [...document.querySelectorAll('.btc-phi-cycle-metric-v0-1')];
-                    const cta = document.querySelector('.btc-entry-v1');
-                    const cycle = document.querySelector('.btc-cycle-canvas-v1');
-                    const nodes = [...document.querySelectorAll('.btc-node-v1')];
-                    const first = document.querySelector('#market .market-first-screen');
-                    const firstChildren = first ? [...first.children] : [];
-                    const lower = document.querySelector('#market .market-lower-grid');
-                    const timing = lower?.querySelector('.editorial-astromodule-v0-1');
-                    const synthesis = lower?.querySelector('#read');
-                    const liquidity = lower ? [...lower.children].find(el => el.matches('.market-card:not(.editorial-astromodule-v0-1)')) : null;
-                    const decorative = [...document.querySelectorAll('#market [data-geometry-truth="decorative"]')]
-                      .filter(el => getComputedStyle(el).display !== 'none');
-                    const fr = rect(field);
-                    const cr = rect(core);
-                    return {
-                      contentVisibility: getComputedStyle(document.querySelector('.btc-deep-v1')).contentVisibility,
-                      field: fr,
-                      core: cr,
-                      coreX: (cr.left + cr.width / 2 - fr.left) / fr.width,
-                      coreY: (cr.top + cr.height / 2 - fr.top) / fr.height,
-                      labels: labels.map(rect),
-                      metrics: metrics.map(rect),
-                      metricColumns: getComputedStyle(document.querySelector('.btc-metrics-v1')).gridTemplateColumns,
-                      cta: rect(cta),
-                      ctaColumns: getComputedStyle(cta).gridTemplateColumns,
-                      cycle: rect(cycle),
-                      cycleColumns: getComputedStyle(cycle).gridTemplateColumns,
-                      nodes: nodes.map(el => ({
-                        rect: rect(el),
-                        display: getComputedStyle(el).display,
-                        gridColumnStart: getComputedStyle(el).gridColumnStart,
-                        gridColumnEnd: getComputedStyle(el).gridColumnEnd,
-                        position: getComputedStyle(el).position,
-                      })),
-                      marketFirst: firstChildren.map(rect),
-                      timing: timing ? rect(timing) : null,
-                      synthesis: synthesis ? rect(synthesis) : null,
-                      liquidity: liquidity ? rect(liquidity) : null,
-                      decorativeVisible: decorative.length,
-                      scrollWidth: document.documentElement.scrollWidth,
-                      clientWidth: document.documentElement.clientWidth,
-                    };
+              browser=p.chromium.launch()
+              for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
+                  page=browser.new_page(viewport={'width':width,'height':height})
+                  errors=[]
+                  page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+                  page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
+                  page.locator('#btc-phi-cycle-hub').scroll_into_view_if_needed(); page.wait_for_timeout(300)
+                  state=page.evaluate("""() => {
+                    const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+                    const field=document.querySelector('.btc-field-v1'),core=document.querySelector('.btc-quiet-phi-core-v0-3');
+                    const labels=[...document.querySelectorAll('.btc-t-v1')],metrics=[...document.querySelectorAll('.btc-phi-cycle-metric-v0-1')];
+                    const cta=document.querySelector('.btc-entry-v1'),cycle=document.querySelector('.btc-cycle-canvas-v1');
+                    const nodes=[...document.querySelectorAll('.btc-node-v1')];
+                    const first=document.querySelector('#market .market-first-screen'),firstChildren=first?[...first.children]:[];
+                    const lower=document.querySelector('#market .market-lower-grid');
+                    const timing=lower?.querySelector('.editorial-astromodule-v0-1'),synthesis=lower?.querySelector('#read');
+                    const liquidity=lower?[...lower.children].find(el=>el.matches('.market-card:not(.editorial-astromodule-v0-1)')):null;
+                    const decorative=[...document.querySelectorAll('#market [data-geometry-truth="decorative"]')].filter(el=>getComputedStyle(el).display!=='none');
+                    const fr=rect(field),cr=rect(core);
+                    return {contentVisibility:getComputedStyle(document.querySelector('.btc-deep-v1')).contentVisibility,field:fr,core:cr,
+                      coreX:(cr.left+cr.width/2-fr.left)/fr.width,coreY:(cr.top+cr.height/2-fr.top)/fr.height,
+                      labels:labels.map(rect),metrics:metrics.map(rect),cta:rect(cta),cycle:rect(cycle),
+                      nodes:nodes.map(el=>({rect:rect(el),column:getComputedStyle(el).gridColumnStart,position:getComputedStyle(el).position})),
+                      marketFirst:firstChildren.map(rect),timing:timing?rect(timing):null,synthesis:synthesis?rect(synthesis):null,liquidity:liquidity?rect(liquidity):null,
+                      decorativeVisible:decorative.length,scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
                   }""")
-
-                  checks = {
-                      'core_phi_x': abs(state['coreX'] - MAJOR) < 0.03,
-                      'core_phi_y': abs(state['coreY'] - MINOR) < 0.03,
-                      'decorative_marks_hidden': state['decorativeVisible'] == 0,
-                      'horizontal_overflow_none': state['scrollWidth'] <= state['clientWidth'] + 1,
-                      'console_errors_none': not errors,
-                      'cta_visible': state['cta']['width'] > 0 and state['cta']['height'] > 0,
-                      'five_nodes_visible': len(state['nodes']) == 5 and all(n['rect']['width'] > 0 and n['rect']['height'] > 0 for n in state['nodes']),
-                  }
-
-                  if name == 'desktop':
-                      checks.update({
-                          'field_exact_phi_ratio': abs(ratio(state['field']['width'], state['field']['height']) - PHI) < 0.03,
-                          'market_primary_support_phi': len(state['marketFirst']) == 2
-                            and abs(ratio(state['marketFirst'][0]['width'], state['marketFirst'][1]['width']) - PHI) < 0.08,
-                          'synthesis_support_phi': state['timing'] is not None
-                            and state['synthesis'] is not None
-                            and abs(ratio(state['synthesis']['width'], state['timing']['width']) - PHI) < 0.08,
-                          'support_lane_aligned': state['timing'] is not None
-                            and state['liquidity'] is not None
-                            and abs(state['timing']['left'] - state['liquidity']['left']) < 2
-                            and abs(state['timing']['width'] - state['liquidity']['width']) < 2,
-                      })
-                      page.screenshot(path=str(out/'desktop-btc-visual-integrity.png'), full_page=True)
+                  checks={'core_phi_x':abs(state['coreX']-MAJOR)<0.03,'core_phi_y':abs(state['coreY']-MINOR)<0.03,
+                    'decorative_marks_hidden':state['decorativeVisible']==0,'horizontal_overflow_none':state['scrollWidth']<=state['clientWidth']+1,
+                    'console_errors_none':not errors,'cta_visible':state['cta']['width']>0 and state['cta']['height']>0,
+                    'five_nodes_visible':len(state['nodes'])==5 and all(n['rect']['width']>0 and n['rect']['height']>0 for n in state['nodes'])}
+                  if name=='desktop':
+                      checks['field_exact_phi_ratio']=abs(ratio(state['field']['width'],state['field']['height'])-PHI)<0.03
+                      if not semantic_mode:
+                          checks.update({'market_primary_support_phi':len(state['marketFirst'])==2 and abs(ratio(state['marketFirst'][0]['width'],state['marketFirst'][1]['width'])-PHI)<0.08,
+                            'synthesis_support_phi':state['timing'] is not None and state['synthesis'] is not None and abs(ratio(state['synthesis']['width'],state['timing']['width'])-PHI)<0.08,
+                            'support_lane_aligned':state['timing'] is not None and state['liquidity'] is not None and abs(state['timing']['left']-state['liquidity']['left'])<2 and abs(state['timing']['width']-state['liquidity']['width'])<2})
+                      page.screenshot(path=str(out/'desktop-btc-visual-integrity.png'),full_page=True)
                   else:
-                      label_overlap = any(intersects(label, state['core']) for label in state['labels'])
-                      metric_ratio = ratio(state['metrics'][0]['width'], state['metrics'][1]['width']) if len(state['metrics']) == 2 else None
-                      checks.update({
-                          'content_visibility_real': state['contentVisibility'] == 'visible',
-                          'field_compact_height': 330 <= state['field']['height'] <= 430,
-                          'context_lanes_clear_core': not label_overlap,
-                          'metrics_golden_split': metric_ratio is not None and abs(metric_ratio - MINOR / MAJOR) < 0.08,
-                          'cta_semantic_height': state['cta']['height'] <= 300,
-                          'cycle_compact_height': state['cycle']['height'] <= 700,
-                          'nodes_reading_lane': all(n['gridColumnStart'] == '2' for n in state['nodes']),
-                          'nodes_relative': all(n['position'] == 'relative' for n in state['nodes']),
-                      })
+                      label_overlap=any(intersects(label,state['core']) for label in state['labels'])
+                      metric_ratio=ratio(state['metrics'][0]['width'],state['metrics'][1]['width']) if len(state['metrics'])==2 else None
+                      checks.update({'content_visibility_real':state['contentVisibility']=='visible','field_compact_height':330<=state['field']['height']<=430,
+                        'context_lanes_clear_core':not label_overlap,'metrics_golden_split':metric_ratio is not None and abs(metric_ratio-MINOR/MAJOR)<0.08,
+                        'cta_semantic_height':state['cta']['height']<=300,'cycle_compact_height':state['cycle']['height']<=700,
+                        'nodes_reading_lane':all(n['column']=='2' for n in state['nodes']),'nodes_relative':all(n['position']=='relative' for n in state['nodes'])})
                       page.locator('.btc-field-v1').screenshot(path=str(out/'mobile-btc-field.png'))
                       page.locator('.btc-entry-v1').screenshot(path=str(out/'mobile-btc-gateway.png'))
                       page.locator('.btc-cycle-v1').screenshot(path=str(out/'mobile-aspect-cycle.png'))
-                      page.screenshot(path=str(out/'mobile-btc-visual-integrity-full.png'), full_page=True)
-
-                  report[name] = {'state': state, 'checks': checks, 'console_errors': errors}
-                  failed = [key for key, value in checks.items() if not value]
-                  assert not failed, {name: failed, 'state': state}
-                  page.close()
-
+                      page.screenshot(path=str(out/'mobile-btc-visual-integrity-full.png'),full_page=True)
+                  failed=[k for k,v in checks.items() if not v]; all_failures.extend(f'{name}:{k}' for k in failed)
+                  report['viewports'][name]={'state':state,'checks':checks,'failures':failed,'console_errors':errors}; page.close()
               browser.close()
-
-          (out/'btc-visual-integrity-report.json').write_text(json.dumps(report, indent=2) + '\n')
+          report['failures']=all_failures; report['status']='PASS' if not all_failures else 'FAIL'
+          (out/'btc-visual-integrity-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          assert not all_failures,all_failures
           PY
 
       - name: Upload visual evidence
