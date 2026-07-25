@@ -405,3 +405,119 @@
   }
 }
 /* CRYPTO_ASTRO_MOBILE_MODULE_HARMONY_v0_1:END */
+
+/* CRYPTO_ASTRO_MOBILE_SYNTHESIS_DECOMPRESS_v0_1:BEGIN
+   One module, one visual scene. Supporting content becomes open registries. */
+@media (max-width: 760px) {
+  #market #read .cosmographer-console-badge-v0-2 {
+    min-height: 0;
+    padding: 0.65rem 0 0.65rem 0.8rem;
+    border: 0;
+    border-left: 1px solid rgba(242, 206, 114, 0.28);
+    border-radius: 0;
+    background: none;
+    text-align: left;
+  }
+
+  #market #read .cosmographer-console-grid-v0-2 {
+    gap: 0;
+    border-top: 1px solid rgba(145, 181, 228, 0.16);
+  }
+
+  #market #read .cosmographer-console-panel-v0-2 {
+    padding: 1rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.14);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #market #read .cosmographer-console-state-row-v0-2 {
+    padding: 0.25rem 0 0.65rem;
+  }
+
+  #market #read .cosmographer-console-pill-v0-2 {
+    display: inline-block;
+    width: auto;
+    margin-top: 0.35rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: rgba(133, 209, 184, 0.72);
+  }
+
+  #market #read .cosmographer-mini-grid-v0-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(145, 181, 228, 0.12);
+  }
+
+  #market #read .cosmographer-mini-v0-2 {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.09);
+    border-radius: 0;
+    background: none;
+  }
+
+  #market #read .cosmographer-keyword-grid-v0-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 0.85rem;
+    border-top: 1px solid rgba(145, 181, 228, 0.12);
+  }
+
+  #market #read .cosmographer-keyword-v0-2 {
+    min-width: 0;
+    padding: 0.62rem 0.45rem;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.09);
+    border-radius: 0;
+    background: none;
+    text-align: left;
+  }
+
+  #market #read .cosmographer-keyword-v0-2:nth-child(odd) {
+    border-right: 1px solid rgba(145, 181, 228, 0.09);
+  }
+
+  #market #read .cosmographer-method-list-v0-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(145, 181, 228, 0.12);
+  }
+
+  #market #read .cosmographer-method-item-v0-2 {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.55rem;
+    padding: 0.62rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(145, 181, 228, 0.09);
+    border-radius: 0;
+    background: none;
+  }
+
+  #market #read .cosmographer-watch-v0-2 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+    margin-top: 1rem;
+    padding: 0.85rem 0;
+    border: 0;
+    border-top: 1px solid rgba(242, 206, 114, 0.2);
+    border-bottom: 1px solid rgba(242, 206, 114, 0.14);
+    border-radius: 0;
+    background: none;
+  }
+}
+/* CRYPTO_ASTRO_MOBILE_SYNTHESIS_DECOMPRESS_v0_1:END */
