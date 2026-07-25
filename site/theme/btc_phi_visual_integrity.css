@@ -111,6 +111,38 @@
   #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
     grid-area: liquidity;
   }
+
+  /* The synthesis remains inside the 61.8% reading lane at every internal level. */
+  #market .market-lower-grid > *,
+  #market #read,
+  #market #read .cosmographer-console-grid-v0-2,
+  #market #read .cosmographer-console-panel-v0-2,
+  #market #read .cosmographer-method-list-v0-2,
+  #market #read .cosmographer-method-item-v0-2 {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #market #read {
+    overflow: hidden;
+  }
+
+  #market #read .cosmographer-console-grid-v0-2 {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 0.9fr);
+  }
+
+  #market #read .cosmographer-method-item-v0-2 {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  #market #read .cosmographer-method-item-v0-2 span,
+  #market #read .cosmographer-method-item-v0-2 strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Explicitly labeled decorative marks no longer compete with measured rails. */
