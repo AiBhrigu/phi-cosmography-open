@@ -1,0 +1,316 @@
+name: Crypto-Astro Phi Master Refinement PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-phi-master-refinement-pr.yml'
+      - 'site/theme/crypto_astro_phi_master_refinement.css'
+      - 'site/theme/system.css'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-phi-master-refinement-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  phi-master-refinement:
+    name: Verify audience-first Phi design and PNG proofs
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact non-publication scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
+          printf '%s\n' \
+            '.github/workflows/crypto-astro-phi-master-refinement-pr.yml' \
+            'site/theme/crypto_astro_phi_master_refinement.css' \
+            'site/theme/system.css' \
+            > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro_what_changed.css \
+            site/theme/btc_phi_semantic_geometry.css \
+            site/theme/btc_phi_visual_integrity.css \
+            site/theme/btc_poster_grade.css \
+            site/theme/btc_motion_budget.css \
+            tools \
+            docs
+          echo CRYPTO_ASTRO_PHI_MASTER_EXACT_SCOPE=PASS
+
+      - name: Verify source design contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          system = Path('site/theme/system.css').read_text()
+          css = Path('site/theme/crypto_astro_phi_master_refinement.css').read_text()
+          imports = [
+              "@import url('./btc_poster_grade.css');",
+              "@import url('./btc_motion_budget.css');",
+              "@import url('./ip_semantic_seal.css');",
+              "@import url('./btc_phi_semantic_geometry.css');",
+              "@import url('./btc_phi_visual_integrity.css');",
+              "@import url('./crypto_astro_phi_master_refinement.css');",
+          ]
+          assert all(item in system for item in imports)
+          positions = [system.index(item) for item in imports]
+          assert positions == sorted(positions)
+          required = [
+              'CRYPTO_ASTRO_PHI_MASTER_REFINEMENT_v0_1',
+              '--ca-phi: 1.61803398875',
+              '--ca-major: 61.803398875%',
+              '--ca-minor: 38.196601125%',
+              'grid-template-columns: repeat(5, minmax(0, 1fr))',
+              'grid-template-areas:\n      "first first"\n      "timing synthesis"\n      "liquidity rotation"',
+              'grid-template-areas:\n    "state synthesis"\n    "method method"',
+          ]
+          for marker in required:
+              assert marker in css, marker
+          assert '@keyframes' not in css
+          assert 'animation:' not in css
+          assert 'site/crypto-astro' not in css
+          print('CRYPTO_ASTRO_PHI_MASTER_SOURCE=PASS')
+          PY
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Run desktop and mobile visual truth proof
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python -m http.server 4173 --directory site > artifacts/http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && break
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+
+          PHI = 1.61803398875
+          INV_PHI = 0.61803398875
+          out = Path('artifacts')
+          report = {'status': 'FAIL', 'viewports': {}}
+
+          def close(a, b, tol):
+              return abs(a - b) <= tol
+
+          def ratio(a, b):
+              return a / b if b else 0
+
+          def box(page, selector):
+              loc = page.locator(selector)
+              return loc.bounding_box()
+
+          def capture(page, selector, filename):
+              loc = page.locator(selector)
+              loc.scroll_into_view_if_needed()
+              page.wait_for_timeout(180)
+              loc.screenshot(path=str(out / filename))
+
+          def capture_union(page, selectors, filename):
+              boxes = []
+              for selector in selectors:
+                  loc = page.locator(selector)
+                  loc.scroll_into_view_if_needed()
+                  page.wait_for_timeout(80)
+                  b = loc.bounding_box()
+                  if b:
+                      boxes.append(b)
+              assert boxes, selectors
+              left = min(b['x'] for b in boxes)
+              top = min(b['y'] for b in boxes)
+              right = max(b['x'] + b['width'] for b in boxes)
+              bottom = max(b['y'] + b['height'] for b in boxes)
+              page.screenshot(
+                  path=str(out / filename),
+                  clip={'x': left, 'y': top, 'width': right-left, 'height': bottom-top},
+              )
+
+          def overflow_items(page, selectors):
+              return page.evaluate("""(selectors) => {
+                const rows=[];
+                for (const selector of selectors) {
+                  for (const el of document.querySelectorAll(selector)) {
+                    const style=getComputedStyle(el);
+                    const x=el.scrollWidth-el.clientWidth;
+                    const y=el.scrollHeight-el.clientHeight;
+                    if (x>2 || (style.overflowY==='hidden' && y>2)) {
+                      rows.push({selector,tag:el.tagName,className:el.className,x,y});
+                    }
+                  }
+                }
+                return rows;
+              }""", selectors)
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              for name, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
+                  page = browser.new_page(viewport={'width': width, 'height': height})
+                  errors = []
+                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                  page.goto('http://127.0.0.1:4173/crypto-astro/index.html', wait_until='networkidle')
+                  page.wait_for_timeout(250)
+
+                  state = page.evaluate("""() => {
+                    const rect = (el) => {
+                      const r=el.getBoundingClientRect();
+                      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+                    };
+                    const all = (selector) => [...document.querySelectorAll(selector)].map(rect);
+                    const entry=document.querySelector('#btc-phi-cycle-hub > .btc-entry-v1');
+                    const marketLink=document.querySelector('#btc-phi-cycle-hub > .btc-market-link-v1');
+                    const cycle=document.querySelector('.btc-cycle-canvas-v1');
+                    const nodes=[...document.querySelectorAll('.btc-node-v1')];
+                    const marketCards=[...document.querySelectorAll('#market .market-first-screen > *')];
+                    const timing=document.querySelector('.editorial-astromodule-v0-1');
+                    const synthesis=document.querySelector('#read');
+                    const liquidity=[...document.querySelectorAll('#market .market-lower-grid > .market-card')].find(el=>!el.classList.contains('editorial-astromodule-v0-1'));
+                    const rotation=document.querySelector('#market .alt-rotation-module');
+                    const synthPanels=[...document.querySelectorAll('#read .cosmographer-console-panel-v0-2')];
+                    const timingStates=[...document.querySelectorAll('.editorial-astromodule-v0-1__states > div')];
+                    const changed=[...document.querySelectorAll('.what-changed-metric-v0-1')];
+                    const trustText=document.querySelector('#trust-access > div:first-child');
+                    const trustActions=document.querySelector('#trust-access .editorial-trust-access-v0-1__actions');
+                    return {
+                      page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,scrollHeight:document.documentElement.scrollHeight},
+                      entry:rect(entry),
+                      marketLink:rect(marketLink),
+                      cycle:rect(cycle),
+                      nodeRects:nodes.map(rect),
+                      nodeColumns:nodes.map(el=>getComputedStyle(el).gridColumnStart),
+                      nodeRows:nodes.map(el=>getComputedStyle(el).gridRowStart),
+                      marketCards:marketCards.map(rect),
+                      timing:rect(timing),
+                      synthesis:rect(synthesis),
+                      liquidity:rect(liquidity),
+                      rotation:rect(rotation),
+                      synthPanels:synthPanels.map(rect),
+                      timingStates:timingStates.map(rect),
+                      changed:changed.map(rect),
+                      trustText:rect(trustText),
+                      trustActions:rect(trustActions),
+                      displayLower:getComputedStyle(document.querySelector('#market .market-lower-grid')).display,
+                      methodColumns:getComputedStyle(document.querySelector('#read .cosmographer-method-list-v0-2')).gridTemplateColumns,
+                      decorativeVisible:[...document.querySelectorAll('#market [data-geometry-truth="decorative"]')].filter(el=>getComputedStyle(el).display!=='none').length,
+                    };
+                  }""")
+
+                  key_overflow = overflow_items(page, [
+                      '.btc-entry-v1', '.btc-market-link-v1', '.btc-node-v1',
+                      '.editorial-astromodule-v0-1__states > div',
+                      '#read .cosmographer-console-panel-v0-2',
+                      '#read .cosmographer-method-item-v0-2',
+                      '.market-metric', '.alt-read-node', '#trust-access > div'
+                  ])
+
+                  checks = {
+                      'no_horizontal_page_overflow': state['page']['scrollWidth'] <= state['page']['clientWidth'] + 1,
+                      'no_console_errors': not errors,
+                      'no_key_block_overflow': not key_overflow,
+                      'five_semantic_nodes': len(state['nodeRects']) == 5,
+                      'all_nodes_visible': all(r['width'] > 0 and r['height'] > 0 for r in state['nodeRects']),
+                      'decorative_marks_hidden': state['decorativeVisible'] == 0,
+                  }
+
+                  if name == 'desktop':
+                      gateway_ratio = ratio(state['entry']['width'], state['marketLink']['width'])
+                      market_ratio = ratio(state['marketCards'][0]['width'], state['marketCards'][1]['width'])
+                      synthesis_ratio = ratio(state['synthesis']['width'], state['timing']['width'])
+                      lower_ratio = ratio(state['rotation']['width'], state['liquidity']['width'])
+                      inner_ratio = ratio(state['synthPanels'][0]['width'], state['synthPanels'][1]['width'])
+                      trust_ratio = ratio(state['trustText']['width'], state['trustActions']['width'])
+                      timing_x = sorted({round(r['left']) for r in state['timingStates']})
+                      changed_x = sorted({round(r['left']) for r in state['changed']})
+                      checks.update({
+                          'gateway_phi_ratio': close(gateway_ratio, PHI, 0.08),
+                          'aspect_cycle_compact': 230 <= state['cycle']['height'] <= 430,
+                          'aspect_nodes_horizontal_01_05': state['nodeColumns'] == ['1','2','3','4','5'],
+                          'aspect_nodes_one_row': all(row == '1' for row in state['nodeRows']),
+                          'market_primary_support_phi': close(market_ratio, PHI, 0.08),
+                          'timing_synthesis_phi': close(synthesis_ratio, PHI, 0.08),
+                          'liquidity_rotation_phi': close(lower_ratio, PHI, 0.08),
+                          'nested_state_synthesis_phi': close(inner_ratio, INV_PHI, 0.07),
+                          'method_full_width': state['synthPanels'][2]['width'] >= state['synthesis']['width'] * 0.88,
+                          'timing_two_columns': len(timing_x) == 2,
+                          'what_changed_four_columns': len(changed_x) == 4,
+                          'trust_phi_ratio': close(trust_ratio, PHI, 0.1),
+                          'market_lower_display_contents': state['displayLower'] == 'contents',
+                      })
+
+                      page.screenshot(path=str(out/'live-desktop-full.png'), full_page=True)
+                      capture(page, '#surface', 'orientation-desktop.png')
+                      capture(page, '#what-changed', 'what-changed-desktop.png')
+                      capture(page, '.btc-grid-v1', 'btc-field-desktop.png')
+                      capture_union(page, ['#btc-phi-cycle-hub > .btc-entry-v1', '#btc-phi-cycle-hub > .btc-market-link-v1'], 'btc-gateway-desktop.png')
+                      capture(page, '.btc-cycle-v1', 'aspect-cycle-core-desktop.png')
+                      capture(page, '#market .market-first-screen', 'wider-market-desktop.png')
+                      capture(page, '.editorial-astromodule-v0-1', 'timing-context-desktop.png')
+                      capture(page, '#read', 'field-synthesis-desktop.png')
+                      capture(page, '#market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1)', 'liquidity-tvl-desktop.png')
+                      capture(page, '#market .alt-rotation-module', 'altcoin-rotation-desktop.png')
+                      capture(page, '#trust-access', 'trust-access-desktop.png')
+                  else:
+                      checks.update({
+                          'gateway_stacked': abs(state['entry']['width'] - state['marketLink']['width']) <= 2,
+                          'aspect_nodes_mobile_lane': all(col == '2' for col in state['nodeColumns']),
+                          'aspect_cycle_mobile_compact': state['cycle']['height'] <= 760,
+                          'market_cards_stacked': abs(state['marketCards'][0]['width'] - state['marketCards'][1]['width']) <= 2,
+                          'timing_states_visible': len(state['timingStates']) == 4,
+                          'synthesis_panels_stacked': len({round(r['left']) for r in state['synthPanels']}) == 1,
+                      })
+                      page.screenshot(path=str(out/'live-mobile-full.png'), full_page=True)
+                      capture(page, '#btc-phi-cycle-hub', 'btc-mobile.png')
+                      capture(page, '#market', 'market-mobile.png')
+
+                  failures = [key for key, value in checks.items() if not value]
+                  report['viewports'][name] = {
+                      'state': state,
+                      'checks': checks,
+                      'failures': failures,
+                      'key_overflow': key_overflow,
+                      'console_errors': errors,
+                  }
+                  if failures:
+                      raise AssertionError({name: failures, 'state': state, 'overflow': key_overflow})
+                  page.close()
+
+              browser.close()
+
+          report['status'] = 'PASS'
+          (out/'phi-master-refinement-report.json').write_text(json.dumps(report, indent=2) + '\n')
+          PY
+
+      - name: Upload review PNGs and measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-phi-master-refinement-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
