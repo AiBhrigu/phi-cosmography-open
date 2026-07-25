@@ -1,0 +1,388 @@
+/* CRYPTO_ASTRO_BTC_VISUAL_INTEGRITY_v0_1:BEGIN
+   Responsive geometry repair only.
+   Golden proportion is a navigation scaffold, never a market magnitude.
+   BTC dominance remains the only scalar binding in the BTC field.
+   Decorative poster layers are suppressed; semantic axes and data-bound rails remain. */
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 {
+  --btc-integrity-major: 61.803398875%;
+  --btc-integrity-minor: 38.196601125%;
+}
+
+/* Replace the poster star field with a quiet, deterministic semantic scaffold. */
+.btc-deep-v1.btc-deep-v1::after {
+  opacity: 0.28;
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(var(--btc-integrity-minor) - 0.04%),
+      rgba(246, 201, 97, 0.12) var(--btc-integrity-minor),
+      transparent calc(var(--btc-integrity-minor) + 0.04%)
+    ),
+    linear-gradient(
+      180deg,
+      transparent calc(var(--btc-integrity-major) - 0.04%),
+      rgba(106, 168, 255, 0.09) var(--btc-integrity-major),
+      transparent calc(var(--btc-integrity-major) + 0.04%)
+    );
+}
+
+/* The CTA is a semantic gateway, not a decorative tunnel. */
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "glyph title arrow"
+    "glyph subtitle arrow";
+  gap: 0.22rem 1rem;
+  align-items: center;
+  padding: 1rem 1.15rem;
+  border-radius: 21px 34px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(246, 201, 97, 0.1) 0 var(--btc-integrity-minor),
+      rgba(106, 168, 255, 0.06) var(--btc-integrity-minor) 100%
+    ),
+    #030817;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1::before {
+  left: var(--btc-integrity-minor);
+  right: auto;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  height: auto;
+  background: linear-gradient(
+    transparent,
+    rgba(246, 201, 97, 0.56),
+    rgba(106, 168, 255, 0.42),
+    transparent
+  );
+  box-shadow: none;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1::after {
+  display: none;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-field-read-entry-glyph-v0-1 {
+  grid-area: glyph;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 strong {
+  grid-area: title;
+  align-self: end;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 em {
+  grid-area: subtitle;
+  align-self: start;
+}
+
+.btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-arrow-v1 {
+  grid-area: arrow;
+}
+
+/* Market hierarchy uses the same exact split: primary evidence / supporting context. */
+@media (min-width: 981px) {
+  #market .market-first-screen {
+    grid-template-columns: 61.803398875fr 38.196601125fr;
+  }
+
+  #market .market-lower-grid {
+    grid-template-columns: 38.196601125fr 61.803398875fr;
+    grid-template-areas:
+      "timing synthesis"
+      "liquidity synthesis";
+    align-items: stretch;
+  }
+
+  #market .market-lower-grid > .editorial-astromodule-v0-1 {
+    grid-area: timing;
+  }
+
+  #market .market-lower-grid > #read {
+    grid-area: synthesis;
+  }
+
+  #market .market-lower-grid > .market-card:not(.editorial-astromodule-v0-1) {
+    grid-area: liquidity;
+  }
+
+  /* The synthesis remains inside the 61.8% reading lane at every internal level. */
+  #market .market-lower-grid > *,
+  #market #read,
+  #market #read .cosmographer-console-grid-v0-2,
+  #market #read .cosmographer-console-panel-v0-2,
+  #market #read .cosmographer-method-list-v0-2,
+  #market #read .cosmographer-method-item-v0-2 {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #market #read {
+    overflow: hidden;
+  }
+
+  #market #read .cosmographer-console-grid-v0-2 {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 0.9fr);
+  }
+
+  #market #read .cosmographer-method-item-v0-2 {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  #market #read .cosmographer-method-item-v0-2 span,
+  #market #read .cosmographer-method-item-v0-2 strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Explicitly labeled decorative marks no longer compete with measured rails. */
+#market [data-geometry-truth="decorative"] {
+  display: none !important;
+}
+
+@media (max-width: 620px) {
+  /* The BTC chapter is always rendered when reached; no oversized skipped placeholder. */
+  .btc-deep-v1 {
+    content-visibility: visible;
+    contain: layout style;
+  }
+
+  .btc-deep-v1.btc-deep-v1 .btc-head-v1 h2 {
+    font-size: clamp(2.2rem, 10.5vw, 2.75rem);
+    line-height: 0.98;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-grid-v1 {
+    gap: 0.9rem;
+  }
+
+  /* Compact field: the exact 61.8 / 38.2 cross remains the navigation scaffold. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-field-v1 {
+    min-height: 0;
+    height: clamp(22rem, 108vw, 25.5rem);
+    aspect-ratio: auto;
+    border-radius: 21px 34px;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-quiet-phi-core-v0-3 {
+    width: clamp(8rem, 38vw, 9.25rem) !important;
+    z-index: 4;
+  }
+
+  /* Four context lanes become compact anchors instead of empty quadrants. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1 {
+    width: var(--btc-integrity-minor);
+    height: auto;
+    min-height: 3.2rem;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 0.35rem;
+    z-index: 2;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.market {
+    left: 5%;
+    right: auto;
+    top: 5%;
+    bottom: auto;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.liquid {
+    left: auto;
+    right: 5%;
+    top: 5%;
+    bottom: auto;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.reviewed {
+    left: 5%;
+    right: auto;
+    top: auto;
+    bottom: 5%;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.time {
+    left: auto;
+    right: 5%;
+    top: auto;
+    bottom: 5%;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1 span {
+    max-width: 100%;
+    white-space: normal;
+    padding: 0.22rem 0.42rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.liquid,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.time {
+    justify-content: flex-end;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.liquid span,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.time span {
+    text-align: right;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1::after {
+    inset: auto 0 0;
+    height: 1px;
+    border: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(246, 201, 97, 0.62),
+      rgba(106, 168, 255, 0.22),
+      transparent
+    );
+    box-shadow: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.liquid::after,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-t-v1.time::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(106, 168, 255, 0.28),
+      rgba(246, 201, 97, 0.56)
+    );
+  }
+
+  /* Verified values use a compact golden split rather than two tall stacked cards. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-metrics-v1 {
+    grid-template-columns: 38.196601125fr 61.803398875fr;
+    gap: 0.65rem;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-phi-cycle-metric-v0-1 {
+    min-height: 0;
+    padding: 0.9rem;
+    border-radius: 18px 29px;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-phi-cycle-metric-v0-1 strong {
+    overflow-wrap: anywhere;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-truth-v1 {
+    margin-top: 0.8rem;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.9rem;
+    gap: 0.18rem 0.75rem;
+    border-radius: 18px 29px;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1::before {
+    left: var(--btc-integrity-minor);
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 .btc-field-read-entry-glyph-v0-1 {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 strong {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-v1 em {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-entry-arrow-v1 {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .btc-deep-v1.btc-deep-v1 .btc-cycle-head-v1 h3 {
+    font-size: clamp(2rem, 10vw, 2.55rem);
+  }
+
+  /* The 38.2% support lane carries the ordered index; semantic cards remain in the 61.8% reading lane. */
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1 {
+    grid-template-columns: 38.196601125fr 61.803398875fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    gap: 0.66rem 0;
+    padding: 0.9rem 0.78rem;
+    overflow: hidden;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-canvas-v1::after {
+    display: none;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.aspect,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.phase,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.memory,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.confirm,
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1.review {
+    grid-column: 2;
+    grid-row: auto;
+    width: 100%;
+    min-height: 4.65rem;
+    padding: 0.72rem 0.65rem 0.72rem 3.85rem;
+    border-radius: 18px 29px !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 span {
+    font-size: 0.66rem;
+    line-height: 1.2;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1 strong {
+    font-size: 0.76rem;
+    line-height: 1.32;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::before {
+    left: 0.48rem !important;
+    top: 50% !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-node-v1::after {
+    left: -30.901699438%;
+    top: 50%;
+    width: 2rem;
+    height: 2rem;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(246, 201, 97, 0.38);
+    border-radius: 50%;
+    background: #071126;
+  }
+
+  .btc-deep-v1.btc-deep-v1.btc-deep-v1 .btc-cycle-seal-v0-1 {
+    margin-top: 0.8rem;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+}
+
+/* CRYPTO_ASTRO_BTC_VISUAL_INTEGRITY_v0_1:END */
