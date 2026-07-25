@@ -7,6 +7,7 @@ on:
       - 'site/theme/crypto_astro_phi_master_refinement.css'
       - 'site/theme/crypto_astro_phi_master_review_repair.css'
       - 'site/theme/crypto_astro_phi_master_acceptance.css'
+      - 'site/theme/crypto_astro_phi_mobile_harmony.css'
       - 'site/theme/crypto_astro_what_changed.css'
 
 permissions:
@@ -43,6 +44,7 @@ jobs:
             'site/theme/crypto_astro_phi_master_acceptance.css' \
             'site/theme/crypto_astro_phi_master_refinement.css' \
             'site/theme/crypto_astro_phi_master_review_repair.css' \
+            'site/theme/crypto_astro_phi_mobile_harmony.css' \
             'site/theme/crypto_astro_what_changed.css' \
             > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
@@ -68,11 +70,13 @@ jobs:
           master_css = Path('site/theme/crypto_astro_phi_master_refinement.css').read_text()
           repair_css = Path('site/theme/crypto_astro_phi_master_review_repair.css').read_text()
           acceptance_css = Path('site/theme/crypto_astro_phi_master_acceptance.css').read_text()
+          mobile_css = Path('site/theme/crypto_astro_phi_mobile_harmony.css').read_text()
 
           imports = [
               "@import url('./crypto_astro_phi_master_refinement.css');",
               "@import url('./crypto_astro_phi_master_review_repair.css');",
               "@import url('./crypto_astro_phi_master_acceptance.css');",
+              "@import url('./crypto_astro_phi_mobile_harmony.css');",
           ]
           assert all(item in binding for item in imports)
           assert [binding.index(item) for item in imports] == sorted(binding.index(item) for item in imports)
@@ -101,6 +105,14 @@ jobs:
               '"synthesis synthesis"',
               'left: calc(var(--ca-minor) - 0.5px)',
               'left: -4.15rem !important',
+              'CRYPTO_ASTRO_MOBILE_MODULE_HARMONY_v0_1',
+          ]
+          mobile_required = [
+              'CRYPTO_ASTRO_PHI_MOBILE_HARMONY_v0_1',
+              'TIMING CONTEXT — one four-part membrane',
+              'LIQUIDITY — source-aligned currents',
+              'FIELD SYNTHESIS — one reading field',
+              'cosmographer-keyword-grid-v0-2',
           ]
           for marker in master_required:
               assert marker in master_css, marker
@@ -108,7 +120,9 @@ jobs:
               assert marker in repair_css, marker
           for marker in acceptance_required:
               assert marker in acceptance_css, marker
-          for css in (master_css, repair_css, acceptance_css):
+          for marker in mobile_required:
+              assert marker in mobile_css, marker
+          for css in (master_css, repair_css, acceptance_css, mobile_css):
               assert '@keyframes' not in css
               assert 'animation:' not in css
           print('CRYPTO_ASTRO_PHI_MASTER_SOURCE=PASS')
@@ -215,6 +229,10 @@ jobs:
                     const changed=[...document.querySelectorAll('.what-changed-metric-v0-1')];
                     const trustText=document.querySelector('#trust-access > div:first-child');
                     const trustActions=document.querySelector('#trust-access .editorial-trust-access-v0-1__actions');
+                    const altDuplicate=document.querySelector('.alt-rotation-module > .market-reality-grid');
+                    const keywordGrid=document.querySelector('#read .cosmographer-keyword-grid-v0-2');
+                    const methodItem=document.querySelector('#read .cosmographer-method-item-v0-2');
+                    const timingState=timingStates[0];
                     return {
                       page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,scrollHeight:document.documentElement.scrollHeight},
                       entry:rect(entry),
@@ -238,6 +256,11 @@ jobs:
                       displayLower:getComputedStyle(document.querySelector('#market .market-lower-grid')).display,
                       decorativeVisible:[...document.querySelectorAll('#market [data-geometry-truth="decorative"]')]
                         .filter(el=>getComputedStyle(el).display!=='none').length,
+                      altDuplicateDisplay:getComputedStyle(altDuplicate).display,
+                      keywordDisplay:getComputedStyle(keywordGrid).display,
+                      timingStateRadius:getComputedStyle(timingState).borderRadius,
+                      methodItemRadius:getComputedStyle(methodItem).borderRadius,
+                      methodItemBackground:getComputedStyle(methodItem).backgroundColor,
                     };
                   }""")
 
@@ -246,7 +269,7 @@ jobs:
                       '.editorial-astromodule-v0-1__states > div',
                       '#read .cosmographer-console-panel-v0-2',
                       '#read .cosmographer-method-item-v0-2',
-                      '.market-metric', '.alt-read-node', '#trust-access > div',
+                      '.market-metric', '.alt-read-node', '.alt-map-label', '#trust-access > div',
                   ])
 
                   checks = {
@@ -304,10 +327,16 @@ jobs:
                           'market_cards_stacked': abs(state['marketCards'][0]['width'] - state['marketCards'][1]['width']) <= 2,
                           'timing_states_visible': len(state['timingStates']) == 4,
                           'synthesis_panels_stacked': len({round(r['left']) for r in state['synthPanels']}) == 1,
+                          'rotation_duplicate_metrics_hidden': state['altDuplicateDisplay'] == 'none',
+                          'synthesis_keyword_duplication_hidden': state['keywordDisplay'] == 'none',
+                          'timing_membrane_open': state['timingStateRadius'] == '0px',
+                          'method_rows_open': state['methodItemRadius'] == '0px' and state['methodItemBackground'] in ('rgba(0, 0, 0, 0)', 'transparent'),
                       })
                       page.screenshot(path=str(out/'live-mobile-full.png'), full_page=True)
                       capture(page, '#btc-phi-cycle-hub', 'btc-mobile.png')
                       capture(page, '#market', 'market-mobile.png')
+                      capture(page, '#read', 'field-synthesis-mobile.png')
+                      capture(page, '#market .alt-rotation-module', 'altcoin-rotation-mobile.png')
 
                   failures = [key for key, value in checks.items() if not value]
                   all_failures.extend(f'{name}:{item}' for item in failures)
