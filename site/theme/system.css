@@ -51,3 +51,45 @@
   }
 }
 /* BTC_POSTER_GRADE_REVIEW_FIX_v0_1:END */
+
+/* BTC_SEMANTIC_GATEWAY_RENDER_FIX_v0_1:BEGIN
+   Browser-stable telescope geometry. Lens stations progressively compress
+   source trajectories into the exact 61.8% focus boundary. */
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 {
+  background:
+    radial-gradient(ellipse 3.25rem 76% at 18% 50%, transparent 0 59%, rgba(244, 207, 114, 0.34) 60% 63%, transparent 64%),
+    radial-gradient(ellipse 2.85rem 70% at 30% 50%, transparent 0 59%, rgba(130, 183, 255, 0.28) 60% 63%, transparent 64%),
+    radial-gradient(ellipse 2.4rem 63% at 42% 50%, transparent 0 59%, rgba(244, 207, 114, 0.3) 60% 63%, transparent 64%),
+    radial-gradient(ellipse 1.95rem 55% at 53% 50%, transparent 0 59%, rgba(130, 183, 255, 0.3) 60% 63%, transparent 64%),
+    radial-gradient(ellipse 1.55rem 47% at 61.803398875% 50%, transparent 0 57%, rgba(255, 235, 171, 0.72) 58% 64%, transparent 65%),
+    linear-gradient(10deg, transparent 0 48.2%, rgba(244, 207, 114, 0.3) 48.6% 49.1%, transparent 49.5%),
+    linear-gradient(5deg, transparent 0 48.3%, rgba(130, 183, 255, 0.25) 48.7% 49.15%, transparent 49.55%),
+    linear-gradient(0deg, transparent 0 48.4%, rgba(255, 235, 171, 0.52) 48.8% 49.25%, transparent 49.65%),
+    linear-gradient(-5deg, transparent 0 48.3%, rgba(130, 183, 255, 0.23) 48.7% 49.15%, transparent 49.55%),
+    linear-gradient(-10deg, transparent 0 48.2%, rgba(244, 207, 114, 0.28) 48.6% 49.1%, transparent 49.5%),
+    radial-gradient(ellipse at 7% 50%, rgba(244, 207, 114, 0.28), transparent 19%),
+    radial-gradient(ellipse at 61.803398875% 50%, rgba(130, 183, 255, 0.18), transparent 24%),
+    linear-gradient(90deg, rgba(244, 207, 114, 0.11), rgba(12, 35, 70, 0.21) 61.8%, rgba(2, 7, 17, 0.96)) !important;
+  transition: border-color 520ms ease, box-shadow 620ms ease, transform 620ms cubic-bezier(0.22, 1, 0.36, 1), filter 520ms ease !important;
+}
+
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:hover,
+#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1:focus-visible {
+  filter: brightness(1.14) saturate(1.06);
+}
+
+@media (max-width: 760px) {
+  #btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 {
+    background:
+      radial-gradient(ellipse 2.2rem 44% at 27% 31%, transparent 0 58%, rgba(244, 207, 114, 0.32) 59% 63%, transparent 64%),
+      radial-gradient(ellipse 1.8rem 39% at 48% 31%, transparent 0 58%, rgba(130, 183, 255, 0.27) 59% 63%, transparent 64%),
+      radial-gradient(ellipse 1.4rem 34% at 68% 31%, transparent 0 57%, rgba(255, 235, 171, 0.58) 58% 64%, transparent 65%),
+      linear-gradient(12deg, transparent 0 48%, rgba(244, 207, 114, 0.27) 48.5% 49.1%, transparent 49.6%),
+      linear-gradient(0deg, transparent 0 48.2%, rgba(255, 235, 171, 0.46) 48.7% 49.3%, transparent 49.8%),
+      linear-gradient(-12deg, transparent 0 48%, rgba(130, 183, 255, 0.25) 48.5% 49.1%, transparent 49.6%),
+      radial-gradient(ellipse at 8% 31%, rgba(244, 207, 114, 0.27), transparent 21%),
+      radial-gradient(ellipse at 77% 31%, rgba(130, 183, 255, 0.18), transparent 20%),
+      linear-gradient(180deg, rgba(244, 207, 114, 0.08), rgba(8, 24, 49, 0.2) 62%, rgba(2, 7, 17, 0.96)) !important;
+  }
+}
+/* BTC_SEMANTIC_GATEWAY_RENDER_FIX_v0_1:END */
