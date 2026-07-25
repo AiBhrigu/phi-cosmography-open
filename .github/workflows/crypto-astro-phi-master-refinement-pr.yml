@@ -47,6 +47,7 @@ jobs:
             'site/theme/crypto_astro_phi_mobile_harmony.css' \
             'site/theme/crypto_astro_what_changed.css' \
             > /tmp/expected.txt
+          sort -o /tmp/expected.txt /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
@@ -109,9 +110,9 @@ jobs:
           ]
           mobile_required = [
               'CRYPTO_ASTRO_PHI_MOBILE_HARMONY_v0_1',
-              'TIMING CONTEXT — one four-part membrane',
-              'LIQUIDITY — source-aligned currents',
-              'FIELD SYNTHESIS — one reading field',
+              'Timing = categorical membrane',
+              'Liquidity = open source-aligned flow rows',
+              'Synthesis = continuous reading field',
               'cosmographer-keyword-grid-v0-2',
           ]
           for marker in master_required:
