@@ -16,7 +16,7 @@ jobs:
   public-proof:
     name: Verify live BTC core, gateway, and bounded motion
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 
@@ -49,10 +49,19 @@ jobs:
           motion_css_url = os.environ['MOTION_CSS_URL']
           btc_route = os.environ['BTC_ROUTE']
 
+          def fetch_text(url):
+              req = Request(url, headers={
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache',
+                  'User-Agent': 'btc-semantic-motion-public-proof-v0-1',
+              })
+              with urlopen(req, timeout=25) as response:
+                  return response.status, dict(response.headers.items()), response.read().decode('utf-8')
+
           required_html = [
               'Bitcoin gravity and cycle context',
               'Aspect-Cycle Core',
-              'ASK ONE BTC FIELD QUESTION',
+              'Ask one BTC field question',
               btc_route,
           ]
           required_system = [
@@ -65,22 +74,15 @@ jobs:
               '--btc-motion-core-x: 61.803398875%',
               '--btc-motion-core-y: 38.196601125%',
               'var(--btc-dominance)',
+              'ENTER BTC FIELD READ',
+              'Ask one source-bound BTC question',
               'prefers-reduced-motion: reduce',
               'view(block)',
           ]
 
-          def fetch_text(url):
-              req = Request(url, headers={
-                  'Cache-Control': 'no-cache',
-                  'Pragma': 'no-cache',
-                  'User-Agent': 'btc-semantic-motion-public-proof-v0-1',
-              })
-              with urlopen(req, timeout=25) as response:
-                  return response.status, dict(response.headers.items()), response.read().decode('utf-8')
-
           http = {'status': 'FAIL', 'attempts': []}
           html = system_css = motion_css = ''
-          for attempt in range(1, 37):
+          for attempt in range(1, 7):
               try:
                   hs, hh, html = fetch_text(public_url)
                   ss, sh, system_css = fetch_text(system_css_url)
@@ -107,21 +109,17 @@ jobs:
                       break
               except Exception as exc:
                   http['attempts'].append({'attempt': attempt, 'error': type(exc).__name__ + ':' + str(exc)})
-              time.sleep(10)
+              time.sleep(8)
 
           Path('artifacts/live-index.html').write_text(html, encoding='utf-8')
           Path('artifacts/live-system.css').write_text(system_css, encoding='utf-8')
           Path('artifacts/live-semantic-motion.css').write_text(motion_css, encoding='utf-8')
           Path('artifacts/publication-http-proof.json').write_text(json.dumps(http, indent=2) + '\n')
-          if http['status'] != 'PASS':
-              raise SystemExit('PUBLICATION_HTTP_PROOF_FAIL')
+          assert http['status'] == 'PASS', http
 
           PHI_X = 0.61803398875
           PHI_Y = 0.38196601125
           visual = {'status': 'FAIL', 'viewports': {}}
-
-          def rect_js():
-              return """el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; }"""
 
           with sync_playwright() as p:
               browser = p.chromium.launch()
@@ -134,7 +132,7 @@ jobs:
                   hub.scroll_into_view_if_needed()
                   page.wait_for_timeout(900)
 
-                  state = page.evaluate("""(btcRoute) => {
+                  state = page.evaluate("""() => {
                     const rect = el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; };
                     const hub=document.querySelector('#btc-phi-cycle-hub');
                     const field=hub.querySelector('.btc-field-v1');
@@ -143,46 +141,51 @@ jobs:
                     const phase=hub.querySelector('.btc-node-v1.phase');
                     const memory=hub.querySelector('.btc-node-v1.memory');
                     const fr=rect(field), cr=rect(core), pr=rect(phase), mr=rect(memory);
-                    const css=getComputedStyle(gateway);
-                    const before=getComputedStyle(gateway,'::before');
+                    const gs=getComputedStyle(gateway);
                     return {
                       title:document.title,
                       field:fr,
                       core:cr,
                       coreX:(cr.left+cr.width/2-fr.left)/fr.width,
                       coreY:(cr.top+cr.height/2-fr.top)/fr.height,
-                      coreRadiusRatio:cr.width/cr.height,
+                      coreRatio:cr.width/cr.height,
                       phase:pr,
                       memory:mr,
                       phaseMemoryYDelta:Math.abs((pr.top+pr.height/2)-(mr.top+mr.height/2)),
                       phaseCoreDistance:Math.abs((pr.left+pr.width/2)-(cr.left+cr.width/2)),
                       memoryCoreDistance:Math.abs((mr.left+mr.width/2)-(cr.left+cr.width/2)),
-                      gateway:rect(gateway),
                       gatewayHref:gateway.href,
-                      gatewayBackground:css.backgroundImage,
-                      gatewayBorderRadius:css.borderRadius,
-                      gatewayBeforeAnimationName:before.animationName,
-                      gatewayBeforeAnimationTimeline:before.animationTimeline || '',
-                      dominanceVar:getComputedStyle(hub).getPropertyValue('--btc-dominance').trim(),
+                      gatewayBackground:gs.backgroundImage,
+                      gatewayFilter:gs.filter,
+                      gatewayShadow:gs.boxShadow,
+                      dominanceVar:getComputedStyle(core).getPropertyValue('--btc-dominance').trim(),
                       scrollWidth:document.documentElement.scrollWidth,
                       clientWidth:document.documentElement.clientWidth,
                     };
-                  }""", btc_route)
+                  }""")
 
                   checks = {
                       'title': state['title'] == 'Crypto-Astro · Φ Service Surface',
                       'btc_route_unchanged': state['gatewayHref'] == btc_route,
                       'core_phi_x': abs(state['coreX'] - PHI_X) < 0.035,
                       'core_phi_y': abs(state['coreY'] - PHI_Y) < 0.035,
-                      'core_circular': abs(state['coreRadiusRatio'] - 1) < 0.08,
+                      'core_circular': abs(state['coreRatio'] - 1) < 0.08,
                       'dominance_bound': state['dominanceVar'] == '56.5%',
-                      'phase_memory_axis': state['phaseMemoryYDelta'] < 5,
-                      'phase_memory_radial_balance': abs(state['phaseCoreDistance'] - state['memoryCoreDistance']) < 28,
                       'gateway_telescope_visible': state['gatewayBackground'].count('radial-gradient') >= 5,
                       'gateway_phi_focus_marker': '61.803398875%' in system_css,
                       'no_horizontal_overflow': state['scrollWidth'] <= state['clientWidth'] + 1,
                       'console_errors_none': not errors,
                   }
+                  if name == 'desktop':
+                      checks.update({
+                          'phase_memory_axis': state['phaseMemoryYDelta'] < 5,
+                          'phase_memory_radial_balance': abs(state['phaseCoreDistance'] - state['memoryCoreDistance']) < 28,
+                      })
+                  else:
+                      checks.update({
+                          'mobile_cycle_linear': state['phase']['top'] < state['memory']['top'],
+                          'mobile_nodes_full_width': state['phase']['width'] > 150 and state['memory']['width'] > 150,
+                      })
 
                   gateway = page.locator('#btc-phi-cycle-hub > .btc-entry-v1')
                   field = page.locator('#btc-phi-cycle-hub .btc-field-v1')
@@ -193,13 +196,18 @@ jobs:
 
                   gateway.focus()
                   page.wait_for_timeout(500)
+                  focus = page.evaluate("""() => {
+                    const g=document.querySelector('#btc-phi-cycle-hub > .btc-entry-v1');
+                    const s=getComputedStyle(g);
+                    return {filter:s.filter, shadow:s.boxShadow};
+                  }""")
+                  checks['gateway_focus_state'] = focus['filter'] != state['gatewayFilter'] or focus['shadow'] != state['gatewayShadow']
                   gateway.screenshot(path=f'artifacts/live-btc-gateway-{name}-focus.png')
-
                   page.screenshot(path=f'artifacts/live-{name}-full.png', full_page=True)
 
-                  visual['viewports'][name] = {'state': state, 'checks': checks, 'console_errors': errors}
+                  visual['viewports'][name] = {'state': state, 'focus': focus, 'checks': checks, 'console_errors': errors}
                   failed = [key for key, value in checks.items() if not value]
-                  assert not failed, {name: failed, 'state': state}
+                  assert not failed, {name: failed, 'state': state, 'focus': focus}
                   page.close()
 
               for name, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
@@ -209,14 +217,9 @@ jobs:
                   page.wait_for_timeout(300)
                   reduced = page.evaluate("""() => {
                     const hub=document.querySelector('#btc-phi-cycle-hub');
-                    const before=getComputedStyle(hub.querySelector('.btc-entry-v1'),'::before');
-                    const fieldBefore=getComputedStyle(hub.querySelector('.btc-field-v1'),'::before');
-                    return {
-                      gatewayAnimation:before.animationName,
-                      fieldAnimation:fieldBefore.animationName,
-                      gatewayOpacity:before.opacity,
-                      fieldOpacity:fieldBefore.opacity,
-                    };
+                    const gateway=getComputedStyle(hub.querySelector('.btc-entry-v1'),'::before');
+                    const field=getComputedStyle(hub.querySelector('.btc-field-v1'),'::before');
+                    return {gatewayAnimation:gateway.animationName, fieldAnimation:field.animationName};
                   }""")
                   assert reduced['gatewayAnimation'] == 'none', reduced
                   assert reduced['fieldAnimation'] == 'none', reduced
