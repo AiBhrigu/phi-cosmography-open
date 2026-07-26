@@ -1,0 +1,199 @@
+{
+  "contamination_control": {
+    "discovery_reference_block": "OOS_5",
+    "discovery_reference_used_for_confirmation": false,
+    "future_untouched_block_required": "OOS_6_2026-06-26_TO_2027-06-25",
+    "retrospective_replication_blocks": [
+      "OOS_1",
+      "OOS_2",
+      "OOS_3",
+      "OOS_4"
+    ],
+    "retrospective_replication_is_prospective_confirmation": false
+  },
+  "decision_ladder": {
+    "commercial_ai_feed": "HOLD until rights review, machine contract, correction SLA and future untouched validation.",
+    "data_foundation_pass": "Corpus may be used as internal historical evidence.",
+    "predictive_or_trading_claim": "FORBIDDEN",
+    "public_binding": "HOLD until future untouched OOS_6 and separate human-language review.",
+    "replication_pass": "Only replicated historical association language may be used internally."
+  },
+  "distribution_boundary": {
+    "commercial_ai_feed": false,
+    "predictive_claim": false,
+    "price_target": false,
+    "public_api": false,
+    "public_page": false,
+    "research_artifact_only": true,
+    "subscription": false,
+    "trading_signal": false
+  },
+  "evaluation": {
+    "association": "Spearman per annual block; 30-day circular block bootstrap; horizon-offset non-overlap checks",
+    "block_lengths_sensitivity_days": [
+      7,
+      14,
+      30,
+      60
+    ],
+    "composite_regime_gate": {
+      "calibration_enabled": false,
+      "reason": "Six-label signatures were sparse in the 730D review; no data-driven collapse or threshold rewrite is allowed in this design."
+    },
+    "label_calibration_gate": {
+      "label_present_replication_blocks_minimum": "3_OF_4",
+      "median_adjacent_js_divergence_maximum": 0.15,
+      "support_per_present_block_minimum": 20,
+      "threshold_sensitivity_changed_share_maximum": 0.15,
+      "total_support_per_label_minimum": 100
+    },
+    "metric_stability_gate": {
+      "adjacent_block_median_ks_d_maximum": 0.2,
+      "adjacent_block_median_psi_maximum": 0.25,
+      "material_drift_blocks_maximum": 1
+    },
+    "multiple_testing": "Holm correction across H1-H4",
+    "replication_gate": {
+      "absolute_meta_rho_minimum": 0.1,
+      "expected_sign_blocks_minimum": "3_OF_4",
+      "holm_adjusted_alpha": 0.05,
+      "random_effects_meta_interval_excludes_zero": true,
+      "single_block_weight_maximum": 0.4
+    }
+  },
+  "frozen_primary_specification": {
+    "formulas_changed": false,
+    "label_families": [
+      "return_state",
+      "volatility_state",
+      "drawdown_state",
+      "range_state",
+      "volume_state",
+      "trend_state"
+    ],
+    "labels_changed": false,
+    "methodology_id": "btc_730d_price_state_methodology_v0_1",
+    "metrics": [
+      "return_1d",
+      "return_7d",
+      "return_30d",
+      "realized_volatility_30d_annualized",
+      "drawdown_from_365d_high",
+      "range_position_30d",
+      "quote_volume_ratio_to_prior_30d_median",
+      "trend_persistence_30d"
+    ],
+    "thresholds_changed": false
+  },
+  "next_safe_node": "BTC_2190D_MULTI_YEAR_WALK_FORWARD_CHECKSUM_BOUND_CORPUS_IMPLEMENTATION_EXACT_SCOPE_v0_1",
+  "no_lookahead": {
+    "formula_selection_after_results": false,
+    "full_sample_normalization": false,
+    "outcomes_excluded_from_state_hash": true,
+    "outcomes_separate": true,
+    "prefix_invariance_points_minimum": 25,
+    "state_input_max": "state day close",
+    "threshold_optimization_after_results": false
+  },
+  "primary_source": {
+    "archive_replacement_memory_required": true,
+    "checksum_required": true,
+    "interval": "1d UTC",
+    "market": "BTCUSDT Spot",
+    "provider": "Binance Public Data",
+    "raw_archive_redistribution": false,
+    "timestamp_microseconds_from": "2025-01-01"
+  },
+  "purpose": "Frozen-methodology multi-year walk-forward validation design; no predictive or commercial claim.",
+  "registered_association_hypotheses": [
+    {
+      "expected_sign": "NEGATIVE",
+      "id": "H1",
+      "metric": "quote_volume_ratio_to_prior_30d_median",
+      "outcome": "forward_return_30d"
+    },
+    {
+      "expected_sign": "NEGATIVE",
+      "id": "H2",
+      "metric": "quote_volume_ratio_to_prior_30d_median",
+      "outcome": "forward_max_drawdown_7d"
+    },
+    {
+      "expected_sign": "NEGATIVE",
+      "id": "H3",
+      "metric": "quote_volume_ratio_to_prior_30d_median",
+      "outcome": "forward_max_drawdown_30d"
+    },
+    {
+      "expected_sign": "NEGATIVE",
+      "id": "H4",
+      "metric": "trend_persistence_30d",
+      "outcome": "forward_return_30d"
+    }
+  ],
+  "schema_version": "btc_2190d_walk_forward_validation_design_v0_1",
+  "source_binding": {
+    "accepted_merge_sha": "b2f06d01860f539a64ec1ea2274b26d3307efc51",
+    "accepted_pr": 236,
+    "corpus_sha256": "39368250f1c13ccdf8ed9eb0bd8cb5fecc7c5c97798898cf2859f896ba420a4a",
+    "methodology_sha256": "e88e62c114d81178d52391cc63f0957d3114475f9d952ccc8bf7e72489e7111b",
+    "repository": "AiBhrigu/phi-cosmography-open",
+    "review_package_sha256": "afdeb7df42ce9266c133ba7afe78c5b709d22bd7069d7a833d1c7c55155fd4a1"
+  },
+  "status": "DESIGN_LOCKED",
+  "window": {
+    "archive_plan": {
+      "daily_archives": 25,
+      "monthly_archives": 73,
+      "total_archives": 98
+    },
+    "maturity_tail_days": 30,
+    "oos_blocks": [
+      {
+        "block_id": "OOS_1",
+        "days": 365,
+        "end_date": "2022-06-26",
+        "role": "RETROSPECTIVE_TEMPORAL_REPLICATION",
+        "start_date": "2021-06-27"
+      },
+      {
+        "block_id": "OOS_2",
+        "days": 365,
+        "end_date": "2023-06-26",
+        "role": "RETROSPECTIVE_TEMPORAL_REPLICATION",
+        "start_date": "2022-06-27"
+      },
+      {
+        "block_id": "OOS_3",
+        "days": 365,
+        "end_date": "2024-06-25",
+        "role": "RETROSPECTIVE_TEMPORAL_REPLICATION",
+        "start_date": "2023-06-27"
+      },
+      {
+        "block_id": "OOS_4",
+        "days": 365,
+        "end_date": "2025-06-25",
+        "role": "RETROSPECTIVE_TEMPORAL_REPLICATION",
+        "start_date": "2024-06-26"
+      },
+      {
+        "block_id": "OOS_5",
+        "days": 365,
+        "end_date": "2026-06-25",
+        "role": "DISCOVERY_REFERENCE_EXCLUDED_FROM_CONFIRMATION",
+        "start_date": "2025-06-26"
+      }
+    ],
+    "oos_days": 1825,
+    "source_tail_end_date": "2026-07-25",
+    "state_days": 2190,
+    "state_end_date": "2026-06-25",
+    "state_start_date": "2020-06-27",
+    "warmup": {
+      "days": 365,
+      "end_date": "2021-06-26",
+      "start_date": "2020-06-27"
+    }
+  }
+}
