@@ -400,7 +400,7 @@ def verify_bhrigu_read(
     assert_content_type(result.content_type, {"text/html"}, "bhrigu_read")
     text = decode_utf8(result.body, "bhrigu_read")
     assertions = {
-        "result_heading_present": "One coherent Cosmographer read" in text,
+        "result_region_present": 'aria-label="BTC Cosmographer reading"' in text,
         "snapshot_timestamp_present": expected_timestamp in text,
         "source_failure_absent": "Source-bound failure" not in text,
         "unavailable_absent": "BTC Field Read unavailable" not in text,
