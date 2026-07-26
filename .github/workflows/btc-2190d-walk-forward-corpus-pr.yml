@@ -1,0 +1,182 @@
+name: BTC 2190D Walk-Forward Corpus PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/btc-2190d-walk-forward-corpus-pr.yml'
+      - 'tools/btc_2190d_walk_forward/build_btc_2190d_corpus.py'
+      - 'tools/btc_2190d_walk_forward/verify_btc_2190d_corpus.py'
+      - 'tools/btc_2190d_walk_forward/test_btc_2190d_corpus.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: btc-2190d-walk-forward-corpus-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  walk-forward-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact four-file implementation scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+
+          expected = {
+              '.github/workflows/btc-2190d-walk-forward-corpus-pr.yml',
+              'tools/btc_2190d_walk_forward/build_btc_2190d_corpus.py',
+              'tools/btc_2190d_walk_forward/verify_btc_2190d_corpus.py',
+              'tools/btc_2190d_walk_forward/test_btc_2190d_corpus.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          if changed != expected:
+              raise AssertionError({
+                  'changed': sorted(changed),
+                  'missing': sorted(expected - changed),
+                  'unexpected': sorted(changed - expected),
+              })
+          print('BTC_2190D_EXACT_FOUR_FILE_SCOPE=PASS')
+          PY
+
+      - name: Verify accepted design and frozen methodology source bindings
+        run: |
+          set -euo pipefail
+          test "$(git hash-object tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py)" = "8a82aaeac13d59ad4a82a0af60c7d96b7172bbc3"
+          test "$(git hash-object docs/crypto-astro-service/btc_2190d_walk_forward_validation_design_v0_1.json)" = "60dbebd6db6e0877967ebde5a762488b2a45fe10"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          design = json.loads(
+              Path(
+                  'docs/crypto-astro-service/'
+                  'btc_2190d_walk_forward_validation_design_v0_1.json'
+              ).read_text()
+          )
+          assert design['status'] == 'DESIGN_LOCKED'
+          assert design['window']['state_days'] == 2190
+          assert design['window']['warmup']['days'] == 365
+          assert design['window']['oos_days'] == 1825
+          assert len(design['window']['oos_blocks']) == 5
+          assert design['window']['archive_plan'] == {
+              'monthly_archives': 73,
+              'daily_archives': 25,
+              'total_archives': 98,
+          }
+          assert design['contamination_control'][
+              'discovery_reference_used_for_confirmation'
+          ] is False
+          assert design['distribution_boundary'] == {
+              'research_artifact_only': True,
+              'public_page': False,
+              'public_api': False,
+              'commercial_ai_feed': False,
+              'subscription': False,
+              'predictive_claim': False,
+              'trading_signal': False,
+              'price_target': False,
+          }
+          print('BTC_2190D_ACCEPTED_DESIGN_BINDING=PASS')
+          PY
+
+      - name: Run deterministic synthetic and no-lookahead fixtures
+        run: |
+          mkdir -p artifacts/final
+          python -m unittest discover \
+            -s tools/btc_2190d_walk_forward \
+            -p 'test_*.py' \
+            -v 2>&1 | tee artifacts/final/unit-tests.log
+
+      - name: Build real 2190D checksum-bound corpus twice
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/cache artifacts/build-a artifacts/build-b
+          python tools/btc_2190d_walk_forward/build_btc_2190d_corpus.py \
+            --repo . \
+            --cache-dir artifacts/cache \
+            --output-dir artifacts/build-a \
+            | tee artifacts/final/remote-build-a.log
+          python tools/btc_2190d_walk_forward/build_btc_2190d_corpus.py \
+            --repo . \
+            --cache-dir artifacts/cache \
+            --output-dir artifacts/build-b \
+            | tee artifacts/final/remote-build-b.log
+          diff -ru artifacts/build-a artifacts/build-b
+          cp artifacts/build-a/* artifacts/final/
+
+      - name: Verify final evidence and contamination boundaries
+        run: |
+          python tools/btc_2190d_walk_forward/verify_btc_2190d_corpus.py \
+            --repo . \
+            --evidence-dir artifacts/final \
+            --report artifacts/final/btc_2190d_verification.json \
+            | tee artifacts/final/verification-stdout.log
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('artifacts/final')
+          report = json.loads(
+              (root / 'btc_2190d_verification.json').read_text()
+          )
+          assert report['status'] == 'PASS'
+          assert report['state_rows'] == 2190
+          assert report['warmup_rows'] == 365
+          assert report['out_of_sample_rows'] == 1825
+          assert report['complete_30d_outcomes'] == 1825
+          assert report['archive_checksums'] == 'PASS_98_OF_98'
+          assert report['block_counts'] == {
+              'WARMUP': 365,
+              'OOS_1': 365,
+              'OOS_2': 365,
+              'OOS_3': 365,
+              'OOS_4': 365,
+              'OOS_5': 365,
+          }
+          assert report['discovery_reference_excluded'] == 'PASS'
+          assert report['predictive_claim'] == 'NO'
+          assert report['public_binding'] == 'NO'
+          assert report['commercial_ai_feed'] == 'NO'
+          print('BTC_2190D_REAL_SOURCE_CHECKSUMS=PASS_98_OF_98')
+          print('BTC_2190D_STATE_ROWS=2190')
+          print('BTC_2190D_OOS_ROWS=1825')
+          print('BTC_2190D_COMPLETE_30D_OUTCOMES=1825')
+          print('BTC_2190D_DISCOVERY_REFERENCE_EXCLUDED=PASS')
+          print('BTC_2190D_NO_LOOKAHEAD=PASS')
+          print('BTC_2190D_RAW_ARCHIVE_PUBLICATION=NO')
+          PY
+
+      - name: Upload research evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btc-2190d-walk-forward-evidence-${{ github.event.pull_request.number }}
+          path: artifacts/final/
+          if-no-files-found: error
+          retention-days: 90
