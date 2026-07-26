@@ -98,8 +98,8 @@
    Five semantic nodes resolve once in reading order. No idle loop.
    Event Memory is a clipped internal trace, never a spatial coordinate. */
 @keyframes btcAspectCycleNodeRevealV01 {
-  from { opacity: 0.28; translate: 0 0.52rem; filter: brightness(0.72) saturate(0.78); }
-  to { opacity: 1; translate: 0 0; filter: brightness(1) saturate(1); }
+  0%, 58% { opacity: 0.18; translate: 0 0.68rem; filter: brightness(0.66) saturate(0.72); }
+  100% { opacity: 1; translate: 0 0; filter: brightness(1) saturate(1); }
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1 .btc-node-v1 {
@@ -145,10 +145,14 @@
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1:has(.btc-node-v1:hover) .btc-node-v1:not(:hover) {
+  animation-name: none !important;
+  animation-play-state: paused !important;
   opacity: 0.58 !important;
   filter: saturate(0.72) brightness(0.82) !important;
 }
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1 .btc-node-v1:hover {
+  animation-name: none !important;
+  animation-play-state: paused !important;
   opacity: 1 !important;
   translate: 0 -0.18rem !important;
   filter: brightness(1.18) saturate(1.08) !important;
