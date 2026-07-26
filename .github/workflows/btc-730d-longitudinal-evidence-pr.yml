@@ -1,0 +1,198 @@
+name: BTC 730D Longitudinal Evidence PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/btc-730d-longitudinal-evidence-pr.yml'
+      - 'tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py'
+      - 'tools/btc_730d_longitudinal_evidence/test_btc_730d_corpus.py'
+      - 'docs/crypto-astro-service/BTC_730D_LONGITUDINAL_EVIDENCE_METHODOLOGY_v0_1.md'
+      - 'docs/crypto-astro-service/btc_730d_longitudinal_evidence_contract_v0_1.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: btc-730d-longitudinal-evidence-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  longitudinal-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact five-file implementation scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+            '.github/workflows/btc-730d-longitudinal-evidence-pr.yml',
+            'tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py',
+            'tools/btc_730d_longitudinal_evidence/test_btc_730d_corpus.py',
+            'docs/crypto-astro-service/BTC_730D_LONGITUDINAL_EVIDENCE_METHODOLOGY_v0_1.md',
+            'docs/crypto-astro-service/btc_730d_longitudinal_evidence_contract_v0_1.json',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+              text=True,
+          ).splitlines())
+          if changed != expected:
+              raise AssertionError({
+                  'changed': sorted(changed),
+                  'missing': sorted(expected - changed),
+                  'unexpected': sorted(changed - expected),
+              })
+          print('BTC_730D_EXACT_FIVE_FILE_SCOPE=PASS')
+          PY
+
+      - name: Verify source and product boundary
+        run: |
+          python - <<'PY'
+          import ast, json
+          from pathlib import Path
+
+          builder_path = Path('tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py')
+          builder = builder_path.read_text(encoding='utf-8')
+          tree = ast.parse(builder, filename=str(builder_path))
+          imports = set()
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Import):
+                  imports.update(alias.name.split('.', 1)[0] for alias in node.names)
+              elif isinstance(node, ast.ImportFrom):
+                  imports.add((node.module or '').split('.', 1)[0])
+          forbidden = {'pandas', 'numpy', 'requests', 'coingecko', 'ccxt'}
+          assert not (imports & forbidden), sorted(imports & forbidden)
+          contract = json.loads(Path('docs/crypto-astro-service/btc_730d_longitudinal_evidence_contract_v0_1.json').read_text())
+          assert contract['window'] == {
+              'state_start_date': '2024-06-26',
+              'state_end_date': '2026-06-25',
+              'state_days': 730,
+              'warmup_days': 365,
+              'out_of_sample_days': 365,
+              'source_tail_end_date': '2026-07-25',
+              'maturity_tail_days': 30,
+          }
+          assert contract['distribution_boundary'] == {
+              'research_artifact_only': True,
+              'public_page': False,
+              'public_api': False,
+              'commercial_ai_feed': False,
+              'subscription': False,
+              'predictive_claim': False,
+              'trading_signal': False,
+              'price_target': False,
+          }
+          required = [
+              'SHA-256 .CHECKSUM required',
+              'state_payload',
+              'silent_overwrite_allowed',
+              'HISTORICAL_ASSOCIATION_ONLY',
+              'rows,archives=sources(a,tail,cache)',
+          ]
+          for marker in required:
+              assert marker in builder, marker
+          print('BTC_730D_SOURCE_AND_BOUNDARY_CONTRACT=PASS')
+          PY
+
+      - name: Run deterministic synthetic and no-lookahead fixtures
+        run: |
+          mkdir -p artifacts/final
+          python -m unittest discover -s tools/btc_730d_longitudinal_evidence -p 'test_*.py' -v 2>&1 | tee artifacts/final/unit-tests.log
+
+      - name: Build real checksum-bound corpus twice
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/cache artifacts/build-a artifacts/build-b
+          python tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py \
+            --state-start 2024-06-26 \
+            --state-end 2026-06-25 \
+            --source-end 2026-07-25 \
+            --cache-dir artifacts/cache \
+            --output-dir artifacts/build-a \
+            | tee artifacts/final/remote-build-a.log
+          python tools/btc_730d_longitudinal_evidence/build_btc_730d_corpus.py \
+            --state-start 2024-06-26 \
+            --state-end 2026-06-25 \
+            --source-end 2026-07-25 \
+            --cache-dir artifacts/cache \
+            --output-dir artifacts/build-b \
+            | tee artifacts/final/remote-build-b.log
+          diff -ru artifacts/build-a artifacts/build-b
+          cp artifacts/build-a/* artifacts/final/
+
+      - name: Verify final evidence contract
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          root = Path('artifacts/final')
+          summary = json.loads((root / 'btc_730d_summary.json').read_text())
+          manifest = json.loads((root / 'btc_730d_source_manifest.json').read_text())
+          proof = json.loads((root / 'btc_730d_no_lookahead_proof.json').read_text())
+          corrections = json.loads((root / 'btc_730d_correction_ledger.json').read_text())
+          rows = [json.loads(line) for line in (root / 'btc_730d_state_corpus.jsonl').read_text().splitlines()]
+          assert summary['status'] == 'PASS'
+          assert summary['research_claim'] == 'HISTORICAL_ASSOCIATION_ONLY'
+          assert summary['state_row_count'] == 730
+          assert summary['warmup_row_count'] == 365
+          assert summary['out_of_sample_row_count'] == 365
+          assert summary['complete_30d_outcome_count'] == 365
+          assert manifest['source_start_date'] == '2024-06-26'
+          assert manifest['source_end_date'] == '2026-07-25'
+          assert manifest['archive_count'] == 51
+          assert all(item['expected_sha256'] == item['actual_sha256'] for item in manifest['archives'])
+          assert proof['status'] == 'PASS'
+          assert proof['forward_fields_excluded_from_state_hash'] == 'PASS'
+          assert all(item['status'] == 'PASS' for item in proof['prefix_invariance'])
+          assert corrections['silent_overwrite_allowed'] is False
+          assert len(rows) == 730
+          assert sum(row['phase'] == 'OUT_OF_SAMPLE' for row in rows) == 365
+          assert all(row['outcomes'] is None for row in rows[:365])
+          assert all(row['outcomes']['maturity_status'] == 'COMPLETE' for row in rows[365:])
+          for row in rows:
+              payload = {
+                  'observation_date': row['observation_date'],
+                  'phase': row['phase'],
+                  'source': row['source'],
+                  'input_max_timestamp_utc': row['input_max_timestamp_utc'],
+                  'methodology_id': row['methodology_id'],
+                  'methodology_sha256': row['methodology_sha256'],
+                  'metrics': row['metrics'],
+              }
+              encoded = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':')) + '\n').encode()
+              assert hashlib.sha256(encoded).hexdigest() == row['state_sha256']
+          assert not list(root.glob('*.zip'))
+          assert not list(root.glob('*.csv'))
+          print('BTC_730D_REAL_SOURCE_CHECKSUMS=PASS')
+          print('BTC_730D_STATE_ROWS=730')
+          print('BTC_730D_OUT_OF_SAMPLE_ROWS=365')
+          print('BTC_730D_COMPLETE_30D_OUTCOMES=365')
+          print('BTC_730D_NO_LOOKAHEAD=PASS')
+          print('BTC_730D_RAW_ARCHIVE_PUBLICATION=NO')
+          PY
+
+      - name: Upload research evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btc-730d-longitudinal-evidence-${{ github.event.pull_request.number }}
+          path: artifacts/final/
+          if-no-files-found: error
+          retention-days: 90
