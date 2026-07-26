@@ -191,3 +191,26 @@
   }
 }
 /* BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1:END */
+
+/* BTC_FIELD_CORRIDOR_PORTRAIT_OPTICS_CONTAINMENT_v0_1:BEGIN
+   Portrait optics are physically bounded to the upper chamber. The meaning
+   layer starts below the final lens plane and never shares its visual lane. */
+@media (max-width: 760px) and (orientation: portrait) {
+  #btc-phi-cycle-hub#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 {
+    background:
+      radial-gradient(ellipse 2.7rem 3.75rem at 17% 21%, transparent 0 57%, rgba(244, 207, 114, 0.42) 58% 60%, transparent 61%),
+      radial-gradient(ellipse 2.15rem 3.25rem at 35% 21%, transparent 0 57%, rgba(130, 183, 255, 0.31) 58% 60%, transparent 61%),
+      radial-gradient(ellipse 1.65rem 2.75rem at 51% 21%, transparent 0 57%, rgba(244, 207, 114, 0.34) 58% 60%, transparent 61%),
+      radial-gradient(ellipse 1.15rem 2.25rem at 64% 21%, transparent 0 57%, rgba(130, 183, 255, 0.34) 58% 60%, transparent 61%),
+      radial-gradient(ellipse 0.78rem 1.72rem at 74% 21%, transparent 0 54%, rgba(255, 235, 171, 0.82) 55% 65%, transparent 66%),
+      radial-gradient(ellipse at 12% 21%, rgba(244, 207, 114, 0.26), transparent 17%),
+      radial-gradient(ellipse at 74% 21%, rgba(130, 183, 255, 0.16), transparent 14%),
+      linear-gradient(180deg, rgba(244, 207, 114, 0.075), rgba(8, 24, 49, 0.18) 38.196601125%, rgba(2, 7, 17, 0.98) 61.803398875%) !important;
+  }
+
+  #btc-phi-cycle-hub#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 strong,
+  #btc-phi-cycle-hub#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1 em {
+    z-index: 6;
+  }
+}
+/* BTC_FIELD_CORRIDOR_PORTRAIT_OPTICS_CONTAINMENT_v0_1:END */
