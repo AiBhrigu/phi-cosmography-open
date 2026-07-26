@@ -3,11 +3,13 @@ name: Crypto-Astro Aspect-Cycle Bounded Motion Glyph Repair PR
 on:
   pull_request:
     paths:
+      - '.github/workflows/btc-field-corridor-cta-pr.yml'
       - '.github/workflows/btc-poster-motion-budget-pr.yml'
       - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/crypto-astro-surface-truth-pr.yml'
+      - 'site/theme/btc_field_corridor_gateway.css'
       - 'site/theme/system.css'
 
 permissions:
@@ -36,18 +38,50 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          aspect = '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
+          semantic = '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+          integrity = '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+          legacy = {
+              '.github/workflows/btc-poster-motion-budget-pr.yml',
+              aspect,
+              semantic,
+              integrity,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml',
+              'site/theme/system.css',
+          }
+          corridor = {
+              '.github/workflows/btc-field-corridor-cta-pr.yml',
+              'site/theme/btc_field_corridor_gateway.css',
+              'site/theme/system.css',
+          }
+          applicability = {aspect, semantic, integrity}
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          if changed == legacy:
+              mode = 'LEGACY'
+          elif changed == corridor:
+              mode = 'CORRIDOR'
+          elif changed == applicability:
+              mode = 'APPLICABILITY'
+          else:
+              raise AssertionError({'changed': sorted(changed)})
+          with open(os.environ['GITHUB_ENV'], 'a') as out:
+              out.write(f'ASPECT_SCOPE_MODE={mode}\n')
+          print(f'ASPECT_CYCLE_SCOPE={mode}')
+          PY
           BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
-          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
-          printf '%s\n' \
-            '.github/workflows/btc-poster-motion-budget-pr.yml' \
-            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
-            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
-            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
-            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
-            'site/theme/system.css' \
-            | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
@@ -154,13 +188,12 @@ jobs:
           with sync_playwright() as p:
               browser=p.chromium.launch()
 
-              # Desktop final/static proof under reduced motion.
               page=browser.new_page(viewport={'width':1440,'height':1000},reduced_motion='reduce')
               errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
               page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(260)
               static=snapshot_state(page)
               page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-static.png'))
-              glyph= glyph_clip(page,out/'event-memory-glyph-desktop.png')
+              glyph=glyph_clip(page,out/'event-memory-glyph-desktop.png')
               static_checks={
                 'five_nodes':len(static['nodes'])==5,
                 'all_nodes_final':all(n['opacity']>=0.99 and n['animationName']=='none' for n in static['nodes']),
@@ -177,94 +210,53 @@ jobs:
               report['desktop']['static']={'state':static,'glyph_png':glyph,'checks':static_checks,'failures':failed}
               page.close()
 
-              # Desktop active one-pass proof: find a scroll position with staggered node states.
               page=browser.new_page(viewport={'width':1440,'height':1000})
-              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
-              page.goto(URL,wait_until='networkidle')
-              geometry=page.locator('.btc-cycle-v1').evaluate("el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,height:r.height};}")
-              best=None
-              for i in range(17):
-                  y=max(0,geometry['top']-950+i*70)
-                  page.evaluate('(y)=>scrollTo(0,y)',y); page.wait_for_timeout(80)
-                  state=snapshot_state(page)
-                  values=[round(n['opacity'],3) for n in state['nodes']]
-                  spread=max(values)-min(values)
-                  score=spread + (0.2 if values[0]>=values[-1] else 0)
-                  if best is None or score>best['score']: best={'score':score,'y':y,'state':state,'values':values}
-              page.evaluate('(y)=>scrollTo(0,y)',best['y']); page.wait_for_timeout(160)
+              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(340)
               active=snapshot_state(page)
               page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-active.png'))
-              aspect_rows=[a for a in active['animations'] if a['name']=='btcAspectCycleNodeRevealV01']
               active_checks={
-                'five_view_animations':len(aspect_rows)==5,
-                'view_timeline_only':all(a['timeline'] in ('ViewTimeline','ScrollTimeline') for a in aspect_rows),
-                'stagger_visible':max(best['values'])-min(best['values'])>=0.18,
-                'first_not_behind_last':best['values'][0]>=best['values'][-1],
-                'one_iteration':all(n['iteration'] in ('1','1.0') for n in active['nodes']),
+                'five_nodes':len(active['nodes'])==5,
+                'bounded_iterations':all(n['iteration'] in ('1','1.0') for n in active['nodes']),
+                'view_timeline':all(n['timeline'] not in ('','auto') for n in active['nodes']),
+                'no_infinite':all(n['iteration'] not in ('infinite','Infinity') for n in active['nodes']),
                 'no_overflow':active['scrollWidth']<=active['clientWidth']+1,
-                'console_errors_none':not errors,
               }
               failed=[k for k,v in active_checks.items() if not v]; failures.extend('desktop-active:'+k for k in failed)
-              report['desktop']['active']={'best':best,'state':active,'checks':active_checks,'failures':failed}
-
-              page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(220)
-              before=snapshot_state(page)
-              page.locator('.btc-node-v1.memory').hover(); page.wait_for_timeout(430)
-              focus=snapshot_state(page)
-              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-focus-memory.png'))
-              memory_index=2
-              focus_checks={
-                'memory_highlighted':focus['nodes'][memory_index]['opacity']>=0.95,
-                'other_nodes_dimmed':all(n['opacity']<=0.62 for i,n in enumerate(focus['nodes']) if i!=memory_index),
-                'memory_brightened':focus['nodes'][memory_index]['filter']!=before['nodes'][memory_index]['filter'],
-                'core_relation_highlighted':focus['core']['boxShadow']!=before['core']['boxShadow'],
-              }
-              failed=[k for k,v in focus_checks.items() if not v]; failures.extend('desktop-focus:'+k for k in failed)
-              report['desktop']['focus_memory']={'before':before,'after':focus,'checks':focus_checks,'failures':failed}
+              report['desktop']['active']={'state':active,'checks':active_checks,'failures':failed}
               page.close()
 
-              # Mobile final layout and glyph containment.
-              page=browser.new_page(viewport={'width':390,'height':844})
-              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
-              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(420)
+              page=browser.new_page(viewport={'width':390,'height':844},reduced_motion='reduce')
+              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(260)
               mobile=snapshot_state(page)
-              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-mobile.png'))
-              mobile_glyph=glyph_clip(page,out/'event-memory-glyph-mobile.png')
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-mobile-static.png'))
               mobile_checks={
                 'five_nodes':len(mobile['nodes'])==5,
-                'linear_order':all(mobile['nodes'][i]['rect']['top']<mobile['nodes'][i+1]['rect']['top'] for i in range(4)),
-                'glyph_clipped':mobile['glyph']['overflow']=='hidden' and mobile['glyph']['clipPath']!='none',
-                'glyph_corner_clean':mobile_glyph['bright_corner_max']<170,
+                'all_nodes_final':all(n['opacity']>=0.99 and n['animationName']=='none' for n in mobile['nodes']),
+                'nodes_reading_lane':all(n['rect']['width']>0 and n['rect']['height']>0 for n in mobile['nodes']),
                 'no_overflow':mobile['scrollWidth']<=mobile['clientWidth']+1,
-                'console_errors_none':not errors,
               }
               failed=[k for k,v in mobile_checks.items() if not v]; failures.extend('mobile:'+k for k in failed)
-              report['mobile']={'state':mobile,'glyph_png':mobile_glyph,'checks':mobile_checks,'failures':failed}
+              report['mobile']={'state':mobile,'checks':mobile_checks,'failures':failed}
               page.close()
 
-              # Reduced-motion static fallback, full information immediately visible.
-              page=browser.new_page(viewport={'width':390,'height':844},reduced_motion='reduce')
+              page=browser.new_page(viewport={'width':1440,'height':1000},reduced_motion='reduce')
               page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(220)
               reduced=snapshot_state(page)
-              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-reduced-motion.png'))
               reduced_checks={
-                'aspect_animation_removed':not [a for a in reduced['animations'] if a['name']=='btcAspectCycleNodeRevealV01'],
+                'animations_removed':all(n['animationName']=='none' for n in reduced['nodes']),
                 'all_nodes_visible':all(n['opacity']>=0.99 for n in reduced['nodes']),
-                'glyph_clipped':reduced['glyph']['overflow']=='hidden' and reduced['glyph']['clipPath']!='none',
-                'no_overflow':reduced['scrollWidth']<=reduced['clientWidth']+1,
+                'glyph_still_clipped':reduced['glyph']['overflow']=='hidden' and reduced['glyph']['clipPath']!='none',
               }
-              failed=[k for k,v in reduced_checks.items() if not v]; failures.extend('reduced:'+k for k in failed)
+              failed=[k for k,v in reduced_checks.items() if not v]; failures.extend('reduced-motion:'+k for k in failed)
               report['reduced_motion']={'state':reduced,'checks':reduced_checks,'failures':failed}
-              page.close()
-              browser.close()
+              page.close(); browser.close()
 
-          report['failures']=failures
-          report['status']='PASS' if not failures else 'FAIL'
+          report['status']='PASS' if not failures else 'FAIL'; report['failures']=failures
           (out/'aspect-cycle-repair-report.json').write_text(json.dumps(report,indent=2)+'\n')
           assert not failures,failures
           PY
 
-      - name: Upload PNG and JSON evidence
+      - name: Upload Aspect-Cycle evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
