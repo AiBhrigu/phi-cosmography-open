@@ -22,7 +22,7 @@ def verify(repo: Path) -> dict:
         failures.append("What Changed section missing")
     elif section.group(0).rstrip("\n") != expected:
         failures.append("rendered section differs from deterministic contract")
-    if source.count('href="https://www.bhrigu.io/crypto-astro/btc"') != 2:
+    if source.count('href="https://www.bhrigu.io/market-cosmographer"') != 2:
         failures.append("BTC CTA count drift")
     snapshot = load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot.public.json")
     dominance = f'{float(snapshot["market_reality"]["btc_dominance_pct"]):.1f}%'
