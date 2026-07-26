@@ -11,9 +11,9 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
         filler = " ".join(["context"] * 680)
         return f'''<main>
 <nav class="crypto-astro-primary-nav"><a href="#surface">Current</a><a href="#what-changed">What Changed</a><a href="#btc-phi-cycle-hub">BTC</a><a href="#market">Market</a><a href="#trust-access">Trust &amp; Access</a></nav>
-<section id="surface" data-editorial-chapter="orientation"><a href="https://www.bhrigu.io/market-cosmographer">Ask one BTC field question</a></section>
+<section id="surface" data-editorial-chapter="orientation"><a href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a></section>
 <section id="what-changed" data-editorial-chapter="what-changed">Previous verified snapshot is not yet available.</section>
-<section id="btc-phi-cycle-hub" data-editorial-chapter="btc-field"><a href="https://www.bhrigu.io/market-cosmographer">Ask one BTC field question</a></section>
+<section id="btc-phi-cycle-hub" data-editorial-chapter="btc-field"><a href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a></section>
 <section id="market" data-editorial-chapter="wider-market">{values} {filler}</section>
 <section id="trust-access" data-editorial-chapter="trust-access"><a href="#proof">View source proof</a><a href="https://www.bhrigu.io/access">Research access</a>Research context only. No trading signal, forecast, price target, or investment advice.</section>
 <details id="proof"><summary>Proof</summary></details>
@@ -43,7 +43,7 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
         self.assertTrue(any(item.startswith("duplicate_ids") for item in report["failures"]))
 
     def test_rejects_competing_primary_cta(self) -> None:
-        value = self.sample().replace("</section>\n<section id=\"what-changed\"", '<a href="https://www.bhrigu.io/market-cosmographer">Ask one BTC field question</a></section>\n<section id="what-changed"', 1)
+        value = self.sample().replace("</section>\n<section id=\"what-changed\"", '<a href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a></section>\n<section id="what-changed"', 1)
         report = verify(value)
         self.assertEqual(report["status"], "FAIL")
         self.assertIn("primary_cta_two_consistent_placements", report["failures"])

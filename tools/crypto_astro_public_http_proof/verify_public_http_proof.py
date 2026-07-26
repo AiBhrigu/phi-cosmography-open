@@ -29,7 +29,7 @@ from urllib.parse import quote
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 PAGES_ROOT = "https://aibhrigu.github.io/phi-cosmography-open/crypto-astro"
-BHRIGU_ROOT = "https://www.bhrigu.io/market-cosmographer"
+BHRIGU_ROOT = "https://www.bhrigu.io/crypto-astro/btc"
 BHRIGU_QUESTION = "What changed in the BTC field and why does it matter?"
 
 TARGETS = {
