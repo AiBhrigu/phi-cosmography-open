@@ -3,6 +3,7 @@ name: Crypto-Astro BTC Visual Integrity PR
 on:
   pull_request:
     paths:
+      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - '.github/workflows/btc-poster-motion-budget-pr.yml'
@@ -56,10 +57,22 @@ jobs:
             'site/theme/system.css' \
             | sort > /tmp/semantic-motion.txt
 
+          printf '%s\n' \
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
+            'site/theme/system.css' \
+            | sort > /tmp/aspect-cycle-repair.txt
+
           if diff -u /tmp/foundation.txt /tmp/actual.txt; then
             echo BTC_VISUAL_SCOPE_MODE=FOUNDATION >> "$GITHUB_ENV"
           elif diff -u /tmp/semantic-motion.txt /tmp/actual.txt; then
             echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+          elif diff -u /tmp/aspect-cycle-repair.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+            echo BTC_ASPECT_CYCLE_REPAIR=YES >> "$GITHUB_ENV"
           else
             echo 'BTC visual scope is not an accepted exact file set.' >&2
             exit 1
@@ -71,6 +84,8 @@ jobs:
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro \
             site/theme/btc_phi_semantic_geometry.css \
+            site/theme/btc_phi_visual_integrity.css \
+            site/theme/crypto_astro_btc_semantic_motion.css \
             site/theme/btc_poster_grade.css \
             site/theme/btc_motion_budget.css \
             tools \
@@ -105,6 +120,7 @@ jobs:
           if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
               semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
               compact = ''.join(semantic.split())
+              compact_system = ''.join(system.split())
               target_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
               assert target_import in system and system.index(imports[-1]) < system.index(target_import)
               required = [
@@ -124,6 +140,20 @@ jobs:
               assert '#market' not in semantic
               assert 'body {' not in semantic
               assert semantic.count('@keyframes ') == 3
+              if os.environ.get('BTC_ASPECT_CYCLE_REPAIR') == 'YES':
+                  required_system = [
+                      'CRYPTO_ASTRO_ASPECT_CYCLE_BOUNDED_MOTION_GLYPH_REPAIR_v0_1',
+                      '@keyframes btcAspectCycleNodeRevealV01',
+                      '.btc-node-v1.memory::before',
+                      'overflow: hidden !important',
+                      'clip-path: circle(calc(50% - 1px) at 50% 50%)',
+                  ]
+                  for marker in required_system:
+                      assert marker in system, marker
+                  assert system.count('@keyframes btcAspectCycleNodeRevealV01') == 1
+                  assert compact_system.count('animation-iteration-count:1') >= 5
+                  assert '@media(prefers-reduced-motion:reduce)' in compact_system
+                  assert 'infinite' not in system
           print('BTC_VISUAL_INTEGRITY_SOURCE=PASS')
           PY
 
@@ -175,6 +205,8 @@ jobs:
                     const labels=[...document.querySelectorAll('.btc-t-v1')],metrics=[...document.querySelectorAll('.btc-phi-cycle-metric-v0-1')];
                     const cta=document.querySelector('.btc-entry-v1'),cycle=document.querySelector('.btc-cycle-canvas-v1');
                     const nodes=[...document.querySelectorAll('.btc-node-v1')];
+                    const memory=document.querySelector('.btc-node-v1.memory');
+                    const memoryGlyph=getComputedStyle(memory,'::before');
                     const first=document.querySelector('#market .market-first-screen'),firstChildren=first?[...first.children]:[];
                     const lower=document.querySelector('#market .market-lower-grid');
                     const timing=lower?.querySelector('.editorial-astromodule-v0-1'),synthesis=lower?.querySelector('#read');
@@ -185,13 +217,15 @@ jobs:
                       coreX:(cr.left+cr.width/2-fr.left)/fr.width,coreY:(cr.top+cr.height/2-fr.top)/fr.height,
                       labels:labels.map(rect),metrics:metrics.map(rect),cta:rect(cta),cycle:rect(cycle),
                       nodes:nodes.map(el=>({rect:rect(el),column:getComputedStyle(el).gridColumnStart,position:getComputedStyle(el).position})),
+                      memoryGlyph:{content:memoryGlyph.content,overflow:memoryGlyph.overflow,clipPath:memoryGlyph.clipPath},
                       marketFirst:firstChildren.map(rect),timing:timing?rect(timing):null,synthesis:synthesis?rect(synthesis):null,liquidity:liquidity?rect(liquidity):null,
                       decorativeVisible:decorative.length,scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
                   }""")
                   checks={'core_phi_x':abs(state['coreX']-MAJOR)<0.03,'core_phi_y':abs(state['coreY']-MINOR)<0.03,
                     'decorative_marks_hidden':state['decorativeVisible']==0,'horizontal_overflow_none':state['scrollWidth']<=state['clientWidth']+1,
                     'console_errors_none':not errors,'cta_visible':state['cta']['width']>0 and state['cta']['height']>0,
-                    'five_nodes_visible':len(state['nodes'])==5 and all(n['rect']['width']>0 and n['rect']['height']>0 for n in state['nodes'])}
+                    'five_nodes_visible':len(state['nodes'])==5 and all(n['rect']['width']>0 and n['rect']['height']>0 for n in state['nodes']),
+                    'memory_glyph_clipped':state['memoryGlyph']['content'] in ('""','none') and state['memoryGlyph']['overflow']=='hidden' and state['memoryGlyph']['clipPath']!='none'}
                   if name=='desktop':
                       checks['field_exact_phi_ratio']=abs(ratio(state['field']['width'],state['field']['height'])-PHI)<0.03
                       if not semantic_mode:

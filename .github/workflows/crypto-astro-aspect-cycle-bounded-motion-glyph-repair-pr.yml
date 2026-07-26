@@ -1,0 +1,274 @@
+name: Crypto-Astro Aspect-Cycle Bounded Motion Glyph Repair PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/btc-poster-motion-budget-pr.yml'
+      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
+      - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+      - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+      - '.github/workflows/crypto-astro-surface-truth-pr.yml'
+      - 'site/theme/system.css'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-aspect-cycle-repair-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  aspect-cycle-repair:
+    name: Verify Aspect-Cycle one-pass motion and Event Memory glyph
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact repair scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
+          printf '%s\n' \
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
+            'site/theme/system.css' \
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_btc_semantic_motion.css \
+            site/theme/crypto_astro_phi_master_refinement.css \
+            site/theme/crypto_astro_phi_master_review_repair.css \
+            site/theme/crypto_astro_phi_master_acceptance.css \
+            site/theme/crypto_astro_phi_mobile_harmony.css \
+            site/theme/btc_phi_semantic_geometry.css \
+            site/theme/btc_phi_visual_integrity.css \
+            site/theme/btc_poster_grade.css \
+            site/theme/btc_motion_budget.css \
+            tools \
+            docs
+          echo ASPECT_CYCLE_REPAIR_EXACT_SCOPE=PASS
+
+      - name: Verify source contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          system=Path('site/theme/system.css').read_text()
+          compact=''.join(system.split())
+          required=[
+              'CRYPTO_ASTRO_ASPECT_CYCLE_BOUNDED_MOTION_GLYPH_REPAIR_v0_1',
+              '@keyframes btcAspectCycleNodeRevealV01',
+              '.btc-node-v1.aspect',
+              '.btc-node-v1.phase',
+              '.btc-node-v1.memory',
+              '.btc-node-v1.confirm',
+              '.btc-node-v1.review',
+              'content: "" !important',
+              'overflow: hidden !important',
+              'clip-path: circle(calc(50% - 1px) at 50% 50%)',
+          ]
+          for marker in required: assert marker in system, marker
+          assert system.count('@keyframes btcAspectCycleNodeRevealV01')==1
+          assert compact.count('animation-name:btcAspectCycleNodeRevealV01!important')==1
+          assert compact.count('animation-iteration-count:1!important')>=5
+          assert compact.count('animation-range:entry')>=5
+          assert 'animation-timeline:view(block)' in compact
+          assert '@media(prefers-reduced-motion:reduce)' in compact
+          assert 'infinite' not in system
+          assert '#market' not in system
+          assert 'body{' not in compact
+          print('ASPECT_CYCLE_REPAIR_SOURCE=PASS')
+          PY
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0 pillow==11.3.0
+          python -m playwright install --with-deps chromium
+
+      - name: Run desktop, mobile, interaction, and reduced-motion proof
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python -m http.server 4173 --directory site > artifacts/http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && break
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
+
+          python - <<'PY'
+          import io, json
+          from pathlib import Path
+          from PIL import Image
+          from playwright.sync_api import sync_playwright
+
+          URL='http://127.0.0.1:4173/crypto-astro/index.html'
+          out=Path('artifacts')
+          report={'status':'FAIL','desktop':{},'mobile':{},'reduced_motion':{},'failures':[]}
+          failures=[]
+          node_selector='#btc-phi-cycle-hub .btc-cycle-canvas-v1 .btc-node-v1'
+
+          def snapshot_state(page):
+              return page.evaluate("""() => {
+                const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+                const cycle=document.querySelector('#btc-phi-cycle-hub .btc-cycle-v1');
+                const canvas=cycle.querySelector('.btc-cycle-canvas-v1');
+                const memory=cycle.querySelector('.btc-node-v1.memory');
+                const glyph=getComputedStyle(memory,'::before');
+                const core=getComputedStyle(canvas,'::before');
+                const nodes=[...cycle.querySelectorAll('.btc-node-v1')].map(el=>{const s=getComputedStyle(el);return {className:el.className,opacity:Number(s.opacity),translate:s.translate,filter:s.filter,animationName:s.animationName,iteration:s.animationIterationCount,timeline:s.animationTimeline||'',rect:rect(el)};});
+                const animations=cycle.getAnimations({subtree:true}).map(a=>({name:a.animationName||'',timeline:a.timeline?.constructor?.name||'',currentTime:String(a.currentTime),playState:a.playState}));
+                return {cycle:rect(cycle),canvas:rect(canvas),memory:rect(memory),nodes,animations,
+                  glyph:{content:glyph.content,overflow:glyph.overflow,clipPath:glyph.clipPath,backgroundImage:glyph.backgroundImage,width:parseFloat(glyph.width),height:parseFloat(glyph.height),left:glyph.left,right:glyph.right},
+                  core:{borderColor:core.borderColor,boxShadow:core.boxShadow},
+                  scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
+              }""")
+
+          def glyph_clip(page, path):
+              box=page.locator('.btc-node-v1.memory').evaluate("""el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el,'::before');const w=parseFloat(s.width),h=parseFloat(s.height);let x=r.left+parseFloat(s.left||0),y=r.top+r.height/2-h/2;if(s.right!=='auto')x=r.right-parseFloat(s.right)-w;return {x,y,width:w,height:h};}""")
+              data=page.screenshot(clip=box)
+              Path(path).write_bytes(data)
+              img=Image.open(io.BytesIO(data)).convert('RGB')
+              w,h=img.size
+              corners=[img.getpixel((1,1)),img.getpixel((w-2,1)),img.getpixel((1,h-2)),img.getpixel((w-2,h-2))]
+              bright_corner=max(max(px) for px in corners)
+              return {'width':w,'height':h,'bright_corner_max':bright_corner,'corners':corners}
+
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+
+              # Desktop final/static proof under reduced motion.
+              page=browser.new_page(viewport={'width':1440,'height':1000},reduced_motion='reduce')
+              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(260)
+              static=snapshot_state(page)
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-static.png'))
+              glyph= glyph_clip(page,out/'event-memory-glyph-desktop.png')
+              static_checks={
+                'five_nodes':len(static['nodes'])==5,
+                'all_nodes_final':all(n['opacity']>=0.99 and n['animationName']=='none' for n in static['nodes']),
+                'glyph_content_empty':static['glyph']['content'] in ('""','none'),
+                'glyph_overflow_hidden':static['glyph']['overflow']=='hidden',
+                'glyph_clip_circle':static['glyph']['clipPath']!='none',
+                'glyph_internal_trace':'radial-gradient' in static['glyph']['backgroundImage'] and 'linear-gradient' in static['glyph']['backgroundImage'],
+                'glyph_square':abs(static['glyph']['width']-static['glyph']['height'])<1,
+                'glyph_corner_clean':glyph['bright_corner_max']<170,
+                'no_overflow':static['scrollWidth']<=static['clientWidth']+1,
+                'console_errors_none':not errors,
+              }
+              failed=[k for k,v in static_checks.items() if not v]; failures.extend('desktop-static:'+k for k in failed)
+              report['desktop']['static']={'state':static,'glyph_png':glyph,'checks':static_checks,'failures':failed}
+              page.close()
+
+              # Desktop active one-pass proof: find a scroll position with staggered node states.
+              page=browser.new_page(viewport={'width':1440,'height':1000})
+              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+              page.goto(URL,wait_until='networkidle')
+              geometry=page.locator('.btc-cycle-v1').evaluate("el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,height:r.height};}")
+              best=None
+              for i in range(17):
+                  y=max(0,geometry['top']-950+i*70)
+                  page.evaluate('(y)=>scrollTo(0,y)',y); page.wait_for_timeout(80)
+                  state=snapshot_state(page)
+                  values=[round(n['opacity'],3) for n in state['nodes']]
+                  spread=max(values)-min(values)
+                  score=spread + (0.2 if values[0]>=values[-1] else 0)
+                  if best is None or score>best['score']: best={'score':score,'y':y,'state':state,'values':values}
+              page.evaluate('(y)=>scrollTo(0,y)',best['y']); page.wait_for_timeout(160)
+              active=snapshot_state(page)
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-active.png'))
+              aspect_rows=[a for a in active['animations'] if a['name']=='btcAspectCycleNodeRevealV01']
+              active_checks={
+                'five_view_animations':len(aspect_rows)==5,
+                'view_timeline_only':all(a['timeline'] in ('ViewTimeline','ScrollTimeline') for a in aspect_rows),
+                'stagger_visible':max(best['values'])-min(best['values'])>=0.18,
+                'first_not_behind_last':best['values'][0]>=best['values'][-1],
+                'one_iteration':all(n['iteration'] in ('1','1.0') for n in active['nodes']),
+                'no_overflow':active['scrollWidth']<=active['clientWidth']+1,
+                'console_errors_none':not errors,
+              }
+              failed=[k for k,v in active_checks.items() if not v]; failures.extend('desktop-active:'+k for k in failed)
+              report['desktop']['active']={'best':best,'state':active,'checks':active_checks,'failures':failed}
+
+              page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(220)
+              before=snapshot_state(page)
+              page.locator('.btc-node-v1.memory').hover(); page.wait_for_timeout(430)
+              focus=snapshot_state(page)
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-desktop-focus-memory.png'))
+              memory_index=2
+              focus_checks={
+                'memory_highlighted':focus['nodes'][memory_index]['opacity']>=0.95,
+                'other_nodes_dimmed':all(n['opacity']<=0.62 for i,n in enumerate(focus['nodes']) if i!=memory_index),
+                'memory_brightened':focus['nodes'][memory_index]['filter']!=before['nodes'][memory_index]['filter'],
+                'core_relation_highlighted':focus['core']['boxShadow']!=before['core']['boxShadow'],
+              }
+              failed=[k for k,v in focus_checks.items() if not v]; failures.extend('desktop-focus:'+k for k in failed)
+              report['desktop']['focus_memory']={'before':before,'after':focus,'checks':focus_checks,'failures':failed}
+              page.close()
+
+              # Mobile final layout and glyph containment.
+              page=browser.new_page(viewport={'width':390,'height':844})
+              errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(420)
+              mobile=snapshot_state(page)
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-mobile.png'))
+              mobile_glyph=glyph_clip(page,out/'event-memory-glyph-mobile.png')
+              mobile_checks={
+                'five_nodes':len(mobile['nodes'])==5,
+                'linear_order':all(mobile['nodes'][i]['rect']['top']<mobile['nodes'][i+1]['rect']['top'] for i in range(4)),
+                'glyph_clipped':mobile['glyph']['overflow']=='hidden' and mobile['glyph']['clipPath']!='none',
+                'glyph_corner_clean':mobile_glyph['bright_corner_max']<170,
+                'no_overflow':mobile['scrollWidth']<=mobile['clientWidth']+1,
+                'console_errors_none':not errors,
+              }
+              failed=[k for k,v in mobile_checks.items() if not v]; failures.extend('mobile:'+k for k in failed)
+              report['mobile']={'state':mobile,'glyph_png':mobile_glyph,'checks':mobile_checks,'failures':failed}
+              page.close()
+
+              # Reduced-motion static fallback, full information immediately visible.
+              page=browser.new_page(viewport={'width':390,'height':844},reduced_motion='reduce')
+              page.goto(URL,wait_until='networkidle'); page.locator('.btc-cycle-v1').scroll_into_view_if_needed(); page.wait_for_timeout(220)
+              reduced=snapshot_state(page)
+              page.locator('.btc-cycle-v1').screenshot(path=str(out/'aspect-cycle-reduced-motion.png'))
+              reduced_checks={
+                'aspect_animation_removed':not [a for a in reduced['animations'] if a['name']=='btcAspectCycleNodeRevealV01'],
+                'all_nodes_visible':all(n['opacity']>=0.99 for n in reduced['nodes']),
+                'glyph_clipped':reduced['glyph']['overflow']=='hidden' and reduced['glyph']['clipPath']!='none',
+                'no_overflow':reduced['scrollWidth']<=reduced['clientWidth']+1,
+              }
+              failed=[k for k,v in reduced_checks.items() if not v]; failures.extend('reduced:'+k for k in failed)
+              report['reduced_motion']={'state':reduced,'checks':reduced_checks,'failures':failed}
+              page.close()
+              browser.close()
+
+          report['failures']=failures
+          report['status']='PASS' if not failures else 'FAIL'
+          (out/'aspect-cycle-repair-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          assert not failures,failures
+          PY
+
+      - name: Upload PNG and JSON evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-aspect-cycle-repair-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
