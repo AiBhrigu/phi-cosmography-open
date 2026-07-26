@@ -44,7 +44,7 @@ jobs:
           python-version: '3.11'
       - name: Install schema validator
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, workflow-applicability, BTC Φ geometry, public-service, timestamp-consistency, or generated-refresh scope
+      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, workflow-applicability, BTC Φ geometry, public-service, producer-identity, timestamp-consistency, or generated-refresh scope
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -102,6 +102,16 @@ jobs:
           }
           public_service_truth_alignment = {
             'site/crypto-astro/index.html',
+          }
+          producer_public_identity = {
+            '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/crypto-astro/index.html',
+            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
           }
           timestamp_consistency_repair = {
             '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
@@ -179,6 +189,9 @@ jobs:
           elif changed == public_service_truth_alignment:
             mode='public_service_truth_alignment'
             print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')
+          elif changed == producer_public_identity:
+            mode='producer_public_identity'
+            print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY_FILE_SCOPE=PASS')
           elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):
             mode='timestamp_consistency_repair'
           elif changed == maintenance:
@@ -201,13 +214,14 @@ jobs:
               'workflow_applicability_repair_missing':sorted(workflow_applicability_repair-changed),
               'btc_phi_semantic_geometry_missing':sorted(btc_phi_semantic_geometry-changed),
               'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),
+              'producer_public_identity_missing':sorted(producer_public_identity-changed),
               'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -434,8 +448,42 @@ jobs:
             .github/workflows \
             tools \
             docs
+      - name: Prove producer public identity preserves Snapshot Memory contracts
+        if: steps.scope.outputs.mode == 'producer_public_identity'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+            '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/crypto-astro/index.html',
+            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
+          base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          assert changed == expected, {'changed':sorted(changed),'expected':sorted(expected)}
+          html=subprocess.check_output(['git','show',f"{os.environ['HEAD_SHA']}:site/crypto-astro/index.html"], text=True)
+          assert 'Crypto-Astro' not in html
+          assert html.count('href="https://www.bhrigu.io/market-cosmographer"') == 2
+          assert 'data-crypto-astro-phi-service-surface="v0_1"' in html
+          assert 'CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1' in html
+          print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/data \
+            site/theme \
+            docs/crypto-astro-service \
+            tools/crypto_astro_snapshot_memory
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
-        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment'
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
