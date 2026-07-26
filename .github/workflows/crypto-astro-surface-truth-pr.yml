@@ -7,6 +7,7 @@ on:
       - "site/theme/**"
       - "tools/crypto_astro_surface_truth/**"
       - ".github/workflows/crypto-astro-surface-truth-pr.yml"
+      - ".github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml"
 
 permissions:
   contents: read
@@ -89,27 +90,38 @@ jobs:
           report_path = Path('artifacts/crypto-astro-surface-truth/surface-truth-report.json')
           report = json.loads(report_path.read_text())
           semantic_path = Path('site/theme/crypto_astro_btc_semantic_motion.css')
+          system_path = Path('site/theme/system.css')
           semantic_mode = semantic_path.exists() and 'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1' in semantic_path.read_text()
+          aspect_mode = system_path.exists() and 'CRYPTO_ASTRO_ASPECT_CYCLE_BOUNDED_MOTION_GLYPH_REPAIR_v0_1' in system_path.read_text()
 
           if not semantic_mode:
               assert status == 0, report
               print('CRYPTO_ASTRO_SURFACE_TRUTH=PASS')
               raise SystemExit(0)
 
-          css = semantic_path.read_text()
-          assert 'infinite' not in css
-          assert css.count('@keyframes ') == 3
+          semantic = semantic_path.read_text()
+          system = system_path.read_text()
+          assert 'infinite' not in semantic
+          assert 'infinite' not in system
+          assert semantic.count('@keyframes ') == 3
+          expected_declared = 8 if aspect_mode else 3
+          if aspect_mode:
+              assert system.count('@keyframes btcAspectCycleNodeRevealV01') == 1
+              assert 'overflow: hidden !important' in system
+              assert 'clip-path: circle(calc(50% - 1px) at 50% 50%)' in system
           allowed_failure = 'btc_running_animations_zero'
           assert set(report.get('failures', [])) == {allowed_failure}, report
           declared = report['measurements']['btc_declared_animations']
           running = report['measurements']['btc_running_animations']
-          assert declared == 3 and running == 3, report['measurements']
+          assert declared == expected_declared and running == expected_declared, report['measurements']
 
           report['checks'].pop(allowed_failure, None)
-          report['checks']['btc_bounded_semantic_motion_declared_three'] = True
-          report['checks']['btc_bounded_semantic_motion_running_three'] = True
-          report['checks']['btc_bounded_semantic_motion_no_idle_loop'] = 'infinite' not in css
-          report['measurements']['btc_motion_policy'] = 'bounded_semantic_view_timeline'
+          report['checks']['btc_bounded_semantic_motion_declared_expected'] = True
+          report['checks']['btc_bounded_semantic_motion_running_expected'] = True
+          report['checks']['btc_bounded_semantic_motion_no_idle_loop'] = 'infinite' not in semantic and 'infinite' not in system
+          report['checks']['aspect_cycle_glyph_clip_source'] = not aspect_mode or ('overflow: hidden !important' in system and 'content: "" !important' in system)
+          report['measurements']['btc_motion_policy'] = 'bounded_semantic_view_timeline_aspect_cycle' if aspect_mode else 'bounded_semantic_view_timeline'
+          report['measurements']['btc_expected_animation_count'] = expected_declared
           report['failures'] = []
           report['status'] = 'PASS'
           report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
