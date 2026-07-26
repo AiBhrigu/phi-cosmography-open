@@ -3,6 +3,7 @@ name: Crypto-Astro BTC Core Gateway Semantic Motion PR
 on:
   pull_request:
     paths:
+      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/btc-poster-motion-budget-pr.yml'
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   semantic-motion:
-    name: Verify BTC gravity, telescope gateway, and bounded motion
+    name: Verify BTC gravity, telescope gateway, Aspect-Cycle, and bounded motion
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -41,16 +42,17 @@ jobs:
           git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
           printf '%s\n' \
             '.github/workflows/btc-poster-motion-budget-pr.yml' \
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
             '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
             '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
             '.github/workflows/crypto-astro-surface-truth-pr.yml' \
-            'site/theme/crypto_astro_btc_semantic_motion.css' \
             'site/theme/system.css' \
             | sort > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
+            site/theme/crypto_astro_btc_semantic_motion.css \
             site/theme/crypto_astro_what_changed.css \
             site/theme/crypto_astro_phi_master_refinement.css \
             site/theme/crypto_astro_phi_master_review_repair.css \
@@ -62,17 +64,18 @@ jobs:
             site/theme/btc_motion_budget.css \
             tools \
             docs
-          echo BTC_SEMANTIC_MOTION_EXACT_SCOPE=PASS
+          echo BTC_ASPECT_CYCLE_REPAIR_EXACT_SCOPE=PASS
 
       - name: Verify source contract
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          css = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
-          compact = ''.join(css.split())
+          semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
+          compact_semantic = ''.join(semantic.split())
           system = Path('site/theme/system.css').read_text()
-          required = [
+          compact_system = ''.join(system.split())
+          required_semantic = [
               'CRYPTO_ASTRO_BTC_CORE_GATEWAY_SEMANTIC_MOTION_v0_1',
               '--btc-motion-core-x: 61.803398875%',
               '--btc-motion-core-y: 38.196601125%',
@@ -82,18 +85,34 @@ jobs:
               '.btc-node-v1.phase',
               '.btc-node-v1.memory',
           ]
-          for marker in required:
-              assert marker in css, marker
-          assert 'animation-timeline:view(block)' in compact
-          assert compact.count('animation-iteration-count:1') >= 3
-          assert '@media(prefers-reduced-motion:reduce)' in compact
+          for marker in required_semantic:
+              assert marker in semantic, marker
+          required_system = [
+              'CRYPTO_ASTRO_ASPECT_CYCLE_BOUNDED_MOTION_GLYPH_REPAIR_v0_1',
+              '@keyframes btcAspectCycleNodeRevealV01',
+              '.btc-node-v1.memory::before',
+              'content: "" !important',
+              'overflow: hidden !important',
+              'clip-path: circle(calc(50% - 1px) at 50% 50%)',
+          ]
+          for marker in required_system:
+              assert marker in system, marker
+          assert 'animation-timeline:view(block)' in compact_semantic
+          assert compact_semantic.count('animation-iteration-count:1') >= 3
+          assert compact_system.count('animation-timeline:view(block)') >= 1
+          assert compact_system.count('animation-iteration-count:1') >= 5
+          assert '@media(prefers-reduced-motion:reduce)' in compact_semantic
+          assert '@media(prefers-reduced-motion:reduce)' in compact_system
           assert "@import url('./crypto_astro_btc_semantic_motion.css');" in system
-          assert 'infinite' not in css
-          assert css.count('@keyframes ') == 3
-          assert '#market' not in css
-          assert 'body {' not in css
-          assert '56.5%' not in css, 'CSS must consume --btc-dominance rather than hard-code the observed value'
-          print('BTC_SEMANTIC_MOTION_SOURCE=PASS')
+          assert 'infinite' not in semantic
+          assert 'infinite' not in system
+          assert semantic.count('@keyframes ') == 3
+          assert system.count('@keyframes btcAspectCycleNodeRevealV01') == 1
+          assert '#market' not in semantic
+          assert '#market' not in system
+          assert 'body {' not in semantic
+          assert '56.5%' not in semantic
+          print('BTC_ASPECT_CYCLE_REPAIR_SOURCE=PASS')
           PY
 
       - name: Install browser
@@ -121,7 +140,7 @@ jobs:
 
           URL='http://127.0.0.1:4173/crypto-astro/index.html'
           out=Path('artifacts')
-          allowed={'btcGravityResolveV01','btcFieldConvergeV01','btcGatewayFocusV01'}
+          allowed={'btcGravityResolveV01','btcFieldConvergeV01','btcGatewayFocusV01','btcAspectCycleNodeRevealV01'}
           report={'status':'FAIL','viewports':{},'reduced_motion':{},'offscreen':{}}
           failures=[]
 
@@ -137,19 +156,23 @@ jobs:
                 const phase=document.querySelector('#btc-phi-cycle-hub .btc-node-v1.phase');
                 const memory=document.querySelector('#btc-phi-cycle-hub .btc-node-v1.memory');
                 const canvas=document.querySelector('#btc-phi-cycle-hub .btc-cycle-canvas-v1');
+                const aspectNodes=[...document.querySelectorAll('#btc-phi-cycle-hub .btc-cycle-canvas-v1 .btc-node-v1')];
                 const fr=rect(field),cr=rect(core),pr=rect(phase),mr=rect(memory),ar=rect(canvas);
                 const before=getComputedStyle(field,'::before'),after=getComputedStyle(field,'::after');
                 const gb=getComputedStyle(gate,'::before'),ga=getComputedStyle(gate,'::after');
+                const mg=getComputedStyle(memory,'::before');
                 const title=getComputedStyle(gate.querySelector('strong'),'::after').content;
                 const subtitle=getComputedStyle(gate.querySelector('em'),'::after').content;
                 const animations=document.querySelector('#btc-phi-cycle-hub').getAnimations({subtree:true}).map(a=>({name:a.animationName||'',timeline:a.timeline?.constructor?.name||'',currentTime:String(a.currentTime),playState:a.playState}));
+                const nodeAnimations=aspectNodes.map(el=>{const s=getComputedStyle(el);return {className:el.className,name:s.animationName,iteration:s.animationIterationCount,timeline:s.animationTimeline||'',opacity:s.opacity,translate:s.translate};});
                 return {field:fr,core:cr,phase:pr,memory:mr,canvas:ar,gateway:rect(gate),
                   coreX:(cr.left+cr.width/2-fr.left)/fr.width,coreY:(cr.top+cr.height/2-fr.top)/fr.height,
                   phaseDistance:(ar.left+ar.width/2)-(pr.left+pr.width/2),memoryDistance:(mr.left+mr.width/2)-(ar.left+ar.width/2),
                   phaseY:pr.top+pr.height/2,memoryY:mr.top+mr.height/2,dominance:core.style.getPropertyValue('--btc-dominance').trim(),
                   href:gate.href,title,subtitle,beforeName:before.animationName,beforeIterations:before.animationIterationCount,
                   beforeOpacity:before.opacity,afterOpacity:after.opacity,gateBeforeOpacity:gb.opacity,gateBeforeClip:gb.clipPath,gateAfterOpacity:ga.opacity,
-                  animations,scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
+                  memoryGlyph:{content:mg.content,overflow:mg.overflow,clipPath:mg.clipPath,backgroundImage:mg.backgroundImage,width:mg.width,height:mg.height},
+                  nodeAnimations,animations,scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
               }""")
 
           with sync_playwright() as p:
@@ -160,11 +183,19 @@ jobs:
                   page.goto(URL,wait_until='networkidle'); page.locator('#btc-phi-cycle-hub').scroll_into_view_if_needed(); page.wait_for_timeout(500)
                   static=state(page)
                   names={a['name'] for a in static['animations'] if a['name']}
+                  aspect_rows=[a for a in static['animations'] if a['name']=='btcAspectCycleNodeRevealV01']
                   checks={'dominance_inline_binding':static['dominance']=='56.5%','core_x_phi':abs(static['coreX']-0.61803398875)<0.035,
                     'core_y_phi':abs(static['coreY']-0.38196601125)<0.035,'gateway_route_unchanged':static['href']=='https://www.bhrigu.io/crypto-astro/btc',
                     'gateway_primary_copy':'ENTER BTC FIELD READ' in static['title'],'gateway_secondary_copy':'Ask one source-bound BTC question' in static['subtitle'],
                     'no_horizontal_overflow':static['scrollWidth']<=static['clientWidth']+1,'console_errors_none':not errors,
-                    'three_allowed_animations':names==allowed,'motion_iteration_bounded':static['beforeIterations'] in ('1','1.0'),
+                    'four_allowed_animation_names':names==allowed,'eight_bounded_animations':len([a for a in static['animations'] if a['name'] in allowed])==8,
+                    'aspect_five_node_animations':len(aspect_rows)==5,
+                    'aspect_nodes_one_iteration':all(n['iteration'] in ('1','1.0') for n in static['nodeAnimations']),
+                    'aspect_nodes_view_timeline':all(n['timeline'] not in ('','auto') for n in static['nodeAnimations']),
+                    'memory_glyph_content_empty':static['memoryGlyph']['content'] in ('""','none'),
+                    'memory_glyph_clipped':static['memoryGlyph']['overflow']=='hidden' and static['memoryGlyph']['clipPath']!='none',
+                    'memory_glyph_internal_trace':'radial-gradient' in static['memoryGlyph']['backgroundImage'],
+                    'motion_iteration_bounded':static['beforeIterations'] in ('1','1.0'),
                     'view_timeline_only':all(a['timeline'] in ('ViewTimeline','ScrollTimeline') for a in static['animations'] if a['name'] in allowed)}
                   if name=='desktop':
                       checks.update({'phase_memory_equal_radius':abs(static['phaseDistance']-static['memoryDistance'])<=8,
@@ -175,6 +206,7 @@ jobs:
                       page.locator('.btc-entry-v1').focus(); page.wait_for_timeout(760); active=state(page); save(page,'.btc-entry-v1','btc-gateway-desktop-focus.png')
                       checks['gateway_focus_compresses_paths']=active['gateBeforeClip']!=static['gateBeforeClip']
                       checks['gateway_focus_brightens_plane']=float(active['gateAfterOpacity'])>float(static['gateAfterOpacity'])
+                      page.locator('.btc-node-v1.memory').hover(); page.wait_for_timeout(420); save(page,'.btc-cycle-v1','aspect-cycle-desktop-focus-memory.png')
                       save(page,'#btc-phi-cycle-hub','btc-section-desktop-full.png'); page.screenshot(path=str(out/'live-desktop-full.png'),full_page=True)
                   else:
                       checks.update({'gateway_mobile_height':220<=static['gateway']['height']<=300,'field_mobile_compact':330<=static['field']['height']<=440})
@@ -197,8 +229,11 @@ jobs:
                   page.locator('#btc-phi-cycle-hub').scroll_into_view_if_needed(); page.wait_for_timeout(250); reduced=state(page)
                   checks={'field_animation_disabled':reduced['beforeName']=='none','field_final_state_visible':float(reduced['beforeOpacity'])>=0.9,
                     'gateway_final_state_visible':float(reduced['gateBeforeOpacity'])>=0.55,'all_bounded_animations_removed':not [a for a in reduced['animations'] if a['name'] in allowed],
+                    'aspect_nodes_final_state':all(float(n['opacity'])>=0.99 and n['translate'] in ('none','0px') for n in reduced['nodeAnimations']),
+                    'memory_glyph_still_clipped':reduced['memoryGlyph']['overflow']=='hidden' and reduced['memoryGlyph']['clipPath']!='none',
                     'no_horizontal_overflow':reduced['scrollWidth']<=reduced['clientWidth']+1}
                   save(page,'#btc-phi-cycle-hub',f'btc-section-{name}-reduced-motion.png')
+                  if name=='desktop': save(page,'.btc-cycle-v1','aspect-cycle-reduced-motion.png')
                   failed=[k for k,v in checks.items() if not v]; failures.extend(f'{name}-reduced:{k}' for k in failed)
                   report['reduced_motion'][name]={'state':reduced,'checks':checks,'failures':failed}; page.close()
               browser.close()
