@@ -135,6 +135,7 @@ jobs:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
           elif changed == workflow_applicability_repair_scope:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")
           elif changed == btc_phi_semantic_geometry_scope:
               print("BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS")
           elif changed in (
