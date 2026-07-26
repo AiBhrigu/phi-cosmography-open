@@ -89,6 +89,10 @@ jobs:
               "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
               "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
           }
+          timestamp_consistency_data_repair_scope = {
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           generated_refresh_scope = {
               "site/crypto-astro/index.html",
               "site/crypto-astro/data/crypto_astro_snapshot.public.json",
@@ -127,7 +131,10 @@ jobs:
           elif changed == btc_phi_semantic_geometry_scope:
               mode = "btc_phi_semantic_geometry"
               print("BTC_PHI_SEMANTIC_GEOMETRY_EXACT_SCOPE=PASS")
-          elif changed == timestamp_consistency_repair_scope:
+          elif changed in (
+              timestamp_consistency_repair_scope,
+              timestamp_consistency_data_repair_scope,
+          ):
               mode = "timestamp_consistency_repair"
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
           elif changed in (
