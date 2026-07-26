@@ -1,0 +1,156 @@
+name: Crypto-Astro Pages Owner Dispatch
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+concurrency:
+  group: crypto-astro-pages-owner-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.issue.title == 'Crypto-Astro pages redeploy request' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve current main SHA
+        id: main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          echo "sha=$LOCAL_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Validate owner request contract
+        id: request
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          CURRENT_MAIN_SHA: ${{ steps.main.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          expected = {
+              "SCHEMA": "crypto_astro_pages_redeploy_request_v0_1",
+              "EXPECTED_MAIN_SHA": os.environ["CURRENT_MAIN_SHA"],
+              "REASON": "POST_MERGE_PUBLIC_EDGE_SOURCE_ALIGNMENT",
+              "TARGET_WORKFLOW": "pages.yml",
+          }
+          values = {}
+          for raw in os.environ.get("ISSUE_BODY", "").splitlines():
+              line = raw.strip()
+              if not line or "=" not in line:
+                  continue
+              key, value = line.split("=", 1)
+              values[key.strip()] = value.strip()
+          errors = [f"{key}:{values.get(key)!r}" for key, value in expected.items() if values.get(key) != value]
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as handle:
+              handle.write(f"valid={'true' if not errors else 'false'}\n")
+              handle.write(f"reason_code={'PASS' if not errors else 'INVALID_REQUEST_CONTRACT'}\n")
+          if errors:
+              print("REQUEST_VALIDATION_ERRORS=" + ",".join(errors))
+          else:
+              print("REQUEST_VALIDATION=PASS")
+          PY
+
+      - name: Close invalid request fail-closed
+        if: ${{ steps.request.outputs.valid != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_pages_redeploy_result_v0_1
+          STATUS=FAIL_VALIDATION
+          REASON_CODE=${{ steps.request.outputs.reason_code }}
+          WORKFLOW_DISPATCH=NO"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Enable, dispatch and verify exact Pages workflow
+        id: deploy
+        if: ${{ steps.request.outputs.valid == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_MAIN_SHA: ${{ steps.main.outputs.sha }}
+        run: |
+          set -euo pipefail
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/pages.yml/enable"
+          gh workflow run pages.yml --ref main
+
+          RUN_ID=""
+          for attempt in $(seq 1 30); do
+            RUN_ID=$(gh run list \
+              --workflow pages.yml \
+              --event workflow_dispatch \
+              --branch main \
+              --limit 10 \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha == \"${EXPECTED_MAIN_SHA}\") | .databaseId" \
+              | head -n1)
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            sleep 2
+          done
+          test -n "$RUN_ID"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          gh run watch "$RUN_ID" --exit-status
+
+          RESULT=$(gh run view "$RUN_ID" --json conclusion,headSha,url)
+          ACTUAL_SHA=$(printf '%s' "$RESULT" | jq -r '.headSha')
+          CONCLUSION=$(printf '%s' "$RESULT" | jq -r '.conclusion')
+          RUN_URL=$(printf '%s' "$RESULT" | jq -r '.url')
+          test "$ACTUAL_SHA" = "$EXPECTED_MAIN_SHA"
+          test "$CONCLUSION" = "success"
+          echo "run_url=$RUN_URL" >> "$GITHUB_OUTPUT"
+          echo "conclusion=$CONCLUSION" >> "$GITHUB_OUTPUT"
+
+      - name: Record successful edge-aligned deployment
+        if: ${{ steps.request.outputs.valid == 'true' && steps.deploy.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_pages_redeploy_result_v0_1
+          STATUS=PASS
+          EXPECTED_MAIN_SHA=${{ steps.main.outputs.sha }}
+          TARGET_WORKFLOW=pages.yml
+          WORKFLOW_RUN_ID=${{ steps.deploy.outputs.run_id }}
+          WORKFLOW_CONCLUSION=${{ steps.deploy.outputs.conclusion }}
+          PUBLIC_EDGE_SOURCE_ALIGNMENT=PASS"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+
+      - name: Close deployment failure fail-closed
+        if: ${{ steps.request.outputs.valid == 'true' && steps.deploy.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "SCHEMA=crypto_astro_pages_redeploy_result_v0_1
+          STATUS=FAIL_DEPLOYMENT
+          EXPECTED_MAIN_SHA=${{ steps.main.outputs.sha }}
+          TARGET_WORKFLOW=pages.yml
+          WORKFLOW_RUN_ID=${{ steps.deploy.outputs.run_id }}
+          PUBLIC_EDGE_SOURCE_ALIGNMENT=FAIL"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+          exit 1
