@@ -23,12 +23,80 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Bind publication source proof
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REF: ${{ github.ref }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          mkdir -p site/.well-known
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          proof = {
+              "schema_version": "phi_cosmography_pages_deployment_proof_v0_1",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "source_ref": os.environ["SOURCE_REF"],
+              "source_sha": os.environ["SOURCE_SHA"],
+              "workflow": os.environ["WORKFLOW_NAME"],
+              "run_id": os.environ["RUN_ID"],
+              "run_attempt": os.environ["RUN_ATTEMPT"],
+          }
+          Path("site/.well-known/phi-cosmography-deployment.json").write_text(
+              json.dumps(proof, sort_keys=True, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify public edge source alignment
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.request
+
+          page_url = os.environ["PAGE_URL"].rstrip("/")
+          expected = os.environ["EXPECTED_SHA"]
+          url = f"{page_url}/.well-known/phi-cosmography-deployment.json?run={os.environ['RUN_ID']}"
+          last_error = None
+          for attempt in range(24):
+              try:
+                  request = urllib.request.Request(
+                      url,
+                      headers={"Cache-Control": "no-cache", "User-Agent": "ORION-Pages-Source-Proof/0.1"},
+                  )
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      payload = json.loads(response.read().decode("utf-8"))
+                  actual = payload.get("source_sha")
+                  if actual == expected:
+                      print(f"PUBLIC_EDGE_SOURCE_ALIGNMENT=PASS source_sha={actual}")
+                      break
+                  last_error = f"source_sha mismatch: expected={expected} actual={actual}"
+              except Exception as exc:
+                  last_error = str(exc)
+              if attempt == 23:
+                  raise SystemExit(f"PUBLIC_EDGE_SOURCE_ALIGNMENT=FAIL {last_error}")
+              time.sleep(5)
+          PY
