@@ -6,6 +6,7 @@ from classify_legacy_applicability import (
     HISTORICAL_EXACT,
     NON_APPLICABLE,
     HISTORICAL_HEADS,
+    LEGACY_APPLICABILITY_REPAIR_FILES,
     PRODUCER_PUBLIC_IDENTITY_FILES,
     classify,
 )
@@ -50,6 +51,33 @@ class ApplicabilityClassifierTests(unittest.TestCase):
             "editorial-composition",
             "agent/market-cosmographer-producer-identity-current-main-v0-2",
             sorted(PRODUCER_PUBLIC_IDENTITY_FILES | {"site/theme/crypto_astro_surface.css"}),
+        )
+        self.assertEqual(result.mode, CURRENT_SURFACE_CHANGE)
+
+    def test_exact_classifier_and_fixture_repair_is_self_verified(self):
+        for workflow in HISTORICAL_HEADS:
+            with self.subTest(workflow=workflow):
+                result = classify(
+                    workflow,
+                    "agent/producer-identity-legacy-gate-applicability-v0-1",
+                    sorted(LEGACY_APPLICABILITY_REPAIR_FILES),
+                )
+                self.assertEqual(result.mode, NON_APPLICABLE)
+                self.assertIn("classifier and fixture repair", result.reason)
+
+    def test_classifier_repair_subset_fails_closed(self):
+        result = classify(
+            "geometry-truth",
+            "agent/producer-identity-legacy-gate-applicability-v0-1",
+            ["tools/crypto_astro_ci/classify_legacy_applicability.py"],
+        )
+        self.assertEqual(result.mode, CURRENT_SURFACE_CHANGE)
+
+    def test_classifier_repair_extra_file_fails_closed(self):
+        result = classify(
+            "editorial-composition",
+            "agent/producer-identity-legacy-gate-applicability-v0-1",
+            sorted(LEGACY_APPLICABILITY_REPAIR_FILES | {"site/crypto-astro/index.html"}),
         )
         self.assertEqual(result.mode, CURRENT_SURFACE_CHANGE)
 
