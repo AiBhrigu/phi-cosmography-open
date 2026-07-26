@@ -61,7 +61,7 @@ def main() -> int:
     <p class="lead">A source-bound view of Bitcoin gravity, market structure, liquidity, rotation, timing context, and reviewed synthesis.</p>
   </div>
   <div class="editorial-orientation-v0-1__actions">
-    <a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/market-cosmographer">Ask one BTC field question</a>
+    <a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a>
     <p class="editorial-orientation-v0-1__trust">Snapshot · 2026-07-19 18:26 UTC<br/>Research context · source proof available</p>
   </div>
 </section>
@@ -105,7 +105,7 @@ def main() -> int:
     html = replace_once(
         html,
         r'<a class="btc-field-read-entry-v0-1 btc-entry-v1" href="https://www\.bhrigu\.io/crypto-astro/btc".*?</a>',
-        '<a class="btc-field-read-entry-v0-1 btc-entry-v1" href="https://www.bhrigu.io/market-cosmographer" aria-label="Ask one BTC field question"><span class="btc-field-read-entry-glyph-v0-1" aria-hidden="true">◉</span><strong>Ask one BTC field question</strong><em>Source-bound BTC Field Read</em><span class="btc-entry-arrow-v1" aria-hidden="true">→</span></a>',
+        '<a class="btc-field-read-entry-v0-1 btc-entry-v1" href="https://www.bhrigu.io/crypto-astro/btc" aria-label="Ask one BTC field question"><span class="btc-field-read-entry-glyph-v0-1" aria-hidden="true">◉</span><strong>Ask one BTC field question</strong><em>Source-bound BTC Field Read</em><span class="btc-entry-arrow-v1" aria-hidden="true">→</span></a>',
         "BTC primary CTA",
     )
     html = html.replace("View wider Market Field confirmation", "View wider market context", 1)
