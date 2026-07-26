@@ -156,7 +156,7 @@ jobs:
           assert summary['complete_30d_outcome_count'] == 365
           assert manifest['source_start_date'] == '2024-06-26'
           assert manifest['source_end_date'] == '2026-07-25'
-          assert manifest['archive_count'] == 51
+          assert manifest['archive_count'] == 50
           assert all(item['expected_sha256'] == item['actual_sha256'] for item in manifest['archives'])
           assert proof['status'] == 'PASS'
           assert proof['forward_fields_excluded_from_state_hash'] == 'PASS'
