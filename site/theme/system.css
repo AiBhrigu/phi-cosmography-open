@@ -179,3 +179,15 @@
   }
 }
 /* CRYPTO_ASTRO_ASPECT_CYCLE_BOUNDED_MOTION_GLYPH_REPAIR_v0_1:END */
+
+/* BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1:BEGIN
+   Landscape phones use one full-width primary corridor followed by one quiet
+   context route. Desktop keeps the accepted 61.8 / 38.2 sibling split. */
+@media (max-width: 900px) and (orientation: landscape),
+       (max-width: 760px) and (orientation: portrait) {
+  #btc-phi-cycle-hub#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-entry-v1,
+  #btc-phi-cycle-hub#btc-phi-cycle-hub#btc-phi-cycle-hub > .btc-market-link-v1 {
+    grid-column: 1 / -1 !important;
+  }
+}
+/* BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1:END */
