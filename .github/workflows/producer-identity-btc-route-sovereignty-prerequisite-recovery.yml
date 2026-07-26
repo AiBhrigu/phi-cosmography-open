@@ -1,5 +1,5 @@
 name: Producer Identity BTC Route Sovereignty Prerequisite Recovery
-# OWNER_ORIGINATED_BOOTSTRAP_TRIGGER_V0_1
+# OWNER_ORIGINATED_BOOTSTRAP_TRIGGER_V0_2
 
 on:
   push:
