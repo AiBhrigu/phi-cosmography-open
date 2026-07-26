@@ -1,0 +1,72 @@
+{
+  "schema_version": "btc_730d_longitudinal_evidence_contract_v0_1",
+  "status": "IMPLEMENTATION_CONTRACT",
+  "identity": {
+    "provider": "BINANCE_PUBLIC_DATA",
+    "market": "BTCUSDT_SPOT",
+    "interval": "1d_UTC",
+    "source_root": "https://data.binance.vision/data/spot"
+  },
+  "window": {
+    "state_start_date": "2024-06-26",
+    "state_end_date": "2026-06-25",
+    "state_days": 730,
+    "warmup_days": 365,
+    "out_of_sample_days": 365,
+    "source_tail_end_date": "2026-07-25",
+    "maturity_tail_days": 30
+  },
+  "source_integrity": {
+    "adjacent_sha256_checksum_required": true,
+    "monthly_archives_for_closed_months": true,
+    "daily_archives_for_final_partial_month": true,
+    "contiguous_utc_days_required": true,
+    "silent_archive_replacement_allowed": false,
+    "raw_archive_in_evidence_artifact": false
+  },
+  "metric_contract": {
+    "methodology_id": "btc_730d_price_state_methodology_v0_1",
+    "metrics": [
+      "return_1d",
+      "return_7d",
+      "return_30d",
+      "realized_volatility_30d_annualized",
+      "drawdown_from_365d_high",
+      "range_position_30d",
+      "quote_volume_ratio_to_prior_30d_median",
+      "trend_persistence_30d"
+    ],
+    "fixed_thresholds": {
+      "return_state": {"negative_below": -0.05, "positive_above": 0.05},
+      "volatility_state": {"low_below": 0.4, "elevated_above": 0.75},
+      "drawdown_state": {"deep_at_or_below": -0.3, "material_at_or_below": -0.15},
+      "range_state": {"lower_below": 0.25, "upper_above": 0.75},
+      "volume_state": {"low_below": 0.75, "elevated_above": 1.5},
+      "trend_state": {"negative_below": 0.4, "positive_above": 0.6}
+    }
+  },
+  "forward_evaluation": {
+    "horizons_days": [1, 7, 30],
+    "outcomes": ["forward_return", "forward_max_drawdown"],
+    "maturity_required_for_all_out_of_sample_rows": true,
+    "interpretation": "HISTORICAL_ASSOCIATION_ONLY"
+  },
+  "no_lookahead": {
+    "state_input_timestamp_max": "OBSERVATION_DAY_CLOSE_UTC",
+    "forward_outcomes_excluded_from_state_hash": true,
+    "prefix_invariance_required": true,
+    "full_sample_normalization": false,
+    "future_thresholds": false,
+    "formula_selection_after_results": false
+  },
+  "distribution_boundary": {
+    "research_artifact_only": true,
+    "public_page": false,
+    "public_api": false,
+    "commercial_ai_feed": false,
+    "subscription": false,
+    "predictive_claim": false,
+    "trading_signal": false,
+    "price_target": false
+  }
+}
