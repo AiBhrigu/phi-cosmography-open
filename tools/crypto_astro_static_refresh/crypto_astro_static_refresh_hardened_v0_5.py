@@ -80,6 +80,75 @@ def __getattr__(name: str):
 
 
 _core_patch_html = core.patch_html
+_core_prepare_hardened_primary = core.prepare_hardened_primary
+_core_validate_active_outputs = core.validate_active_outputs
+
+_SINGLE_TIMESTAMP_SOURCE_REPAIRS = (
+    (
+        "capture",
+        "    out_dir.mkdir(parents=True, exist_ok=True)\n\n    report = {",
+        "    out_dir.mkdir(parents=True, exist_ok=True)\n    generation_timestamp = now_iso()\n\n    report = {",
+    ),
+    (
+        "proof",
+        '        "generated_at_utc": now_iso(),',
+        '        "generated_at_utc": generation_timestamp,',
+    ),
+    (
+        "snapshot",
+        "        generated_at = now_iso()",
+        "        generated_at = generation_timestamp",
+    ),
+)
+
+
+def prepare_hardened_primary(primary: Path, working_dir: Path) -> Path:
+    """Patch the locked source-copy so every generated public output shares one UTC instant."""
+    target = _core_prepare_hardened_primary(primary, working_dir)
+    text = target.read_text(encoding="utf-8")
+    for label, old, new in _SINGLE_TIMESTAMP_SOURCE_REPAIRS:
+        count = text.count(old)
+        if count != 1:
+            raise RuntimeError(f"single timestamp source contract drift: {label} count={count}")
+        text = text.replace(old, new, 1)
+    if text.count("generation_timestamp = now_iso()") != 1:
+        raise RuntimeError("single timestamp capture count mismatch")
+    if '"generated_at_utc": now_iso(),' in text or "generated_at = now_iso()" in text:
+        raise RuntimeError("independent generated timestamp call remains")
+    target.write_text(text, encoding="utf-8")
+    return target
+
+
+def validate_generation_timestamp_contract(repo: Path, report: dict) -> bool:
+    """Fail closed when generated public artifacts do not share the snapshot timestamp."""
+    try:
+        snapshot = core.load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot.public.json")
+        proof = core.load_json(repo / "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json")
+        bindings = core.load_json(repo / "site/crypto-astro/data/crypto_astro_module_bindings.public.json")
+        market = core.load_json(repo / "site/crypto-astro/data/market_field_snapshot.public.v0_1.json")
+        scoring = core.load_json(repo / "site/crypto-astro/data/scoring_snapshot.public.json")
+        targets = {
+            "snapshot": snapshot.get("generated_at_utc"),
+            "proof": proof.get("generated_at_utc"),
+            "bindings": bindings.get("generated_at_utc"),
+            "market_field": market.get("updated_at_utc"),
+            "scoring": scoring.get("generated_at_utc"),
+        }
+    except Exception as exc:
+        core.set_validation(report, "single_generation_timestamp_targets", {"load_error": str(exc)})
+        core.set_validation(report, "single_generation_timestamp", "FAIL")
+        return False
+    values = list(targets.values())
+    valid = all(isinstance(value, str) and value for value in values) and len(set(values)) == 1
+    core.set_validation(report, "single_generation_timestamp_targets", targets)
+    core.set_validation(report, "single_generation_timestamp", "PASS" if valid else "FAIL")
+    return valid
+
+
+def validate_active_outputs(repo: Path, report: dict) -> bool:
+    active_ok = _core_validate_active_outputs(repo, report)
+    timestamp_ok = validate_generation_timestamp_contract(repo, report)
+    return active_ok and timestamp_ok
 
 
 def _number2(value) -> str:
@@ -239,6 +308,8 @@ def validate_html_counts(patch_report: dict, report: dict) -> bool:
     return not missing
 
 
+core.prepare_hardened_primary = prepare_hardened_primary
+core.validate_active_outputs = validate_active_outputs
 core.patch_html = patch_html
 core.validate_html_counts = validate_html_counts
 
