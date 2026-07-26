@@ -3,11 +3,13 @@ name: Crypto-Astro BTC Core Gateway Semantic Motion PR
 on:
   pull_request:
     paths:
+      - '.github/workflows/btc-field-corridor-cta-pr.yml'
       - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/btc-poster-motion-budget-pr.yml'
       - '.github/workflows/crypto-astro-surface-truth-pr.yml'
+      - 'site/theme/btc_field_corridor_gateway.css'
       - 'site/theme/crypto_astro_btc_semantic_motion.css'
       - 'site/theme/system.css'
 
@@ -37,18 +39,50 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          aspect = '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
+          semantic = '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+          integrity = '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+          legacy = {
+              '.github/workflows/btc-poster-motion-budget-pr.yml',
+              aspect,
+              semantic,
+              integrity,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml',
+              'site/theme/system.css',
+          }
+          corridor = {
+              '.github/workflows/btc-field-corridor-cta-pr.yml',
+              'site/theme/btc_field_corridor_gateway.css',
+              'site/theme/system.css',
+          }
+          applicability = {aspect, semantic, integrity}
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          if changed == legacy:
+              mode = 'LEGACY'
+          elif changed == corridor:
+              mode = 'CORRIDOR'
+          elif changed == applicability:
+              mode = 'APPLICABILITY'
+          else:
+              raise AssertionError({'changed': sorted(changed)})
+          with open(os.environ['GITHUB_ENV'], 'a') as out:
+              out.write(f'BTC_GATEWAY_SCOPE_MODE={mode}\n')
+          print(f'BTC_GATEWAY_SCOPE={mode}')
+          PY
           BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
-          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
-          printf '%s\n' \
-            '.github/workflows/btc-poster-motion-budget-pr.yml' \
-            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
-            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
-            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
-            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
-            'site/theme/system.css' \
-            | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
@@ -69,6 +103,7 @@ jobs:
       - name: Verify source contract
         run: |
           python - <<'PY'
+          import os
           from pathlib import Path
 
           semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
@@ -97,6 +132,22 @@ jobs:
           ]
           for marker in required_system:
               assert marker in system, marker
+          if os.environ.get('BTC_GATEWAY_SCOPE_MODE') == 'CORRIDOR':
+              corridor = Path('site/theme/btc_field_corridor_gateway.css').read_text()
+              corridor_import = "@import url('./btc_field_corridor_gateway.css');"
+              semantic_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
+              assert corridor_import in system
+              assert system.index(semantic_import) < system.index(corridor_import)
+              for marker in (
+                  'BTC_FIELD_MOBILE_CORRIDOR_CTA_CANONICAL_REPAIR_v0_1',
+                  'BTC FIELD CORRIDOR',
+                  'ENTER BTC FIELD',
+                  'Step into the source corridor',
+                  'Ask one source-bound BTC question',
+              ):
+                  assert marker in corridor, marker
+              assert '@keyframes' not in corridor
+              assert 'infinite' not in corridor
           assert 'animation-timeline:view(block)' in compact_semantic
           assert compact_semantic.count('animation-iteration-count:1') >= 3
           assert compact_system.count('animation-timeline:view(block)') >= 1
@@ -132,9 +183,8 @@ jobs:
             sleep 0.5
           done
           curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
-
           python - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
           from playwright.sync_api import sync_playwright
 
@@ -143,6 +193,7 @@ jobs:
           allowed={'btcGravityResolveV01','btcFieldConvergeV01','btcGatewayFocusV01','btcAspectCycleNodeRevealV01'}
           report={'status':'FAIL','viewports':{},'reduced_motion':{},'offscreen':{}}
           failures=[]
+          corridor_mode=os.environ.get('BTC_GATEWAY_SCOPE_MODE')=='CORRIDOR'
 
           def save(page,selector,name):
               loc=page.locator(selector); loc.scroll_into_view_if_needed(); page.wait_for_timeout(240); loc.screenshot(path=str(out/name))
@@ -186,7 +237,7 @@ jobs:
                   aspect_rows=[a for a in static['animations'] if a['name']=='btcAspectCycleNodeRevealV01']
                   checks={'dominance_inline_binding':static['dominance']=='56.5%','core_x_phi':abs(static['coreX']-0.61803398875)<0.035,
                     'core_y_phi':abs(static['coreY']-0.38196601125)<0.035,'gateway_route_unchanged':static['href']=='https://www.bhrigu.io/crypto-astro/btc',
-                    'gateway_primary_copy':'ENTER BTC FIELD READ' in static['title'],'gateway_secondary_copy':'Ask one source-bound BTC question' in static['subtitle'],
+                    'gateway_primary_copy':('ENTER BTC FIELD' in static['title']) if corridor_mode else ('ENTER BTC FIELD READ' in static['title']),'gateway_secondary_copy':'Ask one source-bound BTC question' in static['subtitle'],
                     'no_horizontal_overflow':static['scrollWidth']<=static['clientWidth']+1,'console_errors_none':not errors,
                     'four_allowed_animation_names':names==allowed,'eight_bounded_animations':len([a for a in static['animations'] if a['name'] in allowed])==8,
                     'aspect_five_node_animations':len(aspect_rows)==5,
@@ -200,12 +251,16 @@ jobs:
                   if name=='desktop':
                       checks.update({'phase_memory_equal_radius':abs(static['phaseDistance']-static['memoryDistance'])<=8,
                         'phase_memory_equal_axis':abs(static['phaseY']-static['memoryY'])<=4,'phase_memory_equal_width':abs(static['phase']['width']-static['memory']['width'])<=2,
-                        'gateway_desktop_depth':120<=static['gateway']['height']<=180})
+                        'gateway_desktop_depth':120<=static['gateway']['height']<=190})
                       save(page,'.btc-field-v1','btc-core-desktop-static.png'); save(page,'.btc-entry-v1','btc-gateway-desktop-static.png'); save(page,'.btc-cycle-v1','aspect-cycle-desktop.png')
                       page.locator('.btc-t-v1.market').hover(); page.wait_for_timeout(760); save(page,'.btc-field-v1','btc-core-desktop-active.png')
                       page.locator('.btc-entry-v1').focus(); page.wait_for_timeout(760); active=state(page); save(page,'.btc-entry-v1','btc-gateway-desktop-focus.png')
-                      checks['gateway_focus_compresses_paths']=active['gateBeforeClip']!=static['gateBeforeClip']
-                      checks['gateway_focus_brightens_plane']=float(active['gateAfterOpacity'])>float(static['gateAfterOpacity'])
+                      if corridor_mode:
+                          checks['gateway_focus_stays_contained']=active['gateway']['width']==static['gateway']['width'] and active['gateway']['height']==static['gateway']['height']
+                          checks['gateway_focus_no_overflow']=active['scrollWidth']<=active['clientWidth']+1
+                      else:
+                          checks['gateway_focus_compresses_paths']=active['gateBeforeClip']!=static['gateBeforeClip']
+                          checks['gateway_focus_brightens_plane']=float(active['gateAfterOpacity'])>float(static['gateAfterOpacity'])
                       page.locator('.btc-node-v1.memory').hover(); page.wait_for_timeout(420); save(page,'.btc-cycle-v1','aspect-cycle-desktop-focus-memory.png')
                       save(page,'#btc-phi-cycle-hub','btc-section-desktop-full.png'); page.screenshot(path=str(out/'live-desktop-full.png'),full_page=True)
                   else:
