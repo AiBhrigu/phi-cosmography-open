@@ -35,6 +35,10 @@ PRODUCER_PUBLIC_IDENTITY_FILES = {
     "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
     "tools/crypto_astro_what_changed/verify_what_changed.py",
 }
+LEGACY_APPLICABILITY_REPAIR_FILES = {
+    "tools/crypto_astro_ci/classify_legacy_applicability.py",
+    "tools/crypto_astro_ci/test_classify_legacy_applicability.py",
+}
 CURRENT_PREFIXES = (
     "site/crypto-astro/",
     "site/theme/crypto_astro",
@@ -88,6 +92,13 @@ def classify(workflow: str, head_ref: str, changed_files: Sequence[str]) -> Clas
         return Classification(
             NON_APPLICABLE,
             "exact producer public identity scope is governed by Snapshot Memory, Editorial Composition structure, Static Refresh Visual, What Changed and Public HTTP Proof gates",
+            changed,
+        )
+
+    if changed_set == LEGACY_APPLICABILITY_REPAIR_FILES:
+        return Classification(
+            NON_APPLICABLE,
+            "exact legacy applicability classifier and fixture repair is self-verified and does not change the public surface, geometry, motion or editorial composition",
             changed,
         )
 
