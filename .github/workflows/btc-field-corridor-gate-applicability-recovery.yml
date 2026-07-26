@@ -1,0 +1,279 @@
+name: BTC Field Corridor Gate Applicability Recovery
+
+on:
+  push:
+    branches:
+      - agent/btc-field-corridor-gate-applicability-prerequisite-v0-1
+    paths:
+      - .github/workflows/btc-field-corridor-gate-applicability-recovery.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: btc-field-corridor-gate-applicability-recovery
+  cancel-in-progress: false
+
+jobs:
+  materialize-and-self-clean:
+    if: github.repository == 'AiBhrigu/phi-cosmography-open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: agent/btc-field-corridor-gate-applicability-prerequisite-v0-1
+          fetch-depth: 0
+
+      - name: Verify exact source main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "f09b02005b78611edf4076176dd649712aa802a2"
+          test "$(git merge-base origin/main HEAD)" = "f09b02005b78611edf4076176dd649712aa802a2"
+
+      - name: Materialize exact three-gate applicability contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          ASPECT='.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
+          SEMANTIC='.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+          INTEGRITY='.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+
+          CORRIDOR_SCOPE=[
+              '.github/workflows/btc-field-corridor-cta-pr.yml',
+              'site/theme/btc_field_corridor_gateway.css',
+              'site/theme/system.css',
+          ]
+          APPLICABILITY_SCOPE=[ASPECT,SEMANTIC,INTEGRITY]
+
+          def read(path): return Path(path).read_text(encoding='utf-8')
+          def write(path,text): Path(path).write_text(text,encoding='utf-8')
+          def once(text,old,new,label):
+              count=text.count(old)
+              if count!=1:
+                  raise SystemExit(f'{label}: expected 1, found {count}')
+              return text.replace(old,new,1)
+          def shell_set(name,paths):
+              rows=" \\\n".join(f"            '{path}'" for path in paths)
+              return f"          printf '%s\\n' \\\n{rows} \\\n            | sort > /tmp/{name}.txt\n"
+
+          # Aspect-Cycle gate: exact classifier only; its existing proof remains mandatory.
+          text=read(ASPECT)
+          text=once(text,
+              "      - '.github/workflows/btc-poster-motion-budget-pr.yml'\n",
+              "      - '.github/workflows/btc-poster-motion-budget-pr.yml'\n      - '.github/workflows/btc-field-corridor-cta-pr.yml'\n",
+              'aspect trigger workflow')
+          text=once(text,
+              "      - 'site/theme/system.css'\n",
+              "      - 'site/theme/btc_field_corridor_gateway.css'\n      - 'site/theme/system.css'\n",
+              'aspect trigger css')
+          old="""          printf '%s\\n' \\
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \\
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \\
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \\
+            'site/theme/system.css' \\
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+"""
+          legacy=[
+              '.github/workflows/btc-poster-motion-budget-pr.yml',ASPECT,SEMANTIC,INTEGRITY,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml','site/theme/system.css'
+          ]
+          new=(shell_set('legacy',legacy)+shell_set('corridor',CORRIDOR_SCOPE)+shell_set('applicability',APPLICABILITY_SCOPE)+
+"""          if diff -u /tmp/legacy.txt /tmp/actual.txt; then
+            echo ASPECT_SCOPE_MODE=LEGACY >> "$GITHUB_ENV"
+          elif diff -u /tmp/corridor.txt /tmp/actual.txt; then
+            echo ASPECT_SCOPE_MODE=CORRIDOR >> "$GITHUB_ENV"
+          elif diff -u /tmp/applicability.txt /tmp/actual.txt; then
+            echo ASPECT_SCOPE_MODE=APPLICABILITY >> "$GITHUB_ENV"
+          else
+            echo 'Aspect-Cycle scope is not an accepted exact file set.' >&2
+            exit 1
+          fi
+""")
+          text=once(text,old,new,'aspect scope')
+          write(ASPECT,text)
+
+          # Visual Integrity gate: classify corridor and prove its source layer when present.
+          text=read(INTEGRITY)
+          text=once(text,
+              "      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'\n",
+              "      - '.github/workflows/btc-field-corridor-cta-pr.yml'\n      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'\n",
+              'integrity trigger workflow')
+          text=once(text,
+              "      - 'site/theme/system.css'\n",
+              "      - 'site/theme/btc_field_corridor_gateway.css'\n      - 'site/theme/system.css'\n",
+              'integrity trigger css')
+          anchor="""          printf '%s\\n' \\
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \\
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \\
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \\
+            'site/theme/system.css' \\
+            | sort > /tmp/aspect-cycle-repair.txt
+
+          if diff -u /tmp/foundation.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=FOUNDATION >> "$GITHUB_ENV"
+          elif diff -u /tmp/semantic-motion.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+          elif diff -u /tmp/aspect-cycle-repair.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+            echo BTC_ASPECT_CYCLE_REPAIR=YES >> "$GITHUB_ENV"
+          else
+            echo 'BTC visual scope is not an accepted exact file set.' >&2
+            exit 1
+          fi
+"""
+          aspect_set=[
+              '.github/workflows/btc-poster-motion-budget-pr.yml',ASPECT,SEMANTIC,INTEGRITY,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml','site/theme/system.css'
+          ]
+          replacement=(shell_set('aspect-cycle-repair',aspect_set)+shell_set('corridor',CORRIDOR_SCOPE)+shell_set('applicability',APPLICABILITY_SCOPE)+
+"""          if diff -u /tmp/foundation.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=FOUNDATION >> "$GITHUB_ENV"
+          elif diff -u /tmp/semantic-motion.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+          elif diff -u /tmp/aspect-cycle-repair.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
+            echo BTC_ASPECT_CYCLE_REPAIR=YES >> "$GITHUB_ENV"
+          elif diff -u /tmp/corridor.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=CORRIDOR >> "$GITHUB_ENV"
+          elif diff -u /tmp/applicability.txt /tmp/actual.txt; then
+            echo BTC_VISUAL_SCOPE_MODE=APPLICABILITY >> "$GITHUB_ENV"
+          else
+            echo 'BTC visual scope is not an accepted exact file set.' >&2
+            exit 1
+          fi
+""")
+          text=once(text,anchor,replacement,'integrity scope')
+          source_anchor="""          if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
+"""
+          source_block="""          if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'CORRIDOR':
+              corridor = Path('site/theme/btc_field_corridor_gateway.css').read_text()
+              target_import = "@import url('./btc_field_corridor_gateway.css');"
+              semantic_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
+              assert target_import in system and system.index(semantic_import) < system.index(target_import)
+              for marker in (
+                  'BTC_FIELD_MOBILE_CORRIDOR_CTA_CANONICAL_REPAIR_v0_1',
+                  'BTC FIELD CORRIDOR',
+                  'ENTER BTC FIELD',
+                  'Step into the source corridor',
+                  'Ask one source-bound BTC question',
+              ):
+                  assert marker in corridor, marker
+              assert '@keyframes' not in corridor
+
+          if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
+"""
+          text=once(text,source_anchor,source_block,'integrity source')
+          write(INTEGRITY,text)
+
+          # Semantic Motion gate: accept the corridor scope and bind the new copy without weakening motion proof.
+          text=read(SEMANTIC)
+          text=once(text,
+              "      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'\n",
+              "      - '.github/workflows/btc-field-corridor-cta-pr.yml'\n      - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'\n",
+              'semantic trigger workflow')
+          text=once(text,
+              "      - 'site/theme/system.css'\n",
+              "      - 'site/theme/btc_field_corridor_gateway.css'\n      - 'site/theme/system.css'\n",
+              'semantic trigger css')
+          old="""          printf '%s\\n' \\
+            '.github/workflows/btc-poster-motion-budget-pr.yml' \\
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \\
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \\
+            '.github/workflows/crypto-astro-surface-truth-pr.yml' \\
+            'site/theme/system.css' \\
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+"""
+          legacy=[
+              '.github/workflows/btc-poster-motion-budget-pr.yml',ASPECT,SEMANTIC,INTEGRITY,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml','site/theme/system.css'
+          ]
+          new=(shell_set('legacy',legacy)+shell_set('corridor',CORRIDOR_SCOPE)+shell_set('applicability',APPLICABILITY_SCOPE)+
+"""          if diff -u /tmp/legacy.txt /tmp/actual.txt; then
+            echo BTC_GATEWAY_SCOPE_MODE=LEGACY >> "$GITHUB_ENV"
+          elif diff -u /tmp/corridor.txt /tmp/actual.txt; then
+            echo BTC_GATEWAY_SCOPE_MODE=CORRIDOR >> "$GITHUB_ENV"
+          elif diff -u /tmp/applicability.txt /tmp/actual.txt; then
+            echo BTC_GATEWAY_SCOPE_MODE=APPLICABILITY >> "$GITHUB_ENV"
+          else
+            echo 'BTC gateway scope is not an accepted exact file set.' >&2
+            exit 1
+          fi
+""")
+          text=once(text,old,new,'semantic scope')
+          text=once(text,
+              "          from pathlib import Path\n\n          semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()\n",
+              "          import os\n          from pathlib import Path\n\n          semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()\n",
+              'semantic source import')
+          text=once(text,
+              "          print('BTC_ASPECT_CYCLE_REPAIR_SOURCE=PASS')\n",
+              """          if os.environ.get('BTC_GATEWAY_SCOPE_MODE') == 'CORRIDOR':
+              corridor = Path('site/theme/btc_field_corridor_gateway.css').read_text()
+              corridor_import = "@import url('./btc_field_corridor_gateway.css');"
+              semantic_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
+              assert corridor_import in system and system.index(semantic_import) < system.index(corridor_import)
+              for marker in ('BTC FIELD CORRIDOR','ENTER BTC FIELD','Step into the source corridor','Ask one source-bound BTC question'):
+                  assert marker in corridor, marker
+              assert '@keyframes' not in corridor
+          print('BTC_ASPECT_CYCLE_REPAIR_SOURCE=PASS')
+""",
+              'semantic source corridor')
+          text=once(text,
+              "          import json\n          from pathlib import Path\n",
+              "          import json, os\n          from pathlib import Path\n",
+              'semantic browser import')
+          text=once(text,
+              "          failures=[]\n\n          def save(page,selector,name):\n",
+              "          failures=[]\n          corridor_mode=os.environ.get('BTC_GATEWAY_SCOPE_MODE')=='CORRIDOR'\n\n          def save(page,selector,name):\n",
+              'semantic browser mode')
+          text=once(text,
+              "                    'gateway_primary_copy':'ENTER BTC FIELD READ' in static['title'],'gateway_secondary_copy':'Ask one source-bound BTC question' in static['subtitle'],\n",
+              "                    'gateway_primary_copy':('ENTER BTC FIELD' in static['title']) if corridor_mode else ('ENTER BTC FIELD READ' in static['title']),'gateway_secondary_copy':'Ask one source-bound BTC question' in static['subtitle'],\n",
+              'semantic copy check')
+          text=once(text,
+              "                      checks['gateway_focus_compresses_paths']=active['gateBeforeClip']!=static['gateBeforeClip']\n                      checks['gateway_focus_brightens_plane']=float(active['gateAfterOpacity'])>float(static['gateAfterOpacity'])\n",
+              """                      if corridor_mode:
+                          checks['gateway_focus_stays_contained']=active['gateway']['width']==static['gateway']['width'] and active['gateway']['height']==static['gateway']['height']
+                          checks['gateway_focus_no_overflow']=active['scrollWidth']<=active['clientWidth']+1
+                      else:
+                          checks['gateway_focus_compresses_paths']=active['gateBeforeClip']!=static['gateBeforeClip']
+                          checks['gateway_focus_brightens_plane']=float(active['gateAfterOpacity'])>float(static['gateAfterOpacity'])
+""",
+              'semantic focus check')
+          write(SEMANTIC,text)
+
+          print('BTC_FIELD_CORRIDOR_GATE_APPLICABILITY_PATCH=PASS')
+          PY
+
+      - name: Remove temporary workflow and verify final exact scope
+        run: |
+          set -euo pipefail
+          rm .github/workflows/btc-field-corridor-gate-applicability-recovery.yml
+          git diff --name-only | sort > /tmp/actual.txt
+          printf '%s\n' \
+            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
+            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
+            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
+            '.github/workflows/btc-field-corridor-gate-applicability-recovery.yml' \
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --exit-code -- site tools docs
+          echo FINAL_THREE_WORKFLOW_SCOPE=PASS
+
+      - name: Commit exact prerequisite
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "CI: accept exact BTC corridor repair scope"
+          git push origin HEAD:agent/btc-field-corridor-gate-applicability-prerequisite-v0-1
