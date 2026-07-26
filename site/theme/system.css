@@ -117,6 +117,7 @@
     animation-duration: 1s !important;
     animation-fill-mode: both !important;
     animation-play-state: running !important;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36) !important;
     animation-timeline: view(block);
   }
   #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.aspect { animation-iteration-count: 1 !important; animation-range: entry 3% cover 15%; }
@@ -131,23 +132,24 @@
   overflow: hidden !important;
   contain: paint;
   clip-path: circle(calc(50% - 1px) at 50% 50%);
-  background:
+  background-color: rgba(3, 7, 16, 0.98) !important;
+  background-image:
     radial-gradient(circle at 22% 50%, #82b7ff 0 1.35px, transparent 1.9px),
     radial-gradient(circle at 50% 50%, #e5f0ff 0 1.3px, transparent 1.85px),
     radial-gradient(circle at 78% 50%, #82b7ff 0 1.35px, transparent 1.9px),
-    linear-gradient(90deg, transparent 17%, rgba(130, 183, 255, 0.88) 18% 82%, transparent 83%),
-    radial-gradient(circle, rgba(130, 183, 255, 0.18), rgba(3, 7, 16, 0.96) 65%) !important;
+    linear-gradient(90deg, transparent 17%, rgba(130, 183, 255, 0.88) 18% 82%, transparent 83%) !important;
   background-repeat: no-repeat !important;
   background-clip: padding-box !important;
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1:has(.btc-node-v1:hover) .btc-node-v1:not(:hover) {
-  opacity: 0.58;
-  filter: saturate(0.72) brightness(0.82);
+  opacity: 0.58 !important;
+  filter: saturate(0.72) brightness(0.82) !important;
 }
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1 .btc-node-v1:hover {
-  translate: 0 -0.18rem;
-  filter: brightness(1.18) saturate(1.08);
+  opacity: 1 !important;
+  translate: 0 -0.18rem !important;
+  filter: brightness(1.18) saturate(1.08) !important;
 }
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-cycle-canvas-v1:has(.btc-node-v1:hover)::before {
   border-color: rgba(244, 207, 114, 0.72);
