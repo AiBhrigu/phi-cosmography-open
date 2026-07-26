@@ -110,6 +110,10 @@ jobs:
             'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
             'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
           }
+          timestamp_consistency_data_repair = {
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+          }
           maintenance = {
             '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -175,7 +179,7 @@ jobs:
           elif changed == public_service_truth_alignment:
             mode='public_service_truth_alignment'
             print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')
-          elif changed == timestamp_consistency_repair:
+          elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):
             mode='timestamp_consistency_repair'
           elif changed == maintenance:
             mode='surface_contract_maintenance'

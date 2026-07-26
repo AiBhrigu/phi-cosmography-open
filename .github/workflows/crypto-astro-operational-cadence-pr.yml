@@ -100,6 +100,10 @@ jobs:
               "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
               "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
           }
+          timestamp_consistency_data_repair_scope = {
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
           generated_refresh_scope = {
               "site/crypto-astro/index.html",
               "site/crypto-astro/data/crypto_astro_snapshot.public.json",
@@ -133,7 +137,10 @@ jobs:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
           elif changed == btc_phi_semantic_geometry_scope:
               print("BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS")
-          elif changed == timestamp_consistency_repair_scope:
+          elif changed in (
+              timestamp_consistency_repair_scope,
+              timestamp_consistency_data_repair_scope,
+          ):
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_FILE_SCOPE=PASS")
           elif changed in (
               generated_refresh_scope,
