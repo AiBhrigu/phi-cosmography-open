@@ -94,6 +94,15 @@ def build_fixture(repo):
     index.write_text(wrapper.DEFI_TVL_PUBLIC_COPY, encoding="utf-8")
 
 
+def write_timestamp_constellation(repo, timestamp="2030-01-02T03:04:05Z"):
+    data = repo / "site/crypto-astro/data"
+    write_json(data / "crypto_astro_snapshot.public.json", {"generated_at_utc": timestamp})
+    write_json(data / "crypto_astro_snapshot_proof.public.json", {"generated_at_utc": timestamp})
+    write_json(data / "crypto_astro_module_bindings.public.json", {"generated_at_utc": timestamp})
+    write_json(data / "market_field_snapshot.public.v0_1.json", {"updated_at_utc": timestamp})
+    write_json(data / "scoring_snapshot.public.json", {"generated_at_utc": timestamp})
+
+
 def main():
     assert primary.DEFI_TVL_SOURCE_URL == "https://api.llama.fi/v2/historicalChainTvl"
     assert primary.DEFI_TVL_SOURCE_LABEL == wrapper.DEFI_TVL_SOURCE_LABEL
@@ -151,6 +160,7 @@ def main():
             path = repo / rel
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("{}" if path.suffix == ".json" else "", encoding="utf-8")
+        write_timestamp_constellation(repo)
 
         html = repo / "site/crypto-astro/index.html"
         html.write_text(
@@ -158,11 +168,23 @@ def main():
         )
         report = {}
         assert wrapper.validate_active_outputs(repo, report)
+        assert report["validation"]["single_generation_timestamp"] == "PASS"
 
         html.write_text("The live adapter is active.", encoding="utf-8")
         report = {}
         assert not wrapper.validate_active_outputs(repo, report)
         assert report["validation"]["forbidden_positive_claim_hits"]
+
+        write_json(
+            repo / "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+            {"generated_at_utc": "2030-01-02T03:04:06Z"},
+        )
+        html.write_text(
+            "No live adapter is active. This is not a live adapter.", encoding="utf-8"
+        )
+        report = {}
+        assert not wrapper.validate_active_outputs(repo, report)
+        assert report["validation"]["single_generation_timestamp"] == "FAIL"
 
     print("DEFI_TVL_METHODOLOGY_TEST=PASS")
 
