@@ -66,7 +66,7 @@ class PublicHttpProofTests(unittest.TestCase):
             mod.assert_exact_bytes(b"live", b"expected", "fixture")
         self.assertEqual(ctx.exception.reason_code, "PUBLIC_BYTES_MISMATCH")
 
-    def test_bhrigu_read_requires_timestamp_and_success_heading(self) -> None:
+    def test_bhrigu_read_requires_timestamp_and_success_region(self) -> None:
         timestamp = "2026-07-22T12:47:37Z"
         good = mod.FetchResult(
             requested_url="https://example.test",
@@ -75,13 +75,14 @@ class PublicHttpProofTests(unittest.TestCase):
             redirects=[],
             content_type="text/html",
             body=(
-                "<h2>One coherent Cosmographer read</h2>"
+                '<section aria-label="BTC Cosmographer reading">'
                 f"<script>{timestamp}</script>"
             ).encode(),
             headers={},
         )
         assertions = mod.verify_bhrigu_read(good, expected_timestamp=timestamp)
         self.assertTrue(all(assertions.values()))
+        self.assertTrue(assertions["result_region_present"])
 
         bad = mod.FetchResult(
             requested_url=good.requested_url,
