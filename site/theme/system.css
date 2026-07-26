@@ -137,7 +137,9 @@
     radial-gradient(circle at 22% 50%, #82b7ff 0 1.35px, transparent 1.9px),
     radial-gradient(circle at 50% 50%, #e5f0ff 0 1.3px, transparent 1.85px),
     radial-gradient(circle at 78% 50%, #82b7ff 0 1.35px, transparent 1.9px),
-    linear-gradient(90deg, transparent 17%, rgba(130, 183, 255, 0.88) 18% 82%, transparent 83%) !important;
+    linear-gradient(90deg, transparent 0 1%, rgba(130, 183, 255, 0.88) 2% 98%, transparent 99% 100%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64% 1px !important;
+  background-position: center, center, center, center !important;
   background-repeat: no-repeat !important;
   background-clip: padding-box !important;
 }
