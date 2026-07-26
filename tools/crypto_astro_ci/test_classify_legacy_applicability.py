@@ -6,6 +6,7 @@ from classify_legacy_applicability import (
     HISTORICAL_EXACT,
     NON_APPLICABLE,
     HISTORICAL_HEADS,
+    PRODUCER_PUBLIC_IDENTITY_FILES,
     classify,
 )
 
@@ -24,6 +25,33 @@ class ApplicabilityClassifierTests(unittest.TestCase):
             ["site/crypto-astro/index.html"],
         )
         self.assertEqual(result.mode, GENERATED_REFRESH)
+
+    def test_exact_producer_identity_is_outside_legacy_motion_gates(self):
+        for workflow in ("geometry-truth", "editorial-composition"):
+            with self.subTest(workflow=workflow):
+                result = classify(
+                    workflow,
+                    "agent/market-cosmographer-producer-identity-current-main-v0-2",
+                    sorted(PRODUCER_PUBLIC_IDENTITY_FILES),
+                )
+                self.assertEqual(result.mode, NON_APPLICABLE)
+                self.assertIn("producer public identity", result.reason)
+
+    def test_producer_identity_subset_fails_closed_as_current_surface(self):
+        result = classify(
+            "geometry-truth",
+            "agent/market-cosmographer-producer-identity-current-main-v0-2",
+            sorted(PRODUCER_PUBLIC_IDENTITY_FILES - {"site/crypto-astro/index.html"}),
+        )
+        self.assertEqual(result.mode, CURRENT_SURFACE_CHANGE)
+
+    def test_producer_identity_extra_file_fails_closed_as_current_surface(self):
+        result = classify(
+            "editorial-composition",
+            "agent/market-cosmographer-producer-identity-current-main-v0-2",
+            sorted(PRODUCER_PUBLIC_IDENTITY_FILES | {"site/theme/crypto_astro_surface.css"}),
+        )
+        self.assertEqual(result.mode, CURRENT_SURFACE_CHANGE)
 
     def test_current_surface_change_runs_reusable_current_checks(self):
         result = classify(
