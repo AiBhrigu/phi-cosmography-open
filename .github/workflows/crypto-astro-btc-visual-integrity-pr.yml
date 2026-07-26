@@ -226,9 +226,10 @@ jobs:
           PHI = 1.61803398875
           MAJOR = 0.61803398875
           MINOR = 0.38196601125
-          semantic_mode = os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION'
+          scope_mode = os.environ.get('BTC_VISUAL_SCOPE_MODE', 'FOUNDATION')
+          semantic_mode = scope_mode != 'FOUNDATION'
           out = Path('artifacts')
-          report = {'mode':'SEMANTIC_MOTION' if semantic_mode else 'FOUNDATION','viewports':{},'failures':[]}
+          report = {'mode':scope_mode,'viewports':{},'failures':[]}
           all_failures=[]
 
           def ratio(a,b): return a/b if b else None
