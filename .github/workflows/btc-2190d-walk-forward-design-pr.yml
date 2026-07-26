@@ -1,0 +1,125 @@
+name: BTC 2190D Walk-Forward Design PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/btc-2190d-walk-forward-design-pr.yml'
+      - 'docs/crypto-astro-service/BTC_2190D_MULTI_YEAR_WALK_FORWARD_NON_OVERLAPPING_VALIDATION_DESIGN_v0_1.md'
+      - 'docs/crypto-astro-service/btc_2190d_walk_forward_validation_design_v0_1.json'
+      - 'docs/crypto-astro-service/btc_2190d_block_schedule_v0_1.csv'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Lock exact four-file design scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+              '.github/workflows/btc-2190d-walk-forward-design-pr.yml',
+              'docs/crypto-astro-service/BTC_2190D_MULTI_YEAR_WALK_FORWARD_NON_OVERLAPPING_VALIDATION_DESIGN_v0_1.md',
+              'docs/crypto-astro-service/btc_2190d_walk_forward_validation_design_v0_1.json',
+              'docs/crypto-astro-service/btc_2190d_block_schedule_v0_1.csv',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+              text=True,
+          ).splitlines())
+          if changed != expected:
+              raise AssertionError({
+                  'changed': sorted(changed),
+                  'missing': sorted(expected - changed),
+                  'unexpected': sorted(changed - expected),
+              })
+          print('BTC_2190D_DESIGN_EXACT_FOUR_FILE_SCOPE=PASS')
+          PY
+
+      - name: Verify design contract
+        run: |
+          python - <<'PY'
+          import csv, json
+          from datetime import date
+          from pathlib import Path
+
+          root = Path('docs/crypto-astro-service')
+          design = json.loads(
+              (root / 'btc_2190d_walk_forward_validation_design_v0_1.json').read_text()
+          )
+          markdown = (
+              root / 'BTC_2190D_MULTI_YEAR_WALK_FORWARD_NON_OVERLAPPING_VALIDATION_DESIGN_v0_1.md'
+          ).read_text()
+          with (root / 'btc_2190d_block_schedule_v0_1.csv').open(newline='') as handle:
+              schedule = list(csv.DictReader(handle))
+
+          assert design['status'] == 'DESIGN_LOCKED'
+          assert design['source_binding']['accepted_pr'] == 236
+          assert design['source_binding']['accepted_merge_sha'] == 'b2f06d01860f539a64ec1ea2274b26d3307efc51'
+          assert design['window']['state_start_date'] == '2020-06-27'
+          assert design['window']['state_end_date'] == '2026-06-25'
+          assert design['window']['state_days'] == 2190
+          assert design['window']['oos_days'] == 1825
+          assert design['window']['archive_plan'] == {
+              'monthly_archives': 73,
+              'daily_archives': 25,
+              'total_archives': 98,
+          }
+          assert len(design['window']['oos_blocks']) == 5
+          assert design['contamination_control']['discovery_reference_block'] == 'OOS_5'
+          assert design['contamination_control']['discovery_reference_used_for_confirmation'] is False
+          assert design['contamination_control']['retrospective_replication_blocks'] == [
+              'OOS_1', 'OOS_2', 'OOS_3', 'OOS_4'
+          ]
+          assert design['contamination_control']['retrospective_replication_is_prospective_confirmation'] is False
+          assert len(design['registered_association_hypotheses']) == 4
+          assert design['frozen_primary_specification']['formulas_changed'] is False
+          assert design['frozen_primary_specification']['thresholds_changed'] is False
+          assert design['frozen_primary_specification']['labels_changed'] is False
+          assert design['evaluation']['composite_regime_gate']['calibration_enabled'] is False
+          assert design['distribution_boundary'] == {
+              'commercial_ai_feed': False,
+              'predictive_claim': False,
+              'price_target': False,
+              'public_api': False,
+              'public_page': False,
+              'research_artifact_only': True,
+              'subscription': False,
+              'trading_signal': False,
+          }
+          assert len(schedule) == 6
+          for row in schedule:
+              start = date.fromisoformat(row['start_date'])
+              end = date.fromisoformat(row['end_date'])
+              assert (end - start).days + 1 == int(row['days']) == 365
+
+          required_markers = [
+              'OOS 5 cannot confirm them',
+              'not prospective confirmation',
+              '2026-06-26 → 2027-06-25',
+              'No data-driven label collapse or threshold rewrite is allowed',
+              'NEXT_SAFE_NODE=BTC_2190D_MULTI_YEAR_WALK_FORWARD_CHECKSUM_BOUND_CORPUS_IMPLEMENTATION_EXACT_SCOPE_v0_1',
+          ]
+          for marker in required_markers:
+              assert marker in markdown, marker
+
+          print('BTC_2190D_DESIGN_SOURCE_BINDING=PASS')
+          print('BTC_2190D_DESIGN_CONTAMINATION_CONTROL=PASS')
+          print('BTC_2190D_DESIGN_FROZEN_SPECIFICATION=PASS')
+          print('BTC_2190D_DESIGN_PUBLIC_BOUNDARY=PASS')
+          PY
