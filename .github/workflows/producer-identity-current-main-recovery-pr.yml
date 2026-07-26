@@ -1,0 +1,159 @@
+name: Producer Identity Current-Main Recovery
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/producer-identity-current-main-recovery-pr.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: producer-identity-current-main-recovery-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  materialize-exact-one-file-repair:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Verify fresh-main ancestry
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE_SHA"
+          git merge-base --is-ancestor "$BASE_SHA" HEAD
+
+      - name: Apply exact producer identity applicability repair
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_once(old: str, new: str, label: str) -> None:
+              global text
+              old_count = text.count(old)
+              new_count = text.count(new)
+              if old_count == 1:
+                  text = text.replace(old, new, 1)
+                  return
+              if old_count == 0 and new_count == 1:
+                  return
+              raise SystemExit(f'{label}: old={old_count} new={new_count}')
+
+          replace_once(
+              "          public_service_truth_alignment = {\n            'site/crypto-astro/index.html',\n          }\n          timestamp_consistency_repair = {",
+              "          public_service_truth_alignment = {\n            'site/crypto-astro/index.html',\n          }\n          producer_public_identity = {\n            '.github/workflows/crypto-astro-editorial-composition-pr.yml',\n            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',\n            'site/crypto-astro/index.html',\n            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',\n            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',\n            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',\n            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',\n            'tools/crypto_astro_what_changed/verify_what_changed.py',\n          }\n          timestamp_consistency_repair = {",
+              'producer identity exact file set',
+          )
+
+          replace_once(
+              "          elif changed == public_service_truth_alignment:\n            mode='public_service_truth_alignment'\n            print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')\n          elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):",
+              "          elif changed == public_service_truth_alignment:\n            mode='public_service_truth_alignment'\n            print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')\n          elif changed == producer_public_identity:\n            mode='producer_public_identity'\n            print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY_FILE_SCOPE=PASS')\n          elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):",
+              'producer identity classifier',
+          )
+
+          replace_once(
+              "              'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),\n              'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),",
+              "              'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),\n              'producer_public_identity_missing':sorted(producer_public_identity-changed),\n              'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),",
+              'producer identity diagnostics',
+          )
+
+          replace_once(
+              "consumer_repair-generated-optional),",
+              "consumer_repair-producer_public_identity-generated-optional),",
+              'producer identity unexpected-set subtraction',
+          )
+
+          proof_step = '''      - name: Prove producer public identity preserves Snapshot Memory contracts
+        if: steps.scope.outputs.mode == 'producer_public_identity'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY_INNER'
+          import os, subprocess
+          expected = {
+            '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/crypto-astro/index.html',
+            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+              text=True,
+          ).splitlines())
+          assert changed == expected, {'changed': sorted(changed), 'expected': sorted(expected)}
+          html = subprocess.check_output(
+              ['git', 'show', f"{os.environ['HEAD_SHA']}:site/crypto-astro/index.html"],
+              text=True,
+          )
+          assert 'Crypto-Astro' not in html
+          assert html.count('href="https://www.bhrigu.io/market-cosmographer"') == 2
+          assert 'data-crypto-astro-phi-service-surface="v0_1"' in html
+          assert 'CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1' in html
+          print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS')
+          PY_INNER
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/data \
+            site/theme \
+            docs/crypto-astro-service \
+            tools/crypto_astro_snapshot_memory
+'''
+          marker = "      - name: Prove non-generated scope leaves canonical public data and HTML unchanged\n"
+          if proof_step not in text:
+              if text.count(marker) != 1:
+                  raise SystemExit('non-generated proof marker drift')
+              text = text.replace(marker, proof_step + marker, 1)
+
+          replace_once(
+              "        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment'",
+              "        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'",
+              'producer identity non-generated exclusion',
+          )
+
+          path.write_text(text, encoding='utf-8')
+          assert text.count("producer_public_identity = {") == 1
+          assert text.count("mode='producer_public_identity'") == 1
+          assert text.count('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS') == 1
+          assert text.count("steps.scope.outputs.mode != 'producer_public_identity'") == 1
+          PY
+
+      - name: Enforce exact final one-file diff
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/producer-identity-current-main-recovery-pr.yml
+          test "$(git diff --name-only | sort)" = ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+          grep -Fq "producer_public_identity = {" .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          grep -Fq "SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS" .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          grep -Fq "steps.scope.outputs.mode != 'producer_public_identity'" .github/workflows/crypto-astro-snapshot-memory-pr.yml
+
+      - name: Commit exact one-file recovery result
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          git commit -m "CI: recognize producer public identity scope"
+          git push origin "HEAD:${{ github.head_ref }}"
