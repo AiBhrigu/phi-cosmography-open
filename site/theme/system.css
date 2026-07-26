@@ -115,16 +115,15 @@
   #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.review {
     animation-name: btcAspectCycleNodeRevealV01 !important;
     animation-duration: 1s !important;
-    animation-iteration-count: 1 !important;
     animation-fill-mode: both !important;
     animation-play-state: running !important;
     animation-timeline: view(block);
   }
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.aspect { animation-range: entry 3% cover 15%; }
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.phase { animation-range: entry 10% cover 22%; }
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.memory { animation-range: entry 17% cover 29%; }
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.confirm { animation-range: entry 24% cover 36%; }
-  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.review { animation-range: entry 31% cover 43%; }
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.aspect { animation-iteration-count: 1 !important; animation-range: entry 3% cover 15%; }
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.phase { animation-iteration-count: 1 !important; animation-range: entry 10% cover 22%; }
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.memory { animation-iteration-count: 1 !important; animation-range: entry 17% cover 29%; }
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.confirm { animation-iteration-count: 1 !important; animation-range: entry 24% cover 36%; }
+  #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.review { animation-iteration-count: 1 !important; animation-range: entry 31% cover 43%; }
 }
 
 #btc-phi-cycle-hub#btc-phi-cycle-hub .btc-node-v1.memory::before {
