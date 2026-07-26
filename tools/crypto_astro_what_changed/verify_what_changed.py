@@ -10,7 +10,6 @@ from pathlib import Path
 from render_what_changed import SECTION_PATTERN, load_json, render
 
 
-# Temporary owner-originated CI retrigger marker; removed in the next commit.
 def verify(repo: Path) -> dict:
     html_path = repo / "site/crypto-astro/index.html"
     source = html_path.read_text(encoding="utf-8")
