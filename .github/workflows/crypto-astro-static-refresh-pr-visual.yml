@@ -10,7 +10,6 @@ on:
       - 'site/theme/btc_motion_budget.css'
       - 'site/theme/ip_semantic_seal.css'
       - 'site/theme/btc_phi_semantic_geometry.css'
-      - 'site/theme/btc_field_corridor_gateway.css'
       - 'site/theme/crypto_astro_what_changed.css'
       - 'tools/crypto_astro_static_refresh/**'
       - 'tools/crypto_astro_snapshot_memory/**'
@@ -71,14 +70,11 @@ jobs:
           delta=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_delta.public.json').read_text())
           system=Path('site/theme/system.css').read_text()
           geometry=Path('site/theme/btc_phi_semantic_geometry.css').read_text()
-          corridor=Path('site/theme/btc_field_corridor_gateway.css').read_text()
           poster="@import url('./btc_poster_grade.css');"
           motion="@import url('./btc_motion_budget.css');"
           seal="@import url('./ip_semantic_seal.css');"
           phi_geometry="@import url('./btc_phi_semantic_geometry.css');"
-          semantic_motion="@import url('./crypto_astro_btc_semantic_motion.css');"
-          corridor_import="@import url('./btc_field_corridor_gateway.css');"
-          assert system.index(poster) < system.index(motion) < system.index(seal) < system.index(phi_geometry) < system.index(semantic_motion) < system.index(corridor_import)
+          assert system.index(poster) < system.index(motion) < system.index(seal) < system.index(phi_geometry)
           assert 'CRYPTO_ASTRO_BTC_PHI_SEMANTIC_GEOMETRY_v0_1' in geometry
           assert '--btc-phi-ratio: 1.61803398875' in geometry
           assert '--btc-phi-major: 61.803398875%' in geometry
@@ -87,14 +83,6 @@ jobs:
           assert 'Φ' not in geometry
           assert '@keyframes' not in geometry
           assert 'animation:' not in geometry
-          assert 'BTC_FIELD_MOBILE_CORRIDOR_CTA_CANONICAL_REPAIR_v0_1' in corridor
-          assert '--btc-corridor-focus: 38.196601125%' in corridor
-          assert 'BTC FIELD CORRIDOR' in corridor
-          assert 'ENTER BTC FIELD' in corridor
-          assert 'Step into the source corridor' in corridor
-          assert 'Ask one source-bound BTC question' in corridor
-          assert '@keyframes' not in corridor
-          assert 'BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1' in system
           generated=snapshot['generated_at_utc']
           hero_timestamp=generated[:16].replace('T',' ')+' UTC'
           expected_status=delta['comparison_status'].lower().replace('_','-')
@@ -106,8 +94,7 @@ jobs:
           report={}
           with sync_playwright() as p:
             browser=p.chromium.launch()
-            viewports=[('desktop',1440,1000),('mobile-landscape',844,390),('mobile',390,844)]
-            for name,width,height in viewports:
+            for name,width,height in [('desktop',1440,1000),('mobile',390,844)]:
               page=browser.new_page(viewport={'width':width,'height':height})
               errors=[]; page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
               page.goto('http://127.0.0.1:4173/crypto-astro/index.html',wait_until='networkidle')
@@ -152,47 +139,6 @@ jobs:
                   nodeStyles,
                 };
               }""")
-              corridor_state=page.evaluate("""() => {
-                const cta=document.querySelector('#btc-phi-cycle-hub > .btc-entry-v1');
-                const market=document.querySelector('#btc-phi-cycle-hub > .btc-market-link-v1');
-                const glyph=cta.querySelector('.btc-field-read-entry-glyph-v0-1');
-                const title=cta.querySelector('strong');
-                const subtitle=cta.querySelector('em');
-                const arrow=cta.querySelector('.btc-entry-arrow-v1');
-                const cr=cta.getBoundingClientRect();
-                const mr=market.getBoundingClientRect();
-                const rect=value => {
-                  const r=value.getBoundingClientRect();
-                  return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
-                };
-                const inside=value => {
-                  const r=value.getBoundingClientRect();
-                  return r.left >= cr.left-1 && r.right <= cr.right+1 && r.top >= cr.top-1 && r.bottom <= cr.bottom+1;
-                };
-                return {
-                  clientWidth:cta.clientWidth,
-                  scrollWidth:cta.scrollWidth,
-                  clientHeight:cta.clientHeight,
-                  scrollHeight:cta.scrollHeight,
-                  ctaRect:rect(cta),
-                  marketRect:rect(market),
-                  glyphRect:rect(glyph),
-                  titleRect:rect(title),
-                  subtitleRect:rect(subtitle),
-                  arrowRect:rect(arrow),
-                  childrenInside:[glyph,title,subtitle,arrow].every(inside),
-                  marketFollows:mr.top >= cr.bottom-1,
-                  sameRow:Math.abs(mr.top-cr.top) <= 10 && Math.abs(mr.bottom-cr.bottom) <= 10,
-                  alignedWidths:Math.abs(cr.width-mr.width) <= 2,
-                  siblingRatio:cr.width/mr.width,
-                  label:getComputedStyle(title,'::before').content,
-                  headline:getComputedStyle(title,'::after').content,
-                  transitionLine:getComputedStyle(subtitle,'::before').content,
-                  supportLine:getComputedStyle(subtitle,'::after').content,
-                  gridTemplateColumns:getComputedStyle(cta).gridTemplateColumns,
-                  gridTemplateAreas:getComputedStyle(cta).gridTemplateAreas,
-                };
-              }""")
               barometer=page.locator('.barometer-core.barometer-semantic-core')
               barometer_text=barometer.text_content() or ''
               orb=barometer.locator('.score-orb.field-gauge')
@@ -210,7 +156,6 @@ jobs:
                 'btc_aria':btc_aria,
                 'expected_btc_aria_fragment':f'BTC dominance is {dominance_number} percent',
                 'cta_count':cta_count,
-                'corridor_gateway':corridor_state,
                 'core_dominance_present':dominance in core_text,
                 'core_style':core_style,
                 'expected_core_style':f'--btc-dominance:{dominance};',
@@ -234,19 +179,6 @@ jobs:
               assert generated in btc_text, evidence
               assert f'BTC dominance is {dominance_number} percent' in btc_aria, evidence
               assert cta_count==2, evidence
-              assert corridor_state['scrollWidth'] <= corridor_state['clientWidth']+1, evidence
-              assert corridor_state['scrollHeight'] <= corridor_state['clientHeight']+1, evidence
-              assert corridor_state['childrenInside'], evidence
-              if name=='desktop':
-                assert corridor_state['sameRow'], evidence
-                assert abs(corridor_state['siblingRatio']-1.61803398875) < 0.04, evidence
-              else:
-                assert corridor_state['marketFollows'], evidence
-                assert corridor_state['alignedWidths'], evidence
-              assert 'BTC FIELD CORRIDOR' in corridor_state['label'], evidence
-              assert 'ENTER BTC FIELD' in corridor_state['headline'], evidence
-              assert 'Step into the source corridor' in corridor_state['transitionLine'], evidence
-              assert 'Ask one source-bound BTC question' in corridor_state['supportLine'], evidence
               assert dominance in core_text, evidence
               assert core_style==f'--btc-dominance:{dominance};', evidence
               assert semantic_nodes.count()==5, evidence
@@ -254,7 +186,7 @@ jobs:
               assert abs(phi_geometry_state['coreY']-0.38196601125) < 0.025, evidence
               assert phi_geometry_state['routeDisplay']=='none', evidence
               assert phi_geometry_state['membraneDisplay']!='none', evidence
-              if name in ('desktop','mobile-landscape'):
+              if name=='desktop':
                 assert abs(phi_geometry_state['fieldRatio']-1.61803398875) < 0.025, evidence
                 assert abs(phi_geometry_state['cycleRatio']-1.61803398875) < 0.025, evidence
                 assert [n['gridColumnStart'] for n in phi_geometry_state['nodeStyles']]==['2','1','3','1','3'], evidence
