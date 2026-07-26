@@ -94,6 +94,7 @@ jobs:
           assert 'Step into the source corridor' in corridor
           assert 'Ask one source-bound BTC question' in corridor
           assert '@keyframes' not in corridor
+          assert 'BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1' in system
           generated=snapshot['generated_at_utc']
           hero_timestamp=generated[:16].replace('T',' ')+' UTC'
           expected_status=delta['comparison_status'].lower().replace('_','-')
@@ -181,7 +182,9 @@ jobs:
                   arrowRect:rect(arrow),
                   childrenInside:[glyph,title,subtitle,arrow].every(inside),
                   marketFollows:mr.top >= cr.bottom-1,
+                  sameRow:Math.abs(mr.top-cr.top) <= 10 && Math.abs(mr.bottom-cr.bottom) <= 10,
                   alignedWidths:Math.abs(cr.width-mr.width) <= 2,
+                  siblingRatio:cr.width/mr.width,
                   label:getComputedStyle(title,'::before').content,
                   headline:getComputedStyle(title,'::after').content,
                   transitionLine:getComputedStyle(subtitle,'::before').content,
@@ -234,8 +237,12 @@ jobs:
               assert corridor_state['scrollWidth'] <= corridor_state['clientWidth']+1, evidence
               assert corridor_state['scrollHeight'] <= corridor_state['clientHeight']+1, evidence
               assert corridor_state['childrenInside'], evidence
-              assert corridor_state['marketFollows'], evidence
-              assert corridor_state['alignedWidths'], evidence
+              if name=='desktop':
+                assert corridor_state['sameRow'], evidence
+                assert abs(corridor_state['siblingRatio']-1.61803398875) < 0.04, evidence
+              else:
+                assert corridor_state['marketFollows'], evidence
+                assert corridor_state['alignedWidths'], evidence
               assert 'BTC FIELD CORRIDOR' in corridor_state['label'], evidence
               assert 'ENTER BTC FIELD' in corridor_state['headline'], evidence
               assert 'Step into the source corridor' in corridor_state['transitionLine'], evidence
