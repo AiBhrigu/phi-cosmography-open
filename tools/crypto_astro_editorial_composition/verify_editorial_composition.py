@@ -18,7 +18,7 @@ CHAPTERS = [
     'data-editorial-chapter="trust-access"',
 ]
 NAV_TARGETS = ["#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"]
-PRIMARY_HREF = "https://www.bhrigu.io/crypto-astro/btc"
+PRIMARY_HREF = "https://www.bhrigu.io/market-cosmographer"
 REQUIRED_VALUES = [
     "$2.287T",
     "$40.71B",
