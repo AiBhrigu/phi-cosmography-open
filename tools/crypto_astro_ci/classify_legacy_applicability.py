@@ -25,6 +25,16 @@ HISTORICAL_HEADS = {
 }
 
 REFRESH_PREFIX = "automation/crypto-astro-static-refresh-"
+PRODUCER_PUBLIC_IDENTITY_FILES = {
+    ".github/workflows/crypto-astro-editorial-composition-pr.yml",
+    ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+    "site/crypto-astro/index.html",
+    "tools/crypto_astro_editorial_composition/apply_editorial_composition.py",
+    "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
+    "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
+    "tools/crypto_astro_public_http_proof/verify_public_http_proof.py",
+    "tools/crypto_astro_what_changed/verify_what_changed.py",
+}
 CURRENT_PREFIXES = (
     "site/crypto-astro/",
     "site/theme/crypto_astro",
@@ -57,6 +67,7 @@ def classify(workflow: str, head_ref: str, changed_files: Sequence[str]) -> Clas
         raise ValueError(f"unknown workflow: {workflow}")
 
     changed = normalize_paths(changed_files)
+    changed_set = set(changed)
     historical_head = HISTORICAL_HEADS[workflow]
 
     if head_ref == historical_head:
@@ -70,6 +81,13 @@ def classify(workflow: str, head_ref: str, changed_files: Sequence[str]) -> Clas
         return Classification(
             GENERATED_REFRESH,
             "generated static refresh is governed by current refresh, memory, visual and BHRIGU consumer gates",
+            changed,
+        )
+
+    if changed_set == PRODUCER_PUBLIC_IDENTITY_FILES:
+        return Classification(
+            NON_APPLICABLE,
+            "exact producer public identity scope is governed by Snapshot Memory, Editorial Composition structure, Static Refresh Visual, What Changed and Public HTTP Proof gates",
             changed,
         )
 
