@@ -1,0 +1,95 @@
+name: Producer Identity BTC Route Sovereignty Prerequisite Recovery
+
+on:
+  push:
+    branches:
+      - agent/producer-identity-btc-route-sovereignty-prerequisite-v0-1
+    paths:
+      - .github/workflows/producer-identity-btc-route-sovereignty-prerequisite-recovery.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: producer-identity-btc-route-sovereignty-prerequisite-recovery
+  cancel-in-progress: false
+
+jobs:
+  materialize-and-self-clean:
+    if: github.repository == 'AiBhrigu/phi-cosmography-open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: agent/producer-identity-btc-route-sovereignty-prerequisite-v0-1
+          fetch-depth: 0
+
+      - name: Verify exact current main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "a42154f22ce40364b8655228df54e870b47b4d2c"
+          test "$(git merge-base origin/main HEAD)" = "a42154f22ce40364b8655228df54e870b47b4d2c"
+
+      - name: Apply exact cross-workflow prerequisite
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one old token, found {count}')
+              target.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          snapshot = '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
+          replace_once(
+              snapshot,
+              "          assert html.count('href=\"https://www.bhrigu.io/market-cosmographer\"') == 2\n",
+              "          assert html.count('href=\"https://www.bhrigu.io/crypto-astro/btc\"') == 2\n",
+          )
+          replace_once(
+              snapshot,
+              "          print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS')\n",
+              "          print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS')\n          print('SNAPSHOT_MEMORY_BTC_ROUTE_SOVEREIGNTY=PASS')\n",
+          )
+
+          for path in (
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+          ):
+              replace_once(
+                  path,
+                  '              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")\n',
+                  '              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")\n              print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")\n',
+              )
+
+          print('PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS')
+          PY
+
+      - name: Remove temporary workflow and verify exact final scope
+        run: |
+          set -euo pipefail
+          rm .github/workflows/producer-identity-btc-route-sovereignty-prerequisite-recovery.yml
+          git diff --name-only | sort > /tmp/changed.txt
+          printf '%s\n' \
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml' \
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml' \
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml' \
+            '.github/workflows/producer-identity-btc-route-sovereignty-prerequisite-recovery.yml' \
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          git diff --exit-code -- site tools docs
+          echo FINAL_THREE_WORKFLOW_SCOPE=PASS
+
+      - name: Commit exact prerequisite
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "CI: bind producer identity proof to BTC route sovereignty"
+          git push origin HEAD:agent/producer-identity-btc-route-sovereignty-prerequisite-v0-1
