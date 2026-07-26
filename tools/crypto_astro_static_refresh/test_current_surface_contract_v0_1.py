@@ -22,6 +22,69 @@ class CurrentSurfaceContractTests(unittest.TestCase):
     def test_locked_core_blob(self):
         self.assertEqual(compat.git_blob_sha(compat.CORE_PATH), compat.EXPECTED_CORE_BLOB_SHA)
 
+    def test_single_timestamp_sourcecopy_patch(self):
+        source = '''#!/usr/bin/env python3
+TARGET_BRANCH = "feature/crypto-astro-all-module-static-refresh-v0-1"
+
+def now_iso():
+    return "2030-01-02T03:04:05Z"
+
+def main():
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    report = {
+        "status": "HOLD",
+    }
+    proof = {
+        "generated_at_utc": now_iso(),
+    }
+    try:
+        generated_at = now_iso()
+        return report, proof, generated_at
+    except Exception:
+        raise
+'''
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            primary = root / "primary.py"
+            primary.write_text(source, encoding="utf-8")
+            target = compat.prepare_hardened_primary(primary, root / "working")
+            rendered = target.read_text(encoding="utf-8")
+
+        self.assertEqual(rendered.count("generation_timestamp = now_iso()"), 1)
+        self.assertIn('"generated_at_utc": generation_timestamp,', rendered)
+        self.assertIn("generated_at = generation_timestamp", rendered)
+        self.assertNotIn('"generated_at_utc": now_iso(),', rendered)
+        self.assertNotIn("generated_at = now_iso()", rendered)
+
+    def test_current_public_timestamp_constellation_exact(self):
+        data = self.repo / "site/crypto-astro/data"
+        snapshot = json.loads((data / "crypto_astro_snapshot.public.json").read_text(encoding="utf-8"))
+        proof = json.loads((data / "crypto_astro_snapshot_proof.public.json").read_text(encoding="utf-8"))
+        bindings = json.loads((data / "crypto_astro_module_bindings.public.json").read_text(encoding="utf-8"))
+        registry = json.loads((data / "crypto_astro_snapshot_registry.public.json").read_text(encoding="utf-8"))
+        delta = json.loads((data / "crypto_astro_snapshot_delta.public.json").read_text(encoding="utf-8"))
+        market = json.loads((data / "market_field_snapshot.public.v0_1.json").read_text(encoding="utf-8"))
+        scoring = json.loads((data / "scoring_snapshot.public.json").read_text(encoding="utf-8"))
+        expected = snapshot["generated_at_utc"]
+        constellation = {
+            "snapshot": expected,
+            "proof": proof["generated_at_utc"],
+            "bindings": bindings["generated_at_utc"],
+            "registry_current": registry["current"]["generated_at_utc"],
+            "registry_proof": registry["current"]["proof_generated_at_utc"],
+            "registry_generated": registry["registry_generated_at_utc"],
+            "delta": delta["generated_at_utc"],
+            "market_field": market["updated_at_utc"],
+            "scoring": scoring["generated_at_utc"],
+        }
+        self.assertEqual(set(constellation.values()), {expected}, constellation)
+
+    def test_generated_output_timestamp_gate(self):
+        report = {}
+        self.assertTrue(compat.validate_generation_timestamp_contract(self.repo, report), report)
+        self.assertEqual(report["validation"]["single_generation_timestamp"], "PASS")
+
     def test_current_surface_bindings_patch_exactly_once(self):
         snapshot = copy.deepcopy(self.snapshot)
         snapshot["generated_at_utc"] = "2030-01-02T03:04:05Z"
