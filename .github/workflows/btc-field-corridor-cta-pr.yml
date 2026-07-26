@@ -1,0 +1,221 @@
+name: BTC Field Corridor CTA PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/btc-field-corridor-cta-pr.yml'
+      - 'site/theme/btc_field_corridor_gateway.css'
+      - 'site/theme/system.css'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: btc-field-corridor-cta-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  corridor-cta:
+    name: Verify BTC corridor desktop and mobile integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact corridor scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
+          printf '%s\n' \
+            '.github/workflows/btc-field-corridor-cta-pr.yml' \
+            'site/theme/btc_field_corridor_gateway.css' \
+            'site/theme/system.css' \
+            | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro \
+            site/theme/btc_phi_semantic_geometry.css \
+            site/theme/btc_phi_visual_integrity.css \
+            site/theme/btc_poster_grade.css \
+            site/theme/btc_motion_budget.css \
+            site/theme/crypto_astro_btc_semantic_motion.css \
+            tools \
+            docs
+          echo BTC_FIELD_CORRIDOR_EXACT_SCOPE=PASS
+
+      - name: Verify semantic source contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          system=Path('site/theme/system.css').read_text()
+          corridor=Path('site/theme/btc_field_corridor_gateway.css').read_text()
+          target="@import url('./btc_field_corridor_gateway.css');"
+          semantic="@import url('./crypto_astro_btc_semantic_motion.css');"
+          assert target in system
+          assert system.index(semantic) < system.index(target)
+          for marker in (
+              'BTC_FIELD_MOBILE_CORRIDOR_CTA_CANONICAL_REPAIR_v0_1',
+              '--btc-corridor-focus: 38.196601125%',
+              '--btc-corridor-reading: 61.803398875%',
+              'BTC FIELD CORRIDOR',
+              'ENTER BTC FIELD',
+              'Step into the source corridor',
+              'Ask one source-bound BTC question',
+          ):
+              assert marker in corridor, marker
+          assert 'BTC_FIELD_MOBILE_CORRIDOR_ROUTE_STACK_v0_1' in system
+          assert '@keyframes' not in corridor
+          assert 'infinite' not in corridor
+          assert '#market' not in corridor
+          assert 'body {' not in corridor
+          print('BTC_FIELD_CORRIDOR_SOURCE_CONTRACT=PASS')
+          PY
+
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Run desktop, landscape mobile, portrait mobile, and reduced-motion proof
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python -m http.server 4173 --directory site > artifacts/http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null && break
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:4173/crypto-astro/index.html >/dev/null
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+
+          URL='http://127.0.0.1:4173/crypto-astro/index.html'
+          PHI=1.61803398875
+          out=Path('artifacts')
+          report={'status':'FAIL','viewports':{},'reduced_motion':{},'failures':[]}
+          failures=[]
+
+          def state(page):
+              return page.evaluate("""() => {
+                const cta=document.querySelector('#btc-phi-cycle-hub > .btc-entry-v1');
+                const market=document.querySelector('#btc-phi-cycle-hub > .btc-market-link-v1');
+                const glyph=cta.querySelector('.btc-field-read-entry-glyph-v0-1');
+                const title=cta.querySelector('strong');
+                const subtitle=cta.querySelector('em');
+                const arrow=cta.querySelector('.btc-entry-arrow-v1');
+                const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+                const cr=rect(cta),mr=rect(market);
+                const inside=el=>{const r=rect(el);return r.left>=cr.left-1&&r.right<=cr.right+1&&r.top>=cr.top-1&&r.bottom<=cr.bottom+1;};
+                const ts=getComputedStyle(title),ss=getComputedStyle(subtitle),gs=getComputedStyle(glyph),as=getComputedStyle(arrow);
+                return {
+                  cta:cr,market:mr,glyph:rect(glyph),title:rect(title),subtitle:rect(subtitle),arrow:rect(arrow),
+                  clientWidth:cta.clientWidth,scrollWidth:cta.scrollWidth,clientHeight:cta.clientHeight,scrollHeight:cta.scrollHeight,
+                  childrenInside:[glyph,title,subtitle,arrow].every(inside),
+                  sameRow:Math.abs(mr.top-cr.top)<=10&&Math.abs(mr.bottom-cr.bottom)<=10,
+                  marketFollows:mr.top>=cr.bottom-1,
+                  alignedWidths:Math.abs(cr.width-mr.width)<=2,
+                  siblingRatio:cr.width/mr.width,
+                  label:getComputedStyle(title,'::before').content,
+                  headline:getComputedStyle(title,'::after').content,
+                  transitionLine:getComputedStyle(subtitle,'::before').content,
+                  supportLine:getComputedStyle(subtitle,'::after').content,
+                  gridTemplateColumns:ts.gridTemplateColumns,
+                  gridTemplateAreas:ts.gridTemplateAreas,
+                  glyphAnimation:gs.animationName,
+                  arrowAnimation:as.animationName,
+                  pageScrollWidth:document.documentElement.scrollWidth,
+                  pageClientWidth:document.documentElement.clientWidth,
+                };
+              }""")
+
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height in [('desktop',1440,1000),('mobile-landscape',844,390),('mobile-portrait',390,844)]:
+                  page=browser.new_page(viewport={'width':width,'height':height})
+                  errors=[]
+                  page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+                  page.goto(URL,wait_until='networkidle')
+                  cta=page.locator('#btc-phi-cycle-hub > .btc-entry-v1')
+                  cta.scroll_into_view_if_needed(); page.wait_for_timeout(320)
+                  s=state(page)
+                  checks={
+                    'cta_internal_width_no_overflow':s['scrollWidth']<=s['clientWidth']+1,
+                    'cta_internal_height_no_overflow':s['scrollHeight']<=s['clientHeight']+1,
+                    'all_semantic_children_inside':s['childrenInside'],
+                    'page_horizontal_overflow_none':s['pageScrollWidth']<=s['pageClientWidth']+1,
+                    'label_exact':'BTC FIELD CORRIDOR' in s['label'],
+                    'headline_exact':'ENTER BTC FIELD' in s['headline'],
+                    'transition_exact':'Step into the source corridor' in s['transitionLine'],
+                    'support_exact':'Ask one source-bound BTC question' in s['supportLine'],
+                    'console_errors_none':not errors,
+                  }
+                  if name=='desktop':
+                      checks.update({
+                        'desktop_golden_sibling_split':s['sameRow'] and abs(s['siblingRatio']-PHI)<0.04,
+                        'desktop_corridor_height':150<=s['cta']['height']<=190,
+                      })
+                  else:
+                      checks.update({
+                        'mobile_routes_stack':s['marketFollows'],
+                        'mobile_routes_align':s['alignedWidths'],
+                      })
+                  if name=='mobile-landscape':
+                      checks['landscape_corridor_height']=145<=s['cta']['height']<=180
+                  if name=='mobile-portrait':
+                      checks['portrait_corridor_height']=250<=s['cta']['height']<=300
+                  failed=[key for key,value in checks.items() if not value]
+                  failures.extend(f'{name}:{key}' for key in failed)
+                  report['viewports'][name]={'state':s,'checks':checks,'failures':failed,'console_errors':errors}
+                  cta.screenshot(path=str(out/f'btc-field-corridor-{name}.png'))
+                  page.screenshot(path=str(out/f'btc-field-corridor-{name}-full.png'),full_page=True)
+                  page.close()
+
+              page=browser.new_page(viewport={'width':390,'height':844},reduced_motion='reduce')
+              page.goto(URL,wait_until='networkidle')
+              page.locator('#btc-phi-cycle-hub > .btc-entry-v1').scroll_into_view_if_needed(); page.wait_for_timeout(220)
+              reduced=state(page)
+              reduced_checks={
+                'glyph_static':reduced['glyphAnimation']=='none',
+                'arrow_static':reduced['arrowAnimation']=='none',
+                'children_inside':reduced['childrenInside'],
+                'no_overflow':reduced['scrollWidth']<=reduced['clientWidth']+1,
+              }
+              reduced_failed=[key for key,value in reduced_checks.items() if not value]
+              failures.extend(f'reduced-motion:{key}' for key in reduced_failed)
+              report['reduced_motion']={'state':reduced,'checks':reduced_checks,'failures':reduced_failed}
+              page.close(); browser.close()
+
+          report['failures']=failures
+          report['status']='PASS' if not failures else 'FAIL'
+          (out/'btc-field-corridor-proof.json').write_text(json.dumps(report,indent=2)+'\n')
+          if failures:
+              raise SystemExit('BTC_FIELD_CORRIDOR_PROOF_FAILURES='+','.join(failures))
+          print('BTC_FIELD_CORRIDOR_VISUAL_PROOF=PASS')
+          PY
+
+      - name: Upload corridor evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btc-field-corridor-cta-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
