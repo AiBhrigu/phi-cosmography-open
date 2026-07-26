@@ -3,11 +3,13 @@ name: Crypto-Astro BTC Visual Integrity PR
 on:
   pull_request:
     paths:
+      - '.github/workflows/btc-field-corridor-cta-pr.yml'
       - '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
       - '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
       - '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
       - '.github/workflows/btc-poster-motion-budget-pr.yml'
       - '.github/workflows/crypto-astro-surface-truth-pr.yml'
+      - 'site/theme/btc_field_corridor_gateway.css'
       - 'site/theme/btc_phi_visual_integrity.css'
       - 'site/theme/crypto_astro_btc_semantic_motion.css'
       - 'site/theme/system.css'
@@ -38,46 +40,71 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          aspect = '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml'
+          semantic = '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml'
+          integrity = '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml'
+          foundation = {
+              integrity,
+              'site/theme/btc_phi_visual_integrity.css',
+              'site/theme/system.css',
+          }
+          semantic_motion = {
+              '.github/workflows/btc-poster-motion-budget-pr.yml',
+              semantic,
+              integrity,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml',
+              'site/theme/crypto_astro_btc_semantic_motion.css',
+              'site/theme/system.css',
+          }
+          aspect_cycle = {
+              '.github/workflows/btc-poster-motion-budget-pr.yml',
+              aspect,
+              semantic,
+              integrity,
+              '.github/workflows/crypto-astro-surface-truth-pr.yml',
+              'site/theme/system.css',
+          }
+          corridor = {
+              '.github/workflows/btc-field-corridor-cta-pr.yml',
+              'site/theme/btc_field_corridor_gateway.css',
+              'site/theme/system.css',
+          }
+          applicability = {aspect, semantic, integrity}
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          aspect_repair = False
+          if changed == foundation:
+              mode = 'FOUNDATION'
+          elif changed == semantic_motion:
+              mode = 'SEMANTIC_MOTION'
+          elif changed == aspect_cycle:
+              mode = 'SEMANTIC_MOTION'
+              aspect_repair = True
+          elif changed == corridor:
+              mode = 'CORRIDOR'
+          elif changed == applicability:
+              mode = 'APPLICABILITY'
+          else:
+              raise AssertionError({'changed': sorted(changed)})
+          with open(os.environ['GITHUB_ENV'], 'a') as out:
+              out.write(f'BTC_VISUAL_SCOPE_MODE={mode}\n')
+              if aspect_repair:
+                  out.write('BTC_ASPECT_CYCLE_REPAIR=YES\n')
+          print(f'BTC_VISUAL_SCOPE={mode}')
+          PY
           BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
-          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/actual.txt
-
-          printf '%s\n' \
-            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
-            'site/theme/btc_phi_visual_integrity.css' \
-            'site/theme/system.css' \
-            | sort > /tmp/foundation.txt
-
-          printf '%s\n' \
-            '.github/workflows/btc-poster-motion-budget-pr.yml' \
-            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
-            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
-            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
-            'site/theme/crypto_astro_btc_semantic_motion.css' \
-            'site/theme/system.css' \
-            | sort > /tmp/semantic-motion.txt
-
-          printf '%s\n' \
-            '.github/workflows/btc-poster-motion-budget-pr.yml' \
-            '.github/workflows/crypto-astro-aspect-cycle-bounded-motion-glyph-repair-pr.yml' \
-            '.github/workflows/crypto-astro-btc-core-gateway-semantic-motion-pr.yml' \
-            '.github/workflows/crypto-astro-btc-visual-integrity-pr.yml' \
-            '.github/workflows/crypto-astro-surface-truth-pr.yml' \
-            'site/theme/system.css' \
-            | sort > /tmp/aspect-cycle-repair.txt
-
-          if diff -u /tmp/foundation.txt /tmp/actual.txt; then
-            echo BTC_VISUAL_SCOPE_MODE=FOUNDATION >> "$GITHUB_ENV"
-          elif diff -u /tmp/semantic-motion.txt /tmp/actual.txt; then
-            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
-          elif diff -u /tmp/aspect-cycle-repair.txt /tmp/actual.txt; then
-            echo BTC_VISUAL_SCOPE_MODE=SEMANTIC_MOTION >> "$GITHUB_ENV"
-            echo BTC_ASPECT_CYCLE_REPAIR=YES >> "$GITHUB_ENV"
-          else
-            echo 'BTC visual scope is not an accepted exact file set.' >&2
-            exit 1
-          fi
-
           git diff --exit-code "$BASE" "$HEAD_SHA" -- \
             site/crypto-astro/index.html \
             site/crypto-astro/data \
@@ -116,6 +143,23 @@ jobs:
           assert '@keyframes' not in integrity
           assert 'animation:' not in integrity
           assert 'content-visibility: visible' in integrity
+
+          if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'CORRIDOR':
+              corridor = Path('site/theme/btc_field_corridor_gateway.css').read_text()
+              target_import = "@import url('./btc_field_corridor_gateway.css');"
+              semantic_import = "@import url('./crypto_astro_btc_semantic_motion.css');"
+              assert target_import in system
+              assert system.index(semantic_import) < system.index(target_import)
+              for marker in (
+                  'BTC_FIELD_MOBILE_CORRIDOR_CTA_CANONICAL_REPAIR_v0_1',
+                  'BTC FIELD CORRIDOR',
+                  'ENTER BTC FIELD',
+                  'Step into the source corridor',
+                  'Ask one source-bound BTC question',
+              ):
+                  assert marker in corridor, marker
+              assert '@keyframes' not in corridor
+              assert 'infinite' not in corridor
 
           if os.environ.get('BTC_VISUAL_SCOPE_MODE') == 'SEMANTIC_MOTION':
               semantic = Path('site/theme/crypto_astro_btc_semantic_motion.css').read_text()
