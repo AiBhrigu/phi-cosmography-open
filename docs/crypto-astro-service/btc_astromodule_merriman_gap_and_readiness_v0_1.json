@@ -1,0 +1,50 @@
+{
+  "schema_version": "btc_astromodule_merriman_gap_and_readiness_v0_1",
+  "status": "PARTIAL_FAIL_CLOSED",
+  "source_pins": {
+    "phi_main_sha": "f7eeb51eb94121322ed9e9a468f344c4bcb2bbf1",
+    "a_e_plan_blob": "75fda154caab69e91b402098fb3b586c7293497d",
+    "module_map_blob": "e6d90b2ed7ea81eb1f12ef294794fc6d8a4acd92",
+    "private_research_template_blob": "b8ad711170b22e9fa53d0a12d410b53e2d665aaf",
+    "orion_readme_blob": "1c2b16ea2ad7e65e9cfda78d8637abc409a0b215",
+    "orion_pyproject_blob": "ef94d16bb035526c4b04b527088417baeb11bab8",
+    "orion_eclipse_api_blob": "72ab7057b6d518dc51cbc22f41592e89acf20f3d",
+    "orion_eclipse_backend_blob": "3b7e865482dd0ef7390645fc2ba161957b006c78",
+    "orion_module_scaffold_commit": "1385c6f3800f2da87e9ce56551edc014ea272897"
+  },
+  "verified_present": {
+    "astrological_module_declared": true,
+    "swiss_ephemeris_dependency_present": true,
+    "solar_eclipse_enumeration_present": true,
+    "lunar_eclipse_enumeration_present": true,
+    "ephemeris_point_type_scaffold_present": true,
+    "aspect_event_type_scaffold_present": true,
+    "private_temporal_context_template_present": true
+  },
+  "not_yet_accepted": {
+    "deterministic_planetary_position_artifact": true,
+    "pinned_ephemeris_files_and_version": true,
+    "station_engine": true,
+    "ingress_engine": true,
+    "locked_aspect_orb_registry": true,
+    "signature_level_taxonomy": true,
+    "signature_cluster_engine": true,
+    "critical_reversal_date_engine": true,
+    "market_cycle_hierarchy": true,
+    "cycle_phase_engine": true,
+    "left_right_translation_engine": true,
+    "technical_confirmation_lane": true,
+    "intermarket_divergence_lane": true,
+    "no_lookahead_astro_validation": true,
+    "multiple_testing_control": true,
+    "accepted_market_astro_fusion": true
+  },
+  "readiness_decision": {
+    "protocol_delta_experiment": "READY",
+    "astromodule_source_inventory": "PARTIAL_PASS",
+    "astromodule_deterministic_research_run": "BLOCKED_PENDING_SOURCE_AND_ORB_CONTRACT",
+    "a_e_numeric_activation": "CLOSED",
+    "product_scoring_effect": "NO_CURRENT_EFFECT",
+    "public_prediction": "PROHIBITED"
+  }
+}
