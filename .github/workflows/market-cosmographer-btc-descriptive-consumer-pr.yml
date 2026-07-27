@@ -130,9 +130,20 @@ jobs:
           assert [x['label_id'] for x in packet['labels']] == ['range_state']
           assert packet['distribution']['mode'] == 'INTERNAL_RESEARCH_ONLY'
           assert packet['distribution']['commercial_ai_feed'] is False
-          text = json.dumps(packet, sort_keys=True).lower()
-          for forbidden in ('forward_return_', 'forward_max_drawdown_', 'probability_continuation'):
-              assert forbidden not in text
+          product_ids = {
+              *[x['fact_id'] for x in packet['facts']],
+              *[x['metric_id'] for x in packet['metrics']],
+              *[x['label_id'] for x in packet['labels']],
+              *[x['metric_id'] for x in packet['changes']],
+          }
+          for prefix in ('forward_return_', 'forward_max_drawdown_', 'association_'):
+              assert not any(value.startswith(prefix) for value in product_ids)
+          assert 'probability_continuation' not in product_ids
+          excluded = {x['field_id']: x['reason'] for x in packet['exclusions']}
+          assert excluded['forward_return_1d'] == 'RESEARCH_ONLY'
+          assert excluded['forward_return_7d'] == 'RESEARCH_ONLY'
+          assert excluded['forward_return_30d'] == 'RESEARCH_ONLY'
+          assert excluded['probability_continuation'] == 'PREDICTIVE'
           assert (out/'btc_descriptive_read.en.md').stat().st_size > 500
           assert (out/'btc_descriptive_read.ru.md').stat().st_size > 500
           print('MARKET_COSMOGRAPHER_BTC_REAL_PACKET=PASS')
