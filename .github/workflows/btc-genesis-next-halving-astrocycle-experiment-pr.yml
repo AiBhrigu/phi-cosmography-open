@@ -134,5 +134,6 @@ jobs:
         with:
           name: btc-genesis-next-halving-protocol-delta-${{ github.event.pull_request.head.sha || github.sha }}
           path: .experiment-output/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
