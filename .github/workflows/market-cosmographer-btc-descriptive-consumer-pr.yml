@@ -93,15 +93,16 @@ jobs:
 
       - name: Generate deterministic RU and EN descriptive reads
         run: |
+          generation_utc="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           python tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py \
             --repo . \
             --archive-dir .consumer-archives \
-            --generated-at-utc 2026-07-27T06:00:00Z \
+            --generated-at-utc "$generation_utc" \
             --output-dir .consumer-output-a
           python tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py \
             --repo . \
             --archive-dir .consumer-archives \
-            --generated-at-utc 2026-07-27T06:00:00Z \
+            --generated-at-utc "$generation_utc" \
             --output-dir .consumer-output-b
           diff --recursive --unified .consumer-output-a .consumer-output-b
 
