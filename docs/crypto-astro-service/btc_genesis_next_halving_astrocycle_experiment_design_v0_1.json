@@ -1,0 +1,97 @@
+{
+  "schema_version": "btc_genesis_next_halving_astrocycle_experiment_design_v0_1",
+  "status": "PHASE_0_PROTOCOL_DELTA_AND_ASTROMODULE_READINESS",
+  "subject": "BTC",
+  "canonical_protocol_anchors": {
+    "genesis_height": 0,
+    "halving_interval_blocks": 210000,
+    "historical_halving_start_heights": [0, 210000, 420000, 630000, 840000],
+    "next_halving_start_height": 1050000,
+    "height_is_consensus_trigger": true,
+    "calendar_date_is_consensus_trigger": false
+  },
+  "lane_separation": {
+    "protocol_lane": "GENESIS_TO_DYNAMIC_TIP_TO_NEXT_HALVING_HEIGHT",
+    "market_lane": "STARTS_ONLY_WHERE_ACCEPTED_MARKET_DATA_EXISTS",
+    "astrocycle_lane": "RESEARCH_ONLY_UNTIL_DETERMINISTIC_EPHEMERIS_ACCEPTANCE",
+    "fusion_lane": "CLOSED_UNTIL_PRE_REGISTERED_INPUT_AND_OUTCOME_CONTRACTS_PASS"
+  },
+  "protocol_delta_outputs": [
+    "blocks_since_genesis",
+    "blocks_since_current_epoch_start",
+    "current_epoch_progress_ratio",
+    "blocks_to_next_halving",
+    "target_seconds_to_next_halving",
+    "target_days_to_next_halving",
+    "protocol_target_eta_from_tip_timestamp",
+    "days_since_genesis",
+    "days_since_current_epoch_start"
+  ],
+  "merriman_inspired_public_method_components": [
+    "cycle_hierarchy",
+    "trough_to_trough_cycle_measurement",
+    "cycle_phase",
+    "left_right_translation",
+    "isolated_high_low",
+    "geocosmic_signature_taxonomy",
+    "orb_of_allowance",
+    "signature_cluster",
+    "critical_reversal_window",
+    "historical_consistency_score",
+    "technical_confirmation",
+    "intermarket_divergence"
+  ],
+  "registered_research_questions": [
+    {
+      "id": "RQ1",
+      "question": "Can the BTC protocol-time delta be reproduced from exact block anchors without converting block height into a false exact calendar forecast?",
+      "phase": "PHASE_0"
+    },
+    {
+      "id": "RQ2",
+      "question": "Can the Astromodule reproduce deterministic ephemeris states and aspect signatures at Genesis, historical halving blocks, and a dynamic current-tip block?",
+      "phase": "PHASE_1"
+    },
+    {
+      "id": "RQ3",
+      "question": "Do pre-registered geocosmic signature clusters overlap independently identified BTC cycle turns more often than circular-shift controls?",
+      "phase": "PHASE_2"
+    },
+    {
+      "id": "RQ4",
+      "question": "Does halving-epoch normalization add stable descriptive information beyond market-only cycle phase?",
+      "phase": "PHASE_2"
+    }
+  ],
+  "future_astrocycle_input_contract": {
+    "bodies": ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"],
+    "aspect_families": ["conjunction", "sextile", "square", "trine", "opposition"],
+    "additional_event_families": ["station", "ingress", "solar_eclipse", "lunar_eclipse"],
+    "orb_registry_status": "MUST_BE_LOCKED_BEFORE_DATA_INSPECTION",
+    "ephemeris_source_status": "MUST_BE_VERSION_AND_FILE_HASH_PINNED",
+    "frame": "GEOCENTRIC_ECLIPTIC",
+    "time_standard": "UTC_WITH_EXPLICIT_EPHEMERIS_TIME_CONVERSION",
+    "future_halving_anchor": "BLOCK_HEIGHT_ONLY_UNTIL_BLOCK_IS_OBSERVED"
+  },
+  "future_market_outcome_contract": {
+    "labels_must_be_created_without_astro_inputs": true,
+    "candidate_labels": ["isolated_high", "isolated_low", "cycle_trough", "cycle_crest", "cycle_phase", "translation_state"],
+    "controls": ["circular_date_shift", "matched_calendar_windows", "non_overlapping_temporal_blocks"],
+    "multiple_testing_control": "REQUIRED",
+    "no_lookahead": "REQUIRED"
+  },
+  "prohibited_claims": [
+    "ASTRO_CAUSES_PRICE",
+    "HALVING_CAUSES_PRICE",
+    "EXACT_NEXT_HALVING_CALENDAR_DATE",
+    "PREDICTION",
+    "TRADING_SIGNAL",
+    "BUY_SELL_HOLD",
+    "PRICE_TARGET",
+    "INVESTMENT_RECOMMENDATION",
+    "MERRIMAN_PROPRIETARY_SCORE_REPRODUCTION"
+  ],
+  "distribution": "INTERNAL_RESEARCH_ONLY",
+  "public_surface_change": false,
+  "daily_utility_pilot_change": false
+}
