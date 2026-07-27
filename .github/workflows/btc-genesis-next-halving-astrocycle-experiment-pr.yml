@@ -1,0 +1,138 @@
+name: BTC Genesis Next Halving Astrocycle Experiment PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/btc-genesis-next-halving-astrocycle-experiment-pr.yml'
+      - 'docs/crypto-astro-service/MARKET_COSMOGRAPHER_BTC_GENESIS_NEXT_HALVING_ASTROCYCLE_EXPERIMENT_v0_1.md'
+      - 'docs/crypto-astro-service/btc_genesis_next_halving_astrocycle_experiment_design_v0_1.json'
+      - 'docs/crypto-astro-service/btc_astromodule_merriman_gap_and_readiness_v0_1.json'
+      - 'tools/btc_genesis_halving_astrocycle_experiment/generate_protocol_delta_snapshot.py'
+      - 'tools/btc_genesis_halving_astrocycle_experiment/verify_experiment_design.py'
+      - 'tools/btc_genesis_halving_astrocycle_experiment/test_experiment.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase-zero:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact seven-file scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+            '.github/workflows/btc-genesis-next-halving-astrocycle-experiment-pr.yml',
+            'docs/crypto-astro-service/MARKET_COSMOGRAPHER_BTC_GENESIS_NEXT_HALVING_ASTROCYCLE_EXPERIMENT_v0_1.md',
+            'docs/crypto-astro-service/btc_genesis_next_halving_astrocycle_experiment_design_v0_1.json',
+            'docs/crypto-astro-service/btc_astromodule_merriman_gap_and_readiness_v0_1.json',
+            'tools/btc_genesis_halving_astrocycle_experiment/generate_protocol_delta_snapshot.py',
+            'tools/btc_genesis_halving_astrocycle_experiment/verify_experiment_design.py',
+            'tools/btc_genesis_halving_astrocycle_experiment/test_experiment.py',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
+              text=True,
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
+                  text=True,
+              ).splitlines()
+          )
+          assert changed == expected, {
+              'changed': sorted(changed),
+              'missing': sorted(expected - changed),
+              'unexpected': sorted(changed - expected),
+          }
+          print('BTC_GENESIS_HALVING_ASTROCYCLE_EXACT_SCOPE=PASS')
+          PY
+
+      - name: Bind accepted protocol and market boundaries
+        run: |
+          git merge-base --is-ancestor f7eeb51eb94121322ed9e9a468f344c4bcb2bbf1 HEAD
+          test "$(git hash-object docs/crypto-astro-service/btc-protocol-price-history/BTC_PROTOCOL_SOURCE_OF_TRUTH_CANON_v0_1.md)" = "830248e72ac677ca12c8ff82a69c781a77a04024"
+          test "$(git hash-object docs/crypto-astro-service/btc-protocol-price-history/BTC_HALVING_EPOCH_ARCHIVE_v0_1.csv)" = "2fd152d190bcc09846654a78915c0c17a8f16bf0"
+          test "$(git hash-object docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json)" = "360c87bdd65ab01101a1d6f929a006917d9768fc"
+          echo 'BTC_GENESIS_HALVING_ASTROCYCLE_SOURCE_BINDING=PASS'
+
+      - name: Verify design and fail-closed tests
+        run: |
+          python tools/btc_genesis_halving_astrocycle_experiment/verify_experiment_design.py --repo .
+          python -m unittest tools/btc_genesis_halving_astrocycle_experiment/test_experiment.py -v
+
+      - name: Fetch exact dynamic Bitcoin tip
+        run: |
+          mkdir -p .protocol-source
+          curl --fail --location --retry 4 --retry-all-errors \
+            https://mempool.space/api/blocks/tip/height \
+            -o .protocol-source/tip-height.txt
+          tip="$(tr -d '\r\n ' < .protocol-source/tip-height.txt)"
+          test "$tip" -ge 840000 -a "$tip" -lt 1050000
+          curl --fail --location --retry 4 --retry-all-errors \
+            "https://mempool.space/api/block-height/$tip" \
+            -o .protocol-source/tip-hash.txt
+          hash="$(tr -d '\r\n ' < .protocol-source/tip-hash.txt)"
+          test "${#hash}" -eq 64
+          curl --fail --location --retry 4 --retry-all-errors \
+            "https://mempool.space/api/block/$hash" \
+            -o .protocol-source/tip-block.json
+
+      - name: Generate dynamic protocol delta snapshot
+        run: |
+          generated="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          python tools/btc_genesis_halving_astrocycle_experiment/generate_protocol_delta_snapshot.py \
+            --repo . \
+            --tip-height-file .protocol-source/tip-height.txt \
+            --tip-block-file .protocol-source/tip-block.json \
+            --generated-at-utc "$generated" \
+            --output .experiment-output/btc_genesis_next_halving_protocol_delta_snapshot.json
+          python - <<'PY'
+          import json
+          packet = json.load(
+              open('.experiment-output/btc_genesis_next_halving_protocol_delta_snapshot.json')
+          )
+          assert packet['status'] == 'PASS'
+          assert packet['anchors']['next_halving']['height'] == 1050000
+          assert packet['delta']['blocks_to_next_halving'] > 0
+          assert packet['astromodule']['planetary_values_in_this_snapshot'] is False
+          assert packet['astromodule']['a_e_numeric_activation'] == 'CLOSED'
+          assert packet['boundary']['prediction'] is False
+          print('BTC_PROTOCOL_DELTA_DYNAMIC_SNAPSHOT=PASS')
+          PY
+
+      - name: Prove existing pilots and public surfaces unchanged
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          if git diff --name-only "$base" "$HEAD_SHA" | grep -E \
+            '^(site/|tools/market_cosmographer_btc_daily_pilot/|docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json|site/crypto-astro/data/)'; then
+            exit 1
+          fi
+          echo 'PUBLIC_AND_DAILY_PILOT_CHANGE=NO'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: btc-genesis-next-halving-protocol-delta-${{ github.event.pull_request.head.sha || github.sha }}
+          path: .experiment-output/
+          if-no-files-found: error
+          retention-days: 30
