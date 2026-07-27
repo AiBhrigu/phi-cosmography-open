@@ -356,6 +356,43 @@ class Tests(unittest.TestCase):
         )["reason"] = "UNCALIBRATED"
         self.reject(candidate)
 
+    def test_fact_value_type_rejected(self):
+        candidate = packet()
+        candidate["facts"][0]["value"] = {"close": 100000}
+        self.reject(candidate)
+
+    def test_timestamp_order_rejected(self):
+        candidate = packet()
+        candidate["observation"]["generated_at_utc"] = "2026-07-25T22:00:00Z"
+        self.reject(candidate)
+
+        candidate = packet()
+        candidate["sources"][0]["observed_at_utc"] = "2026-07-26T00:00:00Z"
+        self.reject(candidate)
+
+    def test_metric_domain_rejected(self):
+        candidate = packet()
+        next(
+            item for item in candidate["metrics"]
+            if item["metric_id"] == "range_position_30d"
+        )["value"] = 1.2
+        self.reject(candidate)
+
+    def test_range_label_threshold_binding_rejected(self):
+        candidate = packet()
+        candidate["labels"][0]["value"] = "MIDDLE"
+        self.reject(candidate)
+
+    def test_change_current_value_and_unit_binding_rejected(self):
+        candidate = packet()
+        candidate["changes"][0]["current_value"] = 0.04
+        candidate["changes"][0]["raw_delta"] = 0.03
+        self.reject(candidate)
+
+        candidate = packet()
+        candidate["changes"][0]["delta_unit"] = "percent"
+        self.reject(candidate)
+
 
 if __name__ == "__main__":
     unittest.main()
