@@ -1,0 +1,135 @@
+{
+  "$id": "https://www.bhrigu.io/schemas/market_cosmographer_ai_descriptive_packet_v0_1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "boundary": {
+      "additionalProperties": false,
+      "properties": {
+        "descriptive_only": {"const": true},
+        "forecast_allowed": {"const": false},
+        "investment_recommendation_allowed": {"const": false},
+        "predictive_power_proven": {"const": false},
+        "price_target_allowed": {"const": false},
+        "scenario_probability_allowed": {"const": false},
+        "trading_signal_allowed": {"const": false}
+      },
+      "required": ["descriptive_only", "predictive_power_proven", "forecast_allowed", "scenario_probability_allowed", "trading_signal_allowed", "price_target_allowed", "investment_recommendation_allowed"],
+      "type": "object"
+    },
+    "changes": {
+      "items": {
+        "properties": {
+          "comparison_status": {"enum": ["COMPARABLE", "INCOMPARABLE"]},
+          "historical_direction": {"enum": ["UP", "DOWN", "UNCHANGED"]}
+        },
+        "required": ["metric_id", "current_packet_id", "previous_packet_id", "comparison_status", "current_value", "previous_value", "raw_delta", "delta_unit", "historical_direction", "methodology_match", "correction_status", "interval_label"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "distribution": {
+      "additionalProperties": false,
+      "properties": {
+        "ai_consumer_utility_status": {"enum": ["PENDING", "PASS", "FAIL"]},
+        "commercial_ai_feed": {"const": false},
+        "correction_sla_status": {"enum": ["PENDING", "PASS", "FAIL"]},
+        "data_rights_status": {"enum": ["PENDING", "PASS", "FAIL"]},
+        "mode": {"const": "INTERNAL_RESEARCH_ONLY"}
+      },
+      "required": ["mode", "commercial_ai_feed", "data_rights_status", "correction_sla_status", "ai_consumer_utility_status"],
+      "type": "object"
+    },
+    "evidence": {
+      "required": ["source_manifest_sha256", "methodology_sha256", "correction_ledger_sha256", "no_lookahead_proof_sha256", "stability_review_id", "stability_review_sha256"],
+      "type": "object"
+    },
+    "exclusions": {
+      "items": {
+        "properties": {
+          "reason": {"enum": ["UNSTABLE", "UNCALIBRATED", "RESEARCH_ONLY", "PREDICTIVE", "RIGHTS_RESTRICTED", "STALE", "CORRECTION_INVALIDATED", "UNASSESSED"]}
+        },
+        "required": ["field_id", "reason"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "facts": {
+      "items": {
+        "properties": {
+          "eligibility": {"const": "ALLOWED"},
+          "evidence_tier": {"const": "TIER_0_RAW_SOURCE_FACT"}
+        },
+        "required": ["fact_id", "value", "unit", "evidence_tier", "source_refs", "eligibility"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "human_read": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary": {"minLength": 1, "type": "string"},
+        "change": {"minLength": 1, "type": "string"},
+        "evidence": {"minLength": 1, "type": "string"},
+        "observation": {"minLength": 1, "type": "string"},
+        "uncertainty": {"minLength": 1, "type": "string"}
+      },
+      "required": ["observation", "change", "evidence", "uncertainty", "boundary"],
+      "type": "object"
+    },
+    "labels": {
+      "items": {
+        "properties": {
+          "calibration_status": {"enum": ["PASS", "FAIL"]},
+          "effective_eligibility": {"enum": ["ALLOWED", "BLOCKED"]},
+          "input_metric_tier": {"enum": ["TIER_1_DERIVED_DESCRIPTIVE_METRIC", "TIER_2_STABLE_DESCRIPTIVE_METRIC"]}
+        },
+        "required": ["label_id", "value", "input_metric_id", "input_metric_tier", "threshold_contract_id", "threshold_contract_sha256", "calibration_status", "effective_eligibility"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "properties": {
+          "correction_status": {"enum": ["CLEAR", "SUPERSEDED", "UNRESOLVED"]},
+          "eligibility": {"enum": ["ALLOWED", "EXPERIMENTAL_ONLY", "BLOCKED"]},
+          "evidence_tier": {"enum": ["TIER_1_DERIVED_DESCRIPTIVE_METRIC", "TIER_2_STABLE_DESCRIPTIVE_METRIC"]},
+          "stability_status": {"enum": ["PASS", "FAIL", "NOT_REVIEWED"]}
+        },
+        "required": ["metric_id", "value", "unit", "observation_window", "methodology_id", "methodology_sha256", "evidence_tier", "stability_status", "eligibility", "source_fact_ids", "correction_status"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "observation": {
+      "properties": {
+        "freshness_status": {"enum": ["FRESH", "AGING", "STALE", "HISTORICAL", "UNKNOWN"]}
+      },
+      "required": ["observation_date", "as_of_utc", "input_max_timestamp_utc", "generated_at_utc", "freshness_policy_id", "freshness_status"],
+      "type": "object"
+    },
+    "packet_generation_id": {"minLength": 1, "type": "string"},
+    "packet_id": {"minLength": 1, "type": "string"},
+    "schema_version": {"const": "market_cosmographer_ai_descriptive_packet_v0_1"},
+    "sources": {
+      "items": {
+        "required": ["source_ref", "provider", "source_class", "source_locator", "expected_sha256", "actual_sha256", "fetched_at_utc", "observed_at_utc", "correction_status", "rights_status"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "subject": {
+      "required": ["asset_id", "symbol", "market", "interval", "quote_asset"],
+      "type": "object"
+    },
+    "uncertainty": {
+      "required": ["uncertainty_status", "reasons", "unstable_metric_ids", "blocked_label_ids", "stale_source_refs", "incomparable_change_ids", "unresolved_correction_ids"],
+      "type": "object"
+    }
+  },
+  "required": ["schema_version", "packet_id", "packet_generation_id", "subject", "observation", "sources", "facts", "metrics", "labels", "changes", "evidence", "uncertainty", "exclusions", "human_read", "boundary", "distribution"],
+  "title": "Market Cosmographer AI Descriptive Packet v0.1",
+  "type": "object"
+}
