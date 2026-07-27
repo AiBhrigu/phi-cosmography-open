@@ -1,0 +1,172 @@
+name: Market Cosmographer BTC Descriptive Consumer PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-cosmographer-btc-descriptive-consumer-pr.yml'
+      - 'docs/crypto-astro-service/MARKET_COSMOGRAPHER_BTC_DESCRIPTIVE_CONSUMER_v0_1.md'
+      - 'tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py'
+      - 'tools/market_cosmographer_btc_descriptive_consumer/test_generate_btc_descriptive_read.py'
+      - 'tools/market_cosmographer_btc_descriptive_consumer/fixtures/btc_accepted_state_pair_v0_1.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-cosmographer-btc-descriptive-consumer-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  btc-descriptive-consumer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lock exact five-file implementation scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+              '.github/workflows/market-cosmographer-btc-descriptive-consumer-pr.yml',
+              'docs/crypto-astro-service/MARKET_COSMOGRAPHER_BTC_DESCRIPTIVE_CONSUMER_v0_1.md',
+              'tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py',
+              'tools/market_cosmographer_btc_descriptive_consumer/test_generate_btc_descriptive_read.py',
+              'tools/market_cosmographer_btc_descriptive_consumer/fixtures/btc_accepted_state_pair_v0_1.json',
+          }
+          base = subprocess.check_output(
+              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']], text=True
+          ).strip()
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']], text=True
+          ).splitlines())
+          if changed != expected:
+              raise AssertionError({
+                  'changed': sorted(changed),
+                  'missing': sorted(expected - changed),
+                  'unexpected': sorted(changed - expected),
+              })
+          print('MARKET_COSMOGRAPHER_BTC_CONSUMER_EXACT_SCOPE=PASS')
+          PY
+
+      - name: Bind accepted contract and research source
+        run: |
+          git merge-base --is-ancestor 3d2f396afbf06c04e6f375cddaa9745b39fb6699 HEAD
+          test "$(git hash-object tools/market_cosmographer_descriptive_contract/verify_descriptive_contract.py)" = "2ed092196a552a22999f9f51f809311fab45db47"
+          test "$(git hash-object docs/crypto-astro-service/market_cosmographer_descriptive_product_contract_v0_1.json)" = "64fa91f8d956fbdcb3132f540bce6815dafe0117"
+          test "$(git hash-object docs/crypto-astro-service/market_cosmographer_ai_descriptive_packet_schema_v0_1.json)" = "69d51d22bb9bca063c8f9402ca980fbb8cbac918"
+          test "$(git hash-object tools/btc_2190d_walk_forward/build_btc_2190d_corpus.py)" = "9961fa1e403b997663e418e6c58bff44377cd870"
+          echo "MARKET_COSMOGRAPHER_BTC_CONSUMER_SOURCE_BINDING=PASS"
+
+      - name: Run fail-closed unit tests
+        run: |
+          python -m unittest discover \
+            -s tools/market_cosmographer_btc_descriptive_consumer \
+            -p 'test_*.py' \
+            -v
+
+      - name: Fetch frozen checksum-bound source archives
+        run: |
+          mkdir -p .consumer-archives
+          curl --fail --location --retry 4 --retry-all-errors \
+            --output .consumer-archives/BTCUSDT-1d-2026-05.zip \
+            https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2026-05.zip
+          curl --fail --location --retry 4 --retry-all-errors \
+            --output .consumer-archives/BTCUSDT-1d-2026-06.zip \
+            https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2026-06.zip
+          printf '%s  %s\n' \
+            978936e8f1f80b570248f8d4478d6fe08d94b98bc1c7d372feb27573ff466cde \
+            .consumer-archives/BTCUSDT-1d-2026-05.zip \
+            7020d4d850a875b93f0b0fa6df4a4c36ab615273e2ab03f9e896852330dad77e \
+            .consumer-archives/BTCUSDT-1d-2026-06.zip | sha256sum --check --strict
+
+      - name: Generate deterministic RU and EN descriptive reads
+        run: |
+          generation_utc="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          python tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py \
+            --repo . \
+            --archive-dir .consumer-archives \
+            --generated-at-utc "$generation_utc" \
+            --output-dir .consumer-output-a
+          python tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py \
+            --repo . \
+            --archive-dir .consumer-archives \
+            --generated-at-utc "$generation_utc" \
+            --output-dir .consumer-output-b
+          diff --recursive --unified .consumer-output-a .consumer-output-b
+
+      - name: Validate generated packet and output boundary
+        run: |
+          python tools/market_cosmographer_descriptive_contract/verify_descriptive_contract.py \
+            --repo . \
+            --packet .consumer-output-a/btc_descriptive_packet.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out = Path('.consumer-output-a')
+          packet = json.loads((out/'btc_descriptive_packet.json').read_text())
+          report = json.loads((out/'btc_descriptive_build_report.json').read_text())
+          assert report['status'] == 'PASS'
+          assert report['tier2_metric_reproduction'] == 'PASS'
+          assert report['contract_validation'] == 'PASS'
+          assert report['freshness_status'] == 'HISTORICAL'
+          assert report['commercial_ai_feed'] == 'CLOSED'
+          assert report['public_page_change'] is False
+          assert report['public_snapshot_change'] is False
+          assert [x['metric_id'] for x in packet['metrics']] == [
+              'return_1d', 'return_7d', 'range_position_30d',
+              'quote_volume_ratio_to_prior_30d_median'
+          ]
+          assert [x['label_id'] for x in packet['labels']] == ['range_state']
+          assert packet['distribution']['mode'] == 'INTERNAL_RESEARCH_ONLY'
+          assert packet['distribution']['commercial_ai_feed'] is False
+          product_ids = {
+              *[x['fact_id'] for x in packet['facts']],
+              *[x['metric_id'] for x in packet['metrics']],
+              *[x['label_id'] for x in packet['labels']],
+              *[x['metric_id'] for x in packet['changes']],
+          }
+          for prefix in ('forward_return_', 'forward_max_drawdown_', 'association_'):
+              assert not any(value.startswith(prefix) for value in product_ids)
+          assert 'probability_continuation' not in product_ids
+          excluded = {x['field_id']: x['reason'] for x in packet['exclusions']}
+          assert excluded['forward_return_1d'] == 'RESEARCH_ONLY'
+          assert excluded['forward_return_7d'] == 'RESEARCH_ONLY'
+          assert excluded['forward_return_30d'] == 'RESEARCH_ONLY'
+          assert excluded['probability_continuation'] == 'PREDICTIVE'
+          assert (out/'btc_descriptive_read.en.md').stat().st_size > 500
+          assert (out/'btc_descriptive_read.ru.md').stat().st_size > 500
+          print('MARKET_COSMOGRAPHER_BTC_REAL_PACKET=PASS')
+          PY
+
+      - name: Prove public and runtime surfaces unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          if git diff --name-only "$base" "$HEAD_SHA" | grep -E \
+            '^(site/|tools/crypto_astro_static_refresh/|tools/crypto_astro_public_http_proof/|site/crypto-astro/data/)'; then
+            echo "Public or runtime surface changed"
+            exit 1
+          fi
+          echo "MARKET_COSMOGRAPHER_BTC_PUBLIC_RUNTIME_CHANGE=NO"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: market-cosmographer-btc-descriptive-read-${{ github.event.pull_request.head.sha }}
+          path: .consumer-output-a/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

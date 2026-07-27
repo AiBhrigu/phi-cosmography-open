@@ -1,0 +1,132 @@
+{
+  "archives": [
+    {
+      "actual_sha256": "978936e8f1f80b570248f8d4478d6fe08d94b98bc1c7d372feb27573ff466cde",
+      "archive_id": "monthly:2026-05",
+      "bytes": 2223,
+      "expected_sha256": "978936e8f1f80b570248f8d4478d6fe08d94b98bc1c7d372feb27573ff466cde",
+      "first_observation_date": "2026-05-01",
+      "last_observation_date": "2026-05-31",
+      "member": "BTCUSDT-1d-2026-05.csv",
+      "row_count": 31,
+      "zip_url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2026-05.zip"
+    },
+    {
+      "actual_sha256": "7020d4d850a875b93f0b0fa6df4a4c36ab615273e2ab03f9e896852330dad77e",
+      "archive_id": "monthly:2026-06",
+      "bytes": 2144,
+      "expected_sha256": "7020d4d850a875b93f0b0fa6df4a4c36ab615273e2ab03f9e896852330dad77e",
+      "first_observation_date": "2026-06-01",
+      "last_observation_date": "2026-06-30",
+      "member": "BTCUSDT-1d-2026-06.csv",
+      "row_count": 30,
+      "zip_url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2026-06.zip"
+    }
+  ],
+  "boundary": {
+    "backend_api_change": false,
+    "commercial_ai_feed": false,
+    "distribution": "INTERNAL_RESEARCH_ONLY",
+    "payment_or_subscription_change": false,
+    "provider_call_mode": "FROZEN_CHECKSUM_BOUND_ARCHIVE_READ",
+    "public_page_change": false,
+    "public_snapshot_change": false,
+    "source_archive_redistribution": false
+  },
+  "current_state": {
+    "block_id": "OOS_5",
+    "block_role": "DISCOVERY_REFERENCE_EXCLUDED_FROM_CONFIRMATION",
+    "confirmation_eligible": false,
+    "input_max_timestamp_utc": "2026-06-25T23:59:59.999999Z",
+    "methodology_id": "btc_730d_price_state_methodology_v0_1",
+    "methodology_sha256": "e88e62c114d81178d52391cc63f0957d3114475f9d952ccc8bf7e72489e7111b",
+    "metrics": {
+      "drawdown_from_365d_high": -0.526195124344,
+      "labels": {
+        "drawdown_state": "DEEP",
+        "range_state": "LOWER",
+        "return_state": "NEGATIVE",
+        "trend_state": "NEGATIVE",
+        "volatility_state": "MODERATE",
+        "volume_state": "TYPICAL"
+      },
+      "quote_volume_ratio_to_prior_30d_median": 1.473862723203,
+      "range_position_30d": 0.092971758345,
+      "realized_volatility_30d_annualized": 0.425363434496,
+      "return_1d": -0.021022139072,
+      "return_30d": -0.212511627484,
+      "return_7d": -0.050255876893,
+      "trend_persistence_30d": 0.3
+    },
+    "observation_date": "2026-06-25",
+    "phase": "OUT_OF_SAMPLE",
+    "schema_version": "btc_2190d_walk_forward_evidence_v0_1",
+    "source": {
+      "archive_id": "monthly:2026-06",
+      "archive_sha256": "7020d4d850a875b93f0b0fa6df4a4c36ab615273e2ab03f9e896852330dad77e",
+      "interval": "1d",
+      "market": "BTCUSDT_SPOT",
+      "provider": "BINANCE_PUBLIC_DATA"
+    },
+    "state_sha256": "7b5b91af760ad50dee48c8267bd30238b58bf5249996aadbc68534d52b0f11da"
+  },
+  "evidence": {
+    "correction_ledger_sha256": "ab6e9f91050ea58fa855d9f30a51afb593bd9f5cdd5ebd0ff1f6df613cc92964",
+    "evidence_result": "REGISTERED_ASSOCIATIONS_NOT_REPLICATED",
+    "methodology_id": "btc_730d_price_state_methodology_v0_1",
+    "methodology_sha256": "e88e62c114d81178d52391cc63f0957d3114475f9d952ccc8bf7e72489e7111b",
+    "no_lookahead_proof_sha256": "acddf433da827b6ce8e573852ddc2dfa580af27c41c5c9d4f1a4e00dbca5d627",
+    "source_manifest_sha256": "e808e8b9ec963644f9dba7589e63b1aadcc2de57a3f19ffcb3f5c4529eaf6008",
+    "stability_review_id": "BTC_2190D_RETROSPECTIVE_REPLICATION_ASSOCIATION_STABILITY_AND_LABEL_SUPPORT_REVIEW_SCOPE_v0_1",
+    "stability_review_sha256": "cd54909a6ef429a231e5fa3a51cd4092435e83df36f64a43dc77f136d009261c"
+  },
+  "previous_state": {
+    "block_id": "OOS_5",
+    "block_role": "DISCOVERY_REFERENCE_EXCLUDED_FROM_CONFIRMATION",
+    "confirmation_eligible": false,
+    "input_max_timestamp_utc": "2026-06-24T23:59:59.999999Z",
+    "methodology_id": "btc_730d_price_state_methodology_v0_1",
+    "methodology_sha256": "e88e62c114d81178d52391cc63f0957d3114475f9d952ccc8bf7e72489e7111b",
+    "metrics": {
+      "drawdown_from_365d_high": -0.516020847288,
+      "labels": {
+        "drawdown_state": "DEEP",
+        "range_state": "LOWER",
+        "return_state": "NEGATIVE",
+        "trend_state": "NEGATIVE",
+        "volatility_state": "MODERATE",
+        "volume_state": "ELEVATED"
+      },
+      "quote_volume_ratio_to_prior_30d_median": 1.538746314694,
+      "range_position_30d": 0.104086988138,
+      "realized_volatility_30d_annualized": 0.42432326083,
+      "return_1d": -0.026406174459,
+      "return_30d": -0.210082743581,
+      "return_7d": -0.053192402968,
+      "trend_persistence_30d": 0.3
+    },
+    "observation_date": "2026-06-24",
+    "phase": "OUT_OF_SAMPLE",
+    "schema_version": "btc_2190d_walk_forward_evidence_v0_1",
+    "source": {
+      "archive_id": "monthly:2026-06",
+      "archive_sha256": "7020d4d850a875b93f0b0fa6df4a4c36ab615273e2ab03f9e896852330dad77e",
+      "interval": "1d",
+      "market": "BTCUSDT_SPOT",
+      "provider": "BINANCE_PUBLIC_DATA"
+    },
+    "state_sha256": "46aeb1f3d4d0a632728d616d1cbdf3ffe1340b921a0a11970b12ccb817d214b2"
+  },
+  "schema_version": "market_cosmographer_btc_accepted_state_pair_v0_1",
+  "source_of_truth": {
+    "corpus_sha256": "7f98c9b4e1b6d7eaac815566731e26aae430dcdf3724c86399209c3442e3bebc",
+    "repository": "AiBhrigu/phi-cosmography-open",
+    "source_head_sha": "6c1bceadc360d5baa624ab0866a82dc1597a070a",
+    "source_merge_sha": "464ca98a630af809870a4780072044bb66b59110",
+    "source_pr": 238,
+    "workflow_artifact_digest": "sha256:28503c54a30e21002d240a47ee7a27f3d2b39f199a5d67f03571778863f59667",
+    "workflow_artifact_id": 8638224452,
+    "workflow_run_id": 30224683777
+  },
+  "status": "ACCEPTED_INTERNAL_RESEARCH_INPUT"
+}
