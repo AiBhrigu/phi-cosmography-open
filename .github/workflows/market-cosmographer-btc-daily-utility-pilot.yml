@@ -7,25 +7,13 @@ on:
       - '.github/workflows/market-cosmographer-btc-daily-utility-pilot.yml'
       - 'docs/crypto-astro-service/MARKET_COSMOGRAPHER_BTC_DAILY_30_DAY_UTILITY_PILOT_v0_1.md'
       - 'docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json'
-      - 'tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/common.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/source.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/compute.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/packet_builder.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/render.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/utility.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/cli.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/aggregate_btc_daily_utility.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/daily_test_support.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/test_generate_btc_daily_core.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/test_generate_btc_daily_entry.py'
-      - 'tools/market_cosmographer_btc_daily_pilot/test_aggregate_btc_daily_utility.py'
+      - 'tools/market_cosmographer_btc_daily_pilot/**'
   schedule:
     - cron: '17 9 * * *'
   workflow_dispatch:
     inputs:
       observation_date:
-        description: 'Completed UTC observation date inside the locked pilot window (YYYY-MM-DD); blank uses yesterday UTC.'
+        description: 'Completed UTC observation date in the locked pilot window; blank uses yesterday UTC.'
         required: false
         type: string
 
@@ -41,7 +29,6 @@ jobs:
   daily-utility-pilot:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-
     steps:
       - uses: actions/checkout@v5
         with:
@@ -77,18 +64,10 @@ jobs:
               'tools/market_cosmographer_btc_daily_pilot/test_generate_btc_daily_entry.py',
               'tools/market_cosmographer_btc_daily_pilot/test_aggregate_btc_daily_utility.py',
           }
-          base = subprocess.check_output(
-              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']], text=True
-          ).strip()
-          changed = set(subprocess.check_output(
-              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']], text=True
-          ).splitlines())
+          base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
           if changed != expected:
-              raise AssertionError({
-                  'changed': sorted(changed),
-                  'missing': sorted(expected - changed),
-                  'unexpected': sorted(changed - expected),
-              })
+              raise AssertionError({'changed':sorted(changed),'missing':sorted(expected-changed),'unexpected':sorted(changed-expected)})
           print('MARKET_COSMOGRAPHER_BTC_DAILY_PILOT_EXACT_SCOPE=PASS')
           PY
 
@@ -99,7 +78,7 @@ jobs:
           test "$(git hash-object docs/crypto-astro-service/market_cosmographer_descriptive_product_contract_v0_1.json)" = "64fa91f8d956fbdcb3132f540bce6815dafe0117"
           test "$(git hash-object docs/crypto-astro-service/market_cosmographer_ai_descriptive_packet_schema_v0_1.json)" = "69d51d22bb9bca063c8f9402ca980fbb8cbac918"
           test "$(git hash-object tools/market_cosmographer_btc_descriptive_consumer/generate_btc_descriptive_read.py)" = "9c59544ce03f5f6c044eba8c92427e5a29e7b945"
-          echo "MARKET_COSMOGRAPHER_BTC_DAILY_PILOT_SOURCE_BINDING=PASS"
+          echo MARKET_COSMOGRAPHER_BTC_DAILY_PILOT_SOURCE_BINDING=PASS
 
       - name: Resolve pilot observation
         id: meta
@@ -107,40 +86,32 @@ jobs:
           DISPATCH_DATE: ${{ inputs.observation_date }}
         run: |
           observation_date="${DISPATCH_DATE:-}"
-          if [ -z "$observation_date" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            observation_date="2026-07-25"
+          elif [ -z "$observation_date" ]; then
             observation_date="$(date -u -d 'yesterday' +'%Y-%m-%d')"
           fi
           python - "$observation_date" >> "$GITHUB_OUTPUT" <<'PY'
           import json, sys
           from datetime import date, timedelta
           from pathlib import Path
-          observation = date.fromisoformat(sys.argv[1])
-          policy = json.loads(Path('docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json').read_text())
-          start = date.fromisoformat(policy['start_observation_date'])
-          end = date.fromisoformat(policy['end_observation_date'])
-          active = start <= observation <= end
-          print(f"observation_date={observation.isoformat()}")
+          observation=date.fromisoformat(sys.argv[1])
+          policy=json.loads(Path('docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json').read_text())
+          start=date.fromisoformat(policy['start_observation_date']); end=date.fromisoformat(policy['end_observation_date'])
+          active=start <= observation <= end
+          print(f'observation_date={observation.isoformat()}')
           print(f"active={'true' if active else 'false'}")
-          if active:
-              index = (observation - start).days + 1
-              print(f"day_index={index}")
-              print(f"previous_date={(observation - timedelta(days=1)).isoformat()}")
-          else:
-              print("day_index=0")
-              print("previous_date=")
+          print(f'day_index={(observation-start).days+1 if active else 0}')
+          print(f"previous_date={(observation-timedelta(days=1)).isoformat() if active else ''}")
           PY
 
       - name: Pilot window is closed
         if: steps.meta.outputs.active != 'true'
-        run: echo "MARKET_COSMOGRAPHER_BTC_30_DAY_PILOT_WINDOW_CLOSED=YES"
+        run: echo MARKET_COSMOGRAPHER_BTC_30_DAY_PILOT_WINDOW_CLOSED=YES
 
       - name: Run fail-closed unit tests
         if: steps.meta.outputs.active == 'true'
-        run: |
-          python -m unittest discover \
-            -s tools/market_cosmographer_btc_daily_pilot \
-            -p 'test_*.py' \
-            -v
+        run: python -m unittest discover -s tools/market_cosmographer_btc_daily_pilot -p 'test_*.py' -v
 
       - name: Retrieve previous immutable pilot artifact
         id: previous
@@ -150,18 +121,10 @@ jobs:
           PREVIOUS_DATE: ${{ steps.meta.outputs.previous_date }}
         run: |
           artifact_name="market-cosmographer-btc-daily-${PREVIOUS_DATE}"
-          artifact_id="$(gh api \
-            -H 'Accept: application/vnd.github+json' \
-            "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" \
-            --jq '.artifacts | map(select(.expired == false)) | sort_by(.created_at) | last | .id // empty')"
-          if [ -z "$artifact_id" ]; then
-            echo "Previous accepted artifact not found: $artifact_name"
-            exit 1
-          fi
+          artifact_id="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" --jq '.artifacts | map(select(.expired == false)) | sort_by(.created_at) | last | .id // empty')"
+          test -n "$artifact_id" || { echo "Previous accepted artifact not found: $artifact_name"; exit 1; }
           mkdir -p .previous-artifact
-          gh api \
-            -H 'Accept: application/vnd.github+json' \
-            "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > .previous-artifact.zip
+          gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > .previous-artifact.zip
           unzip -q .previous-artifact.zip -d .previous-artifact
           previous_manifest="$(find .previous-artifact -name btc_daily_source_manifest.json -type f -print -quit)"
           previous_entry="$(find .previous-artifact -name btc_daily_utility_entry.json -type f -print -quit)"
@@ -175,10 +138,7 @@ jobs:
         env:
           OBSERVATION_DATE: ${{ steps.meta.outputs.observation_date }}
         run: |
-          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py fetch \
-            --repo . \
-            --observation-date "$OBSERVATION_DATE" \
-            --archive-dir .daily-archives
+          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py fetch --repo . --observation-date "$OBSERVATION_DATE" --archive-dir .daily-archives
 
       - name: Generate two deterministic fresh daily builds
         if: steps.meta.outputs.active == 'true'
@@ -188,26 +148,10 @@ jobs:
           PREVIOUS_MANIFEST: ${{ steps.previous.outputs.manifest }}
         run: |
           generation_utc="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          printf '%s' "$generation_utc" > .generation-utc
           previous_args=()
-          if [ "$DAY_INDEX" != "1" ]; then
-            test -n "$PREVIOUS_MANIFEST"
-            previous_args=(--previous-manifest "$PREVIOUS_MANIFEST")
-          fi
-          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build \
-            --repo . \
-            --observation-date "$OBSERVATION_DATE" \
-            --generated-at-utc "$generation_utc" \
-            --archive-dir .daily-archives \
-            --output-dir .daily-output-a \
-            "${previous_args[@]}"
-          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build \
-            --repo . \
-            --observation-date "$OBSERVATION_DATE" \
-            --generated-at-utc "$generation_utc" \
-            --archive-dir .daily-archives \
-            --output-dir .daily-output-b \
-            "${previous_args[@]}"
+          if [ "$DAY_INDEX" != "1" ]; then test -n "$PREVIOUS_MANIFEST"; previous_args=(--previous-manifest "$PREVIOUS_MANIFEST"); fi
+          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build --repo . --observation-date "$OBSERVATION_DATE" --generated-at-utc "$generation_utc" --archive-dir .daily-archives --output-dir .daily-output-a "${previous_args[@]}"
+          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build --repo . --observation-date "$OBSERVATION_DATE" --generated-at-utc "$generation_utc" --archive-dir .daily-archives --output-dir .daily-output-b "${previous_args[@]}"
           diff --recursive --unified .daily-output-a .daily-output-b
 
       - name: Finalize immutable utility entry
@@ -217,70 +161,44 @@ jobs:
           PREVIOUS_ENTRY: ${{ steps.previous.outputs.entry }}
         run: |
           previous_args=()
-          if [ "$DAY_INDEX" != "1" ]; then
-            test -n "$PREVIOUS_ENTRY"
-            previous_args=(--previous-entry "$PREVIOUS_ENTRY")
-          fi
-          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py finalize-entry \
-            --repo . \
-            --output-dir .daily-output-a \
-            "${previous_args[@]}"
+          if [ "$DAY_INDEX" != "1" ]; then test -n "$PREVIOUS_ENTRY"; previous_args=(--previous-entry "$PREVIOUS_ENTRY"); fi
+          python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py finalize-entry --repo . --output-dir .daily-output-a "${previous_args[@]}"
 
       - name: Validate accepted daily packet and pilot boundary
         if: steps.meta.outputs.active == 'true'
         env:
           DAY_INDEX: ${{ steps.meta.outputs.day_index }}
         run: |
-          python tools/market_cosmographer_descriptive_contract/verify_descriptive_contract.py \
-            --repo . \
-            --packet .daily-output-a/btc_daily_descriptive_packet.json
+          python tools/market_cosmographer_descriptive_contract/verify_descriptive_contract.py --repo . --packet .daily-output-a/btc_daily_descriptive_packet.json
           python - "$DAY_INDEX" <<'PY'
           import json, sys
           from pathlib import Path
-          out = Path('.daily-output-a')
-          day_index = int(sys.argv[1])
-          packet = json.loads((out/'btc_daily_descriptive_packet.json').read_text())
-          manifest = json.loads((out/'btc_daily_source_manifest.json').read_text())
-          correction = json.loads((out/'btc_daily_correction_ledger.json').read_text())
-          proof = json.loads((out/'btc_daily_no_lookahead_proof.json').read_text())
-          report = json.loads((out/'btc_daily_build_report.json').read_text())
-          entry = json.loads((out/'btc_daily_utility_entry.json').read_text())
-          assert report['status'] == 'PASS'
-          assert report['freshness_status'] == 'FRESH'
-          assert report['source_archive_count'] == 32
-          assert report['contract_validation'] == 'PASS'
-          assert report['predictive_boundary'] == 'PASS'
-          assert manifest['status'] == 'PASS' and manifest['archive_count'] == 32
-          assert all(item['expected_sha256'] == item['actual_sha256'] for item in manifest['archives'])
-          assert proof['status'] == 'PASS'
-          assert correction['event_count'] == 0
-          if day_index == 1:
-              assert correction['previous_baseline_status'] == 'NOT_REQUIRED_FOR_PILOT_DAY_1'
-              assert entry['previous_packet_id'] is None
+          out=Path('.daily-output-a'); day_index=int(sys.argv[1])
+          packet=json.loads((out/'btc_daily_descriptive_packet.json').read_text())
+          manifest=json.loads((out/'btc_daily_source_manifest.json').read_text())
+          correction=json.loads((out/'btc_daily_correction_ledger.json').read_text())
+          proof=json.loads((out/'btc_daily_no_lookahead_proof.json').read_text())
+          report=json.loads((out/'btc_daily_build_report.json').read_text())
+          entry=json.loads((out/'btc_daily_utility_entry.json').read_text())
+          assert report['status']=='PASS' and report['freshness_status']=='FRESH'
+          assert report['source_archive_count']==32 and report['contract_validation']=='PASS' and report['predictive_boundary']=='PASS'
+          assert manifest['status']=='PASS' and manifest['archive_count']==32
+          assert all(x['expected_sha256']==x['actual_sha256'] for x in manifest['archives'])
+          assert proof['status']=='PASS' and correction['event_count']==0
+          if day_index==1:
+              assert correction['previous_baseline_status']=='NOT_REQUIRED_FOR_PILOT_DAY_1' and entry['previous_packet_id'] is None
           else:
-              assert correction['previous_baseline_status'] == 'COMPARED'
-              assert entry['previous_packet_id']
-              assert entry['previous_utility_entry_sha256']
-          assert [item['metric_id'] for item in packet['metrics']] == [
-              'return_1d', 'return_7d', 'range_position_30d',
-              'quote_volume_ratio_to_prior_30d_median'
-          ]
-          assert [item['label_id'] for item in packet['labels']] == ['range_state']
-          assert packet['distribution']['mode'] == 'INTERNAL_RESEARCH_ONLY'
-          assert packet['distribution']['commercial_ai_feed'] is False
-          assert entry['pilot_day_index'] == day_index
-          assert entry['predictive_boundary_incidents'] == 0
-          assert all(value == 'PASS' for value in entry['automated_gates'].values())
-          product_ids = {
-              *[item['fact_id'] for item in packet['facts']],
-              *[item['metric_id'] for item in packet['metrics']],
-              *[item['label_id'] for item in packet['labels']],
-              *[item['metric_id'] for item in packet['changes']],
-          }
-          assert not any(value.startswith(('forward_', 'association_', 'meta_')) for value in product_ids)
+              assert correction['previous_baseline_status']=='COMPARED' and entry['previous_packet_id'] and entry['previous_utility_entry_sha256']
+          assert [x['metric_id'] for x in packet['metrics']]==['return_1d','return_7d','range_position_30d','quote_volume_ratio_to_prior_30d_median']
+          assert [x['label_id'] for x in packet['labels']]==['range_state']
+          assert packet['distribution']['mode']=='INTERNAL_RESEARCH_ONLY' and packet['distribution']['commercial_ai_feed'] is False
+          assert entry['pilot_day_index']==day_index and entry['predictive_boundary_incidents']==0
+          assert all(v=='PASS' for v in entry['automated_gates'].values())
+          product_ids={*[x['fact_id'] for x in packet['facts']],*[x['metric_id'] for x in packet['metrics']],*[x['label_id'] for x in packet['labels']],*[x['metric_id'] for x in packet['changes']]}
+          assert not any(v.startswith(('forward_','association_','meta_')) for v in product_ids)
           assert 'probability_continuation' not in product_ids
-          assert (out/'btc_daily_descriptive_read.en.md').stat().st_size > 600
-          assert (out/'btc_daily_descriptive_read.ru.md').stat().st_size > 600
+          assert (out/'btc_daily_descriptive_read.en.md').stat().st_size>600
+          assert (out/'btc_daily_descriptive_read.ru.md').stat().st_size>600
           print('MARKET_COSMOGRAPHER_BTC_FRESH_DAILY_ACCEPTANCE=PASS')
           PY
 
@@ -291,12 +209,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
-          if git diff --name-only "$base" "$HEAD_SHA" | grep -E \
-            '^(site/|tools/crypto_astro_static_refresh/|tools/crypto_astro_public_http_proof/|site/crypto-astro/data/)'; then
-            echo "Public or runtime surface changed"
-            exit 1
+          if git diff --name-only "$base" "$HEAD_SHA" | grep -E '^(site/|tools/crypto_astro_static_refresh/|tools/crypto_astro_public_http_proof/|site/crypto-astro/data/)'; then
+            echo 'Public or runtime surface changed'; exit 1
           fi
-          echo "MARKET_COSMOGRAPHER_BTC_DAILY_PUBLIC_RUNTIME_CHANGE=NO"
+          echo MARKET_COSMOGRAPHER_BTC_DAILY_PUBLIC_RUNTIME_CHANGE=NO
 
       - uses: actions/upload-artifact@v4
         if: steps.meta.outputs.active == 'true'

@@ -22,8 +22,8 @@ latest completed UTC day
 ## Pilot window
 
 - Pilot ID: `market_cosmographer_btc_30_day_utility_pilot_v0_1`
-- First observation: `2026-07-26`
-- Last planned observation: `2026-08-24`
+- First observation: `2026-07-25`
+- Last planned observation: `2026-08-23`
 - Planned accepted observations: `30`
 - Scheduled run: daily after the completed UTC archive is expected to be available.
 

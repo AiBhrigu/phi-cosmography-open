@@ -1,30 +1,4 @@
 {
-  "schema_version": "market_cosmographer_btc_daily_utility_pilot_policy_v0_1",
-  "pilot_id": "market_cosmographer_btc_30_day_utility_pilot_v0_1",
-  "status": "AUTHORIZED_INTERNAL_PILOT",
-  "start_observation_date": "2026-07-26",
-  "end_observation_date": "2026-08-24",
-  "planned_consecutive_days": 30,
-  "subject": {
-    "asset_id": "bitcoin",
-    "symbol": "BTC",
-    "market": "BTCUSDT_SPOT",
-    "interval": "1d_UTC"
-  },
-  "source_policy": {
-    "provider": "BINANCE_PUBLIC_DATA",
-    "archive_frequency": "daily",
-    "source_window_days": 32,
-    "checksum_required": true,
-    "raw_archive_distribution": false,
-    "repository_storage": false
-  },
-  "freshness_policy": {
-    "freshness_policy_id": "completed_utc_daily_snapshot_36h_v0_1",
-    "fresh_max_age_hours": 36,
-    "aging_max_age_hours": 72,
-    "pilot_accepts_only": "FRESH"
-  },
   "accepted_product_fields": {
     "tier2_metrics": [
       "return_1d",
@@ -46,25 +20,51 @@
     "DETERMINISTIC_DUAL_BUILD_PASS",
     "PREDICTIVE_BOUNDARY_PASS"
   ],
+  "completion_thresholds": {
+    "accepted_daily_entries": 30,
+    "automated_gate_pass_rate": 1.0,
+    "clarity_pass_min": 24,
+    "evidence_comprehension_pass_min": 24,
+    "predictive_boundary_incidents_max": 0,
+    "useful_without_prediction_pass_min": 21
+  },
+  "distribution": {
+    "backend_api": false,
+    "commercial_ai_feed": false,
+    "mode": "INTERNAL_RESEARCH_ONLY",
+    "payment_or_subscription": false,
+    "public_page": false,
+    "public_snapshot": false
+  },
+  "end_observation_date": "2026-08-23",
+  "freshness_policy": {
+    "aging_max_age_hours": 72,
+    "fresh_max_age_hours": 36,
+    "freshness_policy_id": "completed_utc_daily_snapshot_36h_v0_1",
+    "pilot_accepts_only": "FRESH"
+  },
   "manual_utility_questions": [
     "CLARITY",
     "EVIDENCE_COMPREHENSION",
     "USEFUL_WITHOUT_PREDICTION"
   ],
-  "completion_thresholds": {
-    "accepted_daily_entries": 30,
-    "automated_gate_pass_rate": 1.0,
-    "predictive_boundary_incidents_max": 0,
-    "clarity_pass_min": 24,
-    "evidence_comprehension_pass_min": 24,
-    "useful_without_prediction_pass_min": 21
+  "pilot_id": "market_cosmographer_btc_30_day_utility_pilot_v0_1",
+  "planned_consecutive_days": 30,
+  "schema_version": "market_cosmographer_btc_daily_utility_pilot_policy_v0_1",
+  "source_policy": {
+    "archive_frequency": "daily",
+    "checksum_required": true,
+    "provider": "BINANCE_PUBLIC_DATA",
+    "raw_archive_distribution": false,
+    "repository_storage": false,
+    "source_window_days": 32
   },
-  "distribution": {
-    "mode": "INTERNAL_RESEARCH_ONLY",
-    "commercial_ai_feed": false,
-    "public_page": false,
-    "public_snapshot": false,
-    "backend_api": false,
-    "payment_or_subscription": false
+  "start_observation_date": "2026-07-25",
+  "status": "AUTHORIZED_INTERNAL_PILOT",
+  "subject": {
+    "asset_id": "bitcoin",
+    "interval": "1d_UTC",
+    "market": "BTCUSDT_SPOT",
+    "symbol": "BTC"
   }
 }
