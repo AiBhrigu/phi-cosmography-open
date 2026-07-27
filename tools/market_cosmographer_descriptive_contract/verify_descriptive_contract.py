@@ -60,7 +60,7 @@ def iso_date(v,where):
     req(parsed.isoformat()==v,f"{where}: canonical date")
 def iso_dt(v,where):
     req(isinstance(v,str) and DATETIME_RE.fullmatch(v),f"{where}: UTC datetime")
-    try: datetime.fromisoformat(v[:-1]+"+00:00")
+    try: return datetime.fromisoformat(v[:-1]+"+00:00")
     except ValueError as exc: raise ContractError(f"{where}: UTC datetime") from exc
 def research_id(v): return v in RESEARCH or v.startswith(RESEARCH_PREFIXES)
 def expected_exclusions():
@@ -116,7 +116,9 @@ def validate_packet(p,c):
     for k,v in p["subject"].items(): nonempty(v,f"subject {k}")
     o=p["observation"]; exact(o,{"observation_date","as_of_utc","input_max_timestamp_utc","generated_at_utc","freshness_policy_id","freshness_status"},"observation")
     iso_date(o["observation_date"],"observation date")
-    for k in ("as_of_utc","input_max_timestamp_utc","generated_at_utc"): iso_dt(o[k],k)
+    as_of=iso_dt(o["as_of_utc"],"as_of_utc"); input_max=iso_dt(o["input_max_timestamp_utc"],"input_max_timestamp_utc"); generated=iso_dt(o["generated_at_utc"],"generated_at_utc")
+    req(input_max<=as_of<=generated,"observation timestamp order")
+    req(as_of.date().isoformat()==o["observation_date"],"observation date binding")
     nonempty(o["freshness_policy_id"],"freshness policy"); req(o["freshness_status"] in {"FRESH","AGING","STALE","HISTORICAL","UNKNOWN"},"freshness")
 
     refs=[]
@@ -126,14 +128,17 @@ def validate_packet(p,c):
         sha(x["expected_sha256"],"source expected"); sha(x["actual_sha256"],"source actual")
         req(x["expected_sha256"]==x["actual_sha256"] and x["correction_status"]=="CLEAR","source integrity")
         req(x["rights_status"]=="INTERNAL_RESEARCH_ALLOWED","source rights")
-        iso_dt(x["fetched_at_utc"],"source fetched"); iso_dt(x["observed_at_utc"],"source observed"); refs.append(x["source_ref"])
+        fetched=iso_dt(x["fetched_at_utc"],"source fetched"); observed=iso_dt(x["observed_at_utc"],"source observed")
+        req(observed<=input_max and fetched<=generated,"source timestamp order"); refs.append(x["source_ref"])
     req(refs,"sources required"); unique(refs,"sources"); refset=set(refs)
 
     facts=[]
     for i,x in enumerate(p["facts"]):
         exact(x,{"fact_id","value","unit","evidence_tier","source_refs","eligibility"},f"fact {i}")
         req(x["fact_id"] in FACTS and not research_id(x["fact_id"]) and x["fact_id"] not in FORBIDDEN,"fact ID")
-        req(x["value"] is not None,"fact value"); nonempty(x["unit"],"fact unit")
+        req(isinstance(x["value"],(str,int,float,bool)) and x["value"] is not None,"fact value type")
+        if isinstance(x["value"],(int,float)) and not isinstance(x["value"],bool): number(x["value"],"fact value")
+        nonempty(x["unit"],"fact unit")
         req(x["evidence_tier"]==T0 and x["eligibility"]=="ALLOWED","fact contract")
         req(isinstance(x["source_refs"],list) and x["source_refs"],"fact sources")
         unique(x["source_refs"],"fact sources"); req(set(x["source_refs"])<=refset,"fact source binding"); facts.append(x["fact_id"])
@@ -143,7 +148,12 @@ def validate_packet(p,c):
     for i,x in enumerate(p["metrics"]):
         exact(x,{"metric_id","value","unit","observation_window","methodology_id","methodology_sha256","evidence_tier","stability_status","eligibility","source_fact_ids","correction_status"},f"metric {i}")
         mid=x["metric_id"]; req(mid in METRICS and (x["evidence_tier"],x["eligibility"])==METRICS[mid],"metric tier")
-        number(x["value"],"metric value"); nonempty(x["unit"],"metric unit"); nonempty(x["observation_window"],"metric window")
+        value=number(x["value"],"metric value")
+        if mid in {"range_position_30d","trend_persistence_30d"}: req(0.0<=value<=1.0,"bounded metric domain")
+        if mid in {"quote_volume_ratio_to_prior_30d_median","realized_volatility_30d_annualized"}: req(value>=0.0,"nonnegative metric domain")
+        if mid=="drawdown_from_365d_high": req(-1.0<=value<=0.0,"drawdown domain")
+        if mid.startswith("return_"): req(value>-1.0,"return domain")
+        nonempty(x["unit"],"metric unit"); nonempty(x["observation_window"],"metric window")
         req(x["methodology_id"]==METHODOLOGY_ID and x["methodology_sha256"]==METHODOLOGY_SHA256,"metric methodology")
         req(x["stability_status"]==("PASS" if x["evidence_tier"]==T2 else x["stability_status"]),"Tier 2 stability")
         if x["evidence_tier"]==T1: req(x["stability_status"] in {"FAIL","NOT_REVIEWED"},"Tier 1 stability")
@@ -157,7 +167,9 @@ def validate_packet(p,c):
         exact(x,{"label_id","value","input_metric_id","input_metric_tier","threshold_contract_id","threshold_contract_sha256","calibration_status","effective_eligibility"},f"label {i}")
         req(x["label_id"]=="range_state" and x["input_metric_id"]=="range_position_30d","label identity")
         req(x["input_metric_id"] in packet_metrics and packet_metrics[x["input_metric_id"]]["evidence_tier"]==T2 and x["input_metric_tier"]==T2,"label input")
-        req(x["value"] in {"LOWER","MIDDLE","UPPER"} and x["calibration_status"]=="PASS" and x["effective_eligibility"]=="ALLOWED","label state")
+        position=float(packet_metrics["range_position_30d"]["value"])
+        expected_label="LOWER" if position<0.25 else "UPPER" if position>0.75 else "MIDDLE"
+        req(x["value"]==expected_label and x["calibration_status"]=="PASS" and x["effective_eligibility"]=="ALLOWED","label state")
         req(x["threshold_contract_id"]==METHODOLOGY_ID and x["threshold_contract_sha256"]==METHODOLOGY_SHA256,"threshold binding")
         label_ids.append(x["label_id"])
     unique(label_ids,"labels")
@@ -169,6 +181,8 @@ def validate_packet(p,c):
         req(x["current_packet_id"]==p["packet_id"] and x["previous_packet_id"]!=p["packet_id"],"change packet")
         nonempty(x["previous_packet_id"],"previous packet"); req(x["comparison_status"]=="COMPARABLE","comparison")
         current=number(x["current_value"],"current"); previous=number(x["previous_value"],"previous"); delta=number(x["raw_delta"],"delta")
+        req(math.isclose(current,float(packet_metrics[mid]["value"]),rel_tol=1e-12,abs_tol=1e-12),"change current mismatch")
+        req(x["delta_unit"]==packet_metrics[mid]["unit"],"change unit mismatch")
         req(math.isclose(delta,current-previous,rel_tol=1e-12,abs_tol=1e-12),"delta mismatch")
         direction="UP" if delta>0 else "DOWN" if delta<0 else "UNCHANGED"
         req(x["historical_direction"]==direction and x["methodology_match"] is True and x["correction_status"]=="CLEAR","change state")
