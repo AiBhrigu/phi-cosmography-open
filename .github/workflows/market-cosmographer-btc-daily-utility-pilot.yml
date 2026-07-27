@@ -9,7 +9,7 @@ on:
       - 'docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json'
       - 'tools/market_cosmographer_btc_daily_pilot/**'
   schedule:
-    - cron: '17 9 * * *'
+    - cron: '17 9,13,17 * * *'
   workflow_dispatch:
     inputs:
       observation_date:
@@ -86,78 +86,100 @@ jobs:
           DISPATCH_DATE: ${{ inputs.observation_date }}
         run: |
           observation_date="${DISPATCH_DATE:-}"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            observation_date="2026-07-25"
-          elif [ -z "$observation_date" ]; then
-            observation_date="$(date -u -d 'yesterday' +'%Y-%m-%d')"
-          fi
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then observation_date="2026-07-25"; elif [ -z "$observation_date" ]; then observation_date="$(date -u -d 'yesterday' +'%Y-%m-%d')"; fi
           python - "$observation_date" >> "$GITHUB_OUTPUT" <<'PY'
           import json,sys
           from datetime import date,timedelta
           from pathlib import Path
-          observation=date.fromisoformat(sys.argv[1]); policy=json.loads(Path('docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json').read_text())
-          start=date.fromisoformat(policy['start_observation_date']); end=date.fromisoformat(policy['end_observation_date']); active=start<=observation<=end
+          observation=date.fromisoformat(sys.argv[1]); policy=json.loads(Path('docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json').read_text()); start=date.fromisoformat(policy['start_observation_date']); end=date.fromisoformat(policy['end_observation_date']); active=start<=observation<=end
           print(f'observation_date={observation.isoformat()}'); print(f"active={'true' if active else 'false'}"); print(f'day_index={(observation-start).days+1 if active else 0}'); print(f"previous_date={(observation-timedelta(days=1)).isoformat() if active else ''}")
           PY
+
+      - name: Check already accepted main artifact
+        id: current
+        if: steps.meta.outputs.active == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OBSERVATION_DATE: ${{ steps.meta.outputs.observation_date }}
+        run: |
+          name="market-cosmographer-btc-daily-${OBSERVATION_DATE}"
+          response="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${name}&per_page=100")"
+          artifact_id="$(jq -r '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .id // empty' <<<"$response")"
+          if [ -n "$artifact_id" ]; then echo 'exists=true' >> "$GITHUB_OUTPUT"; echo "EXISTING_ACCEPTED_ARTIFACT=$artifact_id"; else echo 'exists=false' >> "$GITHUB_OUTPUT"; fi
+
+      - name: Existing daily observation already accepted
+        if: steps.current.outputs.exists == 'true'
+        run: echo MARKET_COSMOGRAPHER_BTC_DAILY_DUPLICATE_SKIPPED=YES
 
       - name: Pilot window is closed
         if: steps.meta.outputs.active != 'true'
         run: echo MARKET_COSMOGRAPHER_BTC_30_DAY_PILOT_WINDOW_CLOSED=YES
 
       - name: Run fail-closed unit tests
-        if: steps.meta.outputs.active == 'true'
-        run: python -m unittest discover -s tools/market_cosmographer_btc_daily_pilot -p 'test_*.py'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
+        run: python -m unittest discover -s tools/market_cosmographer_btc_daily_pilot -p 'test_*.py' -v
 
-      - name: Retrieve previous immutable pilot artifact
+      - name: Retrieve and verify previous immutable pilot artifact
         id: previous
-        if: steps.meta.outputs.active == 'true' && steps.meta.outputs.day_index != '1'
+        if: steps.meta.outputs.active == 'true' && steps.meta.outputs.day_index != '1' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         env:
           GH_TOKEN: ${{ github.token }}
           PREVIOUS_DATE: ${{ steps.meta.outputs.previous_date }}
         run: |
           artifact_name="market-cosmographer-btc-daily-${PREVIOUS_DATE}"
-          artifact_id="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" --jq '.artifacts | map(select(.expired == false)) | sort_by(.created_at) | last | .id // empty')"
-          test -n "$artifact_id" || { echo "Previous accepted artifact not found: $artifact_name"; exit 1; }
+          response="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100")"
+          if [ "$PREVIOUS_DATE" = "2026-07-25" ]; then
+            pr="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/pulls/241")"
+            test "$(jq -r '.merged' <<<"$pr")" = 'true'
+            reviewed_head="$(jq -r '.head.sha' <<<"$pr")"
+            artifact_id="$(jq -r --arg head "$reviewed_head" '[.artifacts[] | select(.expired == false and .workflow_run.head_sha == $head)] | sort_by(.created_at) | last | .id // empty' <<<"$response")"
+          else
+            artifact_id="$(jq -r '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .id // empty' <<<"$response")"
+          fi
+          test -n "$artifact_id" || { echo "Accepted predecessor not found: $artifact_name"; exit 1; }
+          artifact="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}")"
+          run_id="$(jq -r '.workflow_run.id' <<<"$artifact")"
+          run="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
+          test "$(jq -r '.conclusion' <<<"$run")" = 'success'
+          test "$(jq -r '.workflow_id' <<<"$run")" = '321204879'
           mkdir -p .previous-artifact
           gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > .previous-artifact.zip
           unzip -q .previous-artifact.zip -d .previous-artifact
-          previous_manifest="$(find .previous-artifact -name btc_daily_source_manifest.json -type f -print -quit)"
-          previous_entry="$(find .previous-artifact -name btc_daily_utility_entry.json -type f -print -quit)"
-          test -n "$previous_manifest" -a -n "$previous_entry"
+          previous_manifest="$(find .previous-artifact -name btc_daily_source_manifest.json -type f -print -quit)"; previous_entry="$(find .previous-artifact -name btc_daily_utility_entry.json -type f -print -quit)"; test -n "$previous_manifest" -a -n "$previous_entry"
+          python - "$previous_manifest" "$previous_entry" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          manifest=Path(sys.argv[1]); entry=json.loads(Path(sys.argv[2]).read_text()); expected=hashlib.sha256(manifest.read_bytes()).hexdigest()
+          assert entry['source_manifest_sha256']==expected
+          assert entry['distribution']=='INTERNAL_RESEARCH_ONLY' and entry['commercial_ai_feed'] is False and entry['predictive_boundary_incidents']==0
+          assert all(value=='PASS' for value in entry['automated_gates'].values())
+          print('PREVIOUS_DAILY_ARTIFACT_PROVENANCE=PASS')
+          PY
           echo "manifest=$previous_manifest" >> "$GITHUB_OUTPUT"; echo "entry=$previous_entry" >> "$GITHUB_OUTPUT"; echo "artifact_id=$artifact_id" >> "$GITHUB_OUTPUT"
 
       - name: Fetch checksum-bound daily source window
-        if: steps.meta.outputs.active == 'true'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         env:
           OBSERVATION_DATE: ${{ steps.meta.outputs.observation_date }}
         run: |
-          mkdir -p .daily-archives
-          start_date="$(date -u -d "$OBSERVATION_DATE -31 days" +'%Y-%m-%d')"
-          for offset in $(seq 0 31); do
-            day="$(date -u -d "$start_date +$offset days" +'%Y-%m-%d')"
-            name="BTCUSDT-1d-${day}.zip"
-            base="https://data.binance.vision/data/spot/daily/klines/BTCUSDT/1d/${name}"
-            echo "FETCH_DAILY_ARCHIVE=$day"
-            curl --fail --location --silent --show-error --retry 4 --retry-all-errors --output ".daily-archives/$name" "$base"
-            curl --fail --location --silent --show-error --retry 4 --retry-all-errors --output ".daily-archives/$name.CHECKSUM" "$base.CHECKSUM"
-          done
+          mkdir -p .daily-archives; start_date="$(date -u -d "$OBSERVATION_DATE -31 days" +'%Y-%m-%d')"
+          for offset in $(seq 0 31); do day="$(date -u -d "$start_date +$offset days" +'%Y-%m-%d')"; name="BTCUSDT-1d-${day}.zip"; base="https://data.binance.vision/data/spot/daily/klines/BTCUSDT/1d/${name}"; echo "FETCH_DAILY_ARCHIVE=$day"; curl --fail --location --silent --show-error --retry 4 --retry-all-errors --output ".daily-archives/$name" "$base"; curl --fail --location --silent --show-error --retry 4 --retry-all-errors --output ".daily-archives/$name.CHECKSUM" "$base.CHECKSUM"; done
           echo MARKET_COSMOGRAPHER_BTC_DAILY_SOURCE_DOWNLOAD=PASS
 
       - name: Generate two deterministic fresh daily builds
-        if: steps.meta.outputs.active == 'true'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         env:
           OBSERVATION_DATE: ${{ steps.meta.outputs.observation_date }}
           DAY_INDEX: ${{ steps.meta.outputs.day_index }}
           PREVIOUS_MANIFEST: ${{ steps.previous.outputs.manifest }}
         run: |
-          generation_utc="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"; previous_args=()
-          if [ "$DAY_INDEX" != "1" ]; then test -n "$PREVIOUS_MANIFEST"; previous_args=(--previous-manifest "$PREVIOUS_MANIFEST"); fi
+          generation_utc="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"; previous_args=(); if [ "$DAY_INDEX" != "1" ]; then test -n "$PREVIOUS_MANIFEST"; previous_args=(--previous-manifest "$PREVIOUS_MANIFEST"); fi
           python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build --repo . --observation-date "$OBSERVATION_DATE" --generated-at-utc "$generation_utc" --archive-dir .daily-archives --output-dir .daily-output-a "${previous_args[@]}"
           python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py build --repo . --observation-date "$OBSERVATION_DATE" --generated-at-utc "$generation_utc" --archive-dir .daily-archives --output-dir .daily-output-b "${previous_args[@]}"
           diff --recursive --unified .daily-output-a .daily-output-b
 
       - name: Finalize immutable utility entry
-        if: steps.meta.outputs.active == 'true'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         env:
           DAY_INDEX: ${{ steps.meta.outputs.day_index }}
           PREVIOUS_ENTRY: ${{ steps.previous.outputs.entry }}
@@ -166,7 +188,7 @@ jobs:
           python tools/market_cosmographer_btc_daily_pilot/generate_btc_daily_pilot.py finalize-entry --repo . --output-dir .daily-output-a "${previous_args[@]}"
 
       - name: Validate accepted daily packet and pilot boundary
-        if: steps.meta.outputs.active == 'true'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         env:
           DAY_INDEX: ${{ steps.meta.outputs.day_index }}
         run: |
@@ -175,15 +197,11 @@ jobs:
           import json,sys
           from pathlib import Path
           out=Path('.daily-output-a'); day_index=int(sys.argv[1]); packet=json.loads((out/'btc_daily_descriptive_packet.json').read_text()); manifest=json.loads((out/'btc_daily_source_manifest.json').read_text()); correction=json.loads((out/'btc_daily_correction_ledger.json').read_text()); proof=json.loads((out/'btc_daily_no_lookahead_proof.json').read_text()); report=json.loads((out/'btc_daily_build_report.json').read_text()); entry=json.loads((out/'btc_daily_utility_entry.json').read_text())
-          assert report['status']=='PASS' and report['freshness_status']=='FRESH' and report['source_archive_count']==32 and report['contract_validation']=='PASS' and report['predictive_boundary']=='PASS'
-          assert manifest['status']=='PASS' and manifest['archive_count']==32 and all(x['expected_sha256']==x['actual_sha256'] for x in manifest['archives'])
-          assert proof['status']=='PASS' and correction['event_count']==0
+          assert report['status']=='PASS' and report['freshness_status']=='FRESH' and report['source_archive_count']==32 and report['contract_validation']=='PASS' and report['predictive_boundary']=='PASS'; assert manifest['status']=='PASS' and manifest['archive_count']==32 and all(x['expected_sha256']==x['actual_sha256'] for x in manifest['archives']); assert proof['status']=='PASS' and correction['event_count']==0
           if day_index==1: assert correction['previous_baseline_status']=='NOT_REQUIRED_FOR_PILOT_DAY_1' and entry['previous_packet_id'] is None
           else: assert correction['previous_baseline_status']=='COMPARED' and entry['previous_packet_id'] and entry['previous_utility_entry_sha256']
-          assert [x['metric_id'] for x in packet['metrics']]==['return_1d','return_7d','range_position_30d','quote_volume_ratio_to_prior_30d_median']; assert [x['label_id'] for x in packet['labels']]==['range_state']
-          assert packet['distribution']['mode']=='INTERNAL_RESEARCH_ONLY' and packet['distribution']['commercial_ai_feed'] is False and entry['pilot_day_index']==day_index and entry['predictive_boundary_incidents']==0 and all(v=='PASS' for v in entry['automated_gates'].values())
-          ids={*[x['fact_id'] for x in packet['facts']],*[x['metric_id'] for x in packet['metrics']],*[x['label_id'] for x in packet['labels']],*[x['metric_id'] for x in packet['changes']]}; assert not any(v.startswith(('forward_','association_','meta_')) for v in ids); assert 'probability_continuation' not in ids
-          assert (out/'btc_daily_descriptive_read.en.md').stat().st_size>600 and (out/'btc_daily_descriptive_read.ru.md').stat().st_size>600
+          assert [x['metric_id'] for x in packet['metrics']]==['return_1d','return_7d','range_position_30d','quote_volume_ratio_to_prior_30d_median']; assert [x['label_id'] for x in packet['labels']]==['range_state']; assert packet['distribution']['mode']=='INTERNAL_RESEARCH_ONLY' and packet['distribution']['commercial_ai_feed'] is False and entry['pilot_day_index']==day_index and entry['predictive_boundary_incidents']==0 and all(v=='PASS' for v in entry['automated_gates'].values())
+          ids={*[x['fact_id'] for x in packet['facts']],*[x['metric_id'] for x in packet['metrics']],*[x['label_id'] for x in packet['labels']],*[x['metric_id'] for x in packet['changes']]}; assert not any(v.startswith(('forward_','association_','meta_')) for v in ids); assert 'probability_continuation' not in ids; assert (out/'btc_daily_descriptive_read.en.md').stat().st_size>600 and (out/'btc_daily_descriptive_read.ru.md').stat().st_size>600
           print('MARKET_COSMOGRAPHER_BTC_FRESH_DAILY_ACCEPTANCE=PASS')
           PY
 
@@ -193,12 +211,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
-          if git diff --name-only "$base" "$HEAD_SHA" | grep -E '^(site/|tools/crypto_astro_static_refresh/|tools/crypto_astro_public_http_proof/|site/crypto-astro/data/)'; then echo 'Public or runtime surface changed'; exit 1; fi
-          echo MARKET_COSMOGRAPHER_BTC_DAILY_PUBLIC_RUNTIME_CHANGE=NO
+          base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"; if git diff --name-only "$base" "$HEAD_SHA" | grep -E '^(site/|tools/crypto_astro_static_refresh/|tools/crypto_astro_public_http_proof/|site/crypto-astro/data/)'; then echo 'Public or runtime surface changed'; exit 1; fi; echo MARKET_COSMOGRAPHER_BTC_DAILY_PUBLIC_RUNTIME_CHANGE=NO
 
       - uses: actions/upload-artifact@v4
-        if: steps.meta.outputs.active == 'true'
+        if: steps.meta.outputs.active == 'true' && (github.event_name == 'pull_request' || steps.current.outputs.exists != 'true')
         with:
           name: market-cosmographer-btc-daily-${{ steps.meta.outputs.observation_date }}
           path: .daily-output-a/

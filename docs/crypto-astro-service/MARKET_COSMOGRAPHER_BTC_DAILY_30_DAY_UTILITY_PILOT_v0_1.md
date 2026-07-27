@@ -25,15 +25,15 @@ latest completed UTC day
 - First observation: `2026-07-25`
 - Last planned observation: `2026-08-23`
 - Planned accepted observations: `30`
-- Scheduled run: daily after the completed UTC archive is expected to be available.
+- Automatic attempts: `09:17`, `13:17`, and `17:17 UTC`.
 
-The workflow exits successfully without generation outside the locked pilot window. A missed or stale day is not silently backfilled as fresh.
+The repeated windows are availability retries, not duplicate observations. Before a scheduled build, the workflow checks for an already accepted artifact from `main` and skips regeneration when it exists. A stale day, missing predecessor, failed checksum, or altered overlap stops fail-closed.
 
-## Source boundary
+## Source and predecessor boundary
 
-Each accepted day is recomputed from 32 checksum-bound Binance Public Data daily archives. Raw archives are temporary workflow inputs and are not committed or redistributed. The packet and proof package remain `INTERNAL_RESEARCH_ONLY`; data-rights and commercial-feed gates remain pending.
+Each accepted day is recomputed from 32 checksum-bound Binance Public Data daily archives. Raw archives are temporary workflow inputs and are not committed or redistributed. The existing public CoinGecko Snapshot is not an input because its rolling `24h/7d` semantics are not equivalent to the accepted completed-UTC methodology.
 
-The existing public CoinGecko Snapshot is not an input because its rolling `24h/7d` semantics are not equivalent to the accepted completed-UTC methodology.
+Day 2 binds to the successful final-head Day 1 artifact of PR #241 after that PR is merged. Later days accept only successful artifacts generated from `main` by the locked workflow. The previous manifest hash, automated gates, distribution boundary, packet ID, and immutable entry SHA chain are revalidated before extension.
 
 ## Accepted output
 
@@ -69,7 +69,7 @@ Automated acceptance requires every daily gate to pass. Human utility remains se
 - Is the evidence understandable?
 - Is it useful without a prediction?
 
-Thirty entries do not automatically authorize public or commercial release. The aggregate tool returns `IN_PROGRESS`, `COMPLETE_PENDING_HUMAN_REVIEW`, `PASS`, or `FAIL` according to the locked policy.
+Thirty entries do not automatically authorize public or commercial release. The aggregate tool returns `IN_PROGRESS`, `COMPLETE_PENDING_HUMAN_REVIEW`, `PASS`, or `FAIL` according to the locked policy and recomputes every previous-entry hash link.
 
 ## Boundary
 

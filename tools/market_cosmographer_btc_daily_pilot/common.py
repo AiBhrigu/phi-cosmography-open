@@ -1,10 +1,11 @@
 """Shared constants and validation for the BTC daily utility pilot."""
 from __future__ import annotations
-import hashlib, json, math
+import hashlib
+import json
+import math
 from datetime import date, datetime
 from pathlib import Path
-from datetime import date, datetime, timedelta, timezone
-from pathlib import Path
+
 POLICY_REL = Path('docs/crypto-astro-service/market_cosmographer_btc_daily_utility_pilot_policy_v0_1.json')
 VALIDATOR_REL = Path('tools/market_cosmographer_descriptive_contract/verify_descriptive_contract.py')
 CONTRACT_REL = Path('docs/crypto-astro-service/market_cosmographer_descriptive_product_contract_v0_1.json')
@@ -18,6 +19,7 @@ T2 = 'TIER_2_STABLE_DESCRIPTIVE_METRIC'
 TIER2_METRICS = ('return_1d', 'return_7d', 'range_position_30d', 'quote_volume_ratio_to_prior_30d_median')
 WINDOWS = {'return_1d': '1 completed UTC day', 'return_7d': '7 completed UTC days', 'range_position_30d': '30 completed UTC days', 'quote_volume_ratio_to_prior_30d_median': 'current completed UTC day versus prior 30 completed UTC days'}
 FACT_BINDING = {'return_1d': ['btc_close'], 'return_7d': ['btc_close'], 'range_position_30d': ['btc_high', 'btc_low', 'btc_close'], 'quote_volume_ratio_to_prior_30d_median': ['btc_quote_volume']}
+GATE_NAMES = {'source_checksums', 'utc_contiguity', 'freshness', 'no_lookahead', 'methodology_binding', 'descriptive_contract_validation', 'deterministic_dual_build', 'predictive_boundary'}
 
 class PilotError(RuntimeError):
     """Fail-closed daily-pilot error."""
@@ -47,39 +49,39 @@ def parse_utc(value: str, where: str='datetime') -> datetime:
     if not isinstance(value, str) or not value.endswith('Z'):
         raise PilotError(f'{where}: UTC Z datetime required')
     try:
-        parsed = datetime.fromisoformat(value[:-1] + '+00:00')
+        return datetime.fromisoformat(value[:-1] + '+00:00')
     except ValueError as exc:
         raise PilotError(f'{where}: invalid UTC datetime') from exc
-    return parsed
 
 def finite(value, where: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or (not math.isfinite(float(value))):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
         raise PilotError(f'{where}: finite number required')
     return float(value)
 
+def valid_sha256(value) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(char in '0123456789abcdef' for char in value)
+
 def validate_policy(policy: dict) -> dict:
-    if policy.get('schema_version') != 'market_cosmographer_btc_daily_utility_pilot_policy_v0_1':
-        raise PilotError('pilot policy schema')
-    if policy.get('status') != 'AUTHORIZED_INTERNAL_PILOT':
-        raise PilotError('pilot policy status')
+    if policy.get('schema_version') != 'market_cosmographer_btc_daily_utility_pilot_policy_v0_1' or policy.get('status') != 'AUTHORIZED_INTERNAL_PILOT':
+        raise PilotError('pilot policy identity')
     start = parse_date(policy['start_observation_date'], 'pilot start')
     end = parse_date(policy['end_observation_date'], 'pilot end')
-    planned = int(policy['planned_consecutive_days'])
-    if planned != 30 or (end - start).days + 1 != planned:
+    if policy.get('planned_consecutive_days') != 30 or (end - start).days + 1 != 30:
         raise PilotError('pilot window')
-    source = policy['source_policy']
-    if source != {'provider': 'BINANCE_PUBLIC_DATA', 'archive_frequency': 'daily', 'source_window_days': 32, 'checksum_required': True, 'raw_archive_distribution': False, 'repository_storage': False}:
+    if policy.get('source_policy') != {'provider': 'BINANCE_PUBLIC_DATA', 'archive_frequency': 'daily', 'source_window_days': 32, 'checksum_required': True, 'raw_archive_distribution': False, 'repository_storage': False}:
         raise PilotError('source policy')
-    freshness = policy['freshness_policy']
-    if freshness['freshness_policy_id'] != 'completed_utc_daily_snapshot_36h_v0_1':
-        raise PilotError('freshness policy id')
-    if freshness['fresh_max_age_hours'] != 36 or freshness['aging_max_age_hours'] != 72:
-        raise PilotError('freshness thresholds')
-    if freshness['pilot_accepts_only'] != 'FRESH':
-        raise PilotError('pilot freshness gate')
-    accepted = policy['accepted_product_fields']
-    if tuple(accepted['tier2_metrics']) != TIER2_METRICS or accepted['tier3_labels'] != ['range_state']:
+    freshness = policy.get('freshness_policy', {})
+    if freshness != {'freshness_policy_id': 'completed_utc_daily_snapshot_36h_v0_1', 'fresh_max_age_hours': 36, 'aging_max_age_hours': 72, 'pilot_accepts_only': 'FRESH'}:
+        raise PilotError('freshness policy')
+    accepted = policy.get('accepted_product_fields', {})
+    if tuple(accepted.get('tier2_metrics', [])) != TIER2_METRICS or accepted.get('tier3_labels') != ['range_state']:
         raise PilotError('accepted product fields')
+    thresholds = policy.get('completion_thresholds')
+    if thresholds != {'accepted_daily_entries': 30, 'automated_gate_pass_rate': 1.0, 'clarity_pass_min': 24, 'evidence_comprehension_pass_min': 24, 'predictive_boundary_incidents_max': 0, 'useful_without_prediction_pass_min': 21}:
+        raise PilotError('completion thresholds')
+    distribution = policy.get('distribution')
+    if distribution != {'backend_api': False, 'commercial_ai_feed': False, 'mode': 'INTERNAL_RESEARCH_ONLY', 'payment_or_subscription': False, 'public_page': False, 'public_snapshot': False}:
+        raise PilotError('pilot distribution')
     return policy
 
 def pilot_day_index(policy: dict, observation_day: date) -> int:
