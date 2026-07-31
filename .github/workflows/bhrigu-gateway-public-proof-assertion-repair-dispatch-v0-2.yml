@@ -1,0 +1,151 @@
+name: BHRIGU Gateway Public Proof Assertion Repair Dispatch v0.2
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: bhrigu-gateway-public-proof-assertion-repair-v0-2
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event.issue.title == 'BHRIGU gateway public proof assertion repair request v0.2' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate exact owner request and helper-only main delta
+        id: source
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          SOURCE_BASE_SHA=6debad7753c77dc7a41381a3681adc5c13c5468a
+          TARGET_BRANCH=agent/bhrigu-gateway-public-proof-assertion-repair-v0-2
+          EXPECTED='SCHEMA=bhrigu_gateway_public_proof_assertion_repair_request_v0_2
+          SOURCE_BASE_SHA=6debad7753c77dc7a41381a3681adc5c13c5468a
+          TARGET_BRANCH=agent/bhrigu-gateway-public-proof-assertion-repair-v0-2'
+          test "$ISSUE_BODY" = "$EXPECTED"
+          git fetch origin main
+          CURRENT_MAIN_SHA=$(git rev-parse origin/main)
+          test "$(git rev-parse HEAD)" = "$CURRENT_MAIN_SHA"
+          git merge-base --is-ancestor "$SOURCE_BASE_SHA" "$CURRENT_MAIN_SHA"
+          git diff --name-only "$SOURCE_BASE_SHA" "$CURRENT_MAIN_SHA" | sort > /tmp/main-diff.txt
+          printf '%s\n' \
+            '.github/workflows/bhrigu-gateway-public-proof-assertion-repair-dispatch-v0-2.yml' \
+            '.github/workflows/bhrigu-gateway-public-proof-assertion-repair-dispatch.yml' \
+            | sort > /tmp/expected-main-diff.txt
+          diff -u /tmp/expected-main-diff.txt /tmp/main-diff.txt
+          ! git ls-remote --exit-code --heads origin "$TARGET_BRANCH"
+          echo "current_main_sha=$CURRENT_MAIN_SHA" >> "$GITHUB_OUTPUT"
+          echo "target_branch=$TARGET_BRANCH" >> "$GITHUB_OUTPUT"
+          echo HELPER_ONLY_MAIN_DELTA=PASS
+
+      - name: Apply exact two-file gateway assertion repair
+        run: |
+          set -euo pipefail
+          git checkout -b "${{ steps.source.outputs.target_branch }}"
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str, label: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected old count 1, found {count}')
+              target.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          verifier = 'tools/crypto_astro_public_http_proof/verify_public_http_proof.py'
+          test = 'tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py'
+
+          replace_once(
+              verifier,
+              '        "question_form_present": "Ask one BTC field question" in text,\n',
+              '        "dialogue_gateway_present": "Start free dialogue" in text,\n'
+              '        "live_route_present": "/crypto-astro/btc/live?lang=en" in text,\n',
+              'verifier gateway assertion',
+          )
+
+          gateway_test = '\n'.join([
+              '    def test_bhrigu_form_requires_canonical_dialogue_gateway(self) -> None:',
+              '        good = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b\'<title>BTC Field Read</title><a href="/crypto-astro/btc/live?lang=en">Start free dialogue</a>\', {})',
+              '        assertions = mod.verify_bhrigu_form(good)',
+              '        self.assertTrue(all(assertions.values()))',
+              '        self.assertTrue(assertions["dialogue_gateway_present"])',
+              '        self.assertTrue(assertions["live_route_present"])',
+              '',
+              '        bad = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b\'<title>BTC Field Read</title><p>Ask one BTC field question</p>\', {})',
+              '        with self.assertRaises(mod.ProofFailure) as ctx:',
+              '            mod.verify_bhrigu_form(bad)',
+              '        self.assertEqual(ctx.exception.reason_code, "BHRIGU_FORM_ASSERTION_FAILED")',
+              '',
+          ]) + '\n'
+          marker = '    def test_bhrigu_read_requires_timestamp_and_success_region(self) -> None:\n'
+          replace_once(test, marker, gateway_test + marker, 'gateway regression fixture')
+
+          verifier_text = Path(verifier).read_text(encoding='utf-8')
+          test_text = Path(test).read_text(encoding='utf-8')
+          assert 'Ask one BTC field question' not in verifier_text
+          assert 'question_form_present' not in verifier_text
+          assert verifier_text.count('dialogue_gateway_present') == 1
+          assert verifier_text.count('live_route_present') == 1
+          assert test_text.count('test_bhrigu_form_requires_canonical_dialogue_gateway') == 1
+          assert test_text.count('Start free dialogue') == 1
+          assert test_text.count('/crypto-astro/btc/live?lang=en') == 1
+          print('BHRIGU_GATEWAY_PUBLIC_PROOF_ASSERTION_REPAIR=PASS')
+          PY
+
+          git diff --name-only | sort > /tmp/changed.txt
+          printf '%s\n' \
+            'tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py' \
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py' \
+            > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Run exact verifier fixtures
+        run: python3 -m unittest tools.crypto_astro_public_http_proof.test_verify_public_http_proof -v
+
+      - name: Commit and push exact repair branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py
+          git commit -m "CI: align public proof with BHRIGU dialogue gateway"
+          git push origin "HEAD:${{ steps.source.outputs.target_branch }}"
+
+      - name: Record accepted repair
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS
+          SOURCE_BASE_SHA=6debad7753c77dc7a41381a3681adc5c13c5468a
+          CURRENT_MAIN_SHA=${{ steps.source.outputs.current_main_sha }}
+          TARGET_BRANCH=${{ steps.source.outputs.target_branch }}
+          EXACT_CHANGED_FILES=2
+          BHRIGU_PRODUCT_CHANGED=NO
+          SNAPSHOT_CHANGED=NO
+          PRODUCER_SURFACE_CHANGED=NO"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+
+      - name: Record failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment "${{ github.event.issue.number }}" --body "STATUS=FAIL_CLOSED_V0_2"
