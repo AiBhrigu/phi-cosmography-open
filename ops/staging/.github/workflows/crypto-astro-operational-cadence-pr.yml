@@ -1,0 +1,192 @@
+name: Crypto-Astro Operational Cadence PR
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/crypto-astro-static-refresh-manual.yml"
+      - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
+      - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
+      - "tools/crypto_astro_operations/**"
+      - "docs/crypto-astro-service/crypto_astro_operator_review.md"
+
+permissions:
+  contents: read
+
+jobs:
+  operational-cadence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Classify bounded cadence, repair, workflow-applicability, BTC Φ geometry, timestamp-consistency, or generated-refresh scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          cadence_allowed = {
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          assistant_dispatch_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json",
+              "tools/crypto_astro_operations/verify_assistant_dispatch.py",
+              "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
+          }
+          snapshot_memory_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          runtime_registry_test_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+          }
+          workflow_applicability_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
+          freshness_policy_scope = {
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+          }
+          btc_phi_semantic_geometry_scope = {
+              ".github/workflows/btc-poster-motion-budget-pr.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+              "site/theme/btc_phi_semantic_geometry.css",
+              "site/theme/system.css",
+          }
+          timestamp_consistency_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          timestamp_consistency_data_repair_scope = {
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          generated_refresh_scope = {
+              "site/crypto-astro/index.html",
+              "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+              "site/crypto-astro/data/market_field_snapshot.public.v0_1.json",
+              "site/crypto-astro/data/scoring_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json",
+              "docs/crypto-astro-service/crypto_astro_snapshot_summary.md",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          generated_refresh_optional = {
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
+          }
+          base = subprocess.check_output(
+              ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
+              ).splitlines()
+          )
+          if changed == assistant_dispatch_scope:
+              print("ASSISTANT_DISPATCH_FILE_SCOPE=PASS")
+          elif changed == snapshot_memory_repair_scope:
+              print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
+          elif changed == runtime_registry_test_repair_scope:
+              print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
+          elif changed == workflow_applicability_repair_scope:
+              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
+              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")
+              print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")
+              print("SNAPSHOT_MEMORY_FRESHNESS_POLICY_CROSS_WORKFLOW_APPLICABILITY=PASS")
+          elif changed == freshness_policy_scope:
+              print("OPERATIONAL_CADENCE_FRESHNESS_POLICY_SCOPE=PASS")
+          elif changed == btc_phi_semantic_geometry_scope:
+              print("BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS")
+          elif changed in (
+              timestamp_consistency_repair_scope,
+              timestamp_consistency_data_repair_scope,
+          ):
+              print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_FILE_SCOPE=PASS")
+          elif changed in (
+              generated_refresh_scope,
+              generated_refresh_scope | generated_refresh_optional,
+          ):
+              print("OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
+              print("CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY=PASS")
+          else:
+              unexpected = sorted(changed - cadence_allowed)
+              assert not unexpected, f"Unexpected cadence paths: {unexpected}"
+              assert changed, "Cadence gate triggered without a changed cadence file"
+              print("OPERATIONAL_CADENCE_FILE_SCOPE=PASS")
+          PY
+
+      - name: Run operations verifier fixtures
+        run: python3 -m unittest discover -s tools/crypto_astro_operations -p "test_*.py" -v
+
+      - name: Verify locked operational cadence
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_operations/verify_operational_cadence.py \
+            --repo . \
+            --report artifacts/operational-cadence-verification.json
+
+      - name: Verify assistant dispatch when present
+        if: ${{ hashFiles('tools/crypto_astro_operations/verify_assistant_dispatch.py') != '' }}
+        run: |
+          python3 tools/crypto_astro_operations/verify_assistant_dispatch.py verify-repository \
+            --repo . \
+            --report artifacts/assistant-dispatch-verification.json
+
+      - name: Upload operations evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-operational-cadence-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

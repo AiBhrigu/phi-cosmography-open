@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "node": "CRYPTO_ASTRO_SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR_v0_1",
+  "repair_scope": [
+    ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+    ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+    ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+  ],
+  "freshness_policy_scope_files": [
+    "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+    "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+    "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+    "tools/crypto_astro_operations/verify_operational_cadence.py"
+  ],
+  "files": {
+    ".github/workflows/crypto-astro-snapshot-memory-pr.yml": {
+      "source_blob_sha": "d4cdae9a33edeec8b59d037f0b356d90b50d090e",
+      "patched_git_blob_sha": "9f551a823341234fadfb67ecb2839e9c0824c5db",
+      "patched_sha256": "731aeb274b6bade53cb1bc0c4d0fbe269d9ffd2bae5d3f0c5f7a455cac83ffc1"
+    },
+    ".github/workflows/crypto-astro-assistant-dispatch-pr.yml": {
+      "source_blob_sha": "5403a527dd477f089a64eacb64d2d0a1872817c9",
+      "patched_git_blob_sha": "5a85bee962029418a4d5073f3a2bd456d3b43cf2",
+      "patched_sha256": "c3a2fa6bda18b014882d052ebf058418dc2702c085ec07372e5f89ab3f343a19"
+    },
+    ".github/workflows/crypto-astro-operational-cadence-pr.yml": {
+      "source_blob_sha": "db8761d88290639e27381cd773e2e112c4776157",
+      "patched_git_blob_sha": "f34a5524e410857c625dbe210f32e758257242bc",
+      "patched_sha256": "d115de0e5d3d24c5778df9f9282484bf952ab6511cd4d74f921d70f3a910732a"
+    }
+  },
+  "snapshot_data_changed": false,
+  "memory_artifacts_changed": false,
+  "runtime_changed": false,
+  "target_pr_merge_authorized": false
+}

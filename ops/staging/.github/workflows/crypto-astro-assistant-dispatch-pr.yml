@@ -1,0 +1,292 @@
+name: Crypto-Astro Assistant Dispatch PR
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/crypto-astro-assistant-dispatch.yml"
+      - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
+      - ".github/workflows/crypto-astro-static-refresh-manual.yml"
+      - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
+      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
+      - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
+      - "tools/crypto_astro_operations/verify_assistant_dispatch.py"
+      - "tools/crypto_astro_operations/test_verify_assistant_dispatch.py"
+
+permissions:
+  contents: read
+
+jobs:
+  assistant-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Classify exact assistant-dispatch, generated-refresh, BTC Φ geometry, or bounded repair scope
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          assistant_dispatch_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-manual.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json",
+              "tools/crypto_astro_operations/verify_assistant_dispatch.py",
+              "tools/crypto_astro_operations/test_verify_assistant_dispatch.py",
+          }
+          snapshot_memory_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/build_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          runtime_registry_test_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "tools/crypto_astro_snapshot_memory/test_snapshot_memory.py",
+          }
+          workflow_applicability_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
+          freshness_policy_scope = {
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+          }
+          btc_phi_semantic_geometry_scope = {
+              ".github/workflows/btc-poster-motion-budget-pr.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-static-refresh-pr-visual.yml",
+              "site/theme/btc_phi_semantic_geometry.css",
+              "site/theme/system.css",
+          }
+          timestamp_consistency_repair_scope = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          timestamp_consistency_data_repair_scope = {
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+          }
+          generated_refresh_scope = {
+              "site/crypto-astro/index.html",
+              "site/crypto-astro/data/crypto_astro_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json",
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.json",
+              "site/crypto-astro/data/market_field_snapshot.public.v0_1.json",
+              "site/crypto-astro/data/scoring_snapshot.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json",
+              "site/crypto-astro/data/crypto_astro_snapshot_delta.public.json",
+              "docs/crypto-astro-service/crypto_astro_snapshot_summary.md",
+              "docs/crypto-astro-service/crypto_astro_operator_review.md",
+          }
+          generated_refresh_optional = {
+              "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
+          }
+          base = subprocess.check_output(
+              ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
+          ).strip()
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
+              ).splitlines()
+          )
+          if changed == assistant_dispatch_scope:
+              mode = "assistant_dispatch"
+              print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
+          elif changed == snapshot_memory_repair_scope:
+              mode = "snapshot_memory_repair"
+              print("SNAPSHOT_MEMORY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == runtime_registry_test_repair_scope:
+              mode = "runtime_registry_test_repair"
+              print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == workflow_applicability_repair_scope:
+              mode = "workflow_applicability_repair"
+              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
+              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")
+              print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")
+          elif changed == freshness_policy_scope:
+              mode = "freshness_policy_scope"
+              print("ASSISTANT_DISPATCH_FRESHNESS_POLICY_SCOPE=PASS")
+          elif changed == btc_phi_semantic_geometry_scope:
+              mode = "btc_phi_semantic_geometry"
+              print("BTC_PHI_SEMANTIC_GEOMETRY_EXACT_SCOPE=PASS")
+          elif changed in (
+              timestamp_consistency_repair_scope,
+              timestamp_consistency_data_repair_scope,
+          ):
+              mode = "timestamp_consistency_repair"
+              print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_EXACT_SCOPE=PASS")
+          elif changed in (
+              generated_refresh_scope,
+              generated_refresh_scope | generated_refresh_optional,
+          ):
+              mode = "generated_refresh"
+              print("ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
+          else:
+              raise AssertionError({
+                  "changed": sorted(changed),
+                  "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
+                  "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
+                  "runtime_registry_test_repair_missing": sorted(runtime_registry_test_repair_scope - changed),
+                  "workflow_applicability_repair_missing": sorted(
+                      workflow_applicability_repair_scope - changed
+                  ),
+                  "freshness_policy_scope_missing": sorted(
+                      freshness_policy_scope - changed
+                  ),
+                  "btc_phi_semantic_geometry_missing": sorted(
+                      btc_phi_semantic_geometry_scope - changed
+                  ),
+                  "timestamp_consistency_repair_missing": sorted(
+                      timestamp_consistency_repair_scope - changed
+                  ),
+                  "generated_refresh_missing": sorted(generated_refresh_scope - changed),
+                  "unexpected": sorted(
+                      changed
+                      - assistant_dispatch_scope
+                      - snapshot_memory_repair_scope
+                      - runtime_registry_test_repair_scope
+                      - workflow_applicability_repair_scope
+                      - freshness_policy_scope
+                      - btc_phi_semantic_geometry_scope
+                      - timestamp_consistency_repair_scope
+                      - generated_refresh_scope
+                      - generated_refresh_optional
+                  ),
+              })
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"mode={mode}\n")
+          print(f"ASSISTANT_DISPATCH_SCOPE={mode}")
+          PY
+
+      - name: Run assistant-dispatch fixtures
+        run: python3 -m unittest discover -s tools/crypto_astro_operations -p "test_verify_assistant_dispatch.py" -v
+
+      - name: Verify assistant-dispatch repository contract
+        run: |
+          mkdir -p artifacts
+          python3 tools/crypto_astro_operations/verify_assistant_dispatch.py verify-repository \
+            --repo . \
+            --report artifacts/assistant-dispatch-verification.json
+
+      - name: Verify operational cadence remains locked
+        run: |
+          python3 tools/crypto_astro_operations/verify_operational_cadence.py \
+            --repo . \
+            --report artifacts/operational-cadence-verification.json
+
+      - name: Prove public data, HTML, and CSS unchanged for assistant-dispatch work
+        if: steps.scope.outputs.mode == 'assistant_dispatch'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Prove dispatch runtime and public surface unchanged for bounded repairs
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Prove dispatch runtime and unaffected public surface unchanged for timestamp consistency repair
+        if: steps.scope.outputs.mode == 'timestamp_consistency_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+
+      - name: Prove generated refresh leaves assistant-dispatch runtime unchanged
+        if: steps.scope.outputs.mode == 'generated_refresh'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json \
+            tools/crypto_astro_operations/verify_assistant_dispatch.py \
+            tools/crypto_astro_operations/test_verify_assistant_dispatch.py
+          echo ASSISTANT_DISPATCH_GENERATED_REFRESH_RUNTIME_UNCHANGED=PASS
+
+      - name: Upload assistant-dispatch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-assistant-dispatch-pr-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error

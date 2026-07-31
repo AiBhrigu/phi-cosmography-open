@@ -1,0 +1,523 @@
+name: Crypto-Astro Snapshot Memory PR
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
+      - '.github/workflows/crypto-astro-static-refresh-manual.yml'
+      - '.github/workflows/crypto-astro-static-refresh-pr-visual.yml'
+      - '.github/workflows/crypto-astro-what-changed-pr.yml'
+      - '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml'
+      - '.github/workflows/crypto-astro-operational-cadence-pr.yml'
+      - '.github/workflows/crypto-astro-assistant-dispatch.yml'
+      - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'
+      - 'site/crypto-astro/index.html'
+      - 'site/crypto-astro/data/crypto_astro_snapshot*.json'
+      - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
+      - 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json'
+      - 'site/crypto-astro/data/scoring_snapshot.public.json'
+      - 'tools/crypto_astro_snapshot_memory/**'
+      - 'tools/crypto_astro_what_changed/**'
+      - 'tools/crypto_astro_operations/**'
+      - 'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py'
+      - 'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json'
+      - 'docs/crypto-astro-service/crypto_astro_snapshot_summary.md'
+      - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot-memory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+      - name: Classify exact implementation, repair, maintenance, cadence, assistant-dispatch, consumer-repair, workflow-applicability, BTC Φ geometry, public-service, producer-identity, timestamp-consistency, or generated-refresh scope
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          implementation = {
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-what-changed-pr.yml',
+            'tools/crypto_astro_snapshot_memory/build_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+            'tools/crypto_astro_what_changed/render_what_changed.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+            'tools/crypto_astro_what_changed/test_what_changed.py',
+          }
+          squash_merge_ancestry_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'tools/crypto_astro_snapshot_memory/build_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+          }
+          runtime_registry_test_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'tools/crypto_astro_snapshot_memory/test_snapshot_memory.py',
+          }
+          workflow_applicability_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          # Exact visual-only contract: the classifier must fail closed if any
+          # public HTML, snapshot data, runtime, or unrelated theme file changes.
+          btc_phi_semantic_geometry = {
+            '.github/workflows/btc-poster-motion-budget-pr.yml',
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/theme/btc_phi_semantic_geometry.css',
+            'site/theme/system.css',
+          }
+          public_service_truth_alignment = {
+            'site/crypto-astro/index.html',
+          }
+          producer_public_identity = {
+            '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/crypto-astro/index.html',
+            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
+          timestamp_consistency_repair = {
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+          }
+          timestamp_consistency_data_repair = {
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+          }
+          maintenance = {
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py',
+            'tools/crypto_astro_static_refresh/test_current_surface_contract_v0_1.py',
+          }
+          cadence_maintenance = {
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+            'tools/crypto_astro_operations/verify_operational_cadence.py',
+            'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+            'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          assistant_dispatch_maintenance = {
+            '.github/workflows/crypto-astro-assistant-dispatch.yml',
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json',
+            'tools/crypto_astro_operations/verify_assistant_dispatch.py',
+            'tools/crypto_astro_operations/test_verify_assistant_dispatch.py',
+          }
+          consumer_repair = {
+            '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-manual.yml',
+            'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py',
+            'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py',
+            'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+          }
+          freshness_policy_scope = {
+              'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+              'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+              'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+              'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
+          freshness_policy_scope_applicability_repair = {
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          generated = {
+            'site/crypto-astro/index.html',
+            'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+            'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+            'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+            'site/crypto-astro/data/scoring_snapshot.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+            'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+            'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+            'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          if changed == implementation:
+            mode='implementation'
+          elif changed == squash_merge_ancestry_repair:
+            mode='squash_merge_ancestry_repair'
+          elif changed == runtime_registry_test_repair:
+            mode='runtime_registry_test_repair'
+          elif changed == workflow_applicability_repair:
+            mode='workflow_applicability_repair'
+            print('CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')
+          elif changed == btc_phi_semantic_geometry:
+            mode='btc_phi_semantic_geometry'
+            print('SNAPSHOT_MEMORY_BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS')
+          elif changed == public_service_truth_alignment:
+            mode='public_service_truth_alignment'
+            print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT_FILE_SCOPE=PASS')
+          elif changed == producer_public_identity:
+            mode='producer_public_identity'
+            print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY_FILE_SCOPE=PASS')
+          elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):
+            mode='timestamp_consistency_repair'
+          elif changed == maintenance:
+            mode='surface_contract_maintenance'
+          elif changed == cadence_maintenance:
+            mode='operational_cadence_maintenance'
+          elif changed == assistant_dispatch_maintenance:
+            mode='assistant_dispatch_maintenance'
+          elif changed == consumer_repair:
+            mode='bhrigu_consumer_contract_repair'
+          elif changed == freshness_policy_scope:
+            mode='freshness_policy_scope'
+            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE=PASS')
+          elif changed == freshness_policy_scope_applicability_repair:
+            mode='freshness_policy_scope_applicability_repair'
+            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR=PASS')
+          elif changed in (generated, generated | optional):
+            mode='generated_refresh'
+            print('SNAPSHOT_MEMORY_GENERATED_REFRESH_APPLICABILITY=PASS')
+          else:
+            raise AssertionError({
+              'changed':sorted(changed),
+              'implementation_missing':sorted(implementation-changed),
+              'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
+              'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
+              'workflow_applicability_repair_missing':sorted(workflow_applicability_repair-changed),
+              'btc_phi_semantic_geometry_missing':sorted(btc_phi_semantic_geometry-changed),
+              'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),
+              'producer_public_identity_missing':sorted(producer_public_identity-changed),
+              'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),
+              'maintenance_missing':sorted(maintenance-changed),
+              'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
+              'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
+              'consumer_repair_missing':sorted(consumer_repair-changed),
+              'freshness_policy_scope_missing':sorted(freshness_policy_scope-changed),
+              'freshness_policy_scope_applicability_repair_missing':sorted(freshness_policy_scope_applicability_repair-changed),
+              'generated_missing':sorted(generated-changed),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-freshness_policy_scope-freshness_policy_scope_applicability_repair-generated-optional),
+            })
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
+          print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
+          PY
+      - name: Run deterministic and topology fixtures
+        run: python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+      - name: Build twice and compare committed contract
+        run: |
+          mkdir -p artifacts/build-a artifacts/build-b artifacts/final
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-a
+          python tools/crypto_astro_snapshot_memory/build_snapshot_memory.py --repo . --out-dir artifacts/build-b
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-b/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_registry.public.json
+          cmp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/build-a/site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+      - name: Verify schemas, provenance hashes, accepted materialization, transaction ancestry and per-metric status
+        run: |
+          python tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py --repo . --report artifacts/final/snapshot-memory-verification.json
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json artifacts/final/
+          cp site/crypto-astro/data/crypto_astro_snapshot_delta.public.schema.json artifacts/final/
+          (cd artifacts/final && sha256sum * > SHA256SUMS)
+      - name: Prove snapshot/proof timestamp consistency repair
+        if: steps.scope.outputs.mode == 'timestamp_consistency_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import copy, hashlib, json, os, subprocess
+          proof_path='site/crypto-astro/data/crypto_astro_snapshot_proof.public.json'
+          registry_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+          snapshot_path='site/crypto-astro/data/crypto_astro_snapshot.public.json'
+          allowed_registry_fields={
+            'commit_sha', 'proof_blob_sha',
+            'proof_generated_at_utc', 'proof_sha256',
+          }
+          def show_bytes(ref,path):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'])
+          def show_json(ref,path):
+            return json.loads(show_bytes(ref,path))
+          base_proof=show_json(os.environ['BASE_SHA'],proof_path)
+          head_proof=show_json(os.environ['HEAD_SHA'],proof_path)
+          base_registry=show_json(os.environ['BASE_SHA'],registry_path)
+          head_registry=show_json(os.environ['HEAD_SHA'],registry_path)
+          snapshot=show_json(os.environ['HEAD_SHA'],snapshot_path)
+          expected=snapshot['generated_at_utc']
+          assert base_proof['generated_at_utc'] != expected
+          assert head_proof['generated_at_utc'] == expected
+          normalized_proof=copy.deepcopy(head_proof)
+          normalized_proof['generated_at_utc']=base_proof['generated_at_utc']
+          assert normalized_proof==base_proof, 'proof changed beyond generated_at_utc'
+          normalized_registry=copy.deepcopy(head_registry)
+          for field in allowed_registry_fields:
+            normalized_registry['current'][field]=base_registry['current'][field]
+          assert normalized_registry==base_registry, 'registry changed beyond allowed current fields'
+          head_proof_bytes=show_bytes(os.environ['HEAD_SHA'],proof_path)
+          proof_sha256=hashlib.sha256(head_proof_bytes).hexdigest()
+          proof_blob_sha=hashlib.sha1(f'blob {len(head_proof_bytes)}\0'.encode()+head_proof_bytes).hexdigest()
+          current=head_registry['current']
+          assert current['proof_generated_at_utc']==expected
+          assert current['proof_sha256']==proof_sha256
+          assert current['proof_blob_sha']==proof_blob_sha
+          assert current['data_origin_commit_sha']==base_registry['current']['data_origin_commit_sha']
+          provenance=current['commit_sha']
+          subprocess.check_call(['git','merge-base','--is-ancestor',current['data_origin_commit_sha'],provenance])
+          assert show_bytes(provenance,proof_path)==head_proof_bytes
+          print('SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            docs/crypto-astro-service/crypto_astro_snapshot_summary.md \
+            docs/crypto-astro-service/crypto_astro_operator_review.md \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py
+      - name: Prove squash-merge repair changes only registry provenance semantics
+        if: steps.scope.outputs.mode == 'squash_merge_ancestry_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import copy, json, os, subprocess
+          registry_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+          schema_path='site/crypto-astro/data/crypto_astro_snapshot_registry.public.schema.json'
+          old='afb3ed7cc0630b26b4a1d49bf128f2f5e08173fc'
+          new='5cf49934aa22b3ce66629b31b5a39c1c069aa349'
+          def show(ref,path):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True)
+          base_registry=json.loads(show(os.environ['BASE_SHA'],registry_path))
+          head_registry=json.loads(show(os.environ['HEAD_SHA'],registry_path))
+          assert base_registry['current']['data_origin_commit_sha']==old
+          assert head_registry['current']['data_origin_commit_sha']==new
+          normalized=copy.deepcopy(head_registry)
+          normalized['current']['data_origin_commit_sha']=old
+          assert normalized==base_registry, 'registry migration changed more than current.data_origin_commit_sha'
+          def strip_descriptions(value):
+            if isinstance(value,dict):
+              return {k:strip_descriptions(v) for k,v in value.items() if k!='description'}
+            if isinstance(value,list): return [strip_descriptions(v) for v in value]
+            return value
+          base_schema=json.loads(show(os.environ['BASE_SHA'],schema_path))
+          head_schema=json.loads(show(os.environ['HEAD_SHA'],schema_path))
+          assert strip_descriptions(base_schema)==strip_descriptions(head_schema)
+          assert head_schema['properties']['schema_version']['const']=='crypto_astro_snapshot_registry_public_v0_2'
+          print('SQUASH_MERGE_ANCESTRY_REGISTRY_MIGRATION=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json \
+            site/crypto-astro/data/market_field_snapshot.public.v0_1.json \
+            site/crypto-astro/data/scoring_snapshot.public.json \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
+            tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
+      - name: Prove runtime registry test repair removes only the one-time migration pin
+        if: steps.scope.outputs.mode == 'runtime_registry_test_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          path='tools/crypto_astro_snapshot_memory/test_snapshot_memory.py'
+          def show(ref):
+            return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True)
+          base=show(os.environ['BASE_SHA'])
+          head=show(os.environ['HEAD_SHA'])
+          assert 'EXPECTED_MIGRATED_DATA_ORIGIN' in base
+          assert 'test_current_real_registry_migration' in base
+          assert 'EXPECTED_MIGRATED_DATA_ORIGIN' not in head
+          assert 'test_current_real_registry_migration' not in head
+          assert 'test_runtime_generated_registry_uses_dynamic_accepted_base' in head
+          print('SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_FALSE_RED_REPAIR=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            tools/crypto_astro_snapshot_memory/build_snapshot_memory.py \
+            tools/crypto_astro_snapshot_memory/verify_snapshot_memory.py \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme/crypto_astro_surface.css \
+            site/theme/crypto_astro
+      - name: Prove cross-workflow generated-refresh applicability repair
+        if: steps.scope.outputs.mode == 'workflow_applicability_repair'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          test "$BASE" = "$BASE_SHA"
+          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/crypto-astro-applicability-changed.txt
+          printf '%s\n' \
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml' \
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml' \
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml' \
+            > /tmp/crypto-astro-applicability-expected.txt
+          diff -u /tmp/crypto-astro-applicability-expected.txt /tmp/crypto-astro-applicability-changed.txt
+          grep -Fq 'mode = "generated_refresh"' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_RUNTIME_UNCHANGED=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          grep -Fq 'CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY=PASS' .github/workflows/crypto-astro-operational-cadence-pr.yml
+          grep -Fq "SNAPSHOT_MEMORY_GENERATED_REFRESH_APPLICABILITY=PASS" .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          ! git show "$BASE_SHA:.github/workflows/crypto-astro-assistant-dispatch-pr.yml" | grep -Fq 'ASSISTANT_DISPATCH_GENERATED_REFRESH_NOT_APPLICABLE=PASS'
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data \
+            site/theme \
+            tools \
+            docs \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            .github/workflows/crypto-astro-static-refresh-pr-visual.yml \
+            .github/workflows/crypto-astro-what-changed-pr.yml \
+            .github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml \
+            .github/workflows/crypto-astro-assistant-dispatch.yml
+          echo CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY_REPAIR=PASS
+      - name: Prove public-service truth alignment changes only public HTML
+        if: steps.scope.outputs.mode == 'public_service_truth_alignment'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          assert changed=={'site/crypto-astro/index.html'}, changed
+          html=subprocess.check_output(['git','show',f"{os.environ['HEAD_SHA']}:site/crypto-astro/index.html"], text=True)
+          for required in (
+            'data-crypto-astro-publication-status="verified-static"',
+            'Public proof · PASS',
+            'BTC Field Read · Available',
+            'A request begins review only. It does not confirm acceptance, delivery timing, payment, or service availability.',
+            'Verified static snapshot · no live market adapter · no automated delivery · no trading signal · no forecast · no price target · no financial advice · ORION protected.',
+          ):
+            assert required in html, required
+          for stale in (
+            'Fixture-only automation is closed locally before production.',
+            'Production Gate · Locked',
+            'Ready for gate design, not production launch.',
+          ):
+            assert stale not in html, stale
+          print('SNAPSHOT_MEMORY_PUBLIC_SERVICE_TRUTH_ALIGNMENT=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/data \
+            site/theme \
+            .github/workflows \
+            tools \
+            docs
+      - name: Prove producer public identity preserves Snapshot Memory contracts
+        if: steps.scope.outputs.mode == 'producer_public_identity'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+            '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+            '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+            'site/crypto-astro/index.html',
+            'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+            'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+            'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
+            'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
+          base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          assert changed == expected, {'changed':sorted(changed),'expected':sorted(expected)}
+          html=subprocess.check_output(['git','show',f"{os.environ['HEAD_SHA']}:site/crypto-astro/index.html"], text=True)
+          assert 'Crypto-Astro' not in html
+          assert html.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 2
+          assert 'data-crypto-astro-phi-service-surface="v0_1"' in html
+          assert 'CRYPTO_ASTRO_PHI_SERVICE_SURFACE_v0_1' in html
+          print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY=PASS')
+          print('SNAPSHOT_MEMORY_BTC_ROUTE_SOVEREIGNTY=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/data \
+            site/theme \
+            docs/crypto-astro-service \
+            tools/crypto_astro_snapshot_memory
+      - name: Prove non-generated scope leaves canonical public data and HTML unchanged
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            site/crypto-astro/index.html \
+            site/crypto-astro/data/crypto_astro_snapshot.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_proof.public.json \
+            site/crypto-astro/data/crypto_astro_module_bindings.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_registry.public.json \
+            site/crypto-astro/data/crypto_astro_snapshot_delta.public.json
+      - name: Upload Snapshot Memory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-snapshot-memory-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
