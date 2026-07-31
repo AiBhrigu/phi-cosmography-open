@@ -159,6 +159,15 @@ jobs:
             'tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py',
             'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
           }
+          freshness_policy_scope = {
+            'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+            'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+            'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
+          freshness_policy_scope_applicability_repair = {
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
           generated = {
             'site/crypto-astro/index.html',
             'site/crypto-astro/data/crypto_astro_snapshot.public.json',
@@ -202,6 +211,12 @@ jobs:
             mode='assistant_dispatch_maintenance'
           elif changed == consumer_repair:
             mode='bhrigu_consumer_contract_repair'
+          elif changed == freshness_policy_scope:
+            mode='freshness_policy_scope'
+            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE=PASS')
+          elif changed == freshness_policy_scope_applicability_repair:
+            mode='freshness_policy_scope_applicability_repair'
+            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR=PASS')
           elif changed in (generated, generated | optional):
             mode='generated_refresh'
             print('SNAPSHOT_MEMORY_GENERATED_REFRESH_APPLICABILITY=PASS')
@@ -220,8 +235,10 @@ jobs:
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
               'assistant_dispatch_maintenance_missing':sorted(assistant_dispatch_maintenance-changed),
               'consumer_repair_missing':sorted(consumer_repair-changed),
+              'freshness_policy_scope_missing':sorted(freshness_policy_scope-changed),
+              'freshness_policy_scope_applicability_repair_missing':sorted(freshness_policy_scope_applicability_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-freshness_policy_scope-freshness_policy_scope_applicability_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
