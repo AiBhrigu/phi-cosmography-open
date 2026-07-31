@@ -24,14 +24,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify exact one-shot helper merge
+      - name: Verify exact bounded helper state
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "47dffc59a1c796e406a369de78f140f45a9d99e8"
           EXPECTED=$(printf '%s\n' \
             .github/workflows/crypto-astro-snapshot-memory-freshness-scope-stage.yml \
             .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt | sort)
-          test "$(git diff --name-only HEAD^ HEAD | sort)" = "$EXPECTED"
+          test "$(git diff --name-only 47dffc59a1c796e406a369de78f140f45a9d99e8..HEAD | sort)" = "$EXPECTED"
+          grep -Fq 'TRIGGER=POST_REGISTRATION_PUSH' .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt
           test "$(git hash-object .github/workflows/crypto-astro-snapshot-memory-pr.yml)" = "d4cdae9a33edeec8b59d037f0b356d90b50d090e"
 
       - name: Build exact patched workflow and report
@@ -42,7 +42,6 @@ jobs:
           python - <<'PY'
           from __future__ import annotations
 
-          import hashlib
           import json
           from pathlib import Path
 
