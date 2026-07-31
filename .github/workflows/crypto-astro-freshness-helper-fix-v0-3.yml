@@ -1,0 +1,61 @@
+name: Crypto-Astro Freshness Helper Fix v0.3
+
+on:
+  pull_request:
+    types: [reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crypto-astro-freshness-helper-fix-v0-3
+  cancel-in-progress: false
+
+jobs:
+  fix-helper:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'repair/crypto-astro-freshness-contract-24h-v0-1' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.user.login == 'AiBhrigu' &&
+      github.event.pull_request.author_association == 'OWNER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: repair/crypto-astro-freshness-contract-24h-v0-1
+          fetch-depth: 0
+
+      - name: Patch only the two proven helper defects
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "d136feb9425d160dd81cd54ced26d395e4317e72"
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/crypto-astro-freshness-contract-repair-apply.yml')
+          text = path.read_text(encoding='utf-8')
+          old_test = '          python3 -m unittest tools/crypto_astro_operations/test_verify_operational_cadence.py\n'
+          new_test = '          PYTHONPATH=tools/crypto_astro_operations python3 -m unittest tools.crypto_astro_operations.test_verify_operational_cadence\n'
+          assert text.count(old_test) == 1
+          text = text.replace(old_test, new_test, 1)
+          expected_anchor = "          EXPECTED=$(printf '%s\\n' \\\n"
+          assert text.count(expected_anchor) == 1
+          text = text.replace(
+              expected_anchor,
+              expected_anchor + "            .github/workflows/crypto-astro-freshness-contract-repair-apply.yml \\\n",
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+          test "$(git diff --name-only)" = ".github/workflows/crypto-astro-freshness-contract-repair-apply.yml"
+
+      - name: Commit helper fix to target branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/crypto-astro-freshness-contract-repair-apply.yml
+          git commit -m "CI: fix producer freshness helper invocation and transient scope"
+          git push origin HEAD:repair/crypto-astro-freshness-contract-24h-v0-1
