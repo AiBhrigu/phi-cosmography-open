@@ -73,6 +73,12 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          freshness_policy_scope = {
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+          }
           btc_phi_semantic_geometry_scope = {
               ".github/workflows/btc-poster-motion-budget-pr.yml",
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
@@ -130,6 +136,9 @@ jobs:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
               print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")
               print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")
+          elif changed == freshness_policy_scope:
+              mode = "freshness_policy_scope"
+              print("ASSISTANT_DISPATCH_FRESHNESS_POLICY_SCOPE=PASS")
           elif changed == btc_phi_semantic_geometry_scope:
               mode = "btc_phi_semantic_geometry"
               print("BTC_PHI_SEMANTIC_GEOMETRY_EXACT_SCOPE=PASS")
@@ -154,6 +163,9 @@ jobs:
                   "workflow_applicability_repair_missing": sorted(
                       workflow_applicability_repair_scope - changed
                   ),
+                  "freshness_policy_scope_missing": sorted(
+                      freshness_policy_scope - changed
+                  ),
                   "btc_phi_semantic_geometry_missing": sorted(
                       btc_phi_semantic_geometry_scope - changed
                   ),
@@ -167,6 +179,7 @@ jobs:
                       - snapshot_memory_repair_scope
                       - runtime_registry_test_repair_scope
                       - workflow_applicability_repair_scope
+                      - freshness_policy_scope
                       - btc_phi_semantic_geometry_scope
                       - timestamp_consistency_repair_scope
                       - generated_refresh_scope
