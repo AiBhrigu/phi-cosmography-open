@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  stage-patched-workflow:
+  stage-patched-workflows:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,18 +38,24 @@ jobs:
           test "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")" = ".ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt"
           grep -Fq 'TRIGGER=REGISTERED_PULL_REQUEST' .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt
           test "$(git hash-object .github/workflows/crypto-astro-snapshot-memory-pr.yml)" = "d4cdae9a33edeec8b59d037f0b356d90b50d090e"
+          test "$(git hash-object .github/workflows/crypto-astro-assistant-dispatch-pr.yml)" = "5403a527dd477f089a64eacb64d2d0a1872817c9"
+          test "$(git hash-object .github/workflows/crypto-astro-operational-cadence-pr.yml)" = "db8761d88290639e27381cd773e2e112c4776157"
 
-      - name: Build exact patched workflow and report
+      - name: Build twice and compare exact patched workflows
         run: |
           set -euo pipefail
-          rm -rf /tmp/freshness-scope-stage
-          mkdir -p /tmp/freshness-scope-stage/ops/staging
+          rm -rf /tmp/freshness-scope-stage-a /tmp/freshness-scope-stage-b
+          mkdir -p /tmp/freshness-scope-stage-a /tmp/freshness-scope-stage-b
           python tools/crypto_astro_operations/stage_snapshot_memory_freshness_scope_patch.py \
-            --source .github/workflows/crypto-astro-snapshot-memory-pr.yml \
-            --output /tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml \
-            --report /tmp/freshness-scope-stage/ops/staging/freshness-scope-patch-report.json
-          test "$(git hash-object /tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml)" = "ecfeb9d8df18d316f5fc4f72beeb3d442bd2d296"
-          test "$(sha256sum /tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml | cut -d' ' -f1)" = "407b37d48d17a26af2f21a93b6a33ede077a94656835acaea75c8fb472a0d7b4"
+            --repo . \
+            --out-dir /tmp/freshness-scope-stage-a \
+            --report /tmp/freshness-scope-stage-a/freshness-scope-patch-report.json
+          python tools/crypto_astro_operations/stage_snapshot_memory_freshness_scope_patch.py \
+            --repo . \
+            --out-dir /tmp/freshness-scope-stage-b \
+            --report /tmp/freshness-scope-stage-b/freshness-scope-patch-report.json
+          diff -ru /tmp/freshness-scope-stage-a /tmp/freshness-scope-stage-b
+          test "$(find /tmp/freshness-scope-stage-a/.github/workflows -type f | wc -l)" = "3"
 
       - name: Push exact normal-file staging branch
         run: |
@@ -58,8 +64,18 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan staging-snapshot-memory-freshness-scope
           git rm -rf .
-          cp -R /tmp/freshness-scope-stage/. .
-          git add ops/staging/crypto-astro-snapshot-memory-pr.patched.yml ops/staging/freshness-scope-patch-report.json
-          test "$(git diff --cached --name-only | sort)" = "$(printf '%s\n' ops/staging/crypto-astro-snapshot-memory-pr.patched.yml ops/staging/freshness-scope-patch-report.json | sort)"
-          git commit -m "CI: stage exact Snapshot Memory freshness scope patch"
+          mkdir -p ops/staging
+          cp -R /tmp/freshness-scope-stage-a/.github ops/staging/
+          cp /tmp/freshness-scope-stage-a/freshness-scope-patch-report.json ops/staging/
+          git add ops/staging/.github/workflows/crypto-astro-snapshot-memory-pr.yml \
+            ops/staging/.github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            ops/staging/.github/workflows/crypto-astro-operational-cadence-pr.yml \
+            ops/staging/freshness-scope-patch-report.json
+          EXPECTED=$(printf '%s\n' \
+            ops/staging/.github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            ops/staging/.github/workflows/crypto-astro-operational-cadence-pr.yml \
+            ops/staging/.github/workflows/crypto-astro-snapshot-memory-pr.yml \
+            ops/staging/freshness-scope-patch-report.json | sort)
+          test "$(git diff --cached --name-only | sort)" = "$EXPECTED"
+          git commit -m "CI: stage exact cross-workflow freshness applicability atom"
           git push --force origin HEAD:refs/heads/staging/snapshot-memory-freshness-scope-v0-1
