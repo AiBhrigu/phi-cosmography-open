@@ -3,6 +3,7 @@ import unittest
 
 from verify_operational_cadence import (
     EXPECTED_EXCEPTION_MODES,
+    FRESHNESS_CONTRACT_ID,
     EXPECTED_INPUTS,
     EXPECTED_MODES,
     OPERATOR_BOUNDARY,
@@ -16,6 +17,7 @@ from verify_operational_cadence import (
 def valid_policy():
     return {
         "schema_version": "crypto_astro_operational_cadence_v0_1",
+        "freshness_contract_id": FRESHNESS_CONTRACT_ID,
         "refresh_trigger": "workflow_dispatch",
         "default_mode": "DAILY_CADENCE",
         "allowed_modes": list(EXPECTED_MODES),
@@ -27,7 +29,7 @@ def valid_policy():
             "target_max_operational_gap_hours": 48,
         },
         "freshness": {
-            "fresh_hours": 72,
+            "fresh_hours": 24,
             "stale_limited_hours": 168,
             "unavailable_after_hours": 168,
         },
@@ -134,6 +136,16 @@ REFRESH_REASON=daily accepted refresh
 class OperationalCadenceTests(unittest.TestCase):
     def test_locked_policy_passes(self):
         self.assertEqual(verify_policy(valid_policy()), [])
+
+    def test_legacy_72h_fresh_boundary_fails(self):
+        policy = copy.deepcopy(valid_policy())
+        policy["freshness"]["fresh_hours"] = 72
+        self.assertIn("policy:fresh_hours", verify_policy(policy))
+
+    def test_freshness_contract_id_drift_fails(self):
+        policy = copy.deepcopy(valid_policy())
+        policy["freshness_contract_id"] = "legacy_72h_contract"
+        self.assertIn("policy:freshness_contract_id", verify_policy(policy))
 
     def test_daily_minimum_drift_fails(self):
         policy = copy.deepcopy(valid_policy())

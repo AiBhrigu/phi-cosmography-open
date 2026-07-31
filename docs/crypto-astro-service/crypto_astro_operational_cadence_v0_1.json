@@ -1,6 +1,7 @@
 {
   "schema_version": "crypto_astro_operational_cadence_v0_1",
   "policy_id": "CRYPTO_ASTRO_GATE_3_OPERATIONAL_CADENCE_LOCK_v0_1",
+  "freshness_contract_id": "btc_market_snapshot_freshness_24h_168h_v0_1",
   "refresh_trigger": "workflow_dispatch",
   "default_mode": "DAILY_CADENCE",
   "allowed_modes": [
@@ -27,7 +28,7 @@
     "target_max_operational_gap_hours": 48
   },
   "freshness": {
-    "fresh_hours": 72,
+    "fresh_hours": 24,
     "stale_limited_hours": 168,
     "unavailable_after_hours": 168
   },
