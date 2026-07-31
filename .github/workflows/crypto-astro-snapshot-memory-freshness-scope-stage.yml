@@ -1,11 +1,6 @@
 name: Crypto-Astro Snapshot Memory Freshness Scope Stage
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/crypto-astro-snapshot-memory-freshness-scope-stage.yml'
-      - '.ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -21,11 +16,6 @@ concurrency:
 
 jobs:
   stage-patched-workflow:
-    if: >-
-      github.repository == 'AiBhrigu/phi-cosmography-open' &&
-      (github.event_name == 'push' ||
-       (github.event.pull_request.head.repo.full_name == github.repository &&
-        github.event.pull_request.head.ref == 'ops/snapshot-memory-freshness-scope-pr-stage-trigger-v0-1'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -33,23 +23,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify exact bounded trigger state
+      - name: Verify exact owner branch and marker-only scope
         env:
-          EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            test "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")" = ".ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt"
-            grep -Fq 'TRIGGER=REGISTERED_PULL_REQUEST' .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt
-          else
-            EXPECTED=$(printf '%s\n' \
-              .github/workflows/crypto-astro-snapshot-memory-freshness-scope-stage.yml \
-              .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt | sort)
-            test "$(git diff --name-only 47dffc59a1c796e406a369de78f140f45a9d99e8..HEAD | sort)" = "$EXPECTED"
-            grep -Fq 'TRIGGER=POST_REGISTRATION_PUSH' .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt
-          fi
+          test "$HEAD_REPO" = "AiBhrigu/phi-cosmography-open"
+          test "$AUTHOR" = "AiBhrigu"
+          test "$HEAD_REF" = "ops/snapshot-memory-freshness-scope-pr-stage-trigger-v0-1"
+          test "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")" = ".ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt"
+          grep -Fq 'TRIGGER=REGISTERED_PULL_REQUEST' .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt
           test "$(git hash-object .github/workflows/crypto-astro-snapshot-memory-pr.yml)" = "d4cdae9a33edeec8b59d037f0b356d90b50d090e"
 
       - name: Build exact patched workflow and report
