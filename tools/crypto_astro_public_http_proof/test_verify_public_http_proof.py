@@ -66,6 +66,18 @@ class PublicHttpProofTests(unittest.TestCase):
             mod.assert_exact_bytes(b"live", b"expected", "fixture")
         self.assertEqual(ctx.exception.reason_code, "PUBLIC_BYTES_MISMATCH")
 
+    def test_bhrigu_form_requires_canonical_dialogue_gateway(self) -> None:
+        good = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><a href="/crypto-astro/btc/live?lang=en">Start free dialogue</a>', {})
+        assertions = mod.verify_bhrigu_form(good)
+        self.assertTrue(all(assertions.values()))
+        self.assertTrue(assertions["dialogue_gateway_present"])
+        self.assertTrue(assertions["live_route_present"])
+
+        bad = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><p>Ask one BTC field question</p>', {})
+        with self.assertRaises(mod.ProofFailure) as ctx:
+            mod.verify_bhrigu_form(bad)
+        self.assertEqual(ctx.exception.reason_code, "BHRIGU_FORM_ASSERTION_FAILED")
+
     def test_bhrigu_read_requires_timestamp_and_success_region(self) -> None:
         timestamp = "2026-07-22T12:47:37Z"
         good = mod.FetchResult(
