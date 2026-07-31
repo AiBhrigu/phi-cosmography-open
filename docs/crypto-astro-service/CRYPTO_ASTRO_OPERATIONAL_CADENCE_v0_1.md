@@ -91,3 +91,58 @@ The generated review record must state:
 > Workflow may push one fully validated review branch and open one review PR. It may not merge or issue a deployment command. Publication follows only after explicit merge authorization.
 
 This replaces the obsolete local-only statement `No push, no PR, no deploy.`
+
+## Automatic 24-hour refresh design — dry-run only
+
+Design ID: `crypto_astro_automatic_24h_refresh_fail_closed_design_v0_1`.
+
+Status: **DESIGN_ONLY_DRY_RUN**.
+
+This design does not activate a GitHub `schedule`, does not change production, and does not turn the current manual workflow into an auto-merge or deployment workflow. Activation requires a separate exact node and authorization.
+
+The proposed checker evaluates the accepted Snapshot once per hour. It preserves the 18-hour hard minimum and opens its automatic eligibility window at 20 hours, leaving a four-hour buffer before the public `FRESH` boundary at 24 hours.
+
+When eligible, the checker may only request the existing `crypto-astro-static-refresh-manual.yml` workflow in `DAILY_CADENCE` mode with an exact `main` SHA lock. The existing workflow remains the sole source-fetch, methodology, consumer, memory, scope, branch, and review-PR implementation.
+
+The design fails closed when:
+
+- the accepted Snapshot is in the future;
+- the exact `main` lock has moved;
+- another refresh PR is open;
+- a refresh workflow is already running;
+- a required source is unhealthy or unavailable;
+- material change cannot be established;
+- any existing source, proof, schema, methodology, consumer, scope, memory, or atomicity gate fails.
+
+If sources are healthy but there is no material change, the checker does not refresh the timestamp and does not create a PR. It records `NO_MATERIAL_CHANGE_RECHECK` and evaluates again after 60 minutes. This may allow the public state to become `STALE_LIMITED`; the system must not claim freshness without new accepted evidence.
+
+### Dry-run decision matrix
+
+| Scenario | Expected decision | Public state | Side effects |
+|---|---|---|---|
+| 17h | `HOLD_MINIMUM_INTERVAL` | `FRESH` | none |
+| 19h | `HOLD_BEFORE_AUTOMATIC_WINDOW` | `FRESH` | none |
+| 20h, healthy, material change | `WOULD_DISPATCH_REVIEW_PR` | `FRESH` | simulated review PR only |
+| exact-main drift | `BLOCK_MAIN_DRIFT` | age-derived | none |
+| open refresh PR | `BLOCK_OPEN_REFRESH_PR` | age-derived | none |
+| workflow in progress | `BLOCK_SINGLE_FLIGHT` | age-derived | none |
+| source failure | `SOURCE_FAILURE_RECHECK` | age-derived | none |
+| no material change | `NO_MATERIAL_CHANGE_RECHECK` | age-derived | none |
+| 24h exact | `WOULD_DISPATCH_REVIEW_PR` | `FRESH` | simulated review PR only |
+| 25h | `WOULD_DISPATCH_REVIEW_PR` | `STALE_LIMITED` | simulated review PR only |
+| 49h | `WOULD_DISPATCH_REVIEW_PR` | `STALE_LIMITED` + operational breach | simulated review PR only |
+| 72h | `WOULD_DISPATCH_REVIEW_PR` | `STALE_LIMITED` | simulated review PR only |
+| 168h exact | `WOULD_DISPATCH_REVIEW_PR` | `STALE_LIMITED` | simulated review PR only |
+| 169h | `WOULD_DISPATCH_REVIEW_PR` | `UNAVAILABLE` | simulated review PR only |
+| future timestamp | `BLOCK_FUTURE_SNAPSHOT` | `UNAVAILABLE` | none |
+
+Every dry-run result hard-codes:
+
+- `schedule_active=false`;
+- `production_active=false`;
+- `would_merge=false`;
+- `would_deploy=false`;
+- `would_modify_public_data=false`;
+- explicit merge authorization remains required.
+
+A future activation node must independently prove scheduler permissions, owner-authenticated dispatch, replay resistance, alerting, rollback, quota behavior, and public exact-SHA verification before any schedule is added.

@@ -11,6 +11,8 @@ from typing import Any
 
 SCHEMA_VERSION = "crypto_astro_operational_cadence_v0_1"
 FRESHNESS_CONTRACT_ID = "btc_market_snapshot_freshness_24h_168h_v0_1"
+AUTOMATIC_REFRESH_DESIGN_ID = "crypto_astro_automatic_24h_refresh_fail_closed_design_v0_1"
+AUTOMATIC_REFRESH_DESIGN_STATUS = "DESIGN_ONLY_DRY_RUN"
 EXPECTED_MODES = [
     "DAILY_CADENCE",
     "PRE_REPORT",
@@ -41,6 +43,160 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise CadenceVerificationError(f"{path}: expected JSON object")
     return value
+
+
+def verify_automatic_refresh_design(policy: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    design = (
+        policy.get("automatic_refresh_design")
+        if isinstance(policy.get("automatic_refresh_design"), dict)
+        else {}
+    )
+    expected = {
+        "design_id": AUTOMATIC_REFRESH_DESIGN_ID,
+        "status": AUTOMATIC_REFRESH_DESIGN_STATUS,
+        "activation_requires_separate_authorization": True,
+        "schedule_activation_allowed": False,
+        "production_activation_allowed": False,
+        "proposed_check_interval_minutes": 60,
+        "proposed_eligibility_age_hours": 20,
+        "daily_minimum_interval_hours": 18,
+        "freshness_boundary_hours": 24,
+        "operational_breach_hours": 48,
+        "unavailable_after_hours": 168,
+        "dispatch_target": "crypto-astro-static-refresh-manual.yml",
+        "dispatch_mode": "DAILY_CADENCE",
+        "exact_main_lock_required": True,
+        "single_flight_required": True,
+        "source_health_required": True,
+        "material_change_required_for_review_pr": True,
+        "review_pr_only": True,
+        "auto_merge_allowed": False,
+        "deploy_command_allowed": False,
+        "timestamp_only_refresh_allowed": False,
+        "recheck_after_no_material_change_minutes": 60,
+    }
+    for key, value in expected.items():
+        require(design.get(key) == value, f"automatic:{key}", failures)
+    return failures
+
+
+def evaluate_automatic_refresh_dry_run(
+    policy: dict[str, Any], scenario: dict[str, Any]
+) -> dict[str, Any]:
+    design = policy["automatic_refresh_design"]
+    age_hours = float(scenario["snapshot_age_hours"])
+    if age_hours < 0:
+        freshness_state = "UNAVAILABLE"
+        decision = "BLOCK_FUTURE_SNAPSHOT"
+    elif age_hours <= design["freshness_boundary_hours"]:
+        freshness_state = "FRESH"
+        decision = ""
+    elif age_hours <= design["unavailable_after_hours"]:
+        freshness_state = "STALE_LIMITED"
+        decision = ""
+    else:
+        freshness_state = "UNAVAILABLE"
+        decision = ""
+
+    if not decision:
+        if age_hours < design["daily_minimum_interval_hours"]:
+            decision = "HOLD_MINIMUM_INTERVAL"
+        elif age_hours < design["proposed_eligibility_age_hours"]:
+            decision = "HOLD_BEFORE_AUTOMATIC_WINDOW"
+        elif scenario.get("exact_main_match") is not True:
+            decision = "BLOCK_MAIN_DRIFT"
+        elif int(scenario.get("open_refresh_pr_count", 0)) != 0:
+            decision = "BLOCK_OPEN_REFRESH_PR"
+        elif scenario.get("workflow_in_progress") is True:
+            decision = "BLOCK_SINGLE_FLIGHT"
+        elif scenario.get("source_status") != "HEALTHY":
+            decision = "SOURCE_FAILURE_RECHECK"
+        elif scenario.get("material_change") == "NO":
+            decision = "NO_MATERIAL_CHANGE_RECHECK"
+        elif scenario.get("material_change") != "YES":
+            decision = "BLOCK_MATERIAL_CHANGE_UNKNOWN"
+        else:
+            decision = "WOULD_DISPATCH_REVIEW_PR"
+
+    return {
+        "schema_version": "crypto_astro_automatic_24h_refresh_dry_run_result_v0_1",
+        "design_id": design["design_id"],
+        "design_status": design["status"],
+        "scenario_id": str(scenario.get("scenario_id", "unnamed")),
+        "snapshot_age_hours": age_hours,
+        "freshness_state": freshness_state,
+        "operational_breach": age_hours > design["operational_breach_hours"],
+        "decision": decision,
+        "would_dispatch_existing_manual_workflow": decision == "WOULD_DISPATCH_REVIEW_PR",
+        "dispatch_mode": design["dispatch_mode"] if decision == "WOULD_DISPATCH_REVIEW_PR" else None,
+        "would_create_review_pr_only": decision == "WOULD_DISPATCH_REVIEW_PR",
+        "would_merge": False,
+        "would_deploy": False,
+        "would_modify_public_data": False,
+        "schedule_active": False,
+        "production_active": False,
+        "requires_separate_activation_authorization": True,
+        "requires_explicit_merge_authorization": True,
+    }
+
+
+def automatic_refresh_dry_run_matrix(policy: dict[str, Any]) -> list[dict[str, Any]]:
+    base = {
+        "exact_main_match": True,
+        "open_refresh_pr_count": 0,
+        "workflow_in_progress": False,
+        "source_status": "HEALTHY",
+        "material_change": "YES",
+    }
+    scenarios = [
+        {**base, "scenario_id": "minimum_hold_17h", "snapshot_age_hours": 17},
+        {**base, "scenario_id": "pre_window_hold_19h", "snapshot_age_hours": 19},
+        {**base, "scenario_id": "eligible_20h", "snapshot_age_hours": 20},
+        {**base, "scenario_id": "main_drift_22h", "snapshot_age_hours": 22, "exact_main_match": False},
+        {**base, "scenario_id": "open_pr_block_22h", "snapshot_age_hours": 22, "open_refresh_pr_count": 1},
+        {**base, "scenario_id": "single_flight_block_22h", "snapshot_age_hours": 22, "workflow_in_progress": True},
+        {**base, "scenario_id": "source_failure_22h", "snapshot_age_hours": 22, "source_status": "FAILED"},
+        {**base, "scenario_id": "no_material_change_22h", "snapshot_age_hours": 22, "material_change": "NO"},
+        {**base, "scenario_id": "fresh_boundary_24h", "snapshot_age_hours": 24},
+        {**base, "scenario_id": "stale_limited_25h", "snapshot_age_hours": 25},
+        {**base, "scenario_id": "operational_breach_49h", "snapshot_age_hours": 49},
+        {**base, "scenario_id": "legacy_probe_72h", "snapshot_age_hours": 72},
+        {**base, "scenario_id": "stale_boundary_168h", "snapshot_age_hours": 168},
+        {**base, "scenario_id": "unavailable_169h", "snapshot_age_hours": 169},
+        {**base, "scenario_id": "future_snapshot", "snapshot_age_hours": -0.1},
+    ]
+    return [evaluate_automatic_refresh_dry_run(policy, scenario) for scenario in scenarios]
+
+
+def verify_automatic_refresh_dry_run(policy: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    results = {item["scenario_id"]: item for item in automatic_refresh_dry_run_matrix(policy)}
+    expected = {
+        "minimum_hold_17h": ("HOLD_MINIMUM_INTERVAL", "FRESH", False),
+        "pre_window_hold_19h": ("HOLD_BEFORE_AUTOMATIC_WINDOW", "FRESH", False),
+        "eligible_20h": ("WOULD_DISPATCH_REVIEW_PR", "FRESH", False),
+        "main_drift_22h": ("BLOCK_MAIN_DRIFT", "FRESH", False),
+        "open_pr_block_22h": ("BLOCK_OPEN_REFRESH_PR", "FRESH", False),
+        "single_flight_block_22h": ("BLOCK_SINGLE_FLIGHT", "FRESH", False),
+        "source_failure_22h": ("SOURCE_FAILURE_RECHECK", "FRESH", False),
+        "no_material_change_22h": ("NO_MATERIAL_CHANGE_RECHECK", "FRESH", False),
+        "fresh_boundary_24h": ("WOULD_DISPATCH_REVIEW_PR", "FRESH", False),
+        "stale_limited_25h": ("WOULD_DISPATCH_REVIEW_PR", "STALE_LIMITED", False),
+        "operational_breach_49h": ("WOULD_DISPATCH_REVIEW_PR", "STALE_LIMITED", True),
+        "legacy_probe_72h": ("WOULD_DISPATCH_REVIEW_PR", "STALE_LIMITED", True),
+        "stale_boundary_168h": ("WOULD_DISPATCH_REVIEW_PR", "STALE_LIMITED", True),
+        "unavailable_169h": ("WOULD_DISPATCH_REVIEW_PR", "UNAVAILABLE", True),
+        "future_snapshot": ("BLOCK_FUTURE_SNAPSHOT", "UNAVAILABLE", False),
+    }
+    for scenario_id, (decision, freshness, breach) in expected.items():
+        result = results.get(scenario_id, {})
+        require(result.get("decision") == decision, f"dry_run:{scenario_id}:decision", failures)
+        require(result.get("freshness_state") == freshness, f"dry_run:{scenario_id}:freshness", failures)
+        require(result.get("operational_breach") is breach, f"dry_run:{scenario_id}:breach", failures)
+        for key in ("would_merge", "would_deploy", "would_modify_public_data", "schedule_active", "production_active"):
+            require(result.get(key) is False, f"dry_run:{scenario_id}:{key}", failures)
+    return failures
 
 
 def verify_policy(policy: dict[str, Any]) -> list[str]:
@@ -90,6 +246,7 @@ def verify_policy(policy: dict[str, Any]) -> list[str]:
     require(policy.get("prohibited_refresh_triggers") == ["schedule", "push"], "policy:prohibited_triggers", failures)
     boundary = policy.get("boundary") if isinstance(policy.get("boundary"), dict) else {}
     require(boundary and all(value is False for value in boundary.values()), "policy:boundary", failures)
+    failures.extend(verify_automatic_refresh_design(policy))
     return failures
 
 
@@ -184,6 +341,7 @@ def verify_repository(
     policy = load_json(policy_path)
     checks = {
         "policy": verify_policy(policy),
+        "automatic_refresh_dry_run": verify_automatic_refresh_dry_run(policy),
         "manual_workflow": verify_manual_workflow(manual_workflow_path.read_text(encoding="utf-8"), policy),
         "cadence_workflow": verify_cadence_workflow(cadence_workflow_path.read_text(encoding="utf-8")),
         "operator_review": verify_operator_review(operator_review_path.read_text(encoding="utf-8")),
@@ -194,6 +352,8 @@ def verify_repository(
         "status": "PASS" if not failures else "FAIL",
         "policy": str(policy_path.relative_to(repo)),
         "checks": {section: "PASS" if not values else "FAIL" for section, values in checks.items()},
+        "automatic_refresh_design": policy["automatic_refresh_design"],
+        "automatic_refresh_dry_run_matrix": automatic_refresh_dry_run_matrix(policy),
         "failures": failures,
     }
 
