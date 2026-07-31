@@ -30,5 +30,3 @@ REFRESH_REASON=Refresh stale accepted Snapshot and rebuild proof bindings memory
 ## Boundary
 
 Workflow may push one fully validated review branch and open one review PR. It may not merge or issue a deployment command. Publication follows only after explicit merge authorization.
-
-<!-- OWNER_EXACT_HEAD_CI_RETRIGGER_PR_249 -->
