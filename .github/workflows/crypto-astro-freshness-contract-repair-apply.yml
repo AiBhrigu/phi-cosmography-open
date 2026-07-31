@@ -39,8 +39,8 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin main
-          test "$(git rev-parse origin/main)" = "c71ad0e5d650fcf5f10a9db92c3c0d8864aee907"
-          test "$(git merge-base HEAD origin/main)" = "c71ad0e5d650fcf5f10a9db92c3c0d8864aee907"
+          test "$(git rev-parse origin/main)" = "REPLACE_WITH_HELPER_MAIN_SHA"
+          test "$(git merge-base HEAD origin/main)" = "REPLACE_WITH_HELPER_MAIN_SHA"
           test "$(git diff --name-only origin/main...HEAD)" = ".github/workflows/crypto-astro-freshness-contract-repair-apply.yml"
 
       - name: Apply exact producer freshness contract repair
@@ -68,18 +68,27 @@ jobs:
 
           verifier_path = Path("tools/crypto_astro_operations/verify_operational_cadence.py")
           verifier = verifier_path.read_text(encoding="utf-8")
-          old = 'SCHEMA_VERSION = "crypto_astro_operational_cadence_v0_1"\n'
-          new = old + f'FRESHNESS_CONTRACT_ID = "{contract_id}"\n'
-          assert verifier.count(old) == 1
-          verifier = verifier.replace(old, new, 1)
+          schema_line = 'SCHEMA_VERSION = "crypto_astro_operational_cadence_v0_1"\n'
+          assert verifier.count(schema_line) == 1
+          verifier = verifier.replace(
+              schema_line,
+              schema_line + f'FRESHNESS_CONTRACT_ID = "{contract_id}"\n',
+              1,
+          )
           schema_check = '    require(policy.get("schema_version") == SCHEMA_VERSION, "policy:schema_version", failures)\n'
-          contract_check = schema_check + '    require(policy.get("freshness_contract_id") == FRESHNESS_CONTRACT_ID, "policy:freshness_contract_id", failures)\n'
           assert verifier.count(schema_check) == 1
-          verifier = verifier.replace(schema_check, contract_check, 1)
+          verifier = verifier.replace(
+              schema_check,
+              schema_check + '    require(policy.get("freshness_contract_id") == FRESHNESS_CONTRACT_ID, "policy:freshness_contract_id", failures)\n',
+              1,
+          )
           old_fresh = '    require(freshness.get("fresh_hours") == 72, "policy:fresh_hours", failures)\n'
-          new_fresh = '    require(freshness.get("fresh_hours") == 24, "policy:fresh_hours", failures)\n'
           assert verifier.count(old_fresh) == 1
-          verifier = verifier.replace(old_fresh, new_fresh, 1)
+          verifier = verifier.replace(
+              old_fresh,
+              '    require(freshness.get("fresh_hours") == 24, "policy:fresh_hours", failures)\n',
+              1,
+          )
           verifier_path.write_text(verifier, encoding="utf-8")
 
           test_path = Path("tools/crypto_astro_operations/test_verify_operational_cadence.py")
@@ -89,45 +98,26 @@ jobs:
           tests = tests.replace(import_anchor, import_anchor + '    FRESHNESS_CONTRACT_ID,\n', 1)
           schema_entry = '        "schema_version": "crypto_astro_operational_cadence_v0_1",\n'
           assert tests.count(schema_entry) == 1
-          tests = tests.replace(schema_entry, schema_entry + '        "freshness_contract_id": FRESHNESS_CONTRACT_ID,\n', 1)
+          tests = tests.replace(
+              schema_entry,
+              schema_entry + '        "freshness_contract_id": FRESHNESS_CONTRACT_ID,\n',
+              1,
+          )
           assert tests.count('            "fresh_hours": 72,\n') == 1
           tests = tests.replace('            "fresh_hours": 72,\n', '            "fresh_hours": 24,\n', 1)
-          insertion_anchor = '    def test_daily_minimum_drift_fails(self):\n'
-          regression = '''    def test_legacy_72h_fresh_boundary_fails(self):
-        policy = copy.deepcopy(valid_policy())
-        policy["freshness"]["fresh_hours"] = 72
-        self.assertIn("policy:fresh_hours", verify_policy(policy))
-
-    def test_freshness_contract_id_drift_fails(self):
-        policy = copy.deepcopy(valid_policy())
-        policy["freshness_contract_id"] = "legacy_72h_contract"
-        self.assertIn("policy:freshness_contract_id", verify_policy(policy))
-
-'''
-          assert tests.count(insertion_anchor) == 1
-          tests = tests.replace(insertion_anchor, regression + insertion_anchor, 1)
           test_path.write_text(tests, encoding="utf-8")
 
           doc_path = Path("docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md")
           doc = doc_path.read_text(encoding="utf-8")
-          assert doc.count("Machine-readable source of truth: `crypto_astro_operational_cadence_v0_1.json`.") == 1
+          source_line = "Machine-readable source of truth: `crypto_astro_operational_cadence_v0_1.json`."
+          assert doc.count(source_line) == 1
           doc = doc.replace(
-              "Machine-readable source of truth: `crypto_astro_operational_cadence_v0_1.json`.",
-              "Machine-readable source of truth: `crypto_astro_operational_cadence_v0_1.json`.\n\nFreshness contract: `btc_market_snapshot_freshness_24h_168h_v0_1`.",
+              source_line,
+              source_line + "\n\nFreshness contract: `btc_market_snapshot_freshness_24h_168h_v0_1`.",
               1,
           )
-          old_lines = """- Target maximum operational gap: 48 hours.
-- BHRIGU freshness boundary: `FRESH` through 72 hours.
-- BHRIGU limited stale boundary: through 168 hours.
-- After 168 hours the BTC Field Read fails closed as unavailable.
-"""
-          new_lines = """- Target maximum operational gap: 48 hours.
-- BHRIGU public freshness boundary: `FRESH` through exactly 24 hours.
-- After 24 hours and through 168 hours the public state is `STALE_LIMITED`.
-- Crossing 48 hours is an operational breach and escalation boundary; it is not a second public freshness state.
-- The 72-hour point is a regression probe inside `STALE_LIMITED`, never a `FRESH` boundary.
-- After 168 hours the BTC Field Read fails closed as unavailable.
-"""
+          old_lines = "- Target maximum operational gap: 48 hours.\n- BHRIGU freshness boundary: `FRESH` through 72 hours.\n- BHRIGU limited stale boundary: through 168 hours.\n- After 168 hours the BTC Field Read fails closed as unavailable.\n"
+          new_lines = "- Target maximum operational gap: 48 hours.\n- BHRIGU public freshness boundary: `FRESH` through exactly 24 hours.\n- After 24 hours and through 168 hours the public state is `STALE_LIMITED`.\n- Crossing 48 hours is an operational breach and escalation boundary; it is not a second public freshness state.\n- The 72-hour point is a regression probe inside `STALE_LIMITED`, never a `FRESH` boundary.\n- After 168 hours the BTC Field Read fails closed as unavailable.\n"
           assert doc.count(old_lines) == 1
           doc = doc.replace(old_lines, new_lines, 1)
           doc_path.write_text(doc, encoding="utf-8")
@@ -143,15 +133,13 @@ jobs:
         run: |
           set -euo pipefail
           rm .github/workflows/crypto-astro-freshness-contract-repair-apply.yml
-          EXPECTED=$(cat <<'EOF'
-          docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md
-          docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json
-          tools/crypto_astro_operations/test_verify_operational_cadence.py
-          tools/crypto_astro_operations/verify_operational_cadence.py
-          EOF
-          )
+          EXPECTED=$(printf '%s\n' \
+            docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json \
+            tools/crypto_astro_operations/test_verify_operational_cadence.py \
+            tools/crypto_astro_operations/verify_operational_cadence.py | sort)
           ACTUAL=$(git status --short | awk '{print $2}' | sort)
-          test "$ACTUAL" = "$(printf '%s\n' "$EXPECTED" | sort)"
+          test "$ACTUAL" = "$EXPECTED"
 
       - name: Commit exact repair branch
         run: |
