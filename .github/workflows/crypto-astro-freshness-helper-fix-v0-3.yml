@@ -31,7 +31,9 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin main
-          test "$(git rev-parse origin/main)" = "d136feb9425d160dd81cd54ced26d395e4317e72"
+          test "$(git merge-base HEAD origin/main)" = "d136feb9425d160dd81cd54ced26d395e4317e72"
+          MAIN_DELTA=$(git diff --name-only d136feb9425d160dd81cd54ced26d395e4317e72..origin/main | sort)
+          test "$MAIN_DELTA" = ".github/workflows/crypto-astro-freshness-helper-fix-v0-3.yml"
           python3 - <<'PY'
           from pathlib import Path
           path = Path('.github/workflows/crypto-astro-freshness-contract-repair-apply.yml')
