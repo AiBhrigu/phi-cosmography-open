@@ -4,6 +4,8 @@ Status: **LOCKED FOR MANUAL CONTROLLED REFRESH**
 
 Machine-readable source of truth: `crypto_astro_operational_cadence_v0_1.json`.
 
+Freshness contract: `btc_market_snapshot_freshness_24h_168h_v0_1`.
+
 ## Operating model
 
 Crypto-Astro uses a static, source-bound market snapshot. A refresh is prepared by a manually dispatched GitHub Actions workflow. The workflow may create one fully validated branch and one review pull request. It may not merge the pull request or issue a deployment command.
@@ -15,8 +17,10 @@ Publication occurs only after explicit merge authorization. The existing Pages w
 - Target: one accepted snapshot per rolling 24 hours.
 - `DAILY_CADENCE` may not run less than 18 hours after the latest accepted snapshot.
 - Target maximum operational gap: 48 hours.
-- BHRIGU freshness boundary: `FRESH` through 72 hours.
-- BHRIGU limited stale boundary: through 168 hours.
+- BHRIGU public freshness boundary: `FRESH` through exactly 24 hours.
+- After 24 hours and through 168 hours the public state is `STALE_LIMITED`.
+- Crossing 48 hours is an operational breach and escalation boundary; it is not a second public freshness state.
+- The 72-hour point is a regression probe inside `STALE_LIMITED`, never a `FRESH` boundary.
 - After 168 hours the BTC Field Read fails closed as unavailable.
 - A refresh is not accepted merely to change a timestamp. If no material file change is generated, no review PR is opened.
 

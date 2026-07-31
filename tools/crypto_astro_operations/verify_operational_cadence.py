@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = "crypto_astro_operational_cadence_v0_1"
+FRESHNESS_CONTRACT_ID = "btc_market_snapshot_freshness_24h_168h_v0_1"
 EXPECTED_MODES = [
     "DAILY_CADENCE",
     "PRE_REPORT",
@@ -45,6 +46,7 @@ def load_json(path: Path) -> dict[str, Any]:
 def verify_policy(policy: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     require(policy.get("schema_version") == SCHEMA_VERSION, "policy:schema_version", failures)
+    require(policy.get("freshness_contract_id") == FRESHNESS_CONTRACT_ID, "policy:freshness_contract_id", failures)
     require(policy.get("refresh_trigger") == "workflow_dispatch", "policy:refresh_trigger", failures)
     require(policy.get("default_mode") == "DAILY_CADENCE", "policy:default_mode", failures)
     require(policy.get("allowed_modes") == EXPECTED_MODES, "policy:allowed_modes", failures)
@@ -57,7 +59,7 @@ def verify_policy(policy: dict[str, Any]) -> list[str]:
     require(cadence.get("target_max_operational_gap_hours") == 48, "policy:max_gap", failures)
 
     freshness = policy.get("freshness") if isinstance(policy.get("freshness"), dict) else {}
-    require(freshness.get("fresh_hours") == 72, "policy:fresh_hours", failures)
+    require(freshness.get("fresh_hours") == 24, "policy:fresh_hours", failures)
     require(freshness.get("stale_limited_hours") == 168, "policy:stale_limited_hours", failures)
     require(freshness.get("unavailable_after_hours") == 168, "policy:unavailable_after_hours", failures)
 
