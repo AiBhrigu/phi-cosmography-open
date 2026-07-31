@@ -1,0 +1,140 @@
+name: Crypto-Astro Snapshot Memory Freshness Scope Stage
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/crypto-astro-snapshot-memory-freshness-scope-stage.yml'
+      - '.ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crypto-astro-snapshot-memory-freshness-scope-stage
+  cancel-in-progress: false
+
+jobs:
+  stage-patched-workflow:
+    if: github.repository == 'AiBhrigu/phi-cosmography-open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact one-shot helper merge
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "47dffc59a1c796e406a369de78f140f45a9d99e8"
+          EXPECTED=$(printf '%s\n' \
+            .github/workflows/crypto-astro-snapshot-memory-freshness-scope-stage.yml \
+            .ops/crypto-astro-snapshot-memory-freshness-scope-stage-v0-1.txt | sort)
+          test "$(git diff --name-only HEAD^ HEAD | sort)" = "$EXPECTED"
+          test "$(git hash-object .github/workflows/crypto-astro-snapshot-memory-pr.yml)" = "d4cdae9a33edeec8b59d037f0b356d90b50d090e"
+
+      - name: Build exact patched workflow and report
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/freshness-scope-stage
+          mkdir -p /tmp/freshness-scope-stage/ops/staging
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          from pathlib import Path
+
+          source = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
+          output = Path('/tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml')
+          text = source.read_text(encoding='utf-8')
+          original = text
+
+          def replace_once(value: str, old: str, new: str, label: str) -> str:
+              count = value.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected one anchor, found {count}')
+              return value.replace(old, new, 1)
+
+          scope_sets = '''          freshness_policy_scope = {
+            'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+            'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+            'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
+          freshness_policy_scope_applicability_repair = {
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+'''
+          text = replace_once(
+              text,
+              '          generated = {\n',
+              scope_sets + '          generated = {\n',
+              'scope set insertion',
+          )
+
+          text = replace_once(
+              text,
+              "          elif changed == consumer_repair:\n            mode='bhrigu_consumer_contract_repair'\n          elif changed in (generated, generated | optional):\n",
+              "          elif changed == consumer_repair:\n            mode='bhrigu_consumer_contract_repair'\n          elif changed == freshness_policy_scope:\n            mode='freshness_policy_scope'\n            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE=PASS')\n          elif changed == freshness_policy_scope_applicability_repair:\n            mode='freshness_policy_scope_applicability_repair'\n            print('SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR=PASS')\n          elif changed in (generated, generated | optional):\n",
+              'classification insertion',
+          )
+
+          text = replace_once(
+              text,
+              "              'consumer_repair_missing':sorted(consumer_repair-changed),\n              'generated_missing':sorted(generated-changed),\n",
+              "              'consumer_repair_missing':sorted(consumer_repair-changed),\n              'freshness_policy_scope_missing':sorted(freshness_policy_scope-changed),\n              'freshness_policy_scope_applicability_repair_missing':sorted(freshness_policy_scope_applicability_repair-changed),\n              'generated_missing':sorted(generated-changed),\n",
+              'missing diagnostics insertion',
+          )
+
+          text = replace_once(
+              text,
+              "              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-generated-optional),\n",
+              "              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-freshness_policy_scope-freshness_policy_scope_applicability_repair-generated-optional),\n",
+              'unexpected diagnostics alignment',
+          )
+
+          required = (
+              "mode='freshness_policy_scope'",
+              'SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE=PASS',
+              "mode='freshness_policy_scope_applicability_repair'",
+              'SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR=PASS',
+          )
+          for token in required:
+              if text.count(token) != 1:
+                  raise RuntimeError(f'required token count drift: {token!r} -> {text.count(token)}')
+          if text == original:
+              raise RuntimeError('patch produced no change')
+
+          output.write_text(text, encoding='utf-8')
+          report = {
+              'status': 'PASS',
+              'node': 'CRYPTO_ASTRO_SNAPSHOT_MEMORY_FRESHNESS_POLICY_SCOPE_APPLICABILITY_REPAIR_v0_1',
+              'source_blob_sha': 'd4cdae9a33edeec8b59d037f0b356d90b50d090e',
+              'patched_git_blob_sha': 'ecfeb9d8df18d316f5fc4f72beeb3d442bd2d296',
+              'patched_sha256': '407b37d48d17a26af2f21a93b6a33ede077a94656835acaea75c8fb472a0d7b4',
+              'changed_repository_files_after_apply': ['.github/workflows/crypto-astro-snapshot-memory-pr.yml'],
+              'snapshot_data_changed': False,
+              'memory_artifacts_changed': False,
+              'target_pr_merge_authorized': False,
+          }
+          Path('/tmp/freshness-scope-stage/ops/staging/freshness-scope-patch-report.json').write_text(
+              json.dumps(report, indent=2) + '\n', encoding='utf-8'
+          )
+          PY
+          test "$(git hash-object /tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml)" = "ecfeb9d8df18d316f5fc4f72beeb3d442bd2d296"
+          test "$(sha256sum /tmp/freshness-scope-stage/ops/staging/crypto-astro-snapshot-memory-pr.patched.yml | cut -d' ' -f1)" = "407b37d48d17a26af2f21a93b6a33ede077a94656835acaea75c8fb472a0d7b4"
+
+      - name: Push exact normal-file staging branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan staging-snapshot-memory-freshness-scope
+          git rm -rf .
+          cp -R /tmp/freshness-scope-stage/. .
+          git add ops/staging/crypto-astro-snapshot-memory-pr.patched.yml ops/staging/freshness-scope-patch-report.json
+          test "$(git diff --cached --name-only | sort)" = "$(printf '%s\n' ops/staging/crypto-astro-snapshot-memory-pr.patched.yml ops/staging/freshness-scope-patch-report.json | sort)"
+          git commit -m "CI: stage exact Snapshot Memory freshness scope patch"
+          git push --force origin HEAD:refs/heads/staging/snapshot-memory-freshness-scope-v0-1
