@@ -1,0 +1,59 @@
+name: Crypto-Astro Freshness Target Rebase
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: crypto-astro-freshness-target-rebase
+  cancel-in-progress: false
+
+jobs:
+  rebase-target:
+    if: >-
+      github.event.issue.title == 'BTC_FRESHNESS_TARGET_REBASE_PRODUCER_v0_1' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Verify transport-only default delta and target lock
+        run: |
+          set -euo pipefail
+          git fetch origin main repair/crypto-astro-freshness-contract-24h-v0-1
+          test "$(git diff --name-only 97e50201553fbadb3f6a7c34df4b6c07a254d7f6..origin/main | sort)" = ".github/workflows/crypto-astro-freshness-target-rebase.yml"
+          test "$(git rev-parse origin/repair/crypto-astro-freshness-contract-24h-v0-1)" = "e938b94a2a18949cc7beadb320cdba10db90ed4d"
+
+      - name: Rebuild target from clean base and exact code commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B repair/crypto-astro-freshness-contract-24h-v0-1 97e50201553fbadb3f6a7c34df4b6c07a254d7f6
+          git cherry-pick 66b48ded88be0811a70282735ce3633e6bedf64c
+          EXPECTED=$(printf '%s\n' \
+            docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md \
+            docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json \
+            tools/crypto_astro_operations/test_verify_operational_cadence.py \
+            tools/crypto_astro_operations/verify_operational_cadence.py | sort)
+          test "$(git diff --name-only 97e50201553fbadb3f6a7c34df4b6c07a254d7f6...HEAD | sort)" = "$EXPECTED"
+          git push --force-with-lease=refs/heads/repair/crypto-astro-freshness-contract-24h-v0-1:e938b94a2a18949cc7beadb320cdba10db90ed4d origin HEAD:repair/crypto-astro-freshness-contract-24h-v0-1
+
+      - name: Record closure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_TARGET_REBASED
+          CLEAN_BASE=97e50201553fbadb3f6a7c34df4b6c07a254d7f6
+          CODE_COMMIT=66b48ded88be0811a70282735ce3633e6bedf64c
+          TARGET_SCOPE=4_FILES
+          MERGE=FORBIDDEN"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
