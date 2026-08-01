@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-07-31T15:05:19Z
+GENERATED_AT_UTC=2026-08-01T18:24:47Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=COSMOGRAPHER_AUTHORIZED_20260731
-REFRESH_REASON=Refresh stale accepted Snapshot and rebuild proof bindings memory and public surfaces
+OPERATOR_REF=CRYPTO_ASTRO_SNAPSHOT_REFRESH_THEN_PR101_EXACT_SHA_REDEPLOY_v0_1
+REFRESH_REASON=Refresh the stale accepted Snapshot and rebuild Proof Registry Delta Snapshot Memory and both public surfaces before the PR101 exact-SHA redeploy gate.
 
 ## Changed modules
 
