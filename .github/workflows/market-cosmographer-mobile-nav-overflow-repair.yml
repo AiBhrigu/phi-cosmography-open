@@ -1,22 +1,23 @@
 name: Market Cosmographer Mobile Nav Overflow Repair
 
 on:
-  pull_request:
-    types: [reopened]
-    branches: [main]
+  push:
+    branches:
+      - repair/market-cosmographer-mobile-first-viewport-v0-1
+    paths:
+      - .github/workflows/market-cosmographer-mobile-nav-overflow-repair.yml
 
 permissions:
   contents: write
 
 jobs:
   repair:
-    if: github.event.pull_request.head.ref == 'repair/market-cosmographer-mobile-first-viewport-v0-1'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: repair/market-cosmographer-mobile-first-viewport-v0-1
           fetch-depth: 0
 
       - name: Replace scroll overflow with five-label compact strip
