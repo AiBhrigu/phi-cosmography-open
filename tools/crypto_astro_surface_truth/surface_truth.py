@@ -52,9 +52,33 @@ STYLE_PROPERTIES = (
     "animation-play-state",
 )
 
+ALLOWED_BOUNDED_MOTION_NAMES = {
+    "btcGravityResolveV01",
+    "btcFieldConvergeV01",
+    "btcGatewayFocusV01",
+    "btcAspectCycleNodeRevealV01",
+}
+
 
 def normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
+
+
+def motion_contract_valid(rows: Iterable[dict[str, str]]) -> bool:
+    """Allow static zero-motion or finite view-timeline semantic reveals only."""
+    for row in rows:
+        if str(row.get("state") or "").strip() != "running":
+            continue
+        name = str(row.get("name") or "").strip()
+        iteration = str(row.get("iteration") or "").strip()
+        timeline = str(row.get("timeline") or "").strip()
+        if name not in ALLOWED_BOUNDED_MOTION_NAMES:
+            return False
+        if iteration not in {"1", "1.0"}:
+            return False
+        if timeline in {"", "auto"}:
+            return False
+    return True
 
 
 def sha256_text(value: str) -> str:
@@ -289,28 +313,39 @@ def run_browser(url: str, out_dir: Path) -> dict[str, Any]:
         motion = driver.execute_script(
             """
             const root = document.querySelector('.btc-deep-v1');
-            if (!root) return {rootFound:false, declared:0, running:0};
+            if (!root) return {rootFound:false, declared:0, running:0, rows:[]};
             const nodes = [root, ...root.querySelectorAll('*')];
-            let declared = 0, running = 0;
+            const rows = [];
             for (const el of nodes) {
               for (const pseudo of [null, '::before', '::after']) {
                 const s = getComputedStyle(el, pseudo);
                 const names = s.animationName.split(',');
                 const states = s.animationPlayState.split(',');
-                names.forEach((name, i) => {
-                  if (name.trim() === 'none') return;
-                  declared += 1;
-                  const state = (states[i] || states[0] || 'running').trim();
-                  if (state === 'running') running += 1;
+                const iterations = s.animationIterationCount.split(',');
+                const timelines = (s.animationTimeline || 'auto').split(',');
+                names.forEach((rawName, i) => {
+                  const name = rawName.trim();
+                  if (name === 'none') return;
+                  rows.push({
+                    name,
+                    state: (states[i] || states[0] || 'running').trim(),
+                    iteration: (iterations[i] || iterations[0] || '1').trim(),
+                    timeline: (timelines[i] || timelines[0] || 'auto').trim(),
+                  });
                 });
               }
             }
-            return {rootFound:true, declared, running};
+            return {
+              rootFound:true,
+              declared:rows.length,
+              running:rows.filter(row => row.state === 'running').length,
+              rows,
+            };
             """
         )
         write_json(out_dir / "motion-report.json", motion)
         checks["btc_motion_root_found"] = bool(motion.get("rootFound"))
-        checks["btc_running_animations_zero"] = motion.get("running") == 0
+        checks["btc_motion_contract_valid"] = motion_contract_valid(motion.get("rows") or [])
 
         desktop_overflow = driver.execute_script(
             """

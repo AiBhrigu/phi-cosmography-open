@@ -5,6 +5,7 @@ from pathlib import Path
 from surface_truth import (
     build_sha256_manifest,
     canonicalize_anchor_map,
+    motion_contract_valid,
     normalize_text,
     sha256_text,
     stable_json,
@@ -35,6 +36,31 @@ class SurfaceTruthUnitTests(unittest.TestCase):
                 {"href": "https://b.example", "text": "B route"},
             ],
         )
+
+    def test_bounded_view_timeline_motion_is_valid(self):
+        rows = [{
+            "name": "btcAspectCycleNodeRevealV01",
+            "state": "running",
+            "iteration": "1",
+            "timeline": "ViewTimeline",
+        }]
+        self.assertTrue(motion_contract_valid(rows))
+
+    def test_continuous_or_auto_timeline_motion_fails(self):
+        self.assertFalse(motion_contract_valid([{
+            "name": "btcAspectCycleNodeRevealV01",
+            "state": "running",
+            "iteration": "infinite",
+            "timeline": "auto",
+        }]))
+
+    def test_unknown_running_motion_fails(self):
+        self.assertFalse(motion_contract_valid([{
+            "name": "decorativeLoop",
+            "state": "running",
+            "iteration": "1",
+            "timeline": "ViewTimeline",
+        }]))
 
     def test_manifest_excludes_itself_and_is_stable(self):
         with tempfile.TemporaryDirectory() as tmp:

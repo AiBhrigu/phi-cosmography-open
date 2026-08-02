@@ -109,13 +109,22 @@ jobs:
               assert system.count('@keyframes btcAspectCycleNodeRevealV01') == 1
               assert 'overflow: hidden !important' in system
               assert 'clip-path: circle(calc(50% - 1px) at 50% 50%)' in system
-          allowed_failure = 'btc_running_animations_zero'
-          assert set(report.get('failures', [])) == {allowed_failure}, report
+
+          legacy_allowed_failure = 'btc_running_animations_zero'
+          failures = set(report.get('failures', []))
+          contract_valid = report.get('checks', {}).get('btc_motion_contract_valid')
+          if contract_valid is True:
+              assert status == 0, report
+              assert failures == set(), report
+          else:
+              assert failures == {legacy_allowed_failure}, report
+              report['checks'].pop(legacy_allowed_failure, None)
+
           declared = report['measurements']['btc_declared_animations']
           running = report['measurements']['btc_running_animations']
           assert declared == expected_declared and running == expected_declared, report['measurements']
 
-          report['checks'].pop(allowed_failure, None)
+          report['checks']['btc_bounded_semantic_motion_contract_valid'] = True
           report['checks']['btc_bounded_semantic_motion_declared_expected'] = True
           report['checks']['btc_bounded_semantic_motion_running_expected'] = True
           report['checks']['btc_bounded_semantic_motion_no_idle_loop'] = 'infinite' not in semantic and 'infinite' not in system
