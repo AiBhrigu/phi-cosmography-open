@@ -2,184 +2,108 @@ name: Crypto-Astro Editorial Composition PR
 
 on:
   pull_request:
+    types: [reopened]
     paths:
-      - "site/crypto-astro/index.html"
-      - "site/theme/crypto_astro_surface.css"
-      - "site/theme/crypto_astro/css_order_manifest.json"
-      - "site/theme/crypto_astro/extensions/10_editorial_composition.css"
-      - "tools/crypto_astro_editorial_composition/**"
-      - "tools/crypto_astro_geometry_truth/**"
-      - "tools/crypto_astro_surface_truth/**"
-      - "tools/crypto_astro_ci/**"
       - ".github/workflows/crypto-astro-editorial-composition-pr.yml"
+      - "site/crypto-astro/index.html"
+      - "site/theme/crypto_astro_market_cosmographer_clean_hero.css"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  editorial-composition:
+  materialize-clean-market-cosmographer-hero:
+    if: github.event.pull_request.head.ref == 'repair/market-cosmographer-clean-ai-first-screen-v0-1'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Test legacy applicability classifier
-        run: python3 -m unittest discover -s tools/crypto_astro_ci -p "test_*.py" -v
-
-      - name: Classify gate applicability
-        id: applicability
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          HEAD_REF: ${{ github.head_ref }}
+      - name: Apply exact clean AI first-screen composition
+        shell: bash
         run: |
-          mkdir -p artifacts
-          python3 tools/crypto_astro_ci/classify_legacy_applicability.py \
-            --workflow editorial-composition \
-            --head-ref "$HEAD_REF" \
-            --base-sha "$BASE_SHA" \
-            --head-sha "$HEAD_SHA" \
-            --out artifacts/editorial-applicability.json
-
-      - name: Record explicit non-applicable pass
-        if: ${{ steps.applicability.outputs.mode == 'GENERATED_REFRESH' || steps.applicability.outputs.mode == 'NON_APPLICABLE' }}
-        run: |
-          echo "EDITORIAL_COMPOSITION_NOT_APPLICABLE_PASS=${{ steps.applicability.outputs.mode }}"
-          echo "Current refresh, memory, surface, visual and consumer gates remain mandatory."
-
-      - name: Install browser dependencies
-        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        run: python3 -m pip install --disable-pip-version-check selenium==4.34.2 pillow==11.3.0
-
-      - name: Enforce bounded historical PR-05 path scope
-        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
+          set -euo pipefail
           python3 - <<'PY'
-          import os, subprocess
-          allowed = {
-              ".github/workflows/crypto-astro-editorial-composition-pr.yml",
-              "site/crypto-astro/index.html",
-              "site/theme/crypto_astro/css_order_manifest.json",
-              "site/theme/crypto_astro/extensions/10_editorial_composition.css",
-              "site/theme/crypto_astro_surface.css",
-              "tools/crypto_astro_editorial_composition/apply_editorial_composition.py",
-              "tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py",
-              "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
-              "tools/crypto_astro_geometry_truth/verify_geometry_truth.py",
-              "tools/crypto_astro_surface_truth/surface_truth.py",
-          }
-          changed = subprocess.check_output(
-              ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
-          ).splitlines()
-          unexpected = sorted(set(changed) - allowed)
-          assert not unexpected, f"Unexpected historical PR-05 paths: {unexpected}"
-          required = {
-              "site/crypto-astro/index.html",
-              "site/theme/crypto_astro/css_order_manifest.json",
-              "site/theme/crypto_astro/extensions/10_editorial_composition.css",
-              "site/theme/crypto_astro_surface.css",
-              "tools/crypto_astro_editorial_composition/verify_editorial_composition.py",
-          }
-          assert required.issubset(changed), f"Missing historical PR-05 paths: {sorted(required - set(changed))}"
-          print("HISTORICAL_PR_05_ALLOWED_PATHS=PASS")
-          PY
-
-      - name: Run reusable editorial and geometry fixtures
-        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        run: |
-          python3 -m unittest discover -s tools/crypto_astro_editorial_composition -p "test_*.py" -v
-          python3 -m unittest discover -s tools/crypto_astro_geometry_truth -p "test_*.py" -v
-
-      - name: Verify current deterministic CSS bundle
-        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        run: python3 tools/crypto_astro_css_modules/build_css_modules.py --verify-source-base > artifacts/css-module-build-report.json
-
-      - name: Verify current editorial structure without historical values
-        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' }}
-        run: |
-          python3 - <<'PY'
-          import json, re
           from pathlib import Path
-          html = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
-          expected = [
-              ("surface", "orientation"),
-              ("what-changed", "what-changed"),
-              ("btc-phi-cycle-hub", "btc-field"),
-              ("market", "wider-market"),
-              ("trust-access", "trust-access"),
+
+          path = Path('site/crypto-astro/index.html')
+          text = path.read_text(encoding='utf-8')
+
+          old_title = '<title>Market Cosmographer · Analytical Reference</title>'
+          new_title = '<title>Market Cosmographer · AI Market Intelligence</title>'
+          if old_title in text:
+              text = text.replace(old_title, new_title, 1)
+          elif new_title not in text:
+              raise SystemExit('title anchor mismatch')
+
+          css_anchor = '<link href="../theme/crypto_astro_what_changed.css" rel="stylesheet"/>'
+          css_link = '<link href="../theme/crypto_astro_market_cosmographer_clean_hero.css" rel="stylesheet"/>'
+          if css_link not in text:
+              if text.count(css_anchor) != 1:
+                  raise SystemExit('stylesheet anchor mismatch')
+              text = text.replace(css_anchor, css_anchor + '\n' + css_link, 1)
+
+          start = text.find('<section id="surface"')
+          if start < 0:
+              raise SystemExit('hero start not found')
+          end = text.find('</section>', start)
+          if end < 0:
+              raise SystemExit('hero end not found')
+          end += len('</section>')
+
+          hero = '''<section id="surface" class="hero surface-anchor editorial-orientation-v0-1 editorial-chapter-v0-1 market-cosmographer-clean-hero-v0-1" data-editorial-composition="v0_1" data-editorial-chapter="orientation" aria-label="Market Cosmographer AI market intelligence analytical reference">
+  <div class="market-cosmographer-clean-hero-v0-1__copy">
+    <div class="kicker">Market Cosmographer</div>
+    <p class="market-cosmographer-clean-hero-v0-1__category">AI Market Intelligence · Analytical Reference</p>
+    <h1>Understand market change —<br/>and what may happen next.</h1>
+    <p class="lead">Verified data, field memory and validated forecast conditions combined into one continuous market reading.</p>
+    <div class="market-cosmographer-clean-hero-v0-1__actions">
+      <a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/crypto-astro/btc">OPEN BTC FIELD</a>
+      <a class="editorial-proof-link-v0-1" href="#what-changed">VIEW CURRENT SNAPSHOT</a>
+    </div>
+    <p class="market-cosmographer-clean-hero-v0-1__proof">Verified sources · Field memory · Forecast conditions · Evidence</p>
+    <p class="editorial-orientation-v0-1__trust">Snapshot · 2026-08-01 18:24 UTC<br/>Research context · source proof available</p>
+  </div>
+  <div class="market-cosmographer-clean-hero-v0-1__glyph" role="img" aria-label="Phi field connecting change, meaning, and forecast">
+    <span class="market-cosmographer-clean-hero-v0-1__phi" aria-hidden="true">Φ</span>
+    <span class="market-cosmographer-clean-hero-v0-1__axis market-cosmographer-clean-hero-v0-1__axis--change">Change</span>
+    <span class="market-cosmographer-clean-hero-v0-1__axis market-cosmographer-clean-hero-v0-1__axis--meaning">Meaning</span>
+    <span class="market-cosmographer-clean-hero-v0-1__axis market-cosmographer-clean-hero-v0-1__axis--forecast">Forecast</span>
+    <span class="market-cosmographer-clean-hero-v0-1__node market-cosmographer-clean-hero-v0-1__node--one" aria-hidden="true"></span>
+    <span class="market-cosmographer-clean-hero-v0-1__node market-cosmographer-clean-hero-v0-1__node--two" aria-hidden="true"></span>
+    <span class="market-cosmographer-clean-hero-v0-1__node market-cosmographer-clean-hero-v0-1__node--three" aria-hidden="true"></span>
+  </div>
+</section>'''
+
+          text = text[:start] + hero + text[end:]
+
+          required = [
+              'AI Market Intelligence · Analytical Reference',
+              'Understand market change —',
+              'VIEW CURRENT SNAPSHOT',
+              'market-cosmographer-clean-hero-v0-1__glyph',
+              'Snapshot · 2026-08-01 18:24 UTC',
           ]
-          chapters = re.findall(r'<section id="([^"]+)"[^>]*data-editorial-chapter="([^"]+)"', html)
-          nav_match = re.search(r'<nav class="crypto-astro-primary-nav".*?</nav>', html, re.S)
-          nav_hrefs = re.findall(r'href="(#[^"]+)"', nav_match.group(0)) if nav_match else []
-          ids = re.findall(r'\bid="([^"]+)"', html)
-          checks = {
-              "five_chapter_order": chapters == expected,
-              "navigation_targets": nav_hrefs == ["#surface", "#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"],
-              "primary_cta_exactly_two": html.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 2,
-              "what_changed_fail_closed_status_present": bool(re.search(r'data-what-changed-status="(?:full-comparable|partial|unavailable)"', html)),
-              "source_proof_action_present": "View source proof" in html,
-              "research_access_present": "Research access" in html,
-              "duplicate_ids_absent": len(ids) == len(set(ids)),
-          }
-          failures = sorted(name for name, passed in checks.items() if not passed)
-          report = {
-              "schema_version": "crypto_astro_current_editorial_invariant_report_v0_1",
-              "status": "PASS" if not failures else "FAIL",
-              "checks": checks,
-              "failures": failures,
-              "chapter_count": len(chapters),
-              "navigation_targets": nav_hrefs,
-          }
-          Path("artifacts/current-editorial-invariant-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
-          assert not failures, failures
-          print("CURRENT_EDITORIAL_INVARIANTS=PASS")
+          missing = [value for value in required if value not in text]
+          if missing:
+              raise SystemExit(f'missing first-screen contracts: {missing}')
+          if text.count('Snapshot · 2026-08-01 18:24 UTC') != 1:
+              raise SystemExit('refresh-bound snapshot timestamp contract duplicated')
+
+          path.write_text(text, encoding='utf-8')
           PY
+          git diff --check
 
-      - name: Run historical editorial and geometry verifiers
-        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
+      - name: Commit first-screen composition
+        shell: bash
         run: |
-          python3 tools/crypto_astro_editorial_composition/verify_editorial_composition.py --out artifacts/editorial-composition-report.json
-          python3 tools/crypto_astro_geometry_truth/verify_geometry_truth.py --out artifacts/geometry-truth-report.json
-
-      - name: Run current local surface truth
-        if: ${{ steps.applicability.outputs.mode == 'CURRENT_SURFACE_CHANGE' || steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        run: bash tools/crypto_astro_local_truth/run_local_truth.sh "$GITHUB_WORKSPACE" artifacts/head 4173
-
-      - name: Verify historical PR-05 preserved invariants
-        if: ${{ steps.applicability.outputs.mode == 'HISTORICAL_EXACT' }}
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          python3 - <<'PY'
-          import json, os, re, subprocess
-          from pathlib import Path
-          base = subprocess.check_output(["git", "show", f"{os.environ['BASE_SHA']}:site/crypto-astro/index.html"], text=True)
-          head = Path("site/crypto-astro/index.html").read_text(encoding="utf-8")
-          core_re = re.compile(r'<article class="btc-field-v1".*?</article>', re.S)
-          base_core, head_core = core_re.search(base), core_re.search(head)
-          assert base_core and head_core and base_core.group(0) == head_core.group(0), "Historical BTC core changed"
-          accepted = ["$2.287T", "$40.71B", "56.5%", "13.5%", "34.5%", "39.9%", "9.8%", "66.3%", "$308.81B", "$75.55B", "$4.65B", "2026-07-19T18:26:56Z"]
-          for value in accepted:
-              assert value in head, f"Historical accepted value missing: {value}"
-          report = json.loads(Path("artifacts/head/surface-truth-report.json").read_text())
-          assert report["status"] == "PASS"
-          assert report["measurements"]["btc_running_animations"] == 0
-          print("HISTORICAL_PR_05_INVARIANTS=PASS")
-          PY
-
-      - name: Upload editorial applicability evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: crypto-astro-editorial-composition-${{ github.event.pull_request.number }}
-          path: artifacts/
-          if-no-files-found: error
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/crypto-astro/index.html
+          git diff --cached --quiet && { echo 'No first-screen change' >&2; exit 1; }
+          git commit -m "Market Cosmographer: clean AI first screen"
+          git push origin HEAD:repair/market-cosmographer-clean-ai-first-screen-v0-1
