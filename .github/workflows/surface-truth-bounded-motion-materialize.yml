@@ -1,22 +1,23 @@
 name: Surface Truth Bounded Motion Materialize
 
 on:
-  pull_request:
-    types: [reopened]
-    branches: [main]
+  push:
+    branches:
+      - repair/crypto-astro-surface-truth-bounded-motion-v0-1
+    paths:
+      - .github/workflows/surface-truth-bounded-motion-materialize.yml
 
 permissions:
   contents: write
 
 jobs:
   materialize:
-    if: github.event.pull_request.head.ref == 'repair/crypto-astro-surface-truth-bounded-motion-v0-1'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: repair/crypto-astro-surface-truth-bounded-motion-v0-1
           fetch-depth: 0
 
       - name: Align local surface truth with accepted bounded semantic motion
