@@ -258,28 +258,35 @@
   }
 
   .crypto-astro-primary-nav__links {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
     width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .crypto-astro-primary-nav__links::-webkit-scrollbar {
-    display: none;
+    overflow: visible;
   }
 
   .crypto-astro-primary-nav__links a,
   .crypto-astro-primary-nav__links a:last-child {
-    flex: 0 0 auto;
+    min-width: 0;
     grid-column: auto;
-    padding: 6px 8px;
-    font-size: 0.7rem;
+    padding: 6px 2px;
+    font-size: 0;
+    text-align: center;
     white-space: nowrap;
   }
+
+  .crypto-astro-primary-nav__links a::before {
+    color: var(--phi-text-2, #cbd5e1);
+    font-size: 0.58rem;
+    font-weight: 750;
+    letter-spacing: 0.015em;
+  }
+
+  .crypto-astro-primary-nav__links a:nth-child(1)::before { content: "Field"; }
+  .crypto-astro-primary-nav__links a:nth-child(2)::before { content: "Changes"; }
+  .crypto-astro-primary-nav__links a:nth-child(3)::before { content: "BTC"; }
+  .crypto-astro-primary-nav__links a:nth-child(4)::before { content: "Structure"; }
+  .crypto-astro-primary-nav__links a:nth-child(5)::before { content: "Proof"; }
 
   #surface.editorial-orientation-v0-1 {
     gap: 15px;
