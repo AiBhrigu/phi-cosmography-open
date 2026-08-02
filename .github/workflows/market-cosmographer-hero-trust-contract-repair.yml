@@ -1,0 +1,46 @@
+name: Market Cosmographer Hero Trust Contract Repair
+
+on:
+  pull_request:
+    types: [reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.pull_request.head.ref == 'repair/market-cosmographer-analytical-reference-first-screen-v0-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Preserve refresh timestamp binding and analytical status
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('site/crypto-astro/index.html')
+          text = path.read_text(encoding='utf-8')
+          old = '<p class="editorial-orientation-v0-1__trust">OPEN ANALYTICAL MIRROR · SNAPSHOT 01 AUG 2026 · 18:24 UTC<br/>VERIFIED SOURCES · FIELD MEMORY · EVIDENCE AVAILABLE</p>'
+          new = '<p class="editorial-orientation-v0-1__trust">OPEN ANALYTICAL MIRROR · VERIFIED SOURCES · FIELD MEMORY · EVIDENCE AVAILABLE</p>\n    <p class="editorial-orientation-v0-1__trust">Snapshot · 2026-08-01 18:24 UTC<br/>Research context · source proof available</p>'
+          if text.count(old) != 1:
+              raise SystemExit('hero trust contract anchor mismatch')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          git diff --check
+
+      - name: Commit contract repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/crypto-astro/index.html
+          git commit -m "Market Cosmographer: preserve refresh-bound hero timestamp"
+          git push origin HEAD:repair/market-cosmographer-analytical-reference-first-screen-v0-1
