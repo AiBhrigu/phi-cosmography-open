@@ -1,0 +1,67 @@
+name: Market Cosmographer First Screen Materialize
+
+on:
+  pull_request:
+    types: [reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.ref == 'repair/market-cosmographer-analytical-reference-first-screen-v0-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Apply exact first-screen analytical reference patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('site/crypto-astro/index.html')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              ('<title>Market Cosmographer · Φ Service Surface</title>', '<title>Market Cosmographer · Analytical Reference</title>'),
+              ('<a href="#surface">Current</a>', '<a href="#surface">Live Field</a>'),
+              ('<a href="#btc-phi-cycle-hub">BTC</a>', '<a href="#btc-phi-cycle-hub">BTC Field</a>'),
+              ('<a href="#market">Market</a>', '<a href="#market">Market Structure</a>'),
+              ('<a href="#trust-access">Trust &amp; Access</a>', '<a href="#trust-access">Proof &amp; Access</a>'),
+              ('aria-label="Market Cosmographer orientation"', 'aria-label="Market Cosmographer analytical reference orientation"'),
+              ('<div class="kicker">Verified crypto-market context</div>', '<div class="kicker">Market Cosmographer · Analytical Reference</div>'),
+              ('<h1>Market Cosmographer Market Field</h1>', '<h1>See what is changing in markets — and what may happen next.</h1>'),
+              ('<p class="lead">A source-bound view of Bitcoin gravity, market structure, liquidity, rotation, timing context, and reviewed synthesis.</p>', '<p class="lead">An open analytical mirror for verified data, field memory, temporal context, scenario tracking, and evidence.</p>'),
+              ('<a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/crypto-astro/btc">Ask one BTC field question</a>', '<a class="editorial-primary-cta-v0-1" href="https://www.bhrigu.io/crypto-astro/btc">OPEN BTC FIELD</a>\n    <a class="editorial-proof-link-v0-1" href="#what-changed">VIEW SNAPSHOT</a>'),
+              ('<p class="editorial-orientation-v0-1__trust">Snapshot · 2026-08-01 18:24 UTC<br/>Research context · source proof available</p>', '<p class="editorial-orientation-v0-1__trust">OPEN ANALYTICAL MIRROR · SNAPSHOT 01 AUG 2026 · 18:24 UTC<br/>VERIFIED SOURCES · FIELD MEMORY · EVIDENCE AVAILABLE</p>'),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one exact anchor, found {count}: {old}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+          git diff --check
+          git diff -- site/crypto-astro/index.html
+
+      - name: Commit one-file first-screen patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/crypto-astro/index.html
+          git diff --cached --quiet && { echo 'No material change' >&2; exit 1; }
+          git commit -m "Market Cosmographer: update analytical reference first screen"
+          git push origin HEAD:repair/market-cosmographer-analytical-reference-first-screen-v0-1
