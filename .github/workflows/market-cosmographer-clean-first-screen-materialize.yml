@@ -1,23 +1,22 @@
 name: Market Cosmographer Clean First Screen Materialize
 
 on:
-  push:
-    branches:
-      - repair/market-cosmographer-clean-ai-first-screen-v0-1
-    paths:
-      - .github/workflows/market-cosmographer-clean-first-screen-materialize.yml
+  pull_request:
+    types: [reopened]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   materialize:
+    if: github.event.pull_request.head.ref == 'repair/market-cosmographer-clean-ai-first-screen-v0-1'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: repair/market-cosmographer-clean-ai-first-screen-v0-1
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Apply exact clean AI first-screen composition
