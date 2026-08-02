@@ -242,3 +242,165 @@
     font-size: 0.64rem;
   }
 }
+
+/* MARKET_COSMOGRAPHER_MOBILE_FIRST_VIEWPORT_REPAIR_v0_1 */
+@media (max-width: 620px) {
+  .crypto-astro-primary-nav {
+    gap: 9px;
+    margin-bottom: 14px;
+    padding: 10px 12px 9px;
+    border-radius: 16px;
+  }
+
+  .crypto-astro-primary-nav__brand {
+    font-size: 0.88rem;
+    letter-spacing: 0.055em;
+  }
+
+  .crypto-astro-primary-nav__links {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .crypto-astro-primary-nav__links a,
+  .crypto-astro-primary-nav__links a:last-child {
+    min-width: 0;
+    grid-column: auto;
+    padding: 6px 2px;
+    font-size: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .crypto-astro-primary-nav__links a::before {
+    color: var(--phi-text-2, #cbd5e1);
+    font-size: 0.58rem;
+    font-weight: 750;
+    letter-spacing: 0.015em;
+  }
+
+  .crypto-astro-primary-nav__links a:nth-child(1)::before { content: "Field"; }
+  .crypto-astro-primary-nav__links a:nth-child(2)::before { content: "Changes"; }
+  .crypto-astro-primary-nav__links a:nth-child(3)::before { content: "BTC"; }
+  .crypto-astro-primary-nav__links a:nth-child(4)::before { content: "Structure"; }
+  .crypto-astro-primary-nav__links a:nth-child(5)::before { content: "Proof"; }
+
+  #surface.editorial-orientation-v0-1 {
+    gap: 15px;
+    padding: 21px 20px 24px;
+    border-radius: 28px;
+  }
+
+  #surface.editorial-orientation-v0-1 .kicker::before {
+    font-size: 0.72rem;
+    letter-spacing: 0.13em;
+  }
+
+  #surface.editorial-orientation-v0-1 .kicker::after {
+    content: "AI MARKET INTELLIGENCE";
+    margin-top: 6px;
+    font-size: 0.61rem;
+    letter-spacing: 0.13em;
+  }
+
+  #surface.editorial-orientation-v0-1 h1 {
+    margin-top: 15px;
+  }
+
+  #surface.editorial-orientation-v0-1 h1::before,
+  #surface.editorial-orientation-v0-1 h1::after {
+    font-size: clamp(2rem, 9.7vw, 2.45rem);
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+
+  #surface.editorial-orientation-v0-1 h1::before {
+    content: "Read market change.";
+  }
+
+  #surface.editorial-orientation-v0-1 h1::after {
+    content: "See what may happen next.";
+    margin-top: 3px;
+  }
+
+  #surface.editorial-orientation-v0-1 .lead {
+    margin-top: 14px;
+  }
+
+  #surface.editorial-orientation-v0-1 .lead::before {
+    content: "Verified data, field memory and forecast conditions in one continuous reading.";
+    font-size: 0.88rem;
+    line-height: 1.48;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-orientation-v0-1__actions {
+    gap: 8px;
+    width: 100%;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-orientation-v0-1__actions::before {
+    order: 0;
+    width: 104px;
+    margin: 0 auto;
+    box-shadow: 0 0 34px rgba(143, 183, 255, 0.065);
+    font-size: 4.15rem;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-orientation-v0-1__actions::after {
+    order: 1;
+    margin: 0 0 2px;
+    font-size: 0.57rem;
+    letter-spacing: 0.12em;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-primary-cta-v0-1 {
+    order: 2;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-proof-link-v0-1 {
+    order: 3;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-boundary-v0-1 {
+    order: 4;
+    margin-top: 3px;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-orientation-v0-1__trust {
+    order: 5;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-primary-cta-v0-1,
+  #surface.editorial-orientation-v0-1 .editorial-proof-link-v0-1 {
+    min-height: 46px;
+    padding: 11px 16px;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-primary-cta-v0-1 {
+    box-shadow: 0 10px 24px rgba(216, 174, 85, 0.15);
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-primary-cta-v0-1::after {
+    margin-left: 8px;
+    font-size: 0.9rem;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-proof-link-v0-1::before {
+    font-size: 0.75rem;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-boundary-v0-1::before {
+    content: "VERIFIED SOURCES · FIELD MEMORY · EVIDENCE";
+    font-size: 0.57rem;
+    letter-spacing: 0.065em;
+    line-height: 1.4;
+  }
+
+  #surface.editorial-orientation-v0-1 .editorial-orientation-v0-1__trust {
+    font-size: 0.62rem;
+    line-height: 1.35;
+  }
+}
