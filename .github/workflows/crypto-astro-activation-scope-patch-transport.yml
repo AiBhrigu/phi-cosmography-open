@@ -1,0 +1,95 @@
+name: Crypto-Astro Activation Scope Patch Transport
+
+on:
+  push:
+    branches:
+      - automation/crypto-astro-static-refresh-30781576597
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  patch-and-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: automation/crypto-astro-static-refresh-30781576597
+          fetch-depth: 0
+
+      - name: Apply exact classifier insertions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          activation_members = """            '.github/workflows/crypto-astro-automatic-refresh.yml',
+            '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json',
+            'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
+            'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+            'tools/crypto_astro_operations/verify_operational_cadence.py',
+            'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+          """
+
+          snapshot_path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
+          snapshot = snapshot_path.read_text()
+          path_anchor = "      - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'\n"
+          path_insert = path_anchor + "      - '.github/workflows/crypto-astro-automatic-refresh.yml'\n      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'\n      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'\n"
+          if "crypto-astro-automatic-refresh.yml" not in snapshot.split('permissions:', 1)[0]:
+              snapshot = snapshot.replace(path_anchor, path_insert, 1)
+          set_anchor = "          optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}\n"
+          set_insert = set_anchor + "          automatic_refresh_activation = generated | {\n" + activation_members + "          }\n"
+          if 'automatic_refresh_activation = generated | {' not in snapshot:
+              snapshot = snapshot.replace(set_anchor, set_insert, 1)
+          class_anchor = "          if changed == implementation:\n            mode='implementation'\n"
+          class_insert = "          if changed == automatic_refresh_activation:\n            mode='automatic_refresh_activation'\n            print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')\n          elif changed == implementation:\n            mode='implementation'\n"
+          snapshot = snapshot.replace(class_anchor, class_insert, 1)
+          if snapshot.count("mode='automatic_refresh_activation'") != 1:
+              raise SystemExit('snapshot activation classifier insertion failed')
+          snapshot_path.write_text(snapshot)
+
+          assistant_path = Path('.github/workflows/crypto-astro-assistant-dispatch-pr.yml')
+          assistant = assistant_path.read_text()
+          path_anchor = '      - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"\n'
+          path_insert = path_anchor + '      - ".github/workflows/crypto-astro-automatic-refresh.yml"\n      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n      - "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md"\n      - "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json"\n      - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"\n      - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"\n      - "tools/crypto_astro_operations/verify_operational_cadence.py"\n      - "tools/crypto_astro_operations/test_verify_operational_cadence.py"\n      - "tools/crypto_astro_operations/verify_automatic_refresh_activation.py"\n      - "tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py"\n'
+          if "crypto-astro-automatic-refresh.yml" not in assistant.split('permissions:', 1)[0]:
+              assistant = assistant.replace(path_anchor, path_insert, 1)
+          set_anchor = "          generated_refresh_optional = {\n              \"site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json\",\n          }\n"
+          set_insert = set_anchor + "          automatic_refresh_activation_scope = generated_refresh_scope | {\n" + activation_members.replace("'", '"') + "          }\n"
+          if 'automatic_refresh_activation_scope = generated_refresh_scope | {' not in assistant:
+              assistant = assistant.replace(set_anchor, set_insert, 1)
+          class_anchor = "          if changed == assistant_dispatch_scope:\n              mode = \"assistant_dispatch\"\n"
+          class_insert = "          if changed == automatic_refresh_activation_scope:\n              mode = \"automatic_refresh_activation\"\n              print(\"ASSISTANT_DISPATCH_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS\")\n          elif changed == assistant_dispatch_scope:\n              mode = \"assistant_dispatch\"\n"
+          assistant = assistant.replace(class_anchor, class_insert, 1)
+          if assistant.count('mode = "automatic_refresh_activation"') != 1:
+              raise SystemExit('assistant activation classifier insertion failed')
+          assistant_path.write_text(assistant)
+          PY
+
+      - name: Verify patch boundaries
+        run: |
+          git diff --check
+          git diff --name-only | sort > /tmp/changed.txt
+          printf '%s\n' \
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          grep -q 'SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS' .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          grep -q 'ASSISTANT_DISPATCH_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-activation-classifier-patches
+          path: |
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          include-hidden-files: true
+          if-no-files-found: error
