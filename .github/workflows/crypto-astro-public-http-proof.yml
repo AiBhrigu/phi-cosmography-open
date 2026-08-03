@@ -6,6 +6,8 @@ on:
       - '.github/workflows/crypto-astro-public-http-proof.yml'
       - 'tools/crypto_astro_public_http_proof/verify_public_http_proof.py'
       - 'tools/crypto_astro_public_http_proof/test_verify_public_http_proof.py'
+      - 'tools/crypto_astro_public_http_proof/verify_current_bhrigu_dual_route.py'
+      - 'tools/crypto_astro_public_http_proof/test_verify_current_bhrigu_dual_route.py'
   workflow_dispatch:
     inputs:
       operator_ref:
@@ -41,8 +43,13 @@ jobs:
 
       - name: Validate verifier implementation
         run: |
-          python -m py_compile tools/crypto_astro_public_http_proof/verify_public_http_proof.py
-          python -m unittest tools.crypto_astro_public_http_proof.test_verify_public_http_proof -v
+          python -m py_compile \
+            tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            tools/crypto_astro_public_http_proof/verify_current_bhrigu_dual_route.py
+          python -m unittest \
+            tools.crypto_astro_public_http_proof.test_verify_public_http_proof \
+            tools.crypto_astro_public_http_proof.test_verify_current_bhrigu_dual_route \
+            -v
 
       - name: Lock current main source
         env:
@@ -129,7 +136,7 @@ jobs:
         run: |
           set +e
           mkdir -p artifacts
-          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+          python tools/crypto_astro_public_http_proof/verify_current_bhrigu_dual_route.py \
             --repo . \
             --report artifacts/crypto-astro-public-http-proof.json \
             --expected-main-sha "$EXPECTED_MAIN_SHA" \
