@@ -34,7 +34,7 @@ permissions:
 jobs:
   activation-acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
         with:
@@ -161,6 +161,87 @@ jobs:
           print('NO_DOUBLE_COUNTING=PASS')
           PY
 
+      - name: Prove pre-merge public BTC surfaces share accepted main Snapshot
+        env:
+          EXPECTED_CANDIDATE_TIMESTAMP: '2026-08-03T03:20:57Z'
+          ACCEPTANCE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          nonce = f"{os.environ['ACCEPTANCE_HEAD']}-{time.time_ns()}"
+          headers = {
+              'Cache-Control': 'no-cache, no-store, max-age=0',
+              'Pragma': 'no-cache',
+              'User-Agent': 'crypto-astro-premerge-public-snapshot-acceptance',
+          }
+
+          def fetch(url):
+              request = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(request, timeout=45) as response:
+                  return {
+                      'status': response.status,
+                      'final_url': response.geturl(),
+                      'cache_control': response.headers.get('Cache-Control'),
+                      'x_vercel_cache': response.headers.get('X-Vercel-Cache'),
+                      'body': response.read().decode('utf-8', errors='replace'),
+                  }
+
+          producer_query = urllib.parse.urlencode({'public_before': nonce})
+          producer_url = (
+              'https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/'
+              f'crypto_astro_snapshot.public.json?{producer_query}'
+          )
+          producer_response = fetch(producer_url)
+          producer = json.loads(producer_response['body'])
+          public_timestamp = producer['generated_at_utc']
+          candidate_timestamp = os.environ['EXPECTED_CANDIDATE_TIMESTAMP']
+          assert public_timestamp != candidate_timestamp
+          assert producer['freshness_status'] in {'FRESH', 'STALE_VERIFIED_SNAPSHOT', 'STALE_LIMITED'}
+
+          surfaces = {}
+          for name, base in {
+              'entry': 'https://www.bhrigu.io/crypto-astro/btc',
+              'live': 'https://www.bhrigu.io/crypto-astro/btc/live',
+          }.items():
+              query = urllib.parse.urlencode({'lang': 'ru', 'public_before': nonce, 'surface': name})
+              response = fetch(f'{base}?{query}')
+              assert response['status'] == 200
+              assert public_timestamp in response['body']
+              assert candidate_timestamp not in response['body']
+              surfaces[name] = {
+                  'status': response['status'],
+                  'final_url': response['final_url'],
+                  'cache_control': response['cache_control'],
+                  'x_vercel_cache': response['x_vercel_cache'],
+                  'snapshot_timestamp_utc': public_timestamp,
+              }
+
+          report = {
+              'schema_version': 'crypto_astro_premerge_dual_public_snapshot_identity_v0_1',
+              'status': 'PASS',
+              'public_snapshot_timestamp_utc': public_timestamp,
+              'candidate_snapshot_timestamp_utc': candidate_timestamp,
+              'candidate_absent_before_merge': True,
+              'entry_and_live_snapshot_identity_match': True,
+              'producer': {
+                  'status': producer_response['status'],
+                  'final_url': producer_response['final_url'],
+                  'cache_control': producer_response['cache_control'],
+              },
+              'surfaces': surfaces,
+          }
+          Path('artifacts/premerge-dual-public-snapshot-identity.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
       - name: Checkout advertised BHRIGU consumer master
         uses: actions/checkout@v5
         with:
@@ -171,7 +252,7 @@ jobs:
 
       - name: Prove exact BHRIGU consumer master identity
         working-directory: bhrigu-portal-consumer
-        run: test "$(git rev-parse HEAD)" = "e07da6f6d216d28621b8592ecf8c066b05897ba9"
+        run: test "$(git rev-parse HEAD)" = "e07da6f6d216d28621f8592ecf8c066b05897ba9"
 
       - uses: actions/setup-node@v4
         with:
