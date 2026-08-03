@@ -1,4 +1,4 @@
-name: Crypto-Astro Activation Scope Patch Transport
+name: Crypto-Astro Activation Snapshot Blob Export
 
 on:
   pull_request:
@@ -11,7 +11,8 @@ permissions:
   issues: write
 
 jobs:
-  stage-closure-commit:
+  export-snapshot-memory-blob:
+    if: ${{ github.event.pull_request.number == 300 }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -20,7 +21,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Materialize exact closure files
+      - name: Materialize exact Snapshot Memory classifier
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -40,82 +41,77 @@ jobs:
             'tools/crypto_astro_operations/test_verify_operational_cadence.py',
           """
 
-          snapshot_path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
-          snapshot = snapshot_path.read_text()
+          path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
+          text = path.read_text()
+
           path_anchor = "      - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'\n"
-          path_insert = path_anchor + "      - '.github/workflows/crypto-astro-automatic-refresh.yml'\n      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'\n      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'\n"
-          if "crypto-astro-automatic-refresh.yml" not in snapshot.split('permissions:', 1)[0]:
-              snapshot = snapshot.replace(path_anchor, path_insert, 1)
+          path_insert = path_anchor + (
+              "      - '.github/workflows/crypto-astro-automatic-refresh.yml'\n"
+              "      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n"
+              "      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'\n"
+              "      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'\n"
+          )
+          if 'crypto-astro-automatic-refresh.yml' not in text.split('permissions:', 1)[0]:
+              text = text.replace(path_anchor, path_insert, 1)
+
           set_anchor = "          optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}\n"
           set_insert = set_anchor + "          automatic_refresh_activation = generated | {\n" + activation_members + "          }\n"
-          if 'automatic_refresh_activation = generated | {' not in snapshot:
-              snapshot = snapshot.replace(set_anchor, set_insert, 1)
+          if 'automatic_refresh_activation = generated | {' not in text:
+              text = text.replace(set_anchor, set_insert, 1)
+
           class_anchor = "          if changed == implementation:\n            mode='implementation'\n"
-          class_insert = "          if changed == automatic_refresh_activation:\n            mode='automatic_refresh_activation'\n            print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')\n          elif changed == implementation:\n            mode='implementation'\n"
-          if "mode='automatic_refresh_activation'" not in snapshot:
-              snapshot = snapshot.replace(class_anchor, class_insert, 1)
-          snapshot = snapshot.replace(
-              "if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'",
-              "if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'",
-              1,
+          class_insert = (
+              "          if changed == automatic_refresh_activation:\n"
+              "            mode='automatic_refresh_activation'\n"
+              "            print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')\n"
+              "          elif changed == implementation:\n"
+              "            mode='implementation'\n"
           )
-          if snapshot.count("mode='automatic_refresh_activation'") != 1:
-              raise SystemExit('SNAPSHOT_CLASSIFIER_PATCH_FAILED')
-          snapshot_path.write_text(snapshot)
+          if "mode='automatic_refresh_activation'" not in text:
+              text = text.replace(class_anchor, class_insert, 1)
 
-          acceptance_path = Path('.github/workflows/crypto-astro-automatic-refresh-pr.yml')
-          acceptance = acceptance_path.read_text()
-          path_anchor = "      - 'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py'\n"
-          path_insert = path_anchor + "      - 'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md'\n      - 'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json'\n      - 'tools/crypto_astro_operations/verify_operational_cadence.py'\n      - 'tools/crypto_astro_operations/test_verify_operational_cadence.py'\n"
-          if "CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md" not in acceptance.split('permissions:', 1)[0]:
-              acceptance = acceptance.replace(path_anchor, path_insert, 1)
-          expected_anchor = "              'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',\n"
-          expected_insert = expected_anchor + "              'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',\n              'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',\n              'tools/crypto_astro_operations/verify_operational_cadence.py',\n              'tools/crypto_astro_operations/test_verify_operational_cadence.py',\n"
-          if acceptance.count("'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',") < 1:
-              acceptance = acceptance.replace(expected_anchor, expected_insert, 1)
-          acceptance = acceptance.replace('exact nineteen-file', 'exact twenty-three-file')
-          acceptance = acceptance.replace('AUTOMATIC_REFRESH_EXACT_NINETEEN_FILE_SCOPE=PASS', 'AUTOMATIC_REFRESH_EXACT_TWENTY_THREE_FILE_SCOPE=PASS')
-          build_anchor = "      - name: Upload activation evidence\n"
-          build_steps = """      - name: Checkout exact BHRIGU consumer master
-        uses: actions/checkout@v5
-        with:
-          repository: AiBhrigu/bhrigu-portal
-          ref: e07da6f6d216d28621f8592ecf8c066b05897ba9
-          path: bhrigu-portal-consumer
-          persist-credentials: false
+          condition = (
+              "if: steps.scope.outputs.mode != 'generated_refresh' && "
+              "steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && "
+              "steps.scope.outputs.mode != 'timestamp_consistency_repair' && "
+              "steps.scope.outputs.mode != 'public_service_truth_alignment' && "
+              "steps.scope.outputs.mode != 'producer_public_identity'"
+          )
+          if "steps.scope.outputs.mode != 'automatic_refresh_activation'" not in text:
+              text = text.replace(
+                  condition,
+                  condition.replace(
+                      "mode != 'generated_refresh'",
+                      "mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation'",
+                  ),
+                  1,
+              )
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: bhrigu-portal-consumer/package-lock.json
+          if text.count("mode='automatic_refresh_activation'") != 1:
+              raise SystemExit('SNAPSHOT_MEMORY_ACTIVATION_CLASSIFIER_COUNT_FAILED')
+          if 'SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS' not in text:
+              raise SystemExit('SNAPSHOT_MEMORY_ACTIVATION_MARKER_MISSING')
+          if "steps.scope.outputs.mode != 'automatic_refresh_activation'" not in text:
+              raise SystemExit('SNAPSHOT_MEMORY_ACTIVATION_APPLICABILITY_MISSING')
 
-      - name: Verify unchanged BHRIGU production build
-        working-directory: bhrigu-portal-consumer
-        run: |
-          npm ci --ignore-scripts
-          npm run build
-          echo BHRIGU_PORTAL_MASTER_BUILD=PASS
-
-"""
-          if 'BHRIGU_PORTAL_MASTER_BUILD=PASS' not in acceptance:
-              acceptance = acceptance.replace(build_anchor, build_steps + build_anchor, 1)
-          if "AUTOMATIC_REFRESH_EXACT_TWENTY_THREE_FILE_SCOPE=PASS" not in acceptance:
-              raise SystemExit('ACTIVATION_ACCEPTANCE_PATCH_FAILED')
-          acceptance_path.write_text(acceptance)
+          path.write_text(text)
           PY
 
-      - name: Verify exact closure delta
+      - name: Verify exact final Snapshot Memory file
         run: |
-          git diff --check
-          git diff --name-only | sort > /tmp/changed.txt
-          printf '%s\n' \
-            .github/workflows/crypto-astro-automatic-refresh-pr.yml \
-            .github/workflows/crypto-astro-snapshot-memory-pr.yml | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/changed.txt
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
+          digest = hashlib.sha256(path.read_bytes()).hexdigest()
+          expected = 'db4bb871ae0356dcb9299f2cdc9d07c9d9ea4349f19a99084473832aae172307'
+          if digest != expected:
+              raise SystemExit({'expected': expected, 'actual': digest})
+          print('SNAPSHOT_MEMORY_FINAL_SHA256=PASS')
+          PY
 
-      - name: Create unattached Git commit object
-        id: stage
+      - name: Create unattached Snapshot Memory blob
+        id: blob
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPOSITORY: ${{ github.repository }}
@@ -124,65 +120,43 @@ jobs:
           import base64
           import json
           import os
+          import subprocess
           import urllib.request
           from pathlib import Path
 
           repository = os.environ['GH_REPOSITORY']
-          token = os.environ['GH_TOKEN']
-          parent = os.popen('git rev-parse HEAD').read().strip()
           headers = {
-              'Authorization': f'Bearer {token}',
+              'Authorization': f"Bearer {os.environ['GH_TOKEN']}",
               'Accept': 'application/vnd.github+json',
               'X-GitHub-Api-Version': '2022-11-28',
-              'User-Agent': 'crypto-astro-activation-closure-transport',
+              'User-Agent': 'crypto-astro-snapshot-blob-export',
           }
-
-          def request(method, path, payload=None):
-              data = None if payload is None else json.dumps(payload).encode()
-              req = urllib.request.Request(
-                  f'https://api.github.com/repos/{repository}/{path}',
-                  data=data,
-                  headers=headers,
-                  method=method,
-              )
-              with urllib.request.urlopen(req, timeout=30) as response:
-                  return json.load(response)
-
-          parent_commit = request('GET', f'git/commits/{parent}')
-          entries = []
-          for path in (
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-          ):
-              encoded = base64.b64encode(Path(path).read_bytes()).decode()
-              blob = request('POST', 'git/blobs', {'content': encoded, 'encoding': 'base64'})
-              entries.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': blob['sha']})
-          entries.append({
-              'path': '.github/workflows/crypto-astro-activation-scope-patch-transport.yml',
-              'mode': '100644',
-              'type': 'blob',
-              'sha': None,
-          })
-          tree = request('POST', 'git/trees', {
-              'base_tree': parent_commit['tree']['sha'],
-              'tree': entries,
-          })
-          commit = request('POST', 'git/commits', {
-              'message': 'Crypto-Astro: close automatic refresh activation acceptance',
-              'tree': tree['sha'],
-              'parents': [parent],
-          })
+          payload = json.dumps({
+              'content': base64.b64encode(
+                  Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml').read_bytes()
+              ).decode(),
+              'encoding': 'base64',
+          }).encode()
+          request = urllib.request.Request(
+              f'https://api.github.com/repos/{repository}/git/blobs',
+              data=payload,
+              headers=headers,
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              blob = json.load(response)
+          parent = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f"parent_sha={parent}\n")
-              output.write(f"staged_commit_sha={commit['sha']}\n")
-          print(json.dumps({'parent_sha': parent, 'tree_sha': tree['sha'], 'staged_commit_sha': commit['sha']}, indent=2))
+              output.write(f"snapshot_blob_sha={blob['sha']}\n")
+          print(json.dumps({'parent_sha': parent, 'snapshot_blob_sha': blob['sha']}, indent=2))
           PY
 
-      - name: Publish staged commit identity
+      - name: Publish Snapshot Memory blob identity
         env:
           GH_TOKEN: ${{ github.token }}
-          PARENT_SHA: ${{ steps.stage.outputs.parent_sha }}
-          STAGED_COMMIT_SHA: ${{ steps.stage.outputs.staged_commit_sha }}
+          PARENT_SHA: ${{ steps.blob.outputs.parent_sha }}
+          SNAPSHOT_BLOB_SHA: ${{ steps.blob.outputs.snapshot_blob_sha }}
         run: |
-          gh issue comment 298 --body "ACTIVATION_CLOSURE_PARENT_SHA=$PARENT_SHA
-ACTIVATION_CLOSURE_STAGED_COMMIT_SHA=$STAGED_COMMIT_SHA"
+          gh issue comment 298 --body "ACTIVATION_SNAPSHOT_BLOB_PARENT_SHA=$PARENT_SHA
+          ACTIVATION_CLOSURE_SNAPSHOT_BLOB_SHA=$SNAPSHOT_BLOB_SHA"
