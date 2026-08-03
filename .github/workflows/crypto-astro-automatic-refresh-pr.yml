@@ -1,0 +1,134 @@
+name: Crypto-Astro Automatic Refresh Activation PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/crypto-astro-automatic-refresh.yml'
+      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'
+      - 'tools/crypto_astro_operations/verify_automatic_refresh_activation.py'
+      - 'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py'
+      - 'site/crypto-astro/index.html'
+      - 'site/crypto-astro/data/crypto_astro_snapshot.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json'
+      - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
+      - 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json'
+      - 'site/crypto-astro/data/scoring_snapshot.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json'
+      - 'docs/crypto-astro-service/crypto_astro_snapshot_summary.md'
+      - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
+
+permissions:
+  contents: read
+
+jobs:
+  activation-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          show-progress: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Prove exact sixteen-file refresh and activation scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+
+          expected = {
+              '.github/workflows/crypto-astro-automatic-refresh.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md',
+              'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json',
+              'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
+              'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
+              'site/crypto-astro/index.html',
+              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+              'site/crypto-astro/data/scoring_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+          }
+          base = subprocess.check_output(['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']], text=True).strip()
+          changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']], text=True).splitlines())
+          if changed != expected:
+              raise SystemExit({'changed': sorted(changed), 'missing': sorted(expected - changed), 'unexpected': sorted(changed - expected)})
+          print('AUTOMATIC_REFRESH_EXACT_SIXTEEN_FILE_SCOPE=PASS')
+          PY
+
+      - name: Run activation unit tests
+        run: python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation -v
+
+      - name: Verify activation repository contract
+        run: |
+          mkdir -p artifacts
+          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py \
+            --repo . \
+            --report artifacts/automatic-refresh-activation-verification.json
+
+      - name: Prove existing manual producer remains unchanged
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
+            .github/workflows/crypto-astro-static-refresh-manual.yml \
+            .github/workflows/crypto-astro-assistant-dispatch.yml \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
+            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py
+          echo EXISTING_SOURCE_PRODUCER_UNCHANGED=PASS
+
+      - name: Verify DeFi TVL no-double-counting methodology
+        run: python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
+
+      - name: Verify BHRIGU consumer contract
+        run: python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
+
+      - name: Prove current Snapshot timestamp advanced
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+
+          old = datetime.fromisoformat('2026-08-01T18:24:00+00:00')
+          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
+          proof = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_proof.public.json').read_text())
+          market = json.loads(Path('site/crypto-astro/data/market_field_snapshot.public.v0_1.json').read_text())
+          current = datetime.fromisoformat(snapshot['generated_at_utc'].replace('Z', '+00:00'))
+          assert current > old
+          assert proof['generated_at_utc'] == snapshot['generated_at_utc']
+          assert market['updated_at_utc'] == snapshot['generated_at_utc']
+          assert snapshot['freshness_status'] == 'FRESH'
+          assert snapshot['liquidity_tvl']['defi_tvl_excludes_double_counted'] is True
+          assert snapshot['liquidity_tvl']['defi_tvl_excludes_liquid_staking'] is True
+          print('SNAPSHOT_TIMESTAMP_ADVANCED=PASS')
+          print('DERIVED_BINDINGS_CONSISTENT=PASS')
+          print('NO_DOUBLE_COUNTING=PASS')
+          PY
+
+      - name: Upload activation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-automatic-refresh-pr-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: error
