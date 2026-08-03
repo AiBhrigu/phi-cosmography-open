@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-08-01T18:24:47Z
+GENERATED_AT_UTC=2026-08-03T03:20:57Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=CRYPTO_ASTRO_SNAPSHOT_REFRESH_THEN_PR101_EXACT_SHA_REDEPLOY_v0_1
-REFRESH_REASON=Refresh the stale accepted Snapshot and rebuild Proof Registry Delta Snapshot Memory and both public surfaces before the PR101 exact-SHA redeploy gate.
+OPERATOR_REF=BTC_COSMOGRAPHER_MARKET_SNAPSHOT_AUTOMATIC_REFRESH_SOURCE_TRUTH_REPAIR_v0_1
+REFRESH_REASON=Refresh the stale accepted Market Snapshot from authorized sources, rebuild Proof, bindings, Registry, Delta, Snapshot Memory and derived market fields, then preserve the generated branch for the bounded automatic-refresh activation repair.
 
 ## Changed modules
 
