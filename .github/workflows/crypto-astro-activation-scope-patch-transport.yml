@@ -1,14 +1,13 @@
 name: Crypto-Astro Activation Scope Patch Transport
 
 on:
-  push:
-    branches:
-      - automation/crypto-astro-static-refresh-30781576597
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/crypto-astro-activation-scope-patch-transport.yml'
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   patch-and-export:
@@ -17,7 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: automation/crypto-astro-static-refresh-30781576597
           fetch-depth: 0
 
       - name: Apply exact classifier insertions
@@ -94,8 +92,3 @@ jobs:
             .github/workflows/crypto-astro-assistant-dispatch-pr.yml
           include-hidden-files: true
           if-no-files-found: error
-
-      - name: Publish transport run identity
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 298 --body "PATCH_TRANSPORT_RUN_ID=$GITHUB_RUN_ID"
