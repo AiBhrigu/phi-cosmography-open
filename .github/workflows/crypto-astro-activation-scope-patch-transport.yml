@@ -7,15 +7,16 @@ on:
       - '.github/workflows/crypto-astro-activation-scope-patch-transport.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  patch-and-export:
+  patch-and-push:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Apply exact classifier insertions
@@ -50,7 +51,13 @@ jobs:
               snapshot = snapshot.replace(set_anchor, set_insert, 1)
           class_anchor = "          if changed == implementation:\n            mode='implementation'\n"
           class_insert = "          if changed == automatic_refresh_activation:\n            mode='automatic_refresh_activation'\n            print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')\n          elif changed == implementation:\n            mode='implementation'\n"
-          snapshot = snapshot.replace(class_anchor, class_insert, 1)
+          if "mode='automatic_refresh_activation'" not in snapshot:
+              snapshot = snapshot.replace(class_anchor, class_insert, 1)
+          snapshot = snapshot.replace(
+              "if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'",
+              "if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair'",
+              1,
+          )
           if snapshot.count("mode='automatic_refresh_activation'") != 1:
               raise SystemExit('snapshot activation classifier insertion failed')
           snapshot_path.write_text(snapshot)
@@ -67,13 +74,24 @@ jobs:
               assistant = assistant.replace(set_anchor, set_insert, 1)
           class_anchor = "          if changed == assistant_dispatch_scope:\n              mode = \"assistant_dispatch\"\n"
           class_insert = "          if changed == automatic_refresh_activation_scope:\n              mode = \"automatic_refresh_activation\"\n              print(\"ASSISTANT_DISPATCH_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS\")\n          elif changed == assistant_dispatch_scope:\n              mode = \"assistant_dispatch\"\n"
-          assistant = assistant.replace(class_anchor, class_insert, 1)
+          if 'mode = "automatic_refresh_activation"' not in assistant:
+              assistant = assistant.replace(class_anchor, class_insert, 1)
+          assistant = assistant.replace(
+              "if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh'",
+              "if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation'",
+              1,
+          )
+          assistant = assistant.replace(
+              "- name: Prove generated refresh leaves assistant-dispatch runtime unchanged\n        if: steps.scope.outputs.mode == 'generated_refresh'",
+              "- name: Prove generated refresh or activation leaves assistant-dispatch runtime unchanged\n        if: steps.scope.outputs.mode == 'generated_refresh' || steps.scope.outputs.mode == 'automatic_refresh_activation'",
+              1,
+          )
           if assistant.count('mode = "automatic_refresh_activation"') != 1:
               raise SystemExit('assistant activation classifier insertion failed')
           assistant_path.write_text(assistant)
           PY
 
-      - name: Verify patch boundaries
+      - name: Verify exact two-file delta
         run: |
           git diff --check
           git diff --name-only | sort > /tmp/changed.txt
@@ -81,14 +99,17 @@ jobs:
             .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
             .github/workflows/crypto-astro-snapshot-memory-pr.yml | sort > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/changed.txt
-          grep -q 'SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS' .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          grep -q 'ASSISTANT_DISPATCH_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS' .github/workflows/crypto-astro-assistant-dispatch-pr.yml
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: crypto-astro-activation-classifier-patches
-          path: |
+      - name: Commit classifier patches when needed
+        run: |
+          if git diff --quiet; then
+            echo CLASSIFIER_PATCHES_ALREADY_PRESENT=PASS
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
             .github/workflows/crypto-astro-snapshot-memory-pr.yml
-            .github/workflows/crypto-astro-assistant-dispatch-pr.yml
-          include-hidden-files: true
-          if-no-files-found: error
+          git commit -m 'Crypto-Astro: bind automatic refresh activation classifiers'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
