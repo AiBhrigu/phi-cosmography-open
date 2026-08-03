@@ -109,15 +109,16 @@ def verify_policy(policy: dict[str, Any]) -> list[str]:
     ):
         require(dispatch.get(key) is True, f"policy:dispatch:{key}", failures)
 
-    permissions = policy.get("permissions") if isinstance(policy.get("permissions"), dict) else {}
-    require(permissions == {"contents": "read", "pull_requests": "read", "actions": "write"}, "policy:permissions", failures)
-
+    require(
+        policy.get("permissions") == {"contents": "read", "pull_requests": "read", "actions": "write"},
+        "policy:permissions",
+        failures,
+    )
     publication = policy.get("publication") if isinstance(policy.get("publication"), dict) else {}
     require(publication.get("auto_merge") is False, "policy:no_auto_merge", failures)
     require(publication.get("deploy_command") is False, "policy:no_deploy", failures)
     require(publication.get("public_mutation_before_explicit_merge") is False, "policy:no_public_mutation", failures)
     require(publication.get("pages_publish_after_authorized_merge") is True, "policy:pages_after_merge", failures)
-
     diagnostics = policy.get("diagnostics") if isinstance(policy.get("diagnostics"), dict) else {}
     require(diagnostics and all(value is True for value in diagnostics.values()), "policy:diagnostics", failures)
     boundary = policy.get("boundary") if isinstance(policy.get("boundary"), dict) else {}
@@ -138,7 +139,6 @@ def verify_scheduler(text: str) -> list[str]:
         "cancel-in-progress: false",
         "ref: main",
         "git rev-parse origin/main",
-        "gh pr list --state open --base main",
         "gh run list --workflow crypto-astro-static-refresh-manual.yml",
         "test_defi_tvl_methodology_v0_1.py",
         "crypto_astro_static_refresh_bhrigu_compat_v0_1.py",
@@ -153,14 +153,19 @@ def verify_scheduler(text: str) -> list[str]:
     )
     for marker in required:
         require(marker in text, f"scheduler:missing:{marker}", failures)
-
+    require(
+        re.search(r"['\"]gh['\"],\s*['\"]pr['\"],\s*['\"]list['\"]", text) is not None
+        and "'--state', 'open'" in text
+        and "'--base', 'main'" in text,
+        "scheduler:open_pr_query",
+        failures,
+    )
     triggers = {
         match.group(1)
         for match in re.finditer(r"^  (schedule|workflow_dispatch|push|pull_request):\s*$", text, flags=re.MULTILINE)
     }
     require(triggers == {"schedule", "workflow_dispatch"}, f"scheduler:triggers:{sorted(triggers)}", failures)
     require(len(re.findall(r"^\s*- cron:\s*'17 \* \* \* \*'\s*$", text, flags=re.MULTILINE)) == 1, "scheduler:cron_exact", failures)
-
     forbidden = {
         "contents_write": r"^\s*contents:\s*write\s*$",
         "git_push": r"\bgit\s+push\b",
@@ -204,8 +209,10 @@ def verify_repository(repo: Path) -> dict[str, Any]:
         "no_material_change": "NO_MATERIAL_CHANGE_RECHECK",
         "future": "BLOCK_FUTURE_SNAPSHOT",
     }
-    matrix_failures = [f"matrix:{key}:{matrix.get(key)}" for key, value in expected.items() if matrix.get(key) != value]
-    checks["decision_matrix"] = matrix_failures
+    checks["decision_matrix"] = [
+        f"matrix:{key}:{matrix.get(key)}" for key, expected_value in expected.items()
+        if matrix.get(key) != expected_value
+    ]
     failures = [f"{section}:{item}" for section, items in checks.items() for item in items]
     return {
         "schema_version": "crypto_astro_automatic_refresh_activation_verification_v0_1",
@@ -218,15 +225,11 @@ def verify_repository(repo: Path) -> dict[str, Any]:
     }
 
 
-def parse_args() -> argparse.Namespace:
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", default=".")
     parser.add_argument("--report")
-    return parser.parse_args()
-
-
-def main() -> int:
-    args = parse_args()
+    args = parser.parse_args()
     repo = Path(args.repo).resolve()
     report = verify_repository(repo)
     rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
