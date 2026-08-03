@@ -99,12 +99,13 @@ jobs:
 
       - name: Verify exact final Snapshot Memory file
         run: |
+          ruby -e "require 'yaml'; YAML.load_file('.github/workflows/crypto-astro-snapshot-memory-pr.yml')"
           python3 - <<'PY'
           import hashlib
           from pathlib import Path
           path = Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml')
           digest = hashlib.sha256(path.read_bytes()).hexdigest()
-          expected = 'db4bb871ae0356dcb9299f2cdc9d07c9d9ea4349f19a99084473832aae172307'
+          expected = 'b50face416de8d40e01ab315968a17fe13a61fcb9406db50f3f87e66ca4bd126'
           if digest != expected:
               raise SystemExit({'expected': expected, 'actual': digest})
           print('SNAPSHOT_MEMORY_FINAL_SHA256=PASS')
