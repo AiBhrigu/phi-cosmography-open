@@ -8,12 +8,16 @@ on:
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
       - ".github/workflows/crypto-astro-assistant-dispatch.yml"
       - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
+      - ".github/workflows/crypto-astro-automatic-refresh.yml"
+      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
       - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
       - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_assistant_dispatch_v0_1.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json"
       - "tools/crypto_astro_operations/**"
       - "docs/crypto-astro-service/crypto_astro_operator_review.md"
 
@@ -33,7 +37,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Classify bounded cadence, repair, workflow-applicability, BTC Φ geometry, timestamp-consistency, or generated-refresh scope
+      - name: Classify bounded cadence, activation, repair, or generated-refresh scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -125,15 +129,32 @@ jobs:
           generated_refresh_optional = {
               "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
           }
+          automatic_refresh_activation_scope = generated_refresh_scope | {
+              ".github/workflows/crypto-astro-automatic-refresh.yml",
+              ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json",
+              "tools/crypto_astro_operations/verify_automatic_refresh_activation.py",
+              "tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+          }
+
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
-          changed = set(
-              subprocess.check_output(
-                  ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
-              ).splitlines()
-          )
-          if changed == assistant_dispatch_scope:
+          changed = set(subprocess.check_output(
+              ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
+          ).splitlines())
+
+          if changed == automatic_refresh_activation_scope:
+              print("OPERATIONAL_CADENCE_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS")
+          elif changed == assistant_dispatch_scope:
               print("ASSISTANT_DISPATCH_FILE_SCOPE=PASS")
           elif changed == snapshot_memory_repair_scope:
               print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
@@ -141,24 +162,14 @@ jobs:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
           elif changed == workflow_applicability_repair_scope:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
-              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")
-              print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")
-              print("SNAPSHOT_MEMORY_FRESHNESS_POLICY_CROSS_WORKFLOW_APPLICABILITY=PASS")
           elif changed == freshness_policy_scope:
               print("OPERATIONAL_CADENCE_FRESHNESS_POLICY_SCOPE=PASS")
           elif changed == btc_phi_semantic_geometry_scope:
               print("BTC_PHI_SEMANTIC_GEOMETRY_FILE_SCOPE=PASS")
-          elif changed in (
-              timestamp_consistency_repair_scope,
-              timestamp_consistency_data_repair_scope,
-          ):
+          elif changed in (timestamp_consistency_repair_scope, timestamp_consistency_data_repair_scope):
               print("SNAPSHOT_PROOF_TIMESTAMP_CONSISTENCY_REPAIR_FILE_SCOPE=PASS")
-          elif changed in (
-              generated_refresh_scope,
-              generated_refresh_scope | generated_refresh_optional,
-          ):
+          elif changed in (generated_refresh_scope, generated_refresh_scope | generated_refresh_optional):
               print("OPERATIONAL_CADENCE_GENERATED_REFRESH_NOT_APPLICABLE=PASS")
-              print("CROSS_WORKFLOW_GENERATED_REFRESH_APPLICABILITY=PASS")
           else:
               unexpected = sorted(changed - cadence_allowed)
               assert not unexpected, f"Unexpected cadence paths: {unexpected}"
