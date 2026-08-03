@@ -161,13 +161,17 @@ jobs:
           print('NO_DOUBLE_COUNTING=PASS')
           PY
 
-      - name: Checkout exact BHRIGU consumer master
+      - name: Checkout advertised BHRIGU consumer master
         uses: actions/checkout@v5
         with:
           repository: AiBhrigu/bhrigu-portal
-          ref: e07da6f6d216d28621f8592ecf8c066b05897ba9
+          ref: master
           path: bhrigu-portal-consumer
           persist-credentials: false
+
+      - name: Prove exact BHRIGU consumer master identity
+        working-directory: bhrigu-portal-consumer
+        run: test "$(git rev-parse HEAD)" = "e07da6f6d216d28621b8592ecf8c066b05897ba9"
 
       - uses: actions/setup-node@v4
         with:
