@@ -1,0 +1,67 @@
+{
+  "schema_version": "crypto_astro_automatic_refresh_activation_v0_1",
+  "activation_id": "BTC_COSMOGRAPHER_MARKET_SNAPSHOT_AUTOMATIC_REFRESH_SOURCE_TRUTH_REPAIR_v0_1",
+  "supersedes_design_id": "crypto_astro_automatic_24h_refresh_fail_closed_design_v0_1",
+  "status": "REVIEW_CANDIDATE",
+  "activation_on_default_branch_merge": true,
+  "scheduler_workflow": ".github/workflows/crypto-astro-automatic-refresh.yml",
+  "validation_workflow": ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
+  "schedule": {
+    "cron": "17 * * * *",
+    "check_interval_minutes": 60,
+    "workflow_dispatch_fallback": true
+  },
+  "freshness_contract": {
+    "contract_id": "btc_market_snapshot_freshness_24h_168h_v0_1",
+    "daily_minimum_interval_hours": 18,
+    "automatic_eligibility_age_hours": 20,
+    "fresh_through_hours": 24,
+    "operational_breach_after_hours": 48,
+    "unavailable_after_hours": 168
+  },
+  "source_truth": {
+    "probe_implementation": "tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py",
+    "methodology_test": "tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py",
+    "no_synthetic_fallback": true,
+    "material_change_required": true,
+    "timestamp_only_refresh_allowed": false
+  },
+  "dispatch": {
+    "target_workflow": "crypto-astro-static-refresh-manual.yml",
+    "target_ref": "main",
+    "mode": "DAILY_CADENCE",
+    "exact_main_lock_before_probe": true,
+    "second_open_refresh_pr_forbidden": true,
+    "queued_or_running_manual_refresh_forbidden": true,
+    "review_pr_only": true,
+    "manual_workflow_dispatch_fallback_preserved": true
+  },
+  "permissions": {
+    "contents": "read",
+    "pull_requests": "read",
+    "actions": "write"
+  },
+  "publication": {
+    "auto_merge": false,
+    "deploy_command": false,
+    "public_mutation_before_explicit_merge": false,
+    "pages_publish_after_authorized_merge": true
+  },
+  "diagnostics": {
+    "decision_artifact_required": true,
+    "step_summary_required": true,
+    "source_probe_failure_fails_workflow": true,
+    "dispatch_visibility_required": true
+  },
+  "boundary": {
+    "new_market_assets": false,
+    "semantic_question_protocol": false,
+    "astro_routing": false,
+    "protocol_bridge": false,
+    "payment": false,
+    "accounts": false,
+    "backend_provider": false,
+    "orion": false,
+    "redesign": false
+  }
+}

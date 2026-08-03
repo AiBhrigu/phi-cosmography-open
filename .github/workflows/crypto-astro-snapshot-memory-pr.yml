@@ -11,6 +11,10 @@ on:
       - '.github/workflows/crypto-astro-operational-cadence-pr.yml'
       - '.github/workflows/crypto-astro-assistant-dispatch.yml'
       - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'
+      - '.github/workflows/crypto-astro-automatic-refresh.yml'
+      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'
+      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'
+      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'
       - 'site/crypto-astro/index.html'
       - 'site/crypto-astro/data/crypto_astro_snapshot*.json'
       - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
@@ -181,9 +185,27 @@ jobs:
             'docs/crypto-astro-service/crypto_astro_operator_review.md',
           }
           optional = {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          automatic_refresh_activation = generated | {
+            '.github/workflows/crypto-astro-automatic-refresh.yml',
+            '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+            '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+            '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+            '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json',
+            'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
+            'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
+            'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
+            'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
+            'tools/crypto_astro_operations/verify_operational_cadence.py',
+            'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+          }
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
-          if changed == implementation:
+          if changed == automatic_refresh_activation:
+            mode='automatic_refresh_activation'
+            print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')
+          elif changed == implementation:
             mode='implementation'
           elif changed == squash_merge_ancestry_repair:
             mode='squash_merge_ancestry_repair'
@@ -501,7 +523,7 @@ jobs:
             docs/crypto-astro-service \
             tools/crypto_astro_snapshot_memory
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
-        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

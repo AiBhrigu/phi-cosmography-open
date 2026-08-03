@@ -8,6 +8,16 @@ on:
       - ".github/workflows/crypto-astro-static-refresh-manual.yml"
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
+      - ".github/workflows/crypto-astro-automatic-refresh.yml"
+      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json"
+      - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
+      - "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json"
+      - "tools/crypto_astro_operations/verify_operational_cadence.py"
+      - "tools/crypto_astro_operations/test_verify_operational_cadence.py"
+      - "tools/crypto_astro_operations/verify_automatic_refresh_activation.py"
+      - "tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py"
       - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
       - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_ASSISTANT_DISPATCH_v0_1.md"
@@ -114,6 +124,21 @@ jobs:
           generated_refresh_optional = {
               "site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json",
           }
+          automatic_refresh_activation_scope = generated_refresh_scope | {
+              ".github/workflows/crypto-astro-automatic-refresh.yml",
+              ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json",
+              "tools/crypto_astro_operations/verify_automatic_refresh_activation.py",
+              "tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py",
+              "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
+              "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
+              "tools/crypto_astro_operations/verify_operational_cadence.py",
+              "tools/crypto_astro_operations/test_verify_operational_cadence.py",
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -122,7 +147,10 @@ jobs:
                   ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
               ).splitlines()
           )
-          if changed == assistant_dispatch_scope:
+          if changed == automatic_refresh_activation_scope:
+              mode = "automatic_refresh_activation"
+              print("ASSISTANT_DISPATCH_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS")
+          elif changed == assistant_dispatch_scope:
               mode = "assistant_dispatch"
               print("ASSISTANT_DISPATCH_EXACT_SCOPE=PASS")
           elif changed == snapshot_memory_repair_scope:
@@ -157,34 +185,15 @@ jobs:
           else:
               raise AssertionError({
                   "changed": sorted(changed),
+                  "automatic_refresh_activation_missing": sorted(automatic_refresh_activation_scope - changed),
                   "assistant_dispatch_missing": sorted(assistant_dispatch_scope - changed),
                   "snapshot_memory_repair_missing": sorted(snapshot_memory_repair_scope - changed),
                   "runtime_registry_test_repair_missing": sorted(runtime_registry_test_repair_scope - changed),
-                  "workflow_applicability_repair_missing": sorted(
-                      workflow_applicability_repair_scope - changed
-                  ),
-                  "freshness_policy_scope_missing": sorted(
-                      freshness_policy_scope - changed
-                  ),
-                  "btc_phi_semantic_geometry_missing": sorted(
-                      btc_phi_semantic_geometry_scope - changed
-                  ),
-                  "timestamp_consistency_repair_missing": sorted(
-                      timestamp_consistency_repair_scope - changed
-                  ),
+                  "workflow_applicability_repair_missing": sorted(workflow_applicability_repair_scope - changed),
+                  "freshness_policy_scope_missing": sorted(freshness_policy_scope - changed),
+                  "btc_phi_semantic_geometry_missing": sorted(btc_phi_semantic_geometry_scope - changed),
+                  "timestamp_consistency_repair_missing": sorted(timestamp_consistency_repair_scope - changed),
                   "generated_refresh_missing": sorted(generated_refresh_scope - changed),
-                  "unexpected": sorted(
-                      changed
-                      - assistant_dispatch_scope
-                      - snapshot_memory_repair_scope
-                      - runtime_registry_test_repair_scope
-                      - workflow_applicability_repair_scope
-                      - freshness_policy_scope
-                      - btc_phi_semantic_geometry_scope
-                      - timestamp_consistency_repair_scope
-                      - generated_refresh_scope
-                      - generated_refresh_optional
-                  ),
               })
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write(f"mode={mode}\n")
@@ -221,7 +230,7 @@ jobs:
             site/theme/crypto_astro
 
       - name: Prove dispatch runtime and public surface unchanged for bounded repairs
-        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh'
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -267,8 +276,8 @@ jobs:
             site/theme/crypto_astro_surface.css \
             site/theme/crypto_astro
 
-      - name: Prove generated refresh leaves assistant-dispatch runtime unchanged
-        if: steps.scope.outputs.mode == 'generated_refresh'
+      - name: Prove generated refresh or activation leaves assistant-dispatch runtime unchanged
+        if: steps.scope.outputs.mode == 'generated_refresh' || steps.scope.outputs.mode == 'automatic_refresh_activation'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

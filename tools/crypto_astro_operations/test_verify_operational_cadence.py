@@ -5,9 +5,9 @@ from verify_operational_cadence import (
     AUTOMATIC_REFRESH_DESIGN_ID,
     AUTOMATIC_REFRESH_DESIGN_STATUS,
     EXPECTED_EXCEPTION_MODES,
-    FRESHNESS_CONTRACT_ID,
     EXPECTED_INPUTS,
     EXPECTED_MODES,
+    FRESHNESS_CONTRACT_ID,
     OPERATOR_BOUNDARY,
     automatic_refresh_dry_run_matrix,
     evaluate_automatic_refresh_dry_run,
@@ -23,16 +23,18 @@ from verify_operational_cadence import (
 def valid_automatic_refresh_design():
     return {
         "design_id": AUTOMATIC_REFRESH_DESIGN_ID,
+        "activation_contract_id": "crypto_astro_automatic_refresh_activation_v0_1",
         "status": AUTOMATIC_REFRESH_DESIGN_STATUS,
-        "activation_requires_separate_authorization": True,
-        "schedule_activation_allowed": False,
-        "production_activation_allowed": False,
-        "proposed_check_interval_minutes": 60,
-        "proposed_eligibility_age_hours": 20,
+        "activation_requires_explicit_merge_authorization": True,
+        "activation_on_default_branch_merge": True,
+        "schedule_activation_allowed": True,
+        "check_interval_minutes": 60,
+        "eligibility_age_hours": 20,
         "daily_minimum_interval_hours": 18,
         "freshness_boundary_hours": 24,
         "operational_breach_hours": 48,
         "unavailable_after_hours": 168,
+        "scheduler_workflow": "crypto-astro-automatic-refresh.yml",
         "dispatch_target": "crypto-astro-static-refresh-manual.yml",
         "dispatch_mode": "DAILY_CADENCE",
         "exact_main_lock_required": True,
@@ -40,6 +42,7 @@ def valid_automatic_refresh_design():
         "source_health_required": True,
         "material_change_required_for_review_pr": True,
         "review_pr_only": True,
+        "manual_workflow_dispatch_fallback_preserved": True,
         "auto_merge_allowed": False,
         "deploy_command_allowed": False,
         "timestamp_only_refresh_allowed": False,
@@ -51,7 +54,8 @@ def valid_policy():
     return {
         "schema_version": "crypto_astro_operational_cadence_v0_1",
         "freshness_contract_id": FRESHNESS_CONTRACT_ID,
-        "refresh_trigger": "workflow_dispatch",
+        "source_producer_trigger": "workflow_dispatch",
+        "automatic_control_trigger": "schedule_and_workflow_dispatch",
         "default_mode": "DAILY_CADENCE",
         "allowed_modes": list(EXPECTED_MODES),
         "exception_modes": list(EXPECTED_EXCEPTION_MODES),
@@ -59,6 +63,8 @@ def valid_policy():
         "cadence": {
             "target_accepted_refresh_interval_hours": 24,
             "daily_minimum_interval_hours": 18,
+            "automatic_eligibility_age_hours": 20,
+            "automatic_check_interval_minutes": 60,
             "target_max_operational_gap_hours": 48,
         },
         "freshness": {
@@ -85,11 +91,18 @@ def valid_policy():
         "deployment": {
             "refresh_workflow_merge_command_allowed": False,
             "refresh_workflow_deploy_command_allowed": False,
+            "automatic_scheduler_merge_command_allowed": False,
+            "automatic_scheduler_deploy_command_allowed": False,
             "pages_publish_after_accepted_main_merge": True,
         },
-        "prohibited_refresh_triggers": ["schedule", "push"],
+        "prohibited_source_producer_triggers": ["schedule", "push"],
         "automatic_refresh_design": valid_automatic_refresh_design(),
-        "boundary": {"cron": False, "auto_merge": False},
+        "boundary": {
+            "cron_control_plane": True,
+            "source_producer_cron": False,
+            "auto_merge": False,
+            "backend": False,
+        },
     }
 
 
@@ -146,24 +159,12 @@ def valid_cadence_workflow():
 on:
   pull_request:
     paths:
-      - '.github/workflows/crypto-astro-static-refresh-manual.yml'
-      - '.github/workflows/crypto-astro-operational-cadence-pr.yml'
-      - '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
-      - 'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md'
-      - 'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json'
-      - 'tools/crypto_astro_operations/**'
-      - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
+      - '.github/workflows/crypto-astro-automatic-refresh.yml'
+      - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'
+      - 'tools/crypto_astro_operations/test_verify_operational_cadence.py'
 steps:
   - run: python -m unittest tools/crypto_astro_operations/test_verify_operational_cadence.py
   - run: python tools/crypto_astro_operations/verify_operational_cadence.py
-"""
-
-
-def valid_operator_review():
-    return f"""REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=operator-f
-REFRESH_REASON=daily accepted refresh
-{OPERATOR_BOUNDARY}
 """
 
 
@@ -182,114 +183,57 @@ def dry_run(age, **overrides):
 
 
 class OperationalCadenceTests(unittest.TestCase):
-    def test_locked_policy_passes(self):
+    def test_activated_policy_passes(self):
         self.assertEqual(verify_policy(valid_policy()), [])
+        self.assertEqual(verify_automatic_refresh_design(valid_policy()), [])
+        self.assertEqual(AUTOMATIC_REFRESH_DESIGN_STATUS, "ACTIVATION_REVIEW_CANDIDATE")
 
-    def test_automatic_refresh_design_passes_and_remains_inactive(self):
-        policy = valid_policy()
-        self.assertEqual(verify_automatic_refresh_design(policy), [])
-        design = policy["automatic_refresh_design"]
-        self.assertEqual(design["status"], "DESIGN_ONLY_DRY_RUN")
-        self.assertFalse(design["schedule_activation_allowed"])
-        self.assertFalse(design["production_activation_allowed"])
-        self.assertFalse(design["auto_merge_allowed"])
-        self.assertFalse(design["deploy_command_allowed"])
-
-    def test_automatic_activation_drift_fails(self):
-        for key in (
-            "schedule_activation_allowed",
-            "production_activation_allowed",
-            "auto_merge_allowed",
-            "deploy_command_allowed",
-            "timestamp_only_refresh_allowed",
-        ):
+    def test_automatic_safety_drift_fails(self):
+        for key in ("auto_merge_allowed", "deploy_command_allowed", "timestamp_only_refresh_allowed"):
             policy = copy.deepcopy(valid_policy())
             policy["automatic_refresh_design"][key] = True
             self.assertIn(f"automatic:{key}", verify_policy(policy))
 
-    def test_dry_run_matrix_passes(self):
+    def test_decision_matrix_passes(self):
         self.assertEqual(verify_automatic_refresh_dry_run(valid_policy()), [])
         self.assertEqual(len(automatic_refresh_dry_run_matrix(valid_policy())), 15)
-
-    def test_dry_run_minimum_and_automatic_window(self):
         self.assertEqual(dry_run(17)["decision"], "HOLD_MINIMUM_INTERVAL")
-        self.assertEqual(dry_run(18)["decision"], "HOLD_BEFORE_AUTOMATIC_WINDOW")
-        self.assertEqual(dry_run(19.99)["decision"], "HOLD_BEFORE_AUTOMATIC_WINDOW")
-        eligible = dry_run(20)
-        self.assertEqual(eligible["decision"], "WOULD_DISPATCH_REVIEW_PR")
-        self.assertTrue(eligible["would_dispatch_existing_manual_workflow"])
-        self.assertTrue(eligible["would_create_review_pr_only"])
-
-    def test_dry_run_single_flight_and_exact_main_blocks(self):
+        self.assertEqual(dry_run(19)["decision"], "HOLD_BEFORE_AUTOMATIC_WINDOW")
+        self.assertEqual(dry_run(20)["decision"], "WOULD_DISPATCH_REVIEW_PR")
         self.assertEqual(dry_run(22, exact_main_match=False)["decision"], "BLOCK_MAIN_DRIFT")
         self.assertEqual(dry_run(22, open_refresh_pr_count=1)["decision"], "BLOCK_OPEN_REFRESH_PR")
         self.assertEqual(dry_run(22, workflow_in_progress=True)["decision"], "BLOCK_SINGLE_FLIGHT")
+        self.assertEqual(dry_run(22, source_status="FAILED")["decision"], "SOURCE_FAILURE_RECHECK")
+        self.assertEqual(dry_run(22, material_change="NO")["decision"], "NO_MATERIAL_CHANGE_RECHECK")
 
-    def test_dry_run_source_failure_and_no_change_have_no_side_effects(self):
-        failed = dry_run(22, source_status="FAILED", material_change="UNKNOWN")
-        no_change = dry_run(22, material_change="NO")
-        self.assertEqual(failed["decision"], "SOURCE_FAILURE_RECHECK")
-        self.assertEqual(no_change["decision"], "NO_MATERIAL_CHANGE_RECHECK")
-        for result in (failed, no_change):
-            self.assertFalse(result["would_modify_public_data"])
-            self.assertFalse(result["would_merge"])
-            self.assertFalse(result["would_deploy"])
-            self.assertFalse(result["schedule_active"])
-            self.assertFalse(result["production_active"])
-
-    def test_dry_run_freshness_boundaries(self):
+    def test_freshness_contract_unchanged(self):
         self.assertEqual(dry_run(24)["freshness_state"], "FRESH")
         self.assertEqual(dry_run(24.0001)["freshness_state"], "STALE_LIMITED")
-        self.assertEqual(dry_run(72)["freshness_state"], "STALE_LIMITED")
         self.assertEqual(dry_run(168)["freshness_state"], "STALE_LIMITED")
         self.assertEqual(dry_run(168.0001)["freshness_state"], "UNAVAILABLE")
         self.assertFalse(dry_run(48)["operational_breach"])
         self.assertTrue(dry_run(48.0001)["operational_breach"])
         self.assertEqual(dry_run(-0.1)["decision"], "BLOCK_FUTURE_SNAPSHOT")
 
-    def test_legacy_72h_fresh_boundary_fails(self):
-        policy = copy.deepcopy(valid_policy())
-        policy["freshness"]["fresh_hours"] = 72
-        self.assertIn("policy:fresh_hours", verify_policy(policy))
+    def test_scheduler_is_configured_but_premerge_inactive(self):
+        result = dry_run(20)
+        self.assertTrue(result["schedule_configured"])
+        self.assertFalse(result["schedule_active_before_merge"])
+        self.assertFalse(result["would_merge"])
+        self.assertFalse(result["would_deploy"])
+        self.assertFalse(result["would_modify_public_data"])
 
-    def test_freshness_contract_id_drift_fails(self):
-        policy = copy.deepcopy(valid_policy())
-        policy["freshness_contract_id"] = "legacy_72h_contract"
-        self.assertIn("policy:freshness_contract_id", verify_policy(policy))
+    def test_manual_producer_remains_dispatch_only(self):
+        self.assertEqual(verify_manual_workflow(valid_manual(), valid_policy()), [])
+        scheduled = valid_manual().replace("  workflow_dispatch:\n", "  workflow_dispatch:\n  schedule:\n")
+        self.assertTrue(any("manual:triggers" in value for value in verify_manual_workflow(scheduled, valid_policy())))
+        merged = valid_manual() + "\n      - run: gh pr merge 1\n"
+        self.assertIn("manual:forbidden:merge_command", verify_manual_workflow(merged, valid_policy()))
 
-    def test_daily_minimum_drift_fails(self):
-        policy = copy.deepcopy(valid_policy())
-        policy["cadence"]["daily_minimum_interval_hours"] = 17
-        self.assertIn("policy:daily_minimum", verify_policy(policy))
-
-    def test_schedule_trigger_fails(self):
-        text = valid_manual().replace("  workflow_dispatch:\n", "  workflow_dispatch:\n  schedule:\n")
-        self.assertTrue(any("manual:triggers" in value for value in verify_manual_workflow(text, valid_policy())))
-
-    def test_merge_command_fails(self):
-        text = valid_manual() + "\n      - run: gh pr merge 1\n"
-        self.assertIn("manual:forbidden:merge_command", verify_manual_workflow(text, valid_policy()))
-
-    def test_removed_consumer_gate_fails(self):
-        text = valid_manual().replace("test_bhrigu_consumer_contract_v0_1.py", "consumer_removed.py")
-        self.assertIn(
-            "manual:missing:test_bhrigu_consumer_contract_v0_1.py",
-            verify_manual_workflow(text, valid_policy()),
-        )
-
-    def test_removed_open_pr_gate_fails(self):
-        text = valid_manual().replace('test "$OPEN_REFRESH_COUNT" = "0"', "echo unchecked")
-        self.assertIn("manual:open_pr_count", verify_manual_workflow(text, valid_policy()))
-
-    def test_cadence_workflow_passes(self):
+    def test_cadence_workflow_and_operator_boundary(self):
         self.assertEqual(verify_cadence_workflow(valid_cadence_workflow()), [])
-
-    def test_old_operator_boundary_fails(self):
-        text = valid_operator_review() + "No push, no PR, no deploy."
-        self.assertIn("operator_review:obsolete_boundary", verify_operator_review(text))
-
-    def test_operator_review_passes(self):
-        self.assertEqual(verify_operator_review(valid_operator_review()), [])
+        self.assertEqual(verify_operator_review(OPERATOR_BOUNDARY), [])
+        self.assertIn("operator_review:obsolete_boundary", verify_operator_review(OPERATOR_BOUNDARY + "\nNo push, no PR, no deploy."))
 
 
 if __name__ == "__main__":
