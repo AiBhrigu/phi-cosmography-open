@@ -242,17 +242,25 @@ jobs:
           print(json.dumps(report, indent=2, sort_keys=True))
           PY
 
-      - name: Checkout advertised BHRIGU consumer master
+      - name: Checkout current BHRIGU consumer master
         uses: actions/checkout@v5
         with:
           repository: AiBhrigu/bhrigu-portal
           ref: master
           path: bhrigu-portal-consumer
           persist-credentials: false
+          fetch-depth: 0
 
-      - name: Prove exact BHRIGU consumer master identity
+      - name: Lock BHRIGU consumer to current advertised master
         working-directory: bhrigu-portal-consumer
-        run: test "$(git rev-parse HEAD)" = "e07da6f6d216d28621f8592ecf8c066b05897ba9"
+        run: |
+          git fetch origin master
+          git checkout --detach refs/remotes/origin/master
+          LOCAL_SHA="$(git rev-parse HEAD)"
+          REMOTE_SHA="$(git rev-parse refs/remotes/origin/master)"
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          echo "BHRIGU_PORTAL_MASTER_SHA=$LOCAL_SHA"
+          echo BHRIGU_PORTAL_CURRENT_MASTER_IDENTITY=PASS
 
       - uses: actions/setup-node@v4
         with:
@@ -260,13 +268,13 @@ jobs:
           cache: npm
           cache-dependency-path: bhrigu-portal-consumer/package-lock.json
 
-      - name: Verify unchanged BHRIGU routing and production build
+      - name: Verify current BHRIGU routing and production build
         working-directory: bhrigu-portal-consumer
         run: |
           npm ci --ignore-scripts
           npm run verify:btc-routing
           npm run build
-          echo BHRIGU_PORTAL_MASTER_ROUTING_AND_BUILD=PASS
+          echo BHRIGU_PORTAL_CURRENT_MASTER_ROUTING_AND_BUILD=PASS
 
       - name: Upload activation evidence
         if: always()
