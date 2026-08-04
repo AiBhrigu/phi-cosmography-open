@@ -9,7 +9,6 @@ on:
       - ".github/workflows/crypto-astro-assistant-dispatch.yml"
       - ".github/workflows/crypto-astro-assistant-dispatch-pr.yml"
       - ".github/workflows/crypto-astro-automatic-refresh.yml"
-      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
       - "site/crypto-astro/data/crypto_astro_snapshot_proof.public.json"
       - "site/crypto-astro/data/crypto_astro_snapshot_registry.public.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
