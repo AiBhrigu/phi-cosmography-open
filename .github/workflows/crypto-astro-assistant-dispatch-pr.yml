@@ -9,7 +9,6 @@ on:
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
       - ".github/workflows/crypto-astro-automatic-refresh.yml"
-      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
@@ -80,6 +79,12 @@ jobs:
           }
           workflow_applicability_repair_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
+          cross_workflow_applicability_repair = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
@@ -159,6 +164,9 @@ jobs:
           elif changed == runtime_registry_test_repair_scope:
               mode = "runtime_registry_test_repair"
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_EXACT_SCOPE=PASS")
+          elif changed == cross_workflow_applicability_repair:
+              mode = "cross_workflow_applicability_repair"
+              print("CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
           elif changed == workflow_applicability_repair_scope:
               mode = "workflow_applicability_repair"
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")
