@@ -1,0 +1,182 @@
+name: Temporary Activation Applicability Bootstrap Builder V2
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/temporary-activation-applicability-bootstrap-builder-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-exact-four-file-bootstrap:
+    if: >-
+      github.repository == 'AiBhrigu/phi-cosmography-open' &&
+      github.actor == 'AiBhrigu' &&
+      github.head_ref == 'staging/automatic-refresh-legacy-path-filter-repair-v0-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_REF: 8e9cc0493a37ec0e75fc76b0130c89cc5c352334
+      ACTIVATION_REPAIR_REF: 45310e8d2bb163cc04934e340303900825ea13ce
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.ACTIVATION_REPAIR_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Materialize exact structural bootstrap
+        run: |
+          mkdir -p artifacts/bootstrap
+          cat > /tmp/build_bootstrap.py <<'PY'
+          from pathlib import Path
+
+          paths = {
+              'activation': Path('.github/workflows/crypto-astro-automatic-refresh-pr.yml'),
+              'assistant': Path('.github/workflows/crypto-astro-assistant-dispatch-pr.yml'),
+              'cadence': Path('.github/workflows/crypto-astro-operational-cadence-pr.yml'),
+              'memory': Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml'),
+          }
+          exact_files = sorted(str(path) for path in paths.values())
+
+          def lines(path):
+              return path.read_text(encoding='utf-8').splitlines(keepends=True)
+
+          def write(path, values):
+              path.write_text(''.join(values), encoding='utf-8')
+
+          def remove_once(values, target, label):
+              matches = [i for i, line in enumerate(values) if line == target]
+              if len(matches) != 1:
+                  raise SystemExit(f'{label}:REMOVE_ONCE:{len(matches)}')
+              values.pop(matches[0])
+
+          def insert_after_set(values, declaration, inserted, label):
+              starts = [i for i, line in enumerate(values) if line.strip() == declaration]
+              if len(starts) != 1:
+                  raise SystemExit(f'{label}:DECLARATION:{len(starts)}')
+              start = starts[0]
+              indent = values[start][:len(values[start]) - len(values[start].lstrip())]
+              end = next((i for i in range(start + 1, len(values)) if values[i] == indent + '}\n'), None)
+              if end is None:
+                  raise SystemExit(f'{label}:CLOSING_SET_MISSING')
+              values[end + 1:end + 1] = [indent + line + '\n' for line in inserted]
+
+          def insert_before_branch(values, condition, inserted, label):
+              matches = [i for i, line in enumerate(values) if line.strip() == condition]
+              if len(matches) != 1:
+                  raise SystemExit(f'{label}:BRANCH:{len(matches)}')
+              index = matches[0]
+              indent = values[index][:len(values[index]) - len(values[index].lstrip())]
+              values[index:index] = [indent + line + '\n' for line in inserted]
+
+          four_set = [
+              'cross_workflow_applicability_repair = {',
+              "    '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',",
+              "    '.github/workflows/crypto-astro-automatic-refresh-pr.yml',",
+              "    '.github/workflows/crypto-astro-operational-cadence-pr.yml',",
+              "    '.github/workflows/crypto-astro-snapshot-memory-pr.yml',",
+              '}',
+          ]
+
+          values = lines(paths['activation'])
+          insert_after_set(values, 'applicability_repair = {', four_set, 'activation')
+          insert_before_branch(values, 'elif changed == applicability_repair:', [
+              'elif changed == cross_workflow_applicability_repair:',
+              "    mode = 'cross_workflow_applicability_repair'",
+              '    expected = cross_workflow_applicability_repair',
+              "    marker = 'AUTOMATIC_REFRESH_EXACT_CROSS_WORKFLOW_APPLICABILITY_REPAIR_SCOPE=PASS'",
+          ], 'activation')
+          size_line = "                  'applicability_repair': len(applicability_repair),\n"
+          indexes = [i for i, line in enumerate(values) if line == size_line]
+          if len(indexes) != 1:
+              raise SystemExit(f'activation:SIZE:{len(indexes)}')
+          values.insert(indexes[0] + 1, "                  'cross_workflow_applicability_repair': len(cross_workflow_applicability_repair),\n")
+          old_condition = "        if: steps.scope.outputs.mode != 'applicability_repair'\n"
+          new_condition = "        if: steps.scope.outputs.mode != 'applicability_repair' && steps.scope.outputs.mode != 'cross_workflow_applicability_repair'\n"
+          remove_indexes = [i for i, line in enumerate(values) if line == old_condition]
+          if len(remove_indexes) != 1:
+              raise SystemExit(f'activation:PUBLIC_CONDITION:{len(remove_indexes)}')
+          values[remove_indexes[0]] = new_condition
+          write(paths['activation'], values)
+
+          for key in ('assistant', 'cadence'):
+              values = lines(paths[key])
+              remove_once(values, '      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n', f'{key}:path')
+              double_set = [line.replace("'", '"') for line in four_set]
+              insert_after_set(values, 'workflow_applicability_repair_scope = {', double_set, key)
+              marker = (
+                  'CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS'
+                  if key == 'assistant'
+                  else 'CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS'
+              )
+              inserted = [
+                  'elif changed == cross_workflow_applicability_repair:',
+                  '    mode = "cross_workflow_applicability_repair"',
+                  f'    print("{marker}")',
+              ] if key == 'assistant' else [
+                  'elif changed == cross_workflow_applicability_repair:',
+                  f'    print("{marker}")',
+              ]
+              insert_before_branch(values, 'elif changed == workflow_applicability_repair_scope:', inserted, key)
+              write(paths[key], values)
+
+          values = lines(paths['memory'])
+          remove_once(values, "      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n", 'memory:path')
+          memory_set = [line.replace('cross_workflow_applicability_repair', 'cross_workflow_activation_applicability_repair') for line in four_set]
+          insert_after_set(values, 'workflow_applicability_repair = {', memory_set, 'memory')
+          insert_before_branch(values, 'elif changed == workflow_applicability_repair:', [
+              'elif changed == cross_workflow_activation_applicability_repair:',
+              "    mode='cross_workflow_activation_applicability_repair'",
+              "    print('CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')",
+          ], 'memory')
+          write(paths['memory'], values)
+
+          out = Path('artifacts/bootstrap')
+          for path in paths.values():
+              (out / path.name).write_bytes(path.read_bytes())
+          Path('artifacts/expected-files.txt').write_text('\n'.join(exact_files) + '\n', encoding='utf-8')
+          PY
+          python /tmp/build_bootstrap.py
+          git diff --check "$BASE_REF" -- \
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            .github/workflows/crypto-astro-automatic-refresh-pr.yml \
+            .github/workflows/crypto-astro-operational-cadence-pr.yml \
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          git diff --name-only "$BASE_REF" | sort > artifacts/actual-files.txt
+          diff -u artifacts/expected-files.txt artifacts/actual-files.txt
+          sha256sum artifacts/bootstrap/* | tee artifacts/bootstrap.sha256
+
+      - name: Run repository validators against bootstrap
+        run: |
+          python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation -v
+          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report artifacts/activation-verification.json
+          python -m unittest discover -s tools/crypto_astro_operations -p 'test_*.py' -v
+          python tools/crypto_astro_operations/verify_assistant_dispatch.py verify-repository --repo . --report artifacts/assistant-verification.json
+          python tools/crypto_astro_operations/verify_operational_cadence.py --repo . --report artifacts/cadence-verification.json
+          python -m unittest discover -s tools/crypto_astro_snapshot_memory -p 'test_*.py' -v
+          echo FOUR_FILE_BOOTSTRAP_LOCAL_VALIDATION=PASS
+
+      - name: Create unattached Git blobs
+        run: |
+          : > artifacts/blob-shas.txt
+          for file in artifacts/bootstrap/*; do
+            name="$(basename "$file")"
+            content="$(base64 -w0 "$file")"
+            sha="$(gh api --method POST repos/AiBhrigu/phi-cosmography-open/git/blobs -f content="$content" -f encoding=base64 --jq .sha)"
+            printf '%s=%s\n' "$name" "$sha" | tee -a artifacts/blob-shas.txt
+          done
+
+      - name: Upload bootstrap proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: activation-applicability-bootstrap-v2-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
