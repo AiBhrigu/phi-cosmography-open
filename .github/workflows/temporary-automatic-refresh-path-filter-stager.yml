@@ -7,10 +7,10 @@ on:
       - '.github/workflows/temporary-automatic-refresh-path-filter-stager.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  stage-exact-three-file-repair:
+  build-exact-three-file-repair-artifact:
     if: >-
       github.repository == 'AiBhrigu/phi-cosmography-open' &&
       github.actor == 'AiBhrigu' &&
@@ -22,9 +22,9 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
-      - name: Remove only the foreign activation-validator trigger
+      - name: Materialize exact repaired workflow bytes
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -37,67 +37,31 @@ jobs:
               Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml'):
                   "      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n",
           }
+          out = Path('artifacts/repaired-workflows')
+          out.mkdir(parents=True, exist_ok=True)
           for path, target in expected_lines.items():
               lines = path.read_text(encoding='utf-8').splitlines(keepends=True)
               count = lines.count(target)
               if count != 1:
                   raise SystemExit(f'{path}:EXPECTED_EXACT_TRIGGER_LITERAL:{count}')
               lines.remove(target)
-              path.write_text(''.join(lines), encoding='utf-8')
-          print('EXACT_FOREIGN_TRIGGER_REMOVAL=PASS')
+              repaired = ''.join(lines)
+              destination = out / path.name
+              destination.write_text(repaired, encoding='utf-8')
+              assert 'paths:\n' in repaired
+              print(f'REPAIRED={path}:{len(repaired.encode("utf-8"))}')
           PY
+          sha256sum artifacts/repaired-workflows/* > artifacts/repaired-workflows.sha256
+          cat artifacts/repaired-workflows.sha256
 
-      - name: Delete temporary transport and prove exact staged scope
+      - name: Prove source repository remains unchanged
         run: |
-          rm .github/workflows/temporary-automatic-refresh-path-filter-stager.yml
-          git diff --check
-          python - <<'PY'
-          import subprocess
+          test -z "$(git status --porcelain)"
+          echo SOURCE_WORKTREE_UNCHANGED=PASS
 
-          expected = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-              '.github/workflows/temporary-automatic-refresh-path-filter-stager.yml',
-          }
-          changed = set(subprocess.check_output(
-              ['git', 'diff', '--name-only'], text=True
-          ).splitlines())
-          assert changed == expected, {
-              'changed': sorted(changed),
-              'missing': sorted(expected - changed),
-              'unexpected': sorted(changed - expected),
-          }
-          print('TEMPORARY_STAGER_WORKTREE_SCOPE=PASS')
-          PY
-
-      - name: Commit final three-file repair and prove base diff
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
-            .github/workflows/crypto-astro-operational-cadence-pr.yml \
-            .github/workflows/crypto-astro-snapshot-memory-pr.yml \
-            .github/workflows/temporary-automatic-refresh-path-filter-stager.yml
-          git commit -m 'Remove foreign activation-validator triggers from governance gates'
-          git fetch origin main
-          python - <<'PY'
-          import subprocess
-
-          expected = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          }
-          changed = set(subprocess.check_output(
-              ['git', 'diff', '--name-only', 'origin/main...HEAD'], text=True
-          ).splitlines())
-          assert changed == expected, {
-              'changed': sorted(changed),
-              'missing': sorted(expected - changed),
-              'unexpected': sorted(changed - expected),
-          }
-          print('FINAL_CROSS_WORKFLOW_APPLICABILITY_SCOPE=PASS')
-          PY
-          git push origin HEAD:${{ github.head_ref }}
+      - name: Upload exact repaired workflow bytes
+        uses: actions/upload-artifact@v4
+        with:
+          name: automatic-refresh-legacy-path-filter-repair-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
