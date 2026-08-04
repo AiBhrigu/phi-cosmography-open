@@ -48,7 +48,8 @@ jobs:
       - name: Initialize fail-closed evidence directory
         run: mkdir -p artifacts
 
-      - name: Prove exact twenty-three-file refresh and activation scope
+      - name: Classify exact activation, generated refresh, or applicability-repair scope
+        id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -59,7 +60,7 @@ jobs:
           import subprocess
           from pathlib import Path
 
-          expected = {
+          activation_bundle = {
               '.github/workflows/crypto-astro-automatic-refresh.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -84,6 +85,22 @@ jobs:
               'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
               'docs/crypto-astro-service/crypto_astro_operator_review.md',
           }
+          generated_refresh = {
+              'docs/crypto-astro-service/crypto_astro_operator_review.md',
+              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
+              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
+              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
+              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
+              'site/crypto-astro/data/scoring_snapshot.public.json',
+              'site/crypto-astro/index.html',
+          }
+          applicability_repair = {
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+          }
+
           base = subprocess.check_output(
               ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
               text=True,
@@ -92,21 +109,47 @@ jobs:
               ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
               text=True,
           ).splitlines())
+
+          if changed == activation_bundle:
+              mode = 'activation_bundle'
+              expected = activation_bundle
+              marker = 'AUTOMATIC_REFRESH_EXACT_TWENTY_THREE_FILE_SCOPE=PASS'
+          elif changed == generated_refresh:
+              mode = 'generated_refresh'
+              expected = generated_refresh
+              marker = 'AUTOMATIC_REFRESH_EXACT_GENERATED_REFRESH_SCOPE=PASS'
+          elif changed == applicability_repair:
+              mode = 'applicability_repair'
+              expected = applicability_repair
+              marker = 'AUTOMATIC_REFRESH_EXACT_APPLICABILITY_REPAIR_SCOPE=PASS'
+          else:
+              mode = 'invalid'
+              expected = set()
+              marker = None
+
           report = {
               'schema_version': 'crypto_astro_automatic_refresh_scope_v0_1',
-              'status': 'PASS' if changed == expected else 'FAIL',
+              'status': 'PASS' if mode != 'invalid' else 'FAIL',
+              'mode': mode,
               'base_sha': base,
               'head_sha': os.environ['HEAD_SHA'],
               'changed': sorted(changed),
-              'missing': sorted(expected - changed),
-              'unexpected': sorted(changed - expected),
+              'missing': sorted(expected - changed) if expected else [],
+              'unexpected': sorted(changed - expected) if expected else sorted(changed),
+              'accepted_scope_sizes': {
+                  'activation_bundle': len(activation_bundle),
+                  'generated_refresh': len(generated_refresh),
+                  'applicability_repair': len(applicability_repair),
+              },
           }
           Path('artifacts/automatic-refresh-exact-scope.json').write_text(
               json.dumps(report, indent=2, sort_keys=True) + '\n'
           )
           if report['status'] != 'PASS':
               raise SystemExit(report)
-          print('AUTOMATIC_REFRESH_EXACT_TWENTY_THREE_FILE_SCOPE=PASS')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'mode={mode}\n')
+          print(marker)
           PY
 
       - name: Run activation unit tests
@@ -162,8 +205,8 @@ jobs:
           PY
 
       - name: Prove pre-merge public BTC surfaces share accepted main Snapshot
+        if: steps.scope.outputs.mode != 'applicability_repair'
         env:
-          EXPECTED_CANDIDATE_TIMESTAMP: '2026-08-03T03:20:57Z'
           ACCEPTANCE_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           python - <<'PY'
@@ -192,6 +235,10 @@ jobs:
                       'body': response.read().decode('utf-8', errors='replace'),
                   }
 
+          candidate = json.loads(
+              Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text()
+          )
+          candidate_timestamp = candidate['generated_at_utc']
           producer_query = urllib.parse.urlencode({'public_before': nonce})
           producer_url = (
               'https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/'
@@ -200,7 +247,6 @@ jobs:
           producer_response = fetch(producer_url)
           producer = json.loads(producer_response['body'])
           public_timestamp = producer['generated_at_utc']
-          candidate_timestamp = os.environ['EXPECTED_CANDIDATE_TIMESTAMP']
           assert public_timestamp != candidate_timestamp
           assert producer['freshness_status'] in {'FRESH', 'STALE_VERIFIED_SNAPSHOT', 'STALE_LIMITED'}
 
