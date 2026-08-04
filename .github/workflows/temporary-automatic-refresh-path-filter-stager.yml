@@ -1,0 +1,102 @@
+name: Temporary Automatic Refresh Path Filter Stager
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/temporary-automatic-refresh-path-filter-stager.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  stage-exact-three-file-repair:
+    if: >-
+      github.repository == 'AiBhrigu/phi-cosmography-open' &&
+      github.actor == 'AiBhrigu' &&
+      github.head_ref == 'staging/automatic-refresh-legacy-path-filter-repair-v0-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove only the foreign activation-validator trigger
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('.github/workflows/crypto-astro-assistant-dispatch-pr.yml'),
+              Path('.github/workflows/crypto-astro-operational-cadence-pr.yml'),
+              Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml'),
+          ]
+          needle = 'crypto-astro-automatic-refresh-pr.yml'
+          for path in files:
+              lines = path.read_text(encoding='utf-8').splitlines(keepends=True)
+              matched = [line for line in lines if needle in line]
+              if len(matched) != 1:
+                  raise SystemExit(f'{path}:EXPECTED_EXACTLY_ONE_TRIGGER_LINE:{len(matched)}')
+              path.write_text(
+                  ''.join(line for line in lines if needle not in line),
+                  encoding='utf-8',
+              )
+          PY
+
+      - name: Delete temporary transport and prove exact staged scope
+        run: |
+          rm .github/workflows/temporary-automatic-refresh-path-filter-stager.yml
+          git diff --check
+          python - <<'PY'
+          import subprocess
+
+          expected = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/temporary-automatic-refresh-path-filter-stager.yml',
+          }
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only'], text=True
+          ).splitlines())
+          assert changed == expected, {
+              'changed': sorted(changed),
+              'missing': sorted(expected - changed),
+              'unexpected': sorted(changed - expected),
+          }
+          print('TEMPORARY_STAGER_WORKTREE_SCOPE=PASS')
+          PY
+
+      - name: Commit final three-file repair and prove base diff
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            .github/workflows/crypto-astro-operational-cadence-pr.yml \
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml \
+            .github/workflows/temporary-automatic-refresh-path-filter-stager.yml
+          git commit -m 'Remove foreign activation-validator triggers from governance gates'
+          git fetch origin main
+          python - <<'PY'
+          import subprocess
+
+          expected = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', 'origin/main...HEAD'], text=True
+          ).splitlines())
+          assert changed == expected, {
+              'changed': sorted(changed),
+              'missing': sorted(expected - changed),
+              'unexpected': sorted(changed - expected),
+          }
+          print('FINAL_CROSS_WORKFLOW_APPLICABILITY_SCOPE=PASS')
+          PY
+          git push origin HEAD:${{ github.head_ref }}
