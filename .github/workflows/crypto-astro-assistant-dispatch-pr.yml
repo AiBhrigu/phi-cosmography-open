@@ -9,7 +9,6 @@ on:
       - ".github/workflows/crypto-astro-operational-cadence-pr.yml"
       - ".github/workflows/crypto-astro-snapshot-memory-pr.yml"
       - ".github/workflows/crypto-astro-automatic-refresh.yml"
-      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md"
       - "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json"
       - "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md"
