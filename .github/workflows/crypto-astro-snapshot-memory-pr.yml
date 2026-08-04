@@ -12,7 +12,6 @@ on:
       - '.github/workflows/crypto-astro-assistant-dispatch.yml'
       - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'
       - '.github/workflows/crypto-astro-automatic-refresh.yml'
-      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'
       - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'
       - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'
       - 'site/crypto-astro/index.html'
@@ -156,7 +155,7 @@ jobs:
             'tools/crypto_astro_operations/test_verify_assistant_dispatch.py',
           }
           consumer_repair = {
-            '.github/workflows/crypto-astro-bhrigu-consumer-contract-pr.yml',
+            '.github/workflows/crypto-bhrigu-consumer-contract-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
             '.github/workflows/crypto-astro-static-refresh-manual.yml',
             'tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py',
