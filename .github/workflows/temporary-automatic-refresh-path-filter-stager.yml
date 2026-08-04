@@ -29,21 +29,22 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          files = [
-              Path('.github/workflows/crypto-astro-assistant-dispatch-pr.yml'),
-              Path('.github/workflows/crypto-astro-operational-cadence-pr.yml'),
-              Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml'),
-          ]
-          needle = 'crypto-astro-automatic-refresh-pr.yml'
-          for path in files:
+          expected_lines = {
+              Path('.github/workflows/crypto-astro-assistant-dispatch-pr.yml'):
+                  '      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n',
+              Path('.github/workflows/crypto-astro-operational-cadence-pr.yml'):
+                  '      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n',
+              Path('.github/workflows/crypto-astro-snapshot-memory-pr.yml'):
+                  "      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n",
+          }
+          for path, target in expected_lines.items():
               lines = path.read_text(encoding='utf-8').splitlines(keepends=True)
-              matched = [line for line in lines if needle in line]
-              if len(matched) != 1:
-                  raise SystemExit(f'{path}:EXPECTED_EXACTLY_ONE_TRIGGER_LINE:{len(matched)}')
-              path.write_text(
-                  ''.join(line for line in lines if needle not in line),
-                  encoding='utf-8',
-              )
+              count = lines.count(target)
+              if count != 1:
+                  raise SystemExit(f'{path}:EXPECTED_EXACT_TRIGGER_LITERAL:{count}')
+              lines.remove(target)
+              path.write_text(''.join(lines), encoding='utf-8')
+          print('EXACT_FOREIGN_TRIGGER_REMOVAL=PASS')
           PY
 
       - name: Delete temporary transport and prove exact staged scope
