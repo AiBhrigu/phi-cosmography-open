@@ -54,10 +54,11 @@ jobs:
           sha256sum artifacts/repaired-workflows/* > artifacts/repaired-workflows.sha256
           cat artifacts/repaired-workflows.sha256
 
-      - name: Prove source repository remains unchanged
+      - name: Prove tracked repository bytes remain unchanged
         run: |
-          test -z "$(git status --porcelain)"
-          echo SOURCE_WORKTREE_UNCHANGED=PASS
+          git diff --exit-code
+          git diff --cached --exit-code
+          echo SOURCE_TRACKED_BYTES_UNCHANGED=PASS
 
       - name: Upload exact repaired workflow bytes
         uses: actions/upload-artifact@v4
