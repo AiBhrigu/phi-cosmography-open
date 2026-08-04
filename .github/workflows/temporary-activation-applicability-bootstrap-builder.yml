@@ -50,50 +50,59 @@ jobs:
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           ]
 
-          def replace_once(text: str, old: str, new: str, label: str) -> str:
+          def block(lines):
+              return '\n'.join(lines) + '\n'
+
+          def replace_once(text, old, new, label):
               count = text.count(old)
               if count != 1:
                   raise SystemExit(f'{label}:EXPECTED_ONCE:{count}')
               return text.replace(old, new, 1)
 
-          cross_single = """          cross_workflow_applicability_repair = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          }
-"""
-          cross_double = """          cross_workflow_applicability_repair_scope = {
-              \".github/workflows/crypto-astro-assistant-dispatch-pr.yml\",
-              \".github/workflows/crypto-astro-automatic-refresh-pr.yml\",
-              \".github/workflows/crypto-astro-operational-cadence-pr.yml\",
-              \".github/workflows/crypto-astro-snapshot-memory-pr.yml\",
-          }
-"""
-          cross_snapshot = """          cross_workflow_activation_applicability_repair = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          }
-"""
+          cross_single = block([
+              "          cross_workflow_applicability_repair = {",
+              "              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',",
+              "              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',",
+              "              '.github/workflows/crypto-astro-operational-cadence-pr.yml',",
+              "              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',",
+              "          }",
+          ])
+          cross_double = block([
+              '          cross_workflow_applicability_repair_scope = {',
+              '              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",',
+              '              ".github/workflows/crypto-astro-automatic-refresh-pr.yml",',
+              '              ".github/workflows/crypto-astro-operational-cadence-pr.yml",',
+              '              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",',
+              '          }',
+          ])
+          cross_snapshot = block([
+              "          cross_workflow_activation_applicability_repair = {",
+              "              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',",
+              "              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',",
+              "              '.github/workflows/crypto-astro-operational-cadence-pr.yml',",
+              "              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',",
+              "          }",
+          ])
 
           text = activation.read_text(encoding='utf-8')
-          anchor = """          applicability_repair = {
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-          }
-"""
+          anchor = block([
+              "          applicability_repair = {",
+              "              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',",
+              "          }",
+          ])
           text = replace_once(text, anchor, anchor + cross_single, 'activation:scope')
-          branch = """          elif changed == applicability_repair:
-              mode = 'applicability_repair'
-              expected = applicability_repair
-              marker = 'AUTOMATIC_REFRESH_EXACT_APPLICABILITY_REPAIR_SCOPE=PASS'
-"""
-          cross_branch = """          elif changed == cross_workflow_applicability_repair:
-              mode = 'cross_workflow_applicability_repair'
-              expected = cross_workflow_applicability_repair
-              marker = 'AUTOMATIC_REFRESH_EXACT_CROSS_WORKFLOW_APPLICABILITY_REPAIR_SCOPE=PASS'
-"""
+          branch = block([
+              "          elif changed == applicability_repair:",
+              "              mode = 'applicability_repair'",
+              "              expected = applicability_repair",
+              "              marker = 'AUTOMATIC_REFRESH_EXACT_APPLICABILITY_REPAIR_SCOPE=PASS'",
+          ])
+          cross_branch = block([
+              "          elif changed == cross_workflow_applicability_repair:",
+              "              mode = 'cross_workflow_applicability_repair'",
+              "              expected = cross_workflow_applicability_repair",
+              "              marker = 'AUTOMATIC_REFRESH_EXACT_CROSS_WORKFLOW_APPLICABILITY_REPAIR_SCOPE=PASS'",
+          ])
           text = replace_once(text, branch, cross_branch + branch, 'activation:branch')
           size = "                  'applicability_repair': len(applicability_repair),\n"
           text = replace_once(text, size, size + "                  'cross_workflow_applicability_repair': len(cross_workflow_applicability_repair),\n", 'activation:size')
@@ -106,62 +115,71 @@ jobs:
           activation.write_text(text, encoding='utf-8')
 
           text = assistant.read_text(encoding='utf-8')
-          text = replace_once(text, '      - \".github/workflows/crypto-astro-automatic-refresh-pr.yml\"\n', '', 'assistant:path-filter')
-          anchor = """          workflow_applicability_repair_scope = {
-              \".github/workflows/crypto-astro-assistant-dispatch-pr.yml\",
-              \".github/workflows/crypto-astro-operational-cadence-pr.yml\",
-              \".github/workflows/crypto-astro-snapshot-memory-pr.yml\",
-          }
-"""
+          text = replace_once(text, '      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n', '', 'assistant:path-filter')
+          anchor = block([
+              '          workflow_applicability_repair_scope = {',
+              '              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",',
+              '              ".github/workflows/crypto-astro-operational-cadence-pr.yml",',
+              '              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",',
+              '          }',
+          ])
           text = replace_once(text, anchor, anchor + cross_double, 'assistant:scope')
-          branch = """          elif changed == workflow_applicability_repair_scope:
-              mode = \"workflow_applicability_repair\"
-              print(\"CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS\")
-              print(\"PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS\")
-              print(\"PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS\")
-"""
-          cross_branch = """          elif changed == cross_workflow_applicability_repair_scope:
-              mode = \"cross_workflow_applicability_repair\"
-              print(\"CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS\")
-"""
+          branch = block([
+              '          elif changed == workflow_applicability_repair_scope:',
+              '              mode = "workflow_applicability_repair"',
+              '              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")',
+              '              print("PRODUCER_IDENTITY_SNAPSHOT_APPLICABILITY_PREREQUISITE=PASS")',
+              '              print("PRODUCER_IDENTITY_BTC_ROUTE_SOVEREIGNTY_PREREQUISITE=PASS")',
+          ])
+          cross_branch = block([
+              '          elif changed == cross_workflow_applicability_repair_scope:',
+              '              mode = "cross_workflow_applicability_repair"',
+              '              print("CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_EXACT_SCOPE=PASS")',
+          ])
           text = replace_once(text, branch, cross_branch + branch, 'assistant:branch')
           assistant.write_text(text, encoding='utf-8')
 
           text = cadence.read_text(encoding='utf-8')
-          text = replace_once(text, '      - \".github/workflows/crypto-astro-automatic-refresh-pr.yml\"\n', '', 'cadence:path-filter')
-          anchor = """          workflow_applicability_repair_scope = {
-              \".github/workflows/crypto-astro-assistant-dispatch-pr.yml\",
-              \".github/workflows/crypto-astro-operational-cadence-pr.yml\",
-              \".github/workflows/crypto-astro-snapshot-memory-pr.yml\",
-          }
-"""
+          text = replace_once(text, '      - ".github/workflows/crypto-astro-automatic-refresh-pr.yml"\n', '', 'cadence:path-filter')
+          anchor = block([
+              '          workflow_applicability_repair_scope = {',
+              '              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",',
+              '              ".github/workflows/crypto-astro-operational-cadence-pr.yml",',
+              '              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",',
+              '          }',
+          ])
           text = replace_once(text, anchor, anchor + cross_double, 'cadence:scope')
-          branch = """          elif changed == workflow_applicability_repair_scope:
-              print(\"CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS\")
-"""
-          cross_branch = """          elif changed == cross_workflow_applicability_repair_scope:
-              print(\"CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS\")
-"""
+          branch = block([
+              '          elif changed == workflow_applicability_repair_scope:',
+              '              print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")',
+          ])
+          cross_branch = block([
+              '          elif changed == cross_workflow_applicability_repair_scope:',
+              '              print("CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")',
+          ])
           text = replace_once(text, branch, cross_branch + branch, 'cadence:branch')
           cadence.write_text(text, encoding='utf-8')
 
           text = memory.read_text(encoding='utf-8')
           text = replace_once(text, "      - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'\n", '', 'snapshot:path-filter')
-          anchor = """          workflow_applicability_repair = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          }
-"""
+          anchor = block([
+              "          workflow_applicability_repair = {",
+              "              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',",
+              "              '.github/workflows/crypto-astro-operational-cadence-pr.yml',",
+              "              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',",
+              "          }",
+          ])
           text = replace_once(text, anchor, anchor + cross_snapshot, 'snapshot:scope')
-          branch = """          elif changed == workflow_applicability_repair:
-              mode='workflow_applicability_repair'
-              print('CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')
-"""
-          cross_branch = """          elif changed == cross_workflow_activation_applicability_repair:
-              mode='cross_workflow_activation_applicability_repair'
-              print('CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')
-"""
+          branch = block([
+              "          elif changed == workflow_applicability_repair:",
+              "              mode='workflow_applicability_repair'",
+              "              print('CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')",
+          ])
+          cross_branch = block([
+              "          elif changed == cross_workflow_activation_applicability_repair:",
+              "              mode='cross_workflow_activation_applicability_repair'",
+              "              print('CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')",
+          ])
           text = replace_once(text, branch, cross_branch + branch, 'snapshot:branch')
           memory.write_text(text, encoding='utf-8')
 
