@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-08-03T03:20:57Z
+GENERATED_AT_UTC=2026-08-04T03:37:12Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=BTC_COSMOGRAPHER_MARKET_SNAPSHOT_AUTOMATIC_REFRESH_SOURCE_TRUTH_REPAIR_v0_1
-REFRESH_REASON=Refresh the stale accepted Market Snapshot from authorized sources, rebuild Proof, bindings, Registry, Delta, Snapshot Memory and derived market fields, then preserve the generated branch for the bounded automatic-refresh activation repair.
+OPERATOR_REF=BTC_MARKET_SNAPSHOT_2026_08_04_FRESHNESS_RESTORE_FULL_CYCLE_v0_1
+REFRESH_REASON=Restore accepted public BTC Snapshot from STALE_LIMITED to FRESH using the existing approved public source contour.
 
 ## Changed modules
 
