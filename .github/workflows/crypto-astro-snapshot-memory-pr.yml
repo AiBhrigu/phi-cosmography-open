@@ -92,6 +92,12 @@ jobs:
             '.github/workflows/crypto-astro-operational-cadence-pr.yml',
             '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
+          cross_workflow_activation_applicability_repair = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
           # Exact visual-only contract: the classifier must fail closed if any
           # public HTML, snapshot data, runtime, or unrelated theme file changes.
           btc_phi_semantic_geometry = {
@@ -210,6 +216,9 @@ jobs:
             mode='squash_merge_ancestry_repair'
           elif changed == runtime_registry_test_repair:
             mode='runtime_registry_test_repair'
+          elif changed == cross_workflow_activation_applicability_repair:
+              mode='cross_workflow_activation_applicability_repair'
+              print('CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')
           elif changed == workflow_applicability_repair:
             mode='workflow_applicability_repair'
             print('CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS')

@@ -87,6 +87,12 @@ jobs:
               ".github/workflows/crypto-astro-operational-cadence-pr.yml",
               ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
           }
+          cross_workflow_applicability_repair = {
+              ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
+              ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
+              ".github/workflows/crypto-astro-operational-cadence-pr.yml",
+              ".github/workflows/crypto-astro-snapshot-memory-pr.yml",
+          }
           freshness_policy_scope = {
               "docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md",
               "docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json",
@@ -159,6 +165,8 @@ jobs:
               print("SNAPSHOT_MEMORY_REPAIR_FILE_SCOPE=PASS")
           elif changed == runtime_registry_test_repair_scope:
               print("SNAPSHOT_MEMORY_RUNTIME_REGISTRY_TEST_REPAIR_FILE_SCOPE=PASS")
+          elif changed == cross_workflow_applicability_repair:
+              print("CROSS_WORKFLOW_ACTIVATION_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
           elif changed == workflow_applicability_repair_scope:
               print("CROSS_WORKFLOW_APPLICABILITY_REPAIR_FILE_SCOPE=PASS")
           elif changed == freshness_policy_scope:
