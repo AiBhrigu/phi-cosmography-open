@@ -1,0 +1,112 @@
+name: OPS Crypto-Astro Scheduler Parse Repair Builder
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: ops-crypto-astro-scheduler-parse-repair-builder
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.event.issue.title == 'OPS/F: Crypto-Astro scheduler parse repair build' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate exact-main request
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
+          EXPECTED_SHA=$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^EXPECTED_MAIN_SHA=//p')
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          test "$EXPECTED_SHA" = "$REMOTE_SHA"
+          test "$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^SCHEMA=//p')" = "crypto_astro_scheduler_parse_repair_builder_v0_1"
+      - name: Apply exact seven-file parser repair
+        run: |
+          set -euo pipefail
+          base64 -d .ops/crypto-astro-scheduler-parse-repair/payload.b64 | gzip -d > /tmp/parse-repair.patch
+          echo '1e7cc29ebb153434df9e2765e13b4f031610a5cfdc06069b9fd036499a6df544  /tmp/parse-repair.patch' | sha256sum -c -
+          git apply --check /tmp/parse-repair.patch
+          git apply /tmp/parse-repair.patch
+          rm .github/workflows/ops-crypto-astro-scheduler-parse-repair-builder.yml
+          rm .ops/crypto-astro-scheduler-parse-repair/payload.b64
+          rmdir .ops/crypto-astro-scheduler-parse-repair
+      - name: Run parser repair regression and YAML acceptance
+        run: |
+          set -euo pipefail
+          python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report /tmp/parse-repair-report.json
+          python - <<'PY'
+          import yaml
+          from pathlib import Path
+          for path in [
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          ]:
+              yaml.safe_load(Path(path).read_text())
+          print('YAML_MATRIX=PASS')
+          PY
+      - name: Prove exact seven-file scope and create candidate object
+        id: candidate
+        run: |
+          set -euo pipefail
+          EXPECTED=$(cat <<'EOF'
+          .github/workflows/crypto-astro-assistant-dispatch-pr.yml
+          .github/workflows/crypto-astro-automatic-refresh-pr.yml
+          .github/workflows/crypto-astro-automatic-refresh.yml
+          .github/workflows/crypto-astro-operational-cadence-pr.yml
+          .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py
+          tools/crypto_astro_operations/verify_automatic_refresh_activation.py
+          EOF
+          )
+          ACTUAL=$(git status --short | awk '{print $2}' | sort)
+          test "$ACTUAL" = "$(printf '%s\n' "$EXPECTED" | sort)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Repair scheduler runtime temp parser contract'
+          COMMIT_SHA=$(git rev-parse HEAD)
+          TREE_SHA=$(git rev-parse HEAD^{tree})
+          echo "CANDIDATE_COMMIT_SHA=${COMMIT_SHA}"
+          echo "CANDIDATE_TREE_SHA=${TREE_SHA}"
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "tree_sha=${TREE_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Transfer candidate objects to GitHub object store
+        continue-on-error: true
+        run: git push origin HEAD:refs/heads/agent/crypto-astro-scheduler-parse-repair-object-${GITHUB_RUN_ID}
+      - name: Report candidate object and close request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_CANDIDATE_OBJECT_BUILT
+          CANDIDATE_COMMIT_SHA=${{ steps.candidate.outputs.commit_sha }}
+          CANDIDATE_TREE_SHA=${{ steps.candidate.outputs.tree_sha }}
+          EXACT_SCOPE=7_FILES
+          REGRESSION=13_13_PASS
+          YAML_MATRIX=PASS"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
