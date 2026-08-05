@@ -2,31 +2,31 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS
-GENERATED_AT_UTC=2026-08-04T03:37:12Z
+GENERATED_AT_UTC=2026-08-05T07:02:09Z
 SOURCE_MODE=static_public_snapshot
 
 ## Market Reality
 
-- Market Cap: $2.266T
-- 24h Volume: $56.96B
-- BTC Dominance: 56.4%
+- Market Cap: $2.277T
+- 24h Volume: $54.01B
+- BTC Dominance: 56.6%
 - ETH Dominance: 9.9%
 - Stablecoin Share: 13.5%
 
 ## Liquidity / TVL
 
-- Stablecoin Cap: $306.89B
-- DeFi TVL: $74.02B
-- DeFi TVL Source Date: 2026-08-04T00:00:00Z
+- Stablecoin Cap: $307.22B
+- DeFi TVL: $74.76B
+- DeFi TVL Source Date: 2026-08-05T00:00:00Z
 - DeFi TVL Methodology: DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking and double-counted TVL.
-- DEX Volume 24h: $6.42B
+- DEX Volume 24h: $6.80B
 - Liquidity Health: context fresh
 
 ## Altcoin Rotation
 
-- Alt Breadth 24h: 53.8%
-- Alt Breadth 7d: 47.1%
-- Top-10 Flow Concentration: 63.4%
+- Alt Breadth 24h: 40.3%
+- Alt Breadth 7d: 53.4%
+- Top-10 Flow Concentration: 64.0%
 
 ## Boundary
 
