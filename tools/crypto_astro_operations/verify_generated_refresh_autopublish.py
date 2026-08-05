@@ -62,7 +62,8 @@ class GitHub:
   api_url=artifact.get("archive_download_url")
   if not isinstance(api_url,str) or not api_url:raise GateError("ARTIFACT_ARCHIVE_URL_MISSING")
   _validate_url(api_url,True);req=urllib.request.Request(api_url,headers={"Authorization":f"Bearer {self.token}","Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"crypto-astro-autopublish/2"})
-  r=self._open_no_redirect(req,45)
+  try:r=self._open_no_redirect(req,45)
+  except Exception as e:raise GateError("ARTIFACT_API_REQUEST_FAILED") from e
   try:
    if _status(r) not in REDIRECT_STATUSES:raise GateError(f"ARTIFACT_API_REDIRECT_REQUIRED:{_status(r)}")
    locations=_headers(r.headers,"Location")
@@ -70,7 +71,8 @@ class GitHub:
    signed_url=locations[0]
   finally:r.close()
   _validate_url(signed_url);req=urllib.request.Request(signed_url,headers={"Accept":"application/octet-stream","User-Agent":"crypto-astro-autopublish/2"})
-  r=self._open_no_redirect(req,60)
+  try:r=self._open_no_redirect(req,60)
+  except Exception as e:raise GateError("ARTIFACT_ARCHIVE_REQUEST_FAILED") from e
   try:
    status=_status(r)
    if status in REDIRECT_STATUSES:raise GateError("ARTIFACT_ARCHIVE_ADDITIONAL_REDIRECT")
