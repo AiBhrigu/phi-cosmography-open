@@ -62,22 +62,46 @@ jobs:
             .github/workflows/crypto-astro-operational-cadence-pr.yml \
             .github/workflows/crypto-astro-snapshot-memory-pr.yml
           echo YAML_MATRIX=PASS
-      - name: Prove exact seven-file scope and create candidate object
+      - name: Prove exact repair plus bootstrap cleanup and create candidate object
         id: candidate
         run: |
           set -euo pipefail
-          EXPECTED=$(cat <<'EOF'
-          .github/workflows/crypto-astro-assistant-dispatch-pr.yml
-          .github/workflows/crypto-astro-automatic-refresh-pr.yml
-          .github/workflows/crypto-astro-automatic-refresh.yml
-          .github/workflows/crypto-astro-operational-cadence-pr.yml
-          .github/workflows/crypto-astro-snapshot-memory-pr.yml
-          tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py
-          tools/crypto_astro_operations/verify_automatic_refresh_activation.py
-          EOF
-          )
-          ACTUAL=$(git status --short | awk '{print $2}' | sort)
-          test "$ACTUAL" = "$(printf '%s\n' "$EXPECTED" | sort)"
+          python - <<'PY'
+          import subprocess
+
+          repair = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
+              'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
+          }
+          cleanup = {
+              '.github/workflows/ops-crypto-astro-scheduler-parse-repair-builder.yml',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.b64',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.part01',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.part02',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.part03',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.part04',
+              '.ops/crypto-astro-scheduler-parse-repair/payload.part05',
+          }
+          raw = subprocess.check_output(['git', 'status', '--porcelain=v1', '-z'])
+          entries = [entry for entry in raw.decode().split('\0') if entry]
+          actual = {entry[3:]: entry[:2].strip() for entry in entries}
+          expected = repair | cleanup
+          assert set(actual) == expected, {
+              'missing': sorted(expected - set(actual)),
+              'unexpected': sorted(set(actual) - expected),
+              'actual': actual,
+          }
+          assert all(actual[path] == 'M' for path in repair), actual
+          assert all(actual[path] == 'D' for path in cleanup), actual
+          print('TARGET_REPAIR_SCOPE=7_FILES')
+          print('BOOTSTRAP_CLEANUP_SCOPE=7_FILES')
+          print('CANDIDATE_SCOPE=PASS')
+          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
@@ -98,7 +122,8 @@ jobs:
           gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_CANDIDATE_OBJECT_BUILT
           CANDIDATE_COMMIT_SHA=${{ steps.candidate.outputs.commit_sha }}
           CANDIDATE_TREE_SHA=${{ steps.candidate.outputs.tree_sha }}
-          EXACT_SCOPE=7_FILES
+          TARGET_REPAIR_SCOPE=7_FILES
+          BOOTSTRAP_CLEANUP_SCOPE=7_FILES
           REGRESSION=13_13_PASS
           YAML_MATRIX=PASS"
           gh issue close "${{ github.event.issue.number }}" --reason completed
