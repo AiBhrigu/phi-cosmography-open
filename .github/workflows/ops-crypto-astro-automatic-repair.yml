@@ -5,8 +5,7 @@ on:
     types: [opened]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   issues: write
 
 concurrency:
@@ -45,33 +44,32 @@ jobs:
           cat .ops/crypto-astro-auto-repair/payload.part* | tr -d '\n' | base64 -d | gzip -d > /tmp/apply_crypto_astro_automatic_repair.py
           sed -i "/Path('.ops').rmdir()/d" /tmp/apply_crypto_astro_automatic_repair.py
           python /tmp/apply_crypto_astro_automatic_repair.py
-      - name: Commit exact repair branch and open PR
-        id: pr
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Build connector publication bundle
         run: |
           set -euo pipefail
-          BRANCH="agent/crypto-astro-automatic-publication-repair-${GITHUB_RUN_ID}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$BRANCH"
-          git add -A
-          git commit -m "Repair automatic Snapshot cadence and gated publication"
-          git push -u origin "$BRANCH"
-          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Crypto-Astro: repair automatic Snapshot cadence and gated publication" --body "Repairs the proven self-dirty scheduler probe without weakening the hardened clean-worktree gate. Adds scheduler-proven, exact-scope, all-CI-success, zero-unresolved-thread, expected-head gated publication. The one-time executor and payload delete themselves in this PR. No source provider, methodology, formula, routing, Astro, product copy, payment, backend, or ORION change.")
-          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+          git diff --binary HEAD > /tmp/crypto-astro-automatic-repair.patch
+          git diff --name-status HEAD > /tmp/crypto-astro-automatic-repair-name-status.txt
+          git diff --name-only --diff-filter=ACM HEAD -z | tar --null -czf /tmp/crypto-astro-automatic-repair-files.tar.gz --files-from=-
+          test -s /tmp/crypto-astro-automatic-repair.patch
+          test -s /tmp/crypto-astro-automatic-repair-files.tar.gz
+          echo REPAIR_BUNDLE_BUILD=PASS
+          echo WORKFLOW_WRITE_PUBLICATION=CONNECTOR_REQUIRED
       - name: Report and close request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_REPAIR_PR_OPENED
-          REPAIR_PR=${{ steps.pr.outputs.url }}"
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_REPAIR_BUNDLE_BUILT
+          PUBLICATION_MODE=GITHUB_CONNECTOR_EXACT_FILE_WRITE"
           gh issue close "${{ github.event.issue.number }}" --reason completed
           gh issue lock "${{ github.event.issue.number }}" --reason resolved
-      - name: Upload exact scope proof
+      - name: Upload exact repair bundle
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ops-crypto-astro-automatic-repair-${{ github.run_id }}
-          path: /tmp/repair-scope.json
+          path: |
+            /tmp/repair-scope.json
+            /tmp/crypto-astro-automatic-repair.patch
+            /tmp/crypto-astro-automatic-repair-name-status.txt
+            /tmp/crypto-astro-automatic-repair-files.tar.gz
           if-no-files-found: error
