@@ -98,6 +98,24 @@ jobs:
               '.github/workflows/crypto-astro-operational-cadence-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
+          automatic_publication_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh.yml',
+              '.github/workflows/crypto-astro-generated-refresh-autopublish.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/ops-crypto-astro-automatic-repair.yml',
+              '.ops/crypto-astro-auto-repair/payload.part01',
+              '.ops/crypto-astro-auto-repair/payload.part02',
+              '.ops/crypto-astro-auto-repair/payload.part03',
+              '.ops/crypto-astro-auto-repair/payload.part04',
+              'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json',
+              'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_autopublish.py',
+          }
           # Exact visual-only contract: the classifier must fail closed if any
           # public HTML, snapshot data, runtime, or unrelated theme file changes.
           btc_phi_semantic_geometry = {
@@ -207,7 +225,10 @@ jobs:
           }
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
-          if changed == automatic_refresh_activation:
+          if changed == automatic_publication_repair_scope:
+              mode = 'automatic_publication_repair'
+              print('SNAPSHOT_MEMORY_AUTOMATIC_PUBLICATION_REPAIR_SCOPE=PASS')
+          elif changed == automatic_refresh_activation:
             mode='automatic_refresh_activation'
             print('SNAPSHOT_MEMORY_AUTOMATIC_REFRESH_ACTIVATION_SCOPE=PASS')
           elif changed == implementation:

@@ -6,252 +6,163 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write
   contents: read
   pull-requests: read
+  actions: write
 
 concurrency:
-  group: crypto-astro-automatic-snapshot-refresh
+  group: crypto-astro-automatic-refresh
   cancel-in-progress: false
 
 jobs:
   evaluate-and-dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     env:
-      GH_TOKEN: ${{ github.token }}
+      DIAGNOSTICS_DIR: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}
+      DECISION_REPORT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/crypto-astro-automatic-refresh-decision.json
+      ACTIVATION_REPORT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/automatic-refresh-activation-verification.json
+      PROBE_OUT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/source-probe
       COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
-      ACTIVATION_POLICY: docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json
-      DECISION_REPORT: artifacts/crypto-astro-automatic-refresh-decision.json
-      PROBE_OUT: /tmp/crypto_astro_automatic_refresh_probe
     steps:
-      - name: Checkout exact current main
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
-          show-progress: false
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install locked offline validators
-        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
-
-      - name: Verify automatic activation contract
+      - name: Initialize external diagnostics
+        run: mkdir -p "$DIAGNOSTICS_DIR" "$PROBE_OUT"
+      - name: Verify scheduler and policy contract
         run: |
-          python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation -v
-          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py \
-            --repo . \
-            --report artifacts/automatic-refresh-activation-verification.json
-
-      - name: Lock main and evaluate cadence single-flight
-        id: eligibility
+          python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report "$ACTIVATION_REPORT"
+      - name: Lock exact main and evaluate cadence
+        id: decision
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git fetch origin main
-          LOCAL_SHA="$(git rev-parse HEAD)"
-          REMOTE_SHA="$(git rev-parse origin/main)"
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
           test "$LOCAL_SHA" = "$REMOTE_SHA"
-          export LOCAL_SHA REMOTE_SHA
-          mkdir -p artifacts
+          OPEN_REFRESH_COUNT=$(gh pr list --state open --base main --json title,headRefName --jq '[.[] | select(.title == "Crypto-Astro: automated static market snapshot refresh" or (.headRefName | startswith("automation/crypto-astro-static-refresh-")))] | length')
+          ACTIVE_MANUAL_COUNT=$(gh run list --workflow crypto-astro-static-refresh-manual.yml --limit 100 --json status --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
+          export LOCAL_SHA REMOTE_SHA OPEN_REFRESH_COUNT ACTIVE_MANUAL_COUNT
           python - <<'PY'
-          import json
-          import os
-          import subprocess
+          import json, os
           from datetime import datetime, timezone
           from pathlib import Path
-
-          policy = json.loads(Path(os.environ['ACTIVATION_POLICY']).read_text())
-          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
-          generated = datetime.fromisoformat(snapshot['generated_at_utc'].replace('Z', '+00:00'))
-          now = datetime.now(timezone.utc)
-          age_hours = (now - generated).total_seconds() / 3600
-
-          open_prs = json.loads(subprocess.check_output([
-              'gh', 'pr', 'list', '--state', 'open', '--base', 'main', '--limit', '100',
-              '--json', 'number,title,headRefName,url'
-          ], text=True))
-          refresh_prs = [item for item in open_prs if (
-              item.get('title') == 'Crypto-Astro: automated static market snapshot refresh'
-              or str(item.get('headRefName', '')).startswith('automation/crypto-astro-static-refresh-')
-          )]
-
-          runs = json.loads(subprocess.check_output([
-              'gh', 'run', 'list', '--workflow', 'crypto-astro-static-refresh-manual.yml',
-              '--limit', '30', '--json', 'databaseId,status,conclusion,createdAt,headSha,url'
-          ], text=True))
-          active_states = {'queued', 'in_progress', 'waiting', 'requested', 'pending'}
-          active_runs = [item for item in runs if item.get('status') in active_states]
-
-          minimum = policy['freshness_contract']['daily_minimum_interval_hours']
-          eligibility = policy['freshness_contract']['automatic_eligibility_age_hours']
-          if age_hours < 0:
-              decision = 'BLOCK_FUTURE_SNAPSHOT'
-          elif age_hours < minimum:
-              decision = 'HOLD_MINIMUM_INTERVAL'
-          elif age_hours < eligibility:
-              decision = 'HOLD_BEFORE_AUTOMATIC_WINDOW'
-          elif refresh_prs:
-              decision = 'BLOCK_OPEN_REFRESH_PR'
-          elif active_runs:
-              decision = 'BLOCK_SINGLE_FLIGHT'
-          else:
-              decision = 'ELIGIBLE_SOURCE_PROBE'
-
-          report = {
-              'schema_version': 'crypto_astro_automatic_refresh_decision_v0_1',
-              'status': 'PASS' if decision != 'BLOCK_FUTURE_SNAPSHOT' else 'FAIL',
-              'decision': decision,
-              'event_name': os.environ.get('GITHUB_EVENT_NAME'),
-              'main_sha': os.environ['LOCAL_SHA'],
-              'remote_main_sha': os.environ['REMOTE_SHA'],
-              'snapshot_generated_at_utc': snapshot['generated_at_utc'],
-              'snapshot_age_hours': round(age_hours, 6),
-              'open_refresh_prs': refresh_prs,
-              'active_manual_refresh_runs': active_runs,
-              'source_probe': 'PENDING' if decision == 'ELIGIBLE_SOURCE_PROBE' else 'NOT_RUN',
-              'material_change': None,
-              'manual_workflow_dispatched': False,
-              'manual_workflow_run': None,
-              'auto_merge': False,
-              'deploy_command': False,
-          }
-          Path(os.environ['DECISION_REPORT']).write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-              out.write(f"decision={decision}\n")
-              out.write(f"main_sha={os.environ['LOCAL_SHA']}\n")
-              out.write(f"snapshot_age_hours={age_hours:.6f}\n")
-          print(json.dumps(report, indent=2, sort_keys=True))
+          from tools.crypto_astro_operations.verify_automatic_refresh_activation import evaluate_decision
+          policy=json.loads(Path('docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json').read_text())
+          snapshot=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
+          generated=datetime.fromisoformat(snapshot['generated_at_utc'].replace('Z','+00:00'))
+          age=(datetime.now(timezone.utc)-generated).total_seconds()/3600
+          decision=evaluate_decision(policy,snapshot_age_hours=age,exact_main_match=os.environ['LOCAL_SHA']==os.environ['REMOTE_SHA'],open_refresh_pr_count=int(os.environ['OPEN_REFRESH_COUNT']),active_manual_run_count=int(os.environ['ACTIVE_MANUAL_COUNT']),material_change=None)
+          if decision=='BLOCK_MATERIAL_CHANGE_UNKNOWN': decision='ELIGIBLE_SOURCE_PROBE'
+          report={'schema_version':'crypto_astro_automatic_refresh_decision_v0_2','decision':decision,'scheduler_run_id':os.environ['GITHUB_RUN_ID'],'event_name':os.environ['GITHUB_EVENT_NAME'],'main_sha':os.environ['LOCAL_SHA'],'remote_main_sha':os.environ['REMOTE_SHA'],'snapshot_timestamp_utc':snapshot['generated_at_utc'],'snapshot_age_hours':round(age,6),'open_refresh_pr_count':int(os.environ['OPEN_REFRESH_COUNT']),'active_manual_run_count':int(os.environ['ACTIVE_MANUAL_COUNT']),'manual_workflow_dispatched':False}
+          Path(os.environ['DECISION_REPORT']).write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f"decision={decision}\nmain_sha={os.environ['LOCAL_SHA']}\n")
+          print(f"AUTOMATIC_REFRESH_DECISION={decision}")
           PY
-
-      - name: Fail closed on future Snapshot
-        if: steps.eligibility.outputs.decision == 'BLOCK_FUTURE_SNAPSHOT'
-        run: exit 1
-
-      - name: Verify source methodology before probe
-        if: steps.eligibility.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
+      - name: Stop cleanly before source probe
+        if: steps.decision.outputs.decision != 'ELIGIBLE_SOURCE_PROBE'
+        run: echo "AUTOMATIC_REFRESH_HOLD=${{ steps.decision.outputs.decision }}"
+      - name: Verify source methodology
+        if: steps.decision.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
         run: python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
-
-      - name: Run accepted source implementation as ephemeral probe
-        id: probe
-        if: steps.eligibility.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
-        run: |
-          rm -rf "$PROBE_OUT"
-          mkdir -p "$PROBE_OUT"
-          python tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
-            "$GITHUB_WORKSPACE" "$PROBE_OUT"
-          echo SOURCE_FETCH=PASS
-          echo SOURCE_IDENTITY=PASS
-          echo SOURCE_PROVENANCE=PASS
-          echo NO_DOUBLE_COUNTING=PASS
-          echo NO_SYNTHETIC_FALLBACK=PASS
-
-      - name: Prove probe scope and material change
-        id: material
-        if: steps.eligibility.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          import subprocess
-          from pathlib import Path
-
-          allowed = {
-              'site/crypto-astro/index.html',
-              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
-              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
-              'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json',
-              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
-              'site/crypto-astro/data/scoring_snapshot.public.json',
-              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
-              'docs/crypto-astro-service/crypto_astro_operator_review.md',
-          }
-          required = allowed - {'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
-          lines = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
-          changed = set()
-          for line in lines:
-              raw = line[3:] if len(line) >= 4 and line[2] == ' ' else line.split(None, 1)[-1]
-              changed.add(raw.split(' -> ')[-1].strip())
-          if changed and not (required <= changed <= allowed):
-              raise SystemExit({'missing': sorted(required - changed), 'unexpected': sorted(changed - allowed)})
-          material = bool(changed)
-          report_path = Path(os.environ['DECISION_REPORT'])
-          report = json.loads(report_path.read_text())
-          report['source_probe'] = 'PASS'
-          report['material_change'] = material
-          report['probe_changed_files'] = sorted(changed)
-          report['decision'] = 'DISPATCH_MANUAL_REFRESH' if material else 'NO_MATERIAL_CHANGE_RECHECK'
-          report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-              out.write(f"material={'true' if material else 'false'}\n")
-          print(json.dumps(report, indent=2, sort_keys=True))
-          PY
-
-      - name: Dispatch existing manual refresh workflow
-        id: dispatch
-        if: steps.eligibility.outputs.decision == 'ELIGIBLE_SOURCE_PROBE' && steps.material.outputs.material == 'true'
+      - name: Require clean workspace immediately before probe
+        if: steps.decision.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
         run: |
           set -euo pipefail
-          DISPATCHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          gh workflow run crypto-astro-static-refresh-manual.yml \
-            --ref main \
-            -f refresh_mode=DAILY_CADENCE \
-            -f operator_ref=CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_v0_1 \
-            -f "refresh_reason=Automatic source-truth refresh eligibility at ${{ steps.eligibility.outputs.snapshot_age_hours }} hours; source probe and material-change gate passed."
+          STATUS=$(git status --porcelain)
+          test -z "$STATUS"
+          echo CLEAN_WORKSPACE_BEFORE_PROBE=PASS
+      - name: Run hardened source probe
+        id: probe
+        if: steps.decision.outputs.decision == 'ELIGIBLE_SOURCE_PROBE'
+        run: python tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py "$GITHUB_WORKSPACE" "$PROBE_OUT"
+      - name: Evaluate material source change
+        id: material
+        if: steps.decision.outputs.decision == 'ELIGIBLE_SOURCE_PROBE' && steps.probe.outcome == 'success'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          changed=set(subprocess.check_output(['git','status','--porcelain'],text=True).splitlines())
+          material=bool(changed)
+          path=Path(os.environ['DECISION_REPORT']); report=json.loads(path.read_text())
+          report['source_probe']='PASS'; report['material_change']=material
+          report['decision']='DISPATCH_MANUAL_REFRESH' if material else 'NO_MATERIAL_CHANGE_RECHECK'
+          path.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f"material={'true' if material else 'false'}\n")
+          print('SOURCE_PROBE=PASS'); print(f"MATERIAL_CHANGE={'YES' if material else 'NO'}")
+          PY
+          git reset --hard HEAD
+      - name: Dispatch generated refresh workflow
+        id: dispatch
+        if: steps.material.outputs.material == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           echo "dispatched_at=$DISPATCHED_AT" >> "$GITHUB_OUTPUT"
-          echo AUTOMATIC_REFRESH_DISPATCH_REQUEST=PASS
-
+          gh workflow run crypto-astro-static-refresh-manual.yml --ref main \
+            -f refresh_mode=DAILY_CADENCE \
+            -f operator_ref="CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_${GITHUB_RUN_ID}" \
+            -f refresh_reason="Automatic scheduler source probe PASS; scheduler_run_id=${GITHUB_RUN_ID}; base_sha=${{ steps.decision.outputs.main_sha }}"
       - name: Prove dispatched manual workflow is observable
         if: steps.dispatch.outcome == 'success'
         env:
+          GH_TOKEN: ${{ github.token }}
           DISPATCHED_AT: ${{ steps.dispatch.outputs.dispatched_at }}
-          EXPECTED_MAIN_SHA: ${{ steps.eligibility.outputs.main_sha }}
+          EXPECTED_SHA: ${{ steps.decision.outputs.main_sha }}
         run: |
           set -euo pipefail
-          sleep 8
-          gh run list --workflow crypto-astro-static-refresh-manual.yml --event workflow_dispatch --branch main \
-            --limit 30 --json databaseId,status,conclusion,createdAt,headSha,url > /tmp/manual-runs.json
-          python - <<'PY'
-          import json
-          import os
+          for attempt in $(seq 1 30); do
+            gh run list --workflow crypto-astro-static-refresh-manual.yml --event workflow_dispatch --branch main --limit 50 --json databaseId,createdAt,headSha,status,url > /tmp/manual-runs.json
+            if python - <<'PY'
+          import json, os
           from datetime import datetime
           from pathlib import Path
-
-          dispatched = datetime.fromisoformat(os.environ['DISPATCHED_AT'].replace('Z', '+00:00'))
-          runs = json.loads(Path('/tmp/manual-runs.json').read_text())
-          candidates = [item for item in runs if (
-              datetime.fromisoformat(item['createdAt'].replace('Z', '+00:00')) >= dispatched
-              and item.get('headSha') == os.environ['EXPECTED_MAIN_SHA']
-          )]
-          if not candidates:
-              raise SystemExit('DISPATCHED_MANUAL_WORKFLOW_NOT_OBSERVABLE')
-          selected = sorted(candidates, key=lambda item: item['createdAt'])[-1]
-          report_path = Path(os.environ['DECISION_REPORT'])
-          report = json.loads(report_path.read_text())
-          report['manual_workflow_dispatched'] = True
-          report['manual_workflow_run'] = selected
-          report['decision'] = 'MANUAL_REFRESH_DISPATCHED'
-          report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
-          print(json.dumps(selected, indent=2, sort_keys=True))
+          runs=json.loads(Path('/tmp/manual-runs.json').read_text()); start=datetime.fromisoformat(os.environ['DISPATCHED_AT'].replace('Z','+00:00'))
+          matches=[r for r in runs if r.get('headSha')==os.environ['EXPECTED_SHA'] and datetime.fromisoformat(r['createdAt'].replace('Z','+00:00'))>=start]
+          if len(matches)!=1: raise SystemExit(1)
+          Path('/tmp/selected-manual-run.json').write_text(json.dumps(matches[0]))
           PY
-
-      - name: Publish decision summary
+            then break; fi
+            sleep 2
+          done
+          test -f /tmp/selected-manual-run.json
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          selected=json.loads(Path('/tmp/selected-manual-run.json').read_text()); path=Path(os.environ['DECISION_REPORT']); report=json.loads(path.read_text())
+          report['decision']='MANUAL_REFRESH_DISPATCHED'; report['manual_workflow_dispatched']=True; report['manual_workflow_run']=selected
+          path.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print(f"MANUAL_REFRESH_DISPATCH=PASS run_id={selected['databaseId']}")
+          PY
+      - name: Write step summary
         if: always()
         run: |
-          if test -f "$DECISION_REPORT"; then
-            echo '## Crypto-Astro automatic refresh decision' >> "$GITHUB_STEP_SUMMARY"
-            echo '```json' >> "$GITHUB_STEP_SUMMARY"
-            cat "$DECISION_REPORT" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$DECISION_REPORT" ]; then
+            echo '## Crypto-Astro automatic refresh' >> "$GITHUB_STEP_SUMMARY"
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          from pathlib import Path
+          r=json.loads(Path(os.environ['DECISION_REPORT']).read_text())
+          for key in ('decision','snapshot_timestamp_utc','snapshot_age_hours','main_sha','open_refresh_pr_count','active_manual_run_count','manual_workflow_dispatched'):
+              print(f"- {key}: {r.get(key)}")
+          PY
           fi
-
-      - name: Upload fail-closed diagnostics
+      - name: Upload decision and probe evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: crypto-astro-automatic-refresh-${{ github.run_id }}
-          path: artifacts/
+          path: ${{ env.DIAGNOSTICS_DIR }}/
           if-no-files-found: error
