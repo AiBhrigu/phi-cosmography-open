@@ -1,0 +1,106 @@
+name: Crypto-Astro Generated Refresh Gated Publication
+
+on:
+  workflow_run:
+    workflows:
+      - Crypto-Astro Refresh Current Surface Contract PR
+      - Crypto-Astro Operational Cadence PR
+      - Crypto-Astro Static Refresh PR Visual
+      - Crypto-Astro Snapshot Memory PR
+      - BTC Poster Motion Budget PR
+      - Crypto-Astro LT-1 Import Normalization PR
+      - Crypto-Astro Editorial Composition PR
+      - Crypto-Astro CSS Extraction Parity PR
+      - Crypto-Astro What Changed PR
+      - Crypto-Astro Surface Truth PR
+      - Φ-Validator CI
+      - Crypto-Astro Geometry Truth PR
+      - Crypto-Astro Assistant Dispatch PR
+      - Crypto-Astro CSS Modules PR
+      - Crypto-Astro BHRIGU Consumer Contract PR
+      - Crypto-Astro Automatic Refresh Activation PR
+    types: [completed]
+
+# Gate emits EXPECTED_HEAD_PROTECTION=PASS and GATED_AUTOMATIC_MERGE=PASS only after every condition passes.
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: crypto-astro-generated-refresh-autopublish-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  gate-publish-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Evaluate exact generated-refresh gate and merge
+        id: gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/crypto-astro-autopublish"
+          python tools/crypto_astro_operations/verify_generated_refresh_autopublish.py \
+            --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
+            --trigger-run-id "${{ github.event.workflow_run.id }}" \
+            --report "$RUNNER_TEMP/crypto-astro-autopublish/gate.json" \
+            --github-output "$GITHUB_OUTPUT"
+      - name: Dispatch Pages for exact merge SHA
+        id: pages
+        if: steps.gate.outputs.merged == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ steps.gate.outputs.merge_sha }}
+        run: |
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run pages.yml --ref main
+          for attempt in $(seq 1 60); do
+            gh run list --workflow pages.yml --event workflow_dispatch --branch main --limit 30 --json databaseId,createdAt,headSha,status,conclusion,url > /tmp/pages-runs.json
+            if python - <<'PY'
+          import json, os
+          from datetime import datetime
+          from pathlib import Path
+          runs=json.loads(Path('/tmp/pages-runs.json').read_text()); start=datetime.fromisoformat(os.environ['DISPATCHED_AT'].replace('Z','+00:00'))
+          matches=[r for r in runs if r.get('headSha')==os.environ['MERGE_SHA'] and datetime.fromisoformat(r['createdAt'].replace('Z','+00:00'))>=start]
+          if len(matches)!=1: raise SystemExit(1)
+          Path('/tmp/pages-run.json').write_text(json.dumps(matches[0]))
+          PY
+            then break; fi
+            sleep 5
+          done
+          test -f /tmp/pages-run.json
+          RUN_ID=$(jq -r .databaseId /tmp/pages-run.json)
+          gh run watch "$RUN_ID" --exit-status
+          test "$(gh run view "$RUN_ID" --json conclusion --jq .conclusion)" = success
+          echo PAGES_PUBLICATION=PASS
+      - uses: actions/checkout@v5
+        if: steps.gate.outputs.merged == 'true'
+        with:
+          ref: ${{ steps.gate.outputs.merge_sha }}
+          fetch-depth: 0
+      - name: Verify both public surfaces
+        if: steps.gate.outputs.merged == 'true'
+        run: |
+          python tools/crypto_astro_public_http_proof/verify_public_http_proof.py \
+            --repo . --expected-main-sha "${{ steps.gate.outputs.merge_sha }}" \
+            --report "$RUNNER_TEMP/crypto-astro-autopublish/public-http-proof.json" \
+            --attempts 12 --retry-delay 10
+          echo PUBLIC_ANALYTICAL_MIRROR_HTTP=200
+          echo PUBLIC_BTC_FIELD_HTTP=200
+      - name: Upload gated publication evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-generated-refresh-autopublish-${{ github.run_id }}
+          path: ${{ runner.temp }}/crypto-astro-autopublish/
+          if-no-files-found: ignore

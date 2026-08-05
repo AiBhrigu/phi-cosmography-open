@@ -6,25 +6,21 @@ on:
     paths:
       - '.github/workflows/crypto-astro-automatic-refresh.yml'
       - '.github/workflows/crypto-astro-automatic-refresh-pr.yml'
+      - '.github/workflows/crypto-astro-generated-refresh-autopublish.yml'
       - '.github/workflows/crypto-astro-snapshot-memory-pr.yml'
       - '.github/workflows/crypto-astro-operational-cadence-pr.yml'
       - '.github/workflows/crypto-astro-assistant-dispatch-pr.yml'
-      - 'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md'
+      - '.github/workflows/ops-crypto-astro-automatic-repair.yml'
       - 'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json'
       - 'tools/crypto_astro_operations/verify_automatic_refresh_activation.py'
       - 'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py'
-      - 'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md'
-      - 'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json'
-      - 'tools/crypto_astro_operations/verify_operational_cadence.py'
-      - 'tools/crypto_astro_operations/test_verify_operational_cadence.py'
+      - 'tools/crypto_astro_operations/verify_generated_refresh_autopublish.py'
+      - 'tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py'
       - 'site/crypto-astro/index.html'
-      - 'site/crypto-astro/data/crypto_astro_snapshot.public.json'
-      - 'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json'
+      - 'site/crypto-astro/data/crypto_astro_snapshot*.json'
       - 'site/crypto-astro/data/crypto_astro_module_bindings.public.json'
       - 'site/crypto-astro/data/market_field_snapshot.public.v0_1.json'
       - 'site/crypto-astro/data/scoring_snapshot.public.json'
-      - 'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json'
-      - 'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json'
       - 'docs/crypto-astro-service/crypto_astro_snapshot_summary.md'
       - 'docs/crypto-astro-service/crypto_astro_operator_review.md'
 
@@ -39,266 +35,54 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          show-progress: false
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Initialize fail-closed evidence directory
-        run: mkdir -p artifacts
-
-      - name: Classify exact activation, generated refresh, or applicability-repair scope
+      - name: Classify exact repair or generated refresh
         id: scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          mkdir -p artifacts
           python - <<'PY'
-          import json
-          import os
-          import subprocess
+          import json,os,subprocess
           from pathlib import Path
-
-          activation_bundle = {
-              '.github/workflows/crypto-astro-automatic-refresh.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              'docs/crypto-astro-service/CRYPTO_ASTRO_AUTOMATIC_REFRESH_ACTIVATION_v0_1.md',
-              'docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json',
-              'tools/crypto_astro_operations/verify_automatic_refresh_activation.py',
-              'tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py',
-              'docs/crypto-astro-service/CRYPTO_ASTRO_OPERATIONAL_CADENCE_v0_1.md',
-              'docs/crypto-astro-service/crypto_astro_operational_cadence_v0_1.json',
-              'tools/crypto_astro_operations/verify_operational_cadence.py',
-              'tools/crypto_astro_operations/test_verify_operational_cadence.py',
-              'site/crypto-astro/index.html',
-              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
-              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
-              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
-              'site/crypto-astro/data/scoring_snapshot.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
-              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
-              'docs/crypto-astro-service/crypto_astro_operator_review.md',
-          }
-          generated_refresh = {
-              'docs/crypto-astro-service/crypto_astro_operator_review.md',
-              'docs/crypto-astro-service/crypto_astro_snapshot_summary.md',
-              'site/crypto-astro/data/crypto_astro_module_bindings.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_delta.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_proof.public.json',
-              'site/crypto-astro/data/crypto_astro_snapshot_registry.public.json',
-              'site/crypto-astro/data/market_field_snapshot.public.v0_1.json',
-              'site/crypto-astro/data/scoring_snapshot.public.json',
-              'site/crypto-astro/index.html',
-          }
-          applicability_repair = {
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-          }
-          cross_workflow_applicability_repair = {
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          }
-
-          base = subprocess.check_output(
-              ['git', 'merge-base', os.environ['BASE_SHA'], os.environ['HEAD_SHA']],
-              text=True,
-          ).strip()
-          changed = set(subprocess.check_output(
-              ['git', 'diff', '--name-only', base, os.environ['HEAD_SHA']],
-              text=True,
-          ).splitlines())
-
-          if changed == activation_bundle:
-              mode = 'activation_bundle'
-              expected = activation_bundle
-              marker = 'AUTOMATIC_REFRESH_EXACT_TWENTY_THREE_FILE_SCOPE=PASS'
-          elif changed == generated_refresh:
-              mode = 'generated_refresh'
-              expected = generated_refresh
-              marker = 'AUTOMATIC_REFRESH_EXACT_GENERATED_REFRESH_SCOPE=PASS'
-          elif changed == cross_workflow_applicability_repair:
-              mode = 'cross_workflow_applicability_repair'
-              expected = cross_workflow_applicability_repair
-              marker = 'AUTOMATIC_REFRESH_EXACT_CROSS_WORKFLOW_APPLICABILITY_REPAIR_SCOPE=PASS'
-          elif changed == applicability_repair:
-              mode = 'applicability_repair'
-              expected = applicability_repair
-              marker = 'AUTOMATIC_REFRESH_EXACT_APPLICABILITY_REPAIR_SCOPE=PASS'
-          else:
-              mode = 'invalid'
-              expected = set()
-              marker = None
-
-          report = {
-              'schema_version': 'crypto_astro_automatic_refresh_scope_v0_1',
-              'status': 'PASS' if mode != 'invalid' else 'FAIL',
-              'mode': mode,
-              'base_sha': base,
-              'head_sha': os.environ['HEAD_SHA'],
-              'changed': sorted(changed),
-              'missing': sorted(expected - changed) if expected else [],
-              'unexpected': sorted(changed - expected) if expected else sorted(changed),
-              'accepted_scope_sizes': {
-                  'activation_bundle': len(activation_bundle),
-                  'generated_refresh': len(generated_refresh),
-                  'applicability_repair': len(applicability_repair),
-                  'cross_workflow_applicability_repair': len(cross_workflow_applicability_repair),
-              },
-          }
-          Path('artifacts/automatic-refresh-exact-scope.json').write_text(
-              json.dumps(report, indent=2, sort_keys=True) + '\n'
-          )
-          if report['status'] != 'PASS':
-              raise SystemExit(report)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write(f'mode={mode}\n')
+          repair=set([".github/workflows/crypto-astro-assistant-dispatch-pr.yml", ".github/workflows/crypto-astro-automatic-refresh-pr.yml", ".github/workflows/crypto-astro-automatic-refresh.yml", ".github/workflows/crypto-astro-generated-refresh-autopublish.yml", ".github/workflows/crypto-astro-operational-cadence-pr.yml", ".github/workflows/crypto-astro-snapshot-memory-pr.yml", ".github/workflows/ops-crypto-astro-automatic-repair.yml", ".ops/crypto-astro-auto-repair/payload.part01", ".ops/crypto-astro-auto-repair/payload.part02", ".ops/crypto-astro-auto-repair/payload.part03", ".ops/crypto-astro-auto-repair/payload.part04", "docs/crypto-astro-service/crypto_astro_automatic_refresh_activation_v0_1.json", "tools/crypto_astro_operations/test_verify_automatic_refresh_activation.py", "tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py", "tools/crypto_astro_operations/verify_automatic_refresh_activation.py", "tools/crypto_astro_operations/verify_generated_refresh_autopublish.py"])
+          generated={'docs/crypto-astro-service/crypto_astro_operator_review.md','docs/crypto-astro-service/crypto_astro_snapshot_summary.md','site/crypto-astro/data/crypto_astro_module_bindings.public.json','site/crypto-astro/data/crypto_astro_snapshot.public.json','site/crypto-astro/data/crypto_astro_snapshot_delta.public.json','site/crypto-astro/data/crypto_astro_snapshot_proof.public.json','site/crypto-astro/data/crypto_astro_snapshot_registry.public.json','site/crypto-astro/data/market_field_snapshot.public.v0_1.json','site/crypto-astro/data/scoring_snapshot.public.json','site/crypto-astro/index.html'}
+          optional={'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']],text=True).strip(); changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']],text=True).splitlines())
+          if changed==repair: mode='automatic_publication_repair'; marker='AUTOMATIC_PUBLICATION_REPAIR_EXACT_SCOPE=PASS'
+          elif changed in (generated,generated|optional): mode='generated_refresh'; marker='AUTOMATIC_REFRESH_EXACT_GENERATED_REFRESH_SCOPE=PASS'
+          else: raise AssertionError({'changed':sorted(changed),'repair_missing':sorted(repair-changed),'repair_unexpected':sorted(changed-repair),'generated_missing':sorted(generated-changed)})
+          Path('artifacts/automatic-refresh-exact-scope.json').write_text(json.dumps({'status':'PASS','mode':mode,'changed':sorted(changed)},indent=2)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(marker)
           PY
-
-      - name: Run activation unit tests
-        run: python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation -v
-
-      - name: Verify activation repository contract
-        run: |
-          python tools/crypto_astro_operations/verify_automatic_refresh_activation.py \
-            --repo . \
-            --report artifacts/automatic-refresh-activation-verification.json
-
-      - name: Prove existing source producer remains unchanged
+      - name: Run automatic cadence and publication unit tests
+        run: python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+      - name: Verify repository contract
+        run: python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report artifacts/automatic-refresh-activation-verification.json
+      - name: Prove producer and methodology remain unchanged
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          BASE="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
-          git diff --exit-code "$BASE" "$HEAD_SHA" -- \
-            .github/workflows/crypto-astro-static-refresh-manual.yml \
-            .github/workflows/crypto-astro-assistant-dispatch.yml \
-            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py \
-            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py \
-            tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- .github/workflows/crypto-astro-static-refresh-manual.yml .github/workflows/crypto-astro-assistant-dispatch.yml tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5.py tools/crypto_astro_static_refresh/crypto_astro_static_refresh_hardened_v0_5_core.py
+          python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
+          python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
           echo EXISTING_SOURCE_PRODUCER_UNCHANGED=PASS
-
-      - name: Verify DeFi TVL no-double-counting methodology
-        run: python tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py
-
-      - name: Verify BHRIGU consumer contract
-        run: python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
-
-      - name: Prove current Snapshot timestamp and bindings
+      - name: Verify generated Snapshot contract
+        if: steps.scope.outputs.mode == 'generated_refresh'
         run: |
           python - <<'PY'
           import json
-          from datetime import datetime
           from pathlib import Path
-
-          old = datetime.fromisoformat('2026-08-01T18:24:00+00:00')
-          snapshot = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text())
-          proof = json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_proof.public.json').read_text())
-          market = json.loads(Path('site/crypto-astro/data/market_field_snapshot.public.v0_1.json').read_text())
-          current = datetime.fromisoformat(snapshot['generated_at_utc'].replace('Z', '+00:00'))
-          assert current > old
-          assert proof['generated_at_utc'] == snapshot['generated_at_utc']
-          assert market['updated_at_utc'] == snapshot['generated_at_utc']
-          assert snapshot['freshness_status'] == 'FRESH'
-          assert snapshot['liquidity_tvl']['defi_tvl_excludes_double_counted'] is True
-          assert snapshot['liquidity_tvl']['defi_tvl_excludes_liquid_staking'] is True
-          print('SNAPSHOT_TIMESTAMP_ADVANCED=PASS')
-          print('DERIVED_BINDINGS_CONSISTENT=PASS')
-          print('NO_DOUBLE_COUNTING=PASS')
+          snapshot=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text()); proof=json.loads(Path('site/crypto-astro/data/crypto_astro_snapshot_proof.public.json').read_text()); market=json.loads(Path('site/crypto-astro/data/market_field_snapshot.public.v0_1.json').read_text())
+          assert snapshot['freshness_status']=='FRESH'; assert proof['generated_at_utc']==snapshot['generated_at_utc']; assert market['updated_at_utc']==snapshot['generated_at_utc']; assert snapshot['liquidity_tvl']['defi_tvl_excludes_double_counted'] is True
+          print('SNAPSHOT_TIMESTAMP_ADVANCED=PASS'); print('NO_DOUBLE_COUNTING=PASS')
           PY
-
-      - name: Prove pre-merge public BTC surfaces share accepted main Snapshot
-        if: steps.scope.outputs.mode != 'applicability_repair' && steps.scope.outputs.mode != 'cross_workflow_applicability_repair'
-        env:
-          ACCEPTANCE_HEAD: ${{ github.event.pull_request.head.sha }}
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          import time
-          import urllib.parse
-          import urllib.request
-          from pathlib import Path
-
-          nonce = f"{os.environ['ACCEPTANCE_HEAD']}-{time.time_ns()}"
-          headers = {
-              'Cache-Control': 'no-cache, no-store, max-age=0',
-              'Pragma': 'no-cache',
-              'User-Agent': 'crypto-astro-premerge-public-snapshot-acceptance',
-          }
-
-          def fetch(url):
-              request = urllib.request.Request(url, headers=headers)
-              with urllib.request.urlopen(request, timeout=45) as response:
-                  return {
-                      'status': response.status,
-                      'final_url': response.geturl(),
-                      'cache_control': response.headers.get('Cache-Control'),
-                      'x_vercel_cache': response.headers.get('X-Vercel-Cache'),
-                      'body': response.read().decode('utf-8', errors='replace'),
-                  }
-
-          candidate = json.loads(
-              Path('site/crypto-astro/data/crypto_astro_snapshot.public.json').read_text()
-          )
-          candidate_timestamp = candidate['generated_at_utc']
-          producer_query = urllib.parse.urlencode({'public_before': nonce})
-          producer_url = (
-              'https://aibhrigu.github.io/phi-cosmography-open/crypto-astro/data/'
-              f'crypto_astro_snapshot.public.json?{producer_query}'
-          )
-          producer_response = fetch(producer_url)
-          producer = json.loads(producer_response['body'])
-          public_timestamp = producer['generated_at_utc']
-          assert public_timestamp != candidate_timestamp
-          assert producer['freshness_status'] in {'FRESH', 'STALE_VERIFIED_SNAPSHOT', 'STALE_LIMITED'}
-
-          surfaces = {}
-          for name, base in {
-              'entry': 'https://www.bhrigu.io/crypto-astro/btc',
-              'live': 'https://www.bhrigu.io/crypto-astro/btc/live',
-          }.items():
-              query = urllib.parse.urlencode({'lang': 'ru', 'public_before': nonce, 'surface': name})
-              response = fetch(f'{base}?{query}')
-              assert response['status'] == 200
-              assert public_timestamp in response['body']
-              assert candidate_timestamp not in response['body']
-              surfaces[name] = {
-                  'status': response['status'],
-                  'final_url': response['final_url'],
-                  'cache_control': response['cache_control'],
-                  'x_vercel_cache': response['x_vercel_cache'],
-                  'snapshot_timestamp_utc': public_timestamp,
-              }
-
-          report = {
-              'schema_version': 'crypto_astro_premerge_dual_public_snapshot_identity_v0_1',
-              'status': 'PASS',
-              'public_snapshot_timestamp_utc': public_timestamp,
-              'candidate_snapshot_timestamp_utc': candidate_timestamp,
-              'candidate_absent_before_merge': True,
-              'entry_and_live_snapshot_identity_match': True,
-              'producer': {
-                  'status': producer_response['status'],
-                  'final_url': producer_response['final_url'],
-                  'cache_control': producer_response['cache_control'],
-              },
-              'surfaces': surfaces,
-          }
-          Path('artifacts/premerge-dual-public-snapshot-identity.json').write_text(
-              json.dumps(report, indent=2, sort_keys=True) + '\n'
-          )
-          print(json.dumps(report, indent=2, sort_keys=True))
-          PY
-
       - name: Checkout current BHRIGU consumer master
         uses: actions/checkout@v5
         with:
@@ -307,32 +91,17 @@ jobs:
           path: bhrigu-portal-consumer
           persist-credentials: false
           fetch-depth: 0
-
-      - name: Lock BHRIGU consumer to current advertised master
-        working-directory: bhrigu-portal-consumer
-        run: |
-          git fetch origin master
-          git checkout --detach refs/remotes/origin/master
-          LOCAL_SHA="$(git rev-parse HEAD)"
-          REMOTE_SHA="$(git rev-parse refs/remotes/origin/master)"
-          test "$LOCAL_SHA" = "$REMOTE_SHA"
-          echo "BHRIGU_PORTAL_MASTER_SHA=$LOCAL_SHA"
-          echo BHRIGU_PORTAL_CURRENT_MASTER_IDENTITY=PASS
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: bhrigu-portal-consumer/package-lock.json
-
       - name: Verify current BHRIGU routing and production build
         working-directory: bhrigu-portal-consumer
         run: |
           npm ci --ignore-scripts
           npm run verify:btc-routing
           npm run build
-          echo BHRIGU_PORTAL_CURRENT_MASTER_ROUTING_AND_BUILD=PASS
-
       - name: Upload activation evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,67 +1,94 @@
 {
-  "schema_version": "crypto_astro_automatic_refresh_activation_v0_1",
-  "activation_id": "BTC_COSMOGRAPHER_MARKET_SNAPSHOT_AUTOMATIC_REFRESH_SOURCE_TRUTH_REPAIR_v0_1",
-  "supersedes_design_id": "crypto_astro_automatic_24h_refresh_fail_closed_design_v0_1",
-  "status": "REVIEW_CANDIDATE",
+  "activation_id": "BTC_MARKET_SNAPSHOT_AUTOMATIC_CADENCE_SELF_DIRTY_PROBE_GATED_PUBLICATION_AND_CURRENT_FRESHNESS_RESTORE_v0_1",
   "activation_on_default_branch_merge": true,
-  "scheduler_workflow": ".github/workflows/crypto-astro-automatic-refresh.yml",
-  "validation_workflow": ".github/workflows/crypto-astro-automatic-refresh-pr.yml",
-  "schedule": {
-    "cron": "17 * * * *",
-    "check_interval_minutes": 60,
-    "workflow_dispatch_fallback": true
+  "boundary": {
+    "accounts": false,
+    "astro_routing": false,
+    "backend_provider": false,
+    "formula_change": false,
+    "methodology_change": false,
+    "new_market_assets": false,
+    "orion": false,
+    "payment": false,
+    "product_copy_change": false,
+    "protocol_bridge": false,
+    "redesign": false,
+    "semantic_question_protocol": false
+  },
+  "diagnostics": {
+    "decision_artifact_required": true,
+    "dispatch_visibility_required": true,
+    "location": "runner.temp",
+    "source_checkout_must_remain_clean_before_probe": true,
+    "source_probe_failure_fails_workflow": true,
+    "step_summary_required": true
+  },
+  "dispatch": {
+    "exact_main_lock_before_probe": true,
+    "generated_review_pr": true,
+    "manual_workflow_dispatch_fallback_preserved": true,
+    "mode": "DAILY_CADENCE",
+    "queued_or_running_manual_refresh_forbidden": true,
+    "scheduler_run_provenance_required": true,
+    "second_open_refresh_pr_forbidden": true,
+    "target_ref": "main",
+    "target_workflow": "crypto-astro-static-refresh-manual.yml"
   },
   "freshness_contract": {
+    "automatic_eligibility_age_hours": 20,
     "contract_id": "btc_market_snapshot_freshness_24h_168h_v0_1",
     "daily_minimum_interval_hours": 18,
-    "automatic_eligibility_age_hours": 20,
     "fresh_through_hours": 24,
     "operational_breach_after_hours": 48,
     "unavailable_after_hours": 168
   },
-  "source_truth": {
-    "probe_implementation": "tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py",
-    "methodology_test": "tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py",
-    "no_synthetic_fallback": true,
-    "material_change_required": true,
-    "timestamp_only_refresh_allowed": false
-  },
-  "dispatch": {
-    "target_workflow": "crypto-astro-static-refresh-manual.yml",
-    "target_ref": "main",
-    "mode": "DAILY_CADENCE",
-    "exact_main_lock_before_probe": true,
-    "second_open_refresh_pr_forbidden": true,
-    "queued_or_running_manual_refresh_forbidden": true,
-    "review_pr_only": true,
-    "manual_workflow_dispatch_fallback_preserved": true
-  },
   "permissions": {
+    "actions": "write",
     "contents": "read",
-    "pull_requests": "read",
-    "actions": "write"
+    "pull_requests": "read"
   },
   "publication": {
-    "auto_merge": false,
-    "deploy_command": false,
-    "public_mutation_before_explicit_merge": false,
-    "pages_publish_after_authorized_merge": true
+    "accepted_author": "github-actions[bot]",
+    "all_required_ci_success": true,
+    "automatic_merge": true,
+    "branch_prefix": "automation/crypto-astro-static-refresh-",
+    "candidate_base_equals_current_main": true,
+    "canonical_pr_title": "Crypto-Astro: automated static market snapshot refresh",
+    "exact_generated_file_scope": true,
+    "expected_head_sha_protection": true,
+    "fail_closed_on_ambiguity": true,
+    "generated_refresh_only": true,
+    "human_authored_product_prs": false,
+    "methodology_changes": false,
+    "new_assets": false,
+    "pages_workflow_dispatch_after_merge": true,
+    "payment_accounts_backend_orion_changes": false,
+    "public_http_proof_after_pages": true,
+    "required_ci_workflow_count": 16,
+    "routing_or_question_corpus_changes": false,
+    "scheduler_artifact_provenance": true,
+    "source_provider_changes": false,
+    "unresolved_review_threads_zero": true,
+    "visual_redesign": false
   },
-  "diagnostics": {
-    "decision_artifact_required": true,
-    "step_summary_required": true,
-    "source_probe_failure_fails_workflow": true,
-    "dispatch_visibility_required": true
+  "publication_workflow": ".github/workflows/crypto-astro-generated-refresh-autopublish.yml",
+  "schedule": {
+    "check_interval_minutes": 60,
+    "cron": "17 * * * *",
+    "workflow_dispatch_fallback": true
   },
-  "boundary": {
-    "new_market_assets": false,
-    "semantic_question_protocol": false,
-    "astro_routing": false,
-    "protocol_bridge": false,
-    "payment": false,
-    "accounts": false,
-    "backend_provider": false,
-    "orion": false,
-    "redesign": false
-  }
+  "scheduler_workflow": ".github/workflows/crypto-astro-automatic-refresh.yml",
+  "schema_version": "crypto_astro_automatic_refresh_activation_v0_1",
+  "source_truth": {
+    "approved_source_identity_count": 7,
+    "clean_repository_gate_preserved": true,
+    "material_change_required": true,
+    "methodology_test": "tools/crypto_astro_static_refresh/test_defi_tvl_methodology_v0_1.py",
+    "no_synthetic_fallback": true,
+    "probe_implementation": "tools/crypto_astro_static_refresh/crypto_astro_static_refresh_bhrigu_compat_v0_1.py",
+    "timestamp_only_refresh_allowed": false
+  },
+  "status": "ACTIVE_GATED_PUBLICATION",
+  "supersedes_design_id": "crypto_astro_automatic_24h_refresh_fail_closed_design_v0_1",
+  "validation_workflow": ".github/workflows/crypto-astro-automatic-refresh-pr.yml"
 }
