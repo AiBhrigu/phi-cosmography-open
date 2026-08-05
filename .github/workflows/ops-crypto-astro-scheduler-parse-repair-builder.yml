@@ -55,19 +55,13 @@ jobs:
           set -euo pipefail
           python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
           python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report /tmp/parse-repair-report.json
-          python - <<'PY'
-          import yaml
-          from pathlib import Path
-          for path in [
-              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
-              '.github/workflows/crypto-astro-automatic-refresh.yml',
-              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
-              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
-          ]:
-              yaml.safe_load(Path(path).read_text())
-          print('YAML_MATRIX=PASS')
-          PY
+          ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts "YAML_PASS=#{path}" }' \
+            .github/workflows/crypto-astro-assistant-dispatch-pr.yml \
+            .github/workflows/crypto-astro-automatic-refresh-pr.yml \
+            .github/workflows/crypto-astro-automatic-refresh.yml \
+            .github/workflows/crypto-astro-operational-cadence-pr.yml \
+            .github/workflows/crypto-astro-snapshot-memory-pr.yml
+          echo YAML_MATRIX=PASS
       - name: Prove exact seven-file scope and create candidate object
         id: candidate
         run: |
