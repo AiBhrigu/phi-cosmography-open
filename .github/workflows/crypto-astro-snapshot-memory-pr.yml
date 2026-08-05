@@ -98,6 +98,14 @@ jobs:
               '.github/workflows/crypto-astro-operational-cadence-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
+          artifact_redirect_auth_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_autopublish.py',
+          }
           automatic_publication_repair_scope = {
               '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
@@ -234,7 +242,10 @@ jobs:
           }
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
-          if changed == automatic_publication_repair_scope:
+          if changed == artifact_redirect_auth_repair_scope:
+              mode = 'artifact_redirect_auth_repair'
+              print('SNAPSHOT_MEMORY_AUTOPUBLISH_ARTIFACT_REDIRECT_AUTH_REPAIR_SCOPE=PASS')
+          elif changed == automatic_publication_repair_scope:
               mode = 'automatic_publication_repair'
               print('SNAPSHOT_MEMORY_AUTOMATIC_PUBLICATION_REPAIR_SCOPE=PASS')
           elif changed == automatic_scheduler_parse_repair_scope:
@@ -286,6 +297,7 @@ jobs:
           else:
             raise AssertionError({
               'changed':sorted(changed),
+              'artifact_redirect_auth_repair_missing':sorted(artifact_redirect_auth_repair_scope-changed),
               'implementation_missing':sorted(implementation-changed),
               'squash_merge_ancestry_repair_missing':sorted(squash_merge_ancestry_repair-changed),
               'runtime_registry_test_repair_missing':sorted(runtime_registry_test_repair-changed),
