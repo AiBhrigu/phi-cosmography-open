@@ -1,0 +1,61 @@
+name: OPS Crypto-Astro Scheduler Dispatch Bridge
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: ops-crypto-astro-scheduler-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.issue.title == 'OPS/F: Crypto-Astro scheduler dispatch' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Validate exact-main single-flight request
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse origin/main)
+          EXPECTED_SHA=$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^EXPECTED_MAIN_SHA=//p')
+          test "$LOCAL_SHA" = "$REMOTE_SHA"
+          test "$EXPECTED_SHA" = "$REMOTE_SHA"
+          test "$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^SCHEMA=//p')" = "crypto_astro_scheduler_dispatch_bridge_v0_1"
+          OPEN_REFRESH_COUNT=$(gh pr list --state open --base main --json title,headRefName --jq '[.[] | select(.title == "Crypto-Astro: automated static market snapshot refresh" or (.headRefName | startswith("automation/crypto-astro-static-refresh-")))] | length')
+          test "$OPEN_REFRESH_COUNT" = "0"
+          ACTIVE_MANUAL_COUNT=$(gh run list --workflow crypto-astro-static-refresh-manual.yml --limit 100 --json status --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
+          test "$ACTIVE_MANUAL_COUNT" = "0"
+          echo SCHEDULER_DISPATCH_PREFLIGHT=PASS
+      - name: Dispatch repaired automatic scheduler
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run crypto-astro-automatic-refresh.yml --ref main
+      - name: Record accepted scheduler dispatch and close request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=SCHEDULER_DISPATCH_ACCEPTED
+          TARGET_WORKFLOW=crypto-astro-automatic-refresh.yml
+          TARGET_REF=main"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
