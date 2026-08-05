@@ -1,0 +1,76 @@
+name: OPS Crypto-Astro Automatic Repair Executor
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ops-crypto-astro-automatic-repair
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    if: >-
+      github.event.issue.title == 'OPS/F: Crypto-Astro automatic repair execute' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate one-time exact-main request
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+          EXPECTED=$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^EXPECTED_MAIN_SHA=//p')
+          test "$EXPECTED" = "$(git rev-parse HEAD)"
+          test "$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/^SCHEMA=//p')" = "crypto_astro_automatic_repair_executor_v0_1"
+      - name: Apply exact bounded repair and run local fixtures
+        run: |
+          cat .ops/crypto-astro-auto-repair/payload.part* | tr -d '\n' | base64 -d | gzip -d > /tmp/apply_crypto_astro_automatic_repair.py
+          python /tmp/apply_crypto_astro_automatic_repair.py
+      - name: Commit exact repair branch and open PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BRANCH="agent/crypto-astro-automatic-publication-repair-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add -A
+          git commit -m "Repair automatic Snapshot cadence and gated publication"
+          git push -u origin "$BRANCH"
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Crypto-Astro: repair automatic Snapshot cadence and gated publication" --body "Repairs the proven self-dirty scheduler probe without weakening the hardened clean-worktree gate. Adds scheduler-proven, exact-scope, all-CI-success, zero-unresolved-thread, expected-head gated publication. The one-time executor and payload delete themselves in this PR. No source provider, methodology, formula, routing, Astro, product copy, payment, backend, or ORION change.")
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+      - name: Report and close request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "STATUS=PASS_REPAIR_PR_OPENED
+          REPAIR_PR=${{ steps.pr.outputs.url }}"
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+          gh issue lock "${{ github.event.issue.number }}" --reason resolved
+      - name: Upload exact scope proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-crypto-astro-automatic-repair-${{ github.run_id }}
+          path: /tmp/repair-scope.json
+          if-no-files-found: error
