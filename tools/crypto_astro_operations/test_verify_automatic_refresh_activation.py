@@ -22,6 +22,13 @@ class AutomaticRefreshActivationTest(unittest.TestCase):
         self.assertTrue(verify_scheduler(mutated))
     def test_scheduler_merge_command_fails(self):
         self.assertTrue(any("merge" in item for item in verify_scheduler(SCHEDULER+"\n# gh pr merge 99\n")))
+    def test_runner_temp_is_resolved_at_runtime(self):
+        self.assertNotIn("${{ runner.temp }}", SCHEDULER)
+        self.assertIn("${RUNNER_TEMP}", SCHEDULER)
+        self.assertIn("$GITHUB_ENV", SCHEDULER)
+        self.assertIn("DIAGNOSTICS_LOCATION=RUNNER_TEMP", SCHEDULER)
+        invalid=SCHEDULER.replace('${RUNNER_TEMP}', '${{ runner.temp }}', 1)
+        self.assertTrue(any('invalid_job_level_runner_context' in item for item in verify_scheduler(invalid)))
     def test_external_diagnostics_leave_checkout_clean(self):
         with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as runner_temp:
             repo=Path(repo_dir); subprocess.run(["git","init","-q"],cwd=repo,check=True); subprocess.run(["git","config","user.email","test@example.com"],cwd=repo,check=True); subprocess.run(["git","config","user.name","test"],cwd=repo,check=True)
