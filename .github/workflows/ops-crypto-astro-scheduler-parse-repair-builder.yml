@@ -44,13 +44,12 @@ jobs:
       - name: Apply exact seven-file parser repair
         run: |
           set -euo pipefail
-          base64 -d .ops/crypto-astro-scheduler-parse-repair/payload.b64 | gzip -d > /tmp/parse-repair.patch
+          cat .ops/crypto-astro-scheduler-parse-repair/payload.part* | tr -d '\n' | base64 -d | gzip -d > /tmp/parse-repair.patch
           echo '1e7cc29ebb153434df9e2765e13b4f031610a5cfdc06069b9fd036499a6df544  /tmp/parse-repair.patch' | sha256sum -c -
           git apply --check /tmp/parse-repair.patch
           git apply /tmp/parse-repair.patch
           rm .github/workflows/ops-crypto-astro-scheduler-parse-repair-builder.yml
-          rm .ops/crypto-astro-scheduler-parse-repair/payload.b64
-          rmdir .ops/crypto-astro-scheduler-parse-repair
+          rm -rf .ops/crypto-astro-scheduler-parse-repair
       - name: Run parser repair regression and YAML acceptance
         run: |
           set -euo pipefail
