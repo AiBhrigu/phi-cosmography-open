@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import unittest
+import urllib.error
 import urllib.request
 import zipfile
 from email.message import Message
@@ -144,6 +145,13 @@ class GeneratedRefreshAutopublishTest(unittest.TestCase):
         with self.assertRaisesRegex(GateError, "ARTIFACT_URL_CREDENTIALS_FORBIDDEN"):
             self.client.artifact_archive(artifact_for(self.archive))
 
+    def test_redirect_fragment_rejected(self):
+        self.client._open_no_redirect = Mock(
+            return_value=FakeResponse(302, headers=[("Location", self.signed_url + "#fragment")])
+        )
+        with self.assertRaisesRegex(GateError, "ARTIFACT_URL_FRAGMENT_FORBIDDEN"):
+            self.client.artifact_archive(artifact_for(self.archive))
+
     def test_missing_location_rejected(self):
         self.client._open_no_redirect = Mock(return_value=FakeResponse(302))
         with self.assertRaisesRegex(GateError, "ARTIFACT_API_LOCATION_INVALID"):
@@ -168,6 +176,18 @@ class GeneratedRefreshAutopublishTest(unittest.TestCase):
         self.responses(second_status=403)
         with self.assertRaisesRegex(GateError, "ARTIFACT_ARCHIVE_HTTP_STATUS:403"):
             self.client.artifact_archive(artifact_for(self.archive))
+
+    def test_signed_request_failure_is_sanitized(self):
+        first = FakeResponse(302, headers=[("Location", self.signed_url)])
+        self.client._open_no_redirect = Mock(
+            side_effect=[first, urllib.error.URLError("failed: " + self.signed_url + ":unit-test-token")]
+        )
+        with self.assertRaises(GateError) as raised:
+            self.client.artifact_archive(artifact_for(self.archive))
+        rendered = str(raised.exception)
+        self.assertEqual(rendered, "ARTIFACT_ARCHIVE_REQUEST_FAILED")
+        self.assertNotIn("sig=", rendered)
+        self.assertNotIn("unit-test-token", rendered)
 
     def test_digest_mismatch_rejected(self):
         self.responses()
