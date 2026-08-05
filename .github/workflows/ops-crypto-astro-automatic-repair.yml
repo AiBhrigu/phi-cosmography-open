@@ -43,6 +43,7 @@ jobs:
       - name: Apply exact bounded repair and run local fixtures
         run: |
           cat .ops/crypto-astro-auto-repair/payload.part* | tr -d '\n' | base64 -d | gzip -d > /tmp/apply_crypto_astro_automatic_repair.py
+          sed -i "/Path('.ops').rmdir()/d" /tmp/apply_crypto_astro_automatic_repair.py
           python /tmp/apply_crypto_astro_automatic_repair.py
       - name: Commit exact repair branch and open PR
         id: pr
