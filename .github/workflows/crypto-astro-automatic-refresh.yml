@@ -19,10 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      DIAGNOSTICS_DIR: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}
-      DECISION_REPORT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/crypto-astro-automatic-refresh-decision.json
-      ACTIVATION_REPORT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/automatic-refresh-activation-verification.json
-      PROBE_OUT: ${{ runner.temp }}/crypto-astro-automatic-refresh-${{ github.run_id }}/source-probe
       COINGECKO_DEMO_API_KEY: ${{ secrets.COINGECKO_DEMO_API_KEY }}
     steps:
       - uses: actions/checkout@v5
@@ -33,7 +29,20 @@ jobs:
         with:
           python-version: '3.11'
       - name: Initialize external diagnostics
-        run: mkdir -p "$DIAGNOSTICS_DIR" "$PROBE_OUT"
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${RUNNER_TEMP}/crypto-astro-automatic-refresh-${GITHUB_RUN_ID}"
+          DECISION_REPORT="${DIAGNOSTICS_DIR}/crypto-astro-automatic-refresh-decision.json"
+          ACTIVATION_REPORT="${DIAGNOSTICS_DIR}/automatic-refresh-activation-verification.json"
+          PROBE_OUT="${DIAGNOSTICS_DIR}/source-probe"
+          {
+            echo "DIAGNOSTICS_DIR=${DIAGNOSTICS_DIR}"
+            echo "DECISION_REPORT=${DECISION_REPORT}"
+            echo "ACTIVATION_REPORT=${ACTIVATION_REPORT}"
+            echo "PROBE_OUT=${PROBE_OUT}"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$DIAGNOSTICS_DIR" "$PROBE_OUT"
+          echo DIAGNOSTICS_LOCATION=RUNNER_TEMP
       - name: Verify scheduler and policy contract
         run: |
           python -m unittest tools.crypto_astro_operations.test_verify_automatic_refresh_activation tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v

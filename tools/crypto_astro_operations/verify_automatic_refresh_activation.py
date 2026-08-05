@@ -67,10 +67,11 @@ def verify_policy(policy:dict[str,Any])->list[str]:
 
 def verify_scheduler(text:str)->list[str]:
     failures=[]
-    required=("name: Crypto-Astro Automatic Snapshot Refresh","cron: '17 * * * *'","workflow_dispatch:","contents: read","pull-requests: read","actions: write","runner.temp","CLEAN_WORKSPACE_BEFORE_PROBE=PASS","git status --porcelain","crypto_astro_static_refresh_bhrigu_compat_v0_1.py","CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_","gh workflow run crypto-astro-static-refresh-manual.yml","actions/upload-artifact@v4")
+    required=("name: Crypto-Astro Automatic Snapshot Refresh","cron: '17 * * * *'","workflow_dispatch:","contents: read","pull-requests: read","actions: write","RUNNER_TEMP","GITHUB_ENV","DIAGNOSTICS_LOCATION=RUNNER_TEMP","CLEAN_WORKSPACE_BEFORE_PROBE=PASS","git status --porcelain","crypto_astro_static_refresh_bhrigu_compat_v0_1.py","CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_","gh workflow run crypto-astro-static-refresh-manual.yml","actions/upload-artifact@v4")
     for marker in required: require(marker in text,f"scheduler:missing:{marker}",failures)
     require("artifacts/crypto-astro-automatic-refresh-decision.json" not in text,"scheduler:tracked_decision_path",failures)
     require("--report artifacts/automatic-refresh-activation-verification.json" not in text,"scheduler:tracked_activation_report",failures)
+    require("${{ runner.temp }}" not in text,"scheduler:invalid_job_level_runner_context",failures)
     triggers={m.group(1) for m in re.finditer(r"^  (schedule|workflow_dispatch|push|pull_request):\s*$",text,re.M)}
     require(triggers=={"schedule","workflow_dispatch"},f"scheduler:triggers:{sorted(triggers)}",failures)
     for name,pattern in {"contents_write":r"^\s*contents:\s*write\s*$","git_push":r"\bgit\s+push\b","merge":r"\bgh\s+pr\s+merge\b|/merge['\"]","deploy":r"deploy-pages|gh workflow run pages.yml","direct_pr":r"gh\s+pr\s+create"}.items():
