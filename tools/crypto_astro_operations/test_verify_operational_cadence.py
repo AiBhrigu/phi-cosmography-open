@@ -145,12 +145,13 @@ jobs:
           echo REFRESH_MODE=
           echo OPERATOR_REF=
           echo REFRESH_REASON=
-          echo Workflow may push one fully validated review branch
-          echo It may not merge or issue a deployment command.
+          echo Workflow may push one fully validated generated-refresh branch
+          echo Publication is permitted only through the gated automatic publication path after all required gates PASS.
+          echo Human-authored product PRs are not eligible for this automatic path.
       - run: python tools/crypto_astro_static_refresh/test_bhrigu_consumer_contract_v0_1.py
       - run: npm run verify:btc-producer-contract
       - run: echo ATOMIC_REFRESH_BRANCH=PASS
-      - run: gh pr create --base main --body "explicit merge authorization"
+      - run: gh pr create --base main --body "gated automatic publication path"
 """
 
 

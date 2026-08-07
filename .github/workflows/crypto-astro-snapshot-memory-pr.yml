@@ -240,9 +240,27 @@ jobs:
             'tools/crypto_astro_operations/verify_operational_cadence.py',
             'tools/crypto_astro_operations/test_verify_operational_cadence.py',
           }
+          trusted_ci_topology_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-autopublish.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-manual.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py',
+              'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
+              'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
-          if changed == artifact_redirect_auth_repair_scope:
+          if changed == trusted_ci_topology_repair_scope:
+              mode = "trusted_ci_topology_repair"
+              print("SNAPSHOT_MEMORY_TRUSTED_CI_TOPOLOGY_REPAIR_SCOPE=PASS")
+          elif changed == artifact_redirect_auth_repair_scope:
               mode = 'artifact_redirect_auth_repair'
               print('SNAPSHOT_MEMORY_AUTOPUBLISH_ARTIFACT_REDIRECT_AUTH_REPAIR_SCOPE=PASS')
           elif changed == automatic_publication_repair_scope:
