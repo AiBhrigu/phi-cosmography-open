@@ -54,8 +54,41 @@ jobs:
           artifact_redirect_auth_repair=set({'.github/workflows/crypto-astro-assistant-dispatch-pr.yml','.github/workflows/crypto-astro-automatic-refresh-pr.yml','.github/workflows/crypto-astro-operational-cadence-pr.yml','.github/workflows/crypto-astro-snapshot-memory-pr.yml','tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py','tools/crypto_astro_operations/verify_generated_refresh_autopublish.py'})
           generated={'docs/crypto-astro-service/crypto_astro_operator_review.md','docs/crypto-astro-service/crypto_astro_snapshot_summary.md','site/crypto-astro/data/crypto_astro_module_bindings.public.json','site/crypto-astro/data/crypto_astro_snapshot.public.json','site/crypto-astro/data/crypto_astro_snapshot_delta.public.json','site/crypto-astro/data/crypto_astro_snapshot_proof.public.json','site/crypto-astro/data/crypto_astro_snapshot_registry.public.json','site/crypto-astro/data/market_field_snapshot.public.v0_1.json','site/crypto-astro/data/scoring_snapshot.public.json','site/crypto-astro/index.html'}
           optional={'site/crypto-astro/data/crypto_astro_module_bindings.public.schema.json'}
+          trusted_ci_to_autopublish_handoff_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-autopublish.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          trusted_ci_release_runtime_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
+          trusted_ci_topology_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-autopublish.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-manual.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py',
+              'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_autopublish.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
+              'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
           base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']],text=True).strip(); changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']],text=True).splitlines())
-          if changed==artifact_redirect_auth_repair: mode='artifact_redirect_auth_repair'; marker='AUTOPUBLISH_ARTIFACT_REDIRECT_AUTH_REPAIR_EXACT_SCOPE=PASS'
+          if changed==trusted_ci_to_autopublish_handoff_scope: mode='trusted_ci_to_autopublish_handoff'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_TO_AUTOPUBLISH_HANDOFF_SCOPE=PASS'
+          elif changed==trusted_ci_release_runtime_repair_scope: mode='trusted_ci_release_runtime_repair'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_RELEASE_RUNTIME_REPAIR_SCOPE=PASS'
+          elif changed==trusted_ci_topology_repair_scope: mode='trusted_ci_topology_repair'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_TOPOLOGY_REPAIR_SCOPE=PASS'
+          elif changed==artifact_redirect_auth_repair: mode='artifact_redirect_auth_repair'; marker='AUTOPUBLISH_ARTIFACT_REDIRECT_AUTH_REPAIR_EXACT_SCOPE=PASS'
           elif changed==repair: mode='automatic_publication_repair'; marker='AUTOMATIC_PUBLICATION_REPAIR_EXACT_SCOPE=PASS'
           elif changed==parse_repair: mode='automatic_scheduler_parse_repair'; marker='AUTOMATIC_SCHEDULER_PARSE_REPAIR_EXACT_SCOPE=PASS'
           elif changed in (generated,generated|optional): mode='generated_refresh'; marker='AUTOMATIC_REFRESH_EXACT_GENERATED_REFRESH_SCOPE=PASS'
@@ -95,6 +128,7 @@ jobs:
       - name: Verify repository contract
         run: python tools/crypto_astro_operations/verify_automatic_refresh_activation.py --repo . --report artifacts/automatic-refresh-activation-verification.json
       - name: Prove producer and methodology remain unchanged
+        if: steps.scope.outputs.mode != 'trusted_ci_topology_repair' && steps.scope.outputs.mode != 'trusted_ci_release_runtime_repair' && steps.scope.outputs.mode != 'trusted_ci_to_autopublish_handoff'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

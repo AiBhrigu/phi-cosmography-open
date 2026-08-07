@@ -98,6 +98,15 @@ class GeneratedRefreshAutopublishTest(unittest.TestCase):
         )
         self.assertEqual(parse_body(body), (12345, "a" * 40))
 
+    def test_parse_canonical_generation_base(self):
+        body = (
+            "- Operator reference: CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_12345\n"
+            "- Generation Base SHA: " + "a" * 40 + "\n"
+            "- Acceptance Base SHA: " + "b" * 40 + "\n"
+            "- Assistant dispatch issue: none\n"
+        )
+        self.assertEqual(parse_body(body), (12345, "a" * 40))
+
     def test_missing_issue_marker_fails(self):
         with self.assertRaises(GateError):
             parse_body(

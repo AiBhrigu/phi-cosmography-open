@@ -20,6 +20,16 @@ on:
       - Crypto-Astro BHRIGU Consumer Contract PR
       - Crypto-Astro Automatic Refresh Activation PR
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      trigger_run_id:
+        description: Exact successful required PR workflow run id
+        required: true
+        type: string
+      expected_head_sha:
+        description: Exact generated refresh PR head SHA
+        required: true
+        type: string
 
 # Gate emits EXPECTED_HEAD_PROTECTION=PASS and GATED_AUTOMATIC_MERGE=PASS only after every condition passes.
 permissions:
@@ -28,7 +38,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: crypto-astro-generated-refresh-autopublish-${{ github.event.workflow_run.head_sha }}
+  group: crypto-astro-generated-refresh-autopublish-${{ github.event.workflow_run.head_sha || inputs.expected_head_sha }}
   cancel-in-progress: false
 
 jobs:
@@ -47,11 +57,22 @@ jobs:
         id: gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id || inputs.trigger_run_id }}
+          EXPECTED_HEAD_SHA: ${{ github.event.workflow_run.head_sha || inputs.expected_head_sha }}
         run: |
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/crypto-astro-autopublish"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$TRIGGER_RUN_ID" =~ ^[0-9]+$ ]]
+            [[ "$EXPECTED_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+            ACTUAL_HEAD_SHA=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$TRIGGER_RUN_ID" --jq .head_sha)
+            test "$ACTUAL_HEAD_SHA" = "$EXPECTED_HEAD_SHA"
+            echo TRUSTED_DISPATCH_HEAD_BINDING=PASS
+          fi
           python tools/crypto_astro_operations/verify_generated_refresh_autopublish.py \
             --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
-            --trigger-run-id "${{ github.event.workflow_run.id }}" \
+            --trigger-run-id "$TRIGGER_RUN_ID" \
             --report "$RUNNER_TEMP/crypto-astro-autopublish/gate.json" \
             --github-output "$GITHUB_OUTPUT"
       - name: Dispatch Pages for exact merge SHA
@@ -62,7 +83,7 @@ jobs:
           MERGE_SHA: ${{ steps.gate.outputs.merge_sha }}
         run: |
           set -euo pipefail
-          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          export DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           gh workflow run pages.yml --ref main
           for attempt in $(seq 1 60); do
             gh run list --workflow pages.yml --event workflow_dispatch --branch main --limit 30 --json databaseId,createdAt,headSha,status,conclusion,url > /tmp/pages-runs.json

@@ -97,9 +97,9 @@ class GitHub:
   return value["data"]
 
 def parse_body(body):
- op=re.search(r"^- Operator reference: CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_(\d+)\s*$",body or "",re.M);base=re.search(r"^- Base SHA: ([0-9a-f]{40})\s*$",body or "",re.M);issue=re.search(r"^- Assistant dispatch issue: none\s*$",body or "",re.M)
- if not op or not base or not issue:raise GateError("PR_BODY_PROVENANCE_INVALID")
- return int(op.group(1)),base.group(1)
+ op=re.search(r"^- Operator reference: CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_(\d+)\s*$",body or "",re.M);generation=re.search(r"^- Generation Base SHA: ([0-9a-f]{40})\s*$",body or "",re.M) or re.search(r"^- Base SHA: ([0-9a-f]{40})\s*$",body or "",re.M);issue=re.search(r"^- Assistant dispatch issue: none\s*$",body or "",re.M)
+ if not op or not generation or not issue:raise GateError("PR_BODY_PROVENANCE_INVALID")
+ return int(op.group(1)),generation.group(1)
 def exact_scope(files):return files==REQUIRED_FILES or files==REQUIRED_FILES|OPTIONAL_FILES
 def latest_runs_by_name(runs):
  selected={}
@@ -141,7 +141,6 @@ def run_gate(repo,token,trigger_run_id,report_path,output_path):
   head_sha=pr["head"]["sha"];manual_text=head_ref[len(PREFIX):]
   if not manual_text.isdigit():raise GateError("MANUAL_RUN_ID_NOT_NUMERIC")
   manual_id=int(manual_text);scheduler_id,base_sha=parse_body(pr.get("body") or "")
-  if pr["base"]["sha"]!=base_sha:raise GateError("PR_BASE_SHA_BODY_MISMATCH")
   manual,_=gh.request(f"/repos/{repo}/actions/runs/{manual_id}")
   if manual.get("path")!=MANUAL_PATH or manual.get("event")!="workflow_dispatch" or manual.get("head_sha")!=base_sha or manual.get("conclusion")!="success":raise GateError("MANUAL_RUN_PROVENANCE_INVALID")
   if manual.get("actor",{}).get("login")!="github-actions[bot]":raise GateError("MANUAL_RUN_ACTOR_INVALID")
@@ -166,14 +165,18 @@ def run_gate(repo,token,trigger_run_id,report_path,output_path):
   unresolved=sum(1 for x in threads["nodes"] if not x["isResolved"])
   if unresolved:raise GateError(f"UNRESOLVED_REVIEW_THREADS:{unresolved}")
   ref,_=gh.request(f"/repos/{repo}/git/ref/heads/main");current_main=ref["object"]["sha"]
-  if current_main!=base_sha:raise GateError(f"MAIN_DRIFT:{current_main}:{base_sha}")
   latest_pr,_=gh.request(f"/repos/{repo}/pulls/{pr_number}")
+  if current_main!=latest_pr["base"]["sha"]:raise GateError(f"BASE_DRIFT:{current_main}:{latest_pr['base']['sha']}")
+  if current_main!=base_sha:
+   allowed={'.github/workflows/crypto-astro-assistant-dispatch-pr.yml','.github/workflows/crypto-astro-automatic-refresh-pr.yml','.github/workflows/crypto-astro-generated-refresh-autopublish.yml','.github/workflows/crypto-astro-generated-refresh-ci-release.yml','.github/workflows/crypto-astro-operational-cadence-pr.yml','.github/workflows/crypto-astro-snapshot-memory-pr.yml','.github/workflows/crypto-astro-static-refresh-manual.yml','tools/crypto_astro_operations/test_verify_generated_refresh_autopublish.py','tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py','tools/crypto_astro_operations/test_verify_operational_cadence.py','tools/crypto_astro_operations/verify_generated_refresh_autopublish.py','tools/crypto_astro_operations/verify_generated_refresh_ci_release.py','tools/crypto_astro_operations/verify_operational_cadence.py'}
+   comparison,_=gh.request(f"/repos/{repo}/compare/{base_sha}...{current_main}");drift={x["filename"] for x in comparison.get("files",[])}
+   if not drift or not drift<=allowed:raise GateError(f"MAIN_DRIFT:{current_main}:{base_sha}:{sorted(drift)}")
   if latest_pr["head"]["sha"]!=head_sha:raise GateError("EXPECTED_HEAD_DRIFT")
   print("GENERATED_PR_IDENTITY=PASS\nEXACT_REFRESH_SCOPE=PASS\nCI_MATRIX=PASS\nEXPECTED_HEAD_PROTECTION=PASS")
   merge,_=gh.request(f"/repos/{repo}/pulls/{pr_number}/merge","PUT",{"sha":head_sha,"merge_method":"squash","commit_title":f"{TITLE} (#{pr_number})"})
   if not merge.get("merged") or not re.fullmatch(r"[0-9a-f]{40}",str(merge.get("sha",""))):raise GateError("MERGE_FAILED")
   merge_sha=merge["sha"];content,_=gh.request(f"/repos/{repo}/contents/site/crypto-astro/data/crypto_astro_snapshot.public.json?ref={head_sha}");snapshot=json.loads(base64.b64decode(content["content"]))
-  report.update({"status":"PASS_MERGED","merged":True,"pr_number":pr_number,"head_sha":head_sha,"base_sha":base_sha,"merge_sha":merge_sha,"scheduler_run_id":scheduler_id,"manual_run_id":manual_id,"snapshot_timestamp":snapshot["generated_at_utc"],"required_ci":{k:v["id"] for k,v in selected_runs.items()},"unresolved_review_threads":0,"files":sorted(files),"artifact_id":artifact.get("id"),"artifact_metadata":"PASS","authenticated_api_request":"PASS","signed_redirect_request_without_auth":"PASS","archive_download":"PASS","digest_result":digest,"zip_integrity":"PASS","decision_report_parse":"PASS"});write_output(output_path,"merged","true");write_output(output_path,"merge_sha",merge_sha);write_output(output_path,"pr_number",str(pr_number));write_output(output_path,"snapshot_timestamp",snapshot["generated_at_utc"]);print("GATED_AUTOMATIC_MERGE=PASS");return 0
+  report.update({"status":"PASS_MERGED","merged":True,"pr_number":pr_number,"head_sha":head_sha,"generation_base_sha":base_sha,"acceptance_base_sha":current_main,"merge_sha":merge_sha,"scheduler_run_id":scheduler_id,"manual_run_id":manual_id,"snapshot_timestamp":snapshot["generated_at_utc"],"required_ci":{k:v["id"] for k,v in selected_runs.items()},"unresolved_review_threads":0,"files":sorted(files),"artifact_id":artifact.get("id"),"artifact_metadata":"PASS","authenticated_api_request":"PASS","signed_redirect_request_without_auth":"PASS","archive_download":"PASS","digest_result":digest,"zip_integrity":"PASS","decision_report_parse":"PASS"});write_output(output_path,"merged","true");write_output(output_path,"merge_sha",merge_sha);write_output(output_path,"pr_number",str(pr_number));write_output(output_path,"snapshot_timestamp",snapshot["generated_at_utc"]);print("GATED_AUTOMATIC_MERGE=PASS");return 0
  except NotApplicable as e:report.update({"status":"NOT_APPLICABLE","reason":str(e)});write_output(output_path,"merged","false");return 0
  except Hold as e:report.update({"status":"HOLD","reason":str(e)});write_output(output_path,"merged","false");return 0
  except Exception as e:report.update({"status":"FAIL_CLOSED","reason":str(e)});write_output(output_path,"merged","false");return 1

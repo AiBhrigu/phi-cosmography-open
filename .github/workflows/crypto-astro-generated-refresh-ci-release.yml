@@ -1,0 +1,103 @@
+name: Crypto-Astro Generated Refresh Trusted CI Release
+
+on:
+  workflow_run:
+    workflows:
+      - Crypto-Astro Static Refresh Manual
+    types: [completed]
+  issues:
+    types: [opened]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: crypto-astro-generated-refresh-ci-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'issues' && github.event.issue.title == 'Crypto-Astro generated refresh CI release request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate trusted CI release implementation
+        run: |
+          python -m unittest \
+            tools.crypto_astro_operations.test_verify_generated_refresh_ci_release \
+            tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+
+      - name: Release exact generated-refresh CI
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MANUAL_RUN_ID: ${{ github.event.workflow_run.id }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release"
+          REPORT="$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release/report.json"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_run" ]]; then
+            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
+              --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
+              --manual-run-id "$MANUAL_RUN_ID" --report "$REPORT"
+          else
+            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
+              --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
+              --issue-number "$ISSUE_NUMBER" --report "$REPORT"
+          fi
+          echo TRUSTED_GENERATED_REFRESH_CI_RELEASE=PASS
+
+      - name: Dispatch gated autopublish after trusted CI PASS
+        id: autopublish
+        if: steps.release.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_PATH: ${{ runner.temp }}/crypto-astro-generated-refresh-ci-release/report.json
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(jq -r .head_sha "$REPORT_PATH")
+          test "$HEAD_SHA" != "null"
+          test -n "$HEAD_SHA"
+          RUN_ID=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=100"             --jq '.workflow_runs | map(select(.name == "Crypto-Astro Automatic Refresh Activation PR" and .status == "completed" and .conclusion == "success")) | max_by(.id) | .id')
+          test "$RUN_ID" != "null"
+          test -n "$RUN_ID"
+          gh workflow run crypto-astro-generated-refresh-autopublish.yml --ref main             -f trigger_run_id="$RUN_ID"             -f expected_head_sha="$HEAD_SHA"
+          echo TRUSTED_CI_TO_GATED_AUTOPUBLISH_DISPATCH=PASS
+
+      - name: Return recovery callback
+        if: always() && github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RELEASE_OUTCOME: ${{ steps.release.outcome }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_OUTCOME" == "success" ]]; then
+            gh issue comment "$ISSUE_NUMBER" --body $'SCHEMA=crypto_astro_generated_refresh_ci_release_callback_v0_1\nSTATUS=PASS\nTRUSTED_CI_RELEASE=PASS'
+            gh issue close "$ISSUE_NUMBER" --reason completed
+          else
+            gh issue comment "$ISSUE_NUMBER" --body $'SCHEMA=crypto_astro_generated_refresh_ci_release_callback_v0_1\nSTATUS=FAIL_CLOSED\nTRUSTED_CI_RELEASE=FAIL'
+          fi
+
+      - name: Upload CI release proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-generated-refresh-ci-release-${{ github.run_id }}
+          path: ${{ runner.temp }}/crypto-astro-generated-refresh-ci-release/
+          if-no-files-found: ignore
