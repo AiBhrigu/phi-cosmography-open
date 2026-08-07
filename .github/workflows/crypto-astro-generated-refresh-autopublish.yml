@@ -62,7 +62,7 @@ jobs:
           MERGE_SHA: ${{ steps.gate.outputs.merge_sha }}
         run: |
           set -euo pipefail
-          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          export DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           gh workflow run pages.yml --ref main
           for attempt in $(seq 1 60); do
             gh run list --workflow pages.yml --event workflow_dispatch --branch main --limit 30 --json databaseId,createdAt,headSha,status,conclusion,url > /tmp/pages-runs.json

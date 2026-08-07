@@ -278,8 +278,8 @@ def verify_manual_workflow(text: str, policy: dict[str, Any]) -> list[str]:
         "ATOMIC_REFRESH_BRANCH=PASS", "gh pr create --base main",
         "CRYPTO_ASTRO_REFRESH_MODE", "CRYPTO_ASTRO_OPERATOR_REF", "CRYPTO_ASTRO_REFRESH_REASON",
         "Materialize cadence metadata in operator review",
-        "Workflow may push one fully validated review branch",
-        "It may not merge or issue a deployment command.", "explicit merge authorization",
+        "Workflow may push one fully validated generated-refresh branch",
+        "gated automatic publication path", "Human-authored product PRs are not eligible",
     )
     for marker in required_markers:
         require(marker in text, f"manual:missing:{marker}", failures)
