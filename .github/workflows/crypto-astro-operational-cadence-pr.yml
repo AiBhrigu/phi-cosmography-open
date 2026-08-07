@@ -185,6 +185,13 @@ jobs:
               "tools/crypto_astro_operations/test_verify_operational_cadence.py",
           }
 
+          trusted_ci_release_runtime_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+          }
           trusted_ci_topology_repair_scope = {
               '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
@@ -207,7 +214,9 @@ jobs:
               ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
           ).splitlines())
 
-          if changed == trusted_ci_topology_repair_scope:
+          if changed == trusted_ci_release_runtime_repair_scope:
+              print("OPERATIONAL_CADENCE_TRUSTED_CI_RELEASE_RUNTIME_REPAIR_SCOPE=PASS")
+          elif changed == trusted_ci_topology_repair_scope:
               print("OPERATIONAL_CADENCE_TRUSTED_CI_TOPOLOGY_REPAIR_SCOPE=PASS")
           elif changed == artifact_redirect_auth_repair_scope:
               mode = 'artifact_redirect_auth_repair'

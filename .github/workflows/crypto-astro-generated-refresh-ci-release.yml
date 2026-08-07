@@ -52,11 +52,11 @@ jobs:
           mkdir -p "$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release"
           REPORT="$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release/report.json"
           if [[ "$GITHUB_EVENT_NAME" == "workflow_run" ]]; then
-            python tools/crypto_astro_operations/verify_generated_refresh_ci_release.py \
+            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
               --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
               --manual-run-id "$MANUAL_RUN_ID" --report "$REPORT"
           else
-            python tools/crypto_astro_operations/verify_generated_refresh_ci_release.py \
+            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
               --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
               --issue-number "$ISSUE_NUMBER" --report "$REPORT"
           fi
