@@ -62,6 +62,23 @@ jobs:
           fi
           echo TRUSTED_GENERATED_REFRESH_CI_RELEASE=PASS
 
+      - name: Dispatch gated autopublish after trusted CI PASS
+        id: autopublish
+        if: steps.release.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_PATH: ${{ runner.temp }}/crypto-astro-generated-refresh-ci-release/report.json
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(jq -r .head_sha "$REPORT_PATH")
+          test "$HEAD_SHA" != "null"
+          test -n "$HEAD_SHA"
+          RUN_ID=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=100"             --jq '.workflow_runs | map(select(.name == "Crypto-Astro Automatic Refresh Activation PR" and .status == "completed" and .conclusion == "success")) | max_by(.id) | .id')
+          test "$RUN_ID" != "null"
+          test -n "$RUN_ID"
+          gh workflow run crypto-astro-generated-refresh-autopublish.yml --ref main             -f trigger_run_id="$RUN_ID"             -f expected_head_sha="$HEAD_SHA"
+          echo TRUSTED_CI_TO_GATED_AUTOPUBLISH_DISPATCH=PASS
+
       - name: Return recovery callback
         if: always() && github.event_name == 'issues'
         env:
