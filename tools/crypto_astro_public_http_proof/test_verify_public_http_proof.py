@@ -67,11 +67,16 @@ class PublicHttpProofTests(unittest.TestCase):
         self.assertEqual(ctx.exception.reason_code, "PUBLIC_BYTES_MISMATCH")
 
     def test_bhrigu_form_requires_canonical_dialogue_gateway(self) -> None:
-        good = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><a href="/crypto-astro/btc/live?lang=en">Start free dialogue</a>', {})
+        good = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><aside class="heroQuestionCard heroDialogueGateway"><a href="/crypto-astro/btc/live?lang=en">Open BTC Field</a></aside>', {})
         assertions = mod.verify_bhrigu_form(good)
         self.assertTrue(all(assertions.values()))
         self.assertTrue(assertions["dialogue_gateway_present"])
         self.assertTrue(assertions["live_route_present"])
+
+        stale_copy_only = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><a href="/crypto-astro/btc/live?lang=en">Start free dialogue</a>', {})
+        with self.assertRaises(mod.ProofFailure) as ctx:
+            mod.verify_bhrigu_form(stale_copy_only)
+        self.assertEqual(ctx.exception.reason_code, "BHRIGU_FORM_ASSERTION_FAILED")
 
         bad = mod.FetchResult("https://example.test", "https://example.test", 200, [], "text/html", b'<title>BTC Field Read</title><p>Ask one BTC field question</p>', {})
         with self.assertRaises(mod.ProofFailure) as ctx:

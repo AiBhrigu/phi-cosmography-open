@@ -380,7 +380,7 @@ def verify_bhrigu_form(result: FetchResult) -> dict[str, bool]:
     text = decode_utf8(result.body, "bhrigu_form")
     assertions = {
         "title_present": "BTC Field Read" in text,
-        "dialogue_gateway_present": "Start free dialogue" in text,
+        "dialogue_gateway_present": "heroDialogueGateway" in text,
         "live_route_present": "/crypto-astro/btc/live?lang=en" in text,
         "failure_absent": "BTC Field Read unavailable" not in text,
     }
