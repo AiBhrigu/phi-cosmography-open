@@ -1,5 +1,6 @@
 from __future__ import annotations
 import unittest
+from pathlib import Path
 from tools.crypto_astro_operations.verify_generated_refresh_ci_release import (
     GateError, RECOVERY_SCHEMA, canonical_body, parse_body, parse_recovery_issue,
     validate_control_workflow, validate_pr_identity, validate_scope,
@@ -64,6 +65,19 @@ class T(unittest.TestCase):
     def test_write_gate_rejected(self):
         with self.assertRaisesRegex(GateError,"WRITE_PERMISSION"): validate_control_workflow("permissions:\n  contents: write\n")
     def test_read_only_gate_accepted(self): validate_control_workflow("permissions:\n  contents: read\n")
+    def test_natural_cycle_explicit_trusted_release_handoff(self):
+        root=Path(__file__).resolve().parents[2]
+        producer=(root/'.github/workflows/crypto-astro-static-refresh-manual.yml').read_text(encoding='utf-8')
+        release=(root/'.github/workflows/crypto-astro-generated-refresh-ci-release.yml').read_text(encoding='utf-8')
+        self.assertIn('actions: write', producer)
+        self.assertIn('name: Dispatch trusted CI release', producer)
+        self.assertIn('gh workflow run crypto-astro-generated-refresh-ci-release.yml --ref main', producer)
+        self.assertIn('-f manual_run_id="$GITHUB_RUN_ID"', producer)
+        self.assertIn('workflow_dispatch:', release)
+        self.assertIn('manual_run_id:', release)
+        self.assertIn("github.event_name == 'workflow_dispatch'", release)
+        self.assertIn('github.event.workflow_run.id || inputs.manual_run_id', release)
+
     def test_canonical_governance_copy(self):
         body=f"- Base SHA: {B}\n- review PR only; no auto-merge and no deploy command\n- publication follows only after explicit merge authorization and accepted merge to main\n"
         out=canonical_body(body,B,H); self.assertIn("Generation Base SHA",out); self.assertIn("Acceptance Base SHA",out)

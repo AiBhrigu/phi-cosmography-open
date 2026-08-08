@@ -270,9 +270,21 @@ jobs:
               'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
               'tools/crypto_astro_operations/verify_operational_cadence.py',
           }
+          natural_cycle_trusted_release_handoff_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-manual.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py',
+          }
           base = subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
           changed = set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
-          if changed == trusted_ci_to_autopublish_handoff_scope:
+          if changed == natural_cycle_trusted_release_handoff_scope:
+              mode = "natural_cycle_trusted_release_handoff"
+              print("SNAPSHOT_MEMORY_NATURAL_CYCLE_TRUSTED_RELEASE_HANDOFF_SCOPE=PASS")
+          elif changed == trusted_ci_to_autopublish_handoff_scope:
               mode = "trusted_ci_to_autopublish_handoff"
               print("SNAPSHOT_MEMORY_TRUSTED_CI_TO_AUTOPUBLISH_HANDOFF_SCOPE=PASS")
           elif changed == trusted_ci_release_runtime_repair_scope:

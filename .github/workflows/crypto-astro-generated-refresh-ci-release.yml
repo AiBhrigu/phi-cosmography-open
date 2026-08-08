@@ -5,6 +5,12 @@ on:
     workflows:
       - Crypto-Astro Static Refresh Manual
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      manual_run_id:
+        description: Exact successful Crypto-Astro Static Refresh Manual run id
+        required: true
+        type: string
   issues:
     types: [opened]
 
@@ -22,6 +28,7 @@ jobs:
   release:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issues' && github.event.issue.title == 'Crypto-Astro generated refresh CI release request')
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -45,20 +52,21 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          MANUAL_RUN_ID: ${{ github.event.workflow_run.id }}
+          MANUAL_RUN_ID: ${{ github.event.workflow_run.id || inputs.manual_run_id }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release"
           REPORT="$RUNNER_TEMP/crypto-astro-generated-refresh-ci-release/report.json"
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_run" ]]; then
-            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
-              --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
-              --manual-run-id "$MANUAL_RUN_ID" --report "$REPORT"
-          else
+          if [[ "$GITHUB_EVENT_NAME" == "issues" ]]; then
             python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
               --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
               --issue-number "$ISSUE_NUMBER" --report "$REPORT"
+          else
+            [[ "$MANUAL_RUN_ID" =~ ^[0-9]+$ ]]
+            python -m tools.crypto_astro_operations.verify_generated_refresh_ci_release \
+              --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
+              --manual-run-id "$MANUAL_RUN_ID" --report "$REPORT"
           fi
           echo TRUSTED_GENERATED_REFRESH_CI_RELEASE=PASS
 
