@@ -27,7 +27,7 @@ SPEC.loader.exec_module(base)
 
 ENTRY_TARGET = f"{base.BHRIGU_ROOT}?lang=ru"
 LIVE_TARGET = f"{base.BHRIGU_ROOT}/live?lang=ru"
-CURRENT_RU_CTA = "Открыть BTC Field"
+CURRENT_PRIMARY_CTA_MARKER = 'data-primary-btc-change-question="true"'
 LEGACY_CTA = "Start free dialogue"
 LIVE_CONTRACT_META = 'name="btc-live-dialogue" content="semantic-route-graph-v0-1"'
 LIVE_SHELL_MARKER = 'data-live-dialogue="btc-cosmographer-route-v0-1"'
@@ -53,7 +53,7 @@ def verify_current_bhrigu_entry(result: Any) -> dict[str, bool]:
 
     assertions = {
         "title_present": "BTC Field Read" in text,
-        "current_ru_cta_present": CURRENT_RU_CTA in text,
+        "current_primary_cta_present": CURRENT_PRIMARY_CTA_MARKER in text,
         "legacy_cta_absent": LEGACY_CTA not in text,
         "live_route_present": "/crypto-astro/btc/live?lang=ru" in text,
         "entry_snapshot_timestamp_present": _entry_snapshot_timestamp is not None,
