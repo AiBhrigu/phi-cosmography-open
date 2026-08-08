@@ -34,6 +34,7 @@ on:
         default: ""
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
   issues: write
@@ -397,6 +398,40 @@ jobs:
             --title "Crypto-Astro: automated static market snapshot refresh" \
             --body-file /tmp/crypto_astro_refresh_pr_body.md)
           echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch trusted CI release
+        id: trusted_release
+        if: steps.changes.outputs.changed == 'true' && steps.open_pr.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          export DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run crypto-astro-generated-refresh-ci-release.yml --ref main \
+            -f manual_run_id="$GITHUB_RUN_ID"
+          for attempt in $(seq 1 30); do
+            gh run list --workflow crypto-astro-generated-refresh-ci-release.yml \
+              --event workflow_dispatch --branch main --limit 30 \
+              --json databaseId,createdAt,headSha,status,url > /tmp/trusted-release-runs.json
+            if python - <<'PY2'
+          import json, os
+          from datetime import datetime
+          from pathlib import Path
+          runs=json.loads(Path('/tmp/trusted-release-runs.json').read_text())
+          start=datetime.fromisoformat(os.environ['DISPATCHED_AT'].replace('Z','+00:00'))
+          matches=[r for r in runs if r.get('headSha')==os.environ['BASE_SHA'] and datetime.fromisoformat(r['createdAt'].replace('Z','+00:00'))>=start]
+          if len(matches)!=1: raise SystemExit(1)
+          Path('/tmp/trusted-release-run.json').write_text(json.dumps(matches[0]))
+          PY2
+            then break; fi
+            sleep 2
+          done
+          test -f /tmp/trusted-release-run.json
+          RUN_ID=$(jq -r .databaseId /tmp/trusted-release-run.json)
+          test "$RUN_ID" != "null"
+          test -n "$RUN_ID"
+          echo "trusted_release_run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "TRUSTED_CI_RELEASE_DISPATCH=PASS run_id=$RUN_ID"
 
       - name: Upload failure or success report
         id: report_upload

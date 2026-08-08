@@ -209,6 +209,15 @@ jobs:
               'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
               'tools/crypto_astro_operations/verify_operational_cadence.py',
           }
+          natural_cycle_trusted_release_handoff_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-manual.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py',
+          }
           base = subprocess.check_output(
               ["git", "merge-base", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]], text=True
           ).strip()
@@ -217,7 +226,10 @@ jobs:
                   ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
               ).splitlines()
           )
-          if changed == trusted_ci_to_autopublish_handoff_scope:
+          if changed == natural_cycle_trusted_release_handoff_scope:
+              mode = "natural_cycle_trusted_release_handoff"
+              print("ASSISTANT_DISPATCH_NATURAL_CYCLE_TRUSTED_RELEASE_HANDOFF_SCOPE=PASS")
+          elif changed == trusted_ci_to_autopublish_handoff_scope:
               mode = "trusted_ci_to_autopublish_handoff"
               print("ASSISTANT_DISPATCH_TRUSTED_CI_TO_AUTOPUBLISH_HANDOFF_SCOPE=PASS")
           elif changed == trusted_ci_release_runtime_repair_scope:
@@ -322,7 +334,7 @@ jobs:
             site/theme/crypto_astro
 
       - name: Prove dispatch runtime and public surface unchanged for bounded repairs
-        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'trusted_ci_topology_repair' && steps.scope.outputs.mode != 'trusted_ci_release_runtime_repair' && steps.scope.outputs.mode != 'trusted_ci_to_autopublish_handoff'
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'trusted_ci_topology_repair' && steps.scope.outputs.mode != 'trusted_ci_release_runtime_repair' && steps.scope.outputs.mode != 'trusted_ci_to_autopublish_handoff' && steps.scope.outputs.mode != 'natural_cycle_trusted_release_handoff'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
