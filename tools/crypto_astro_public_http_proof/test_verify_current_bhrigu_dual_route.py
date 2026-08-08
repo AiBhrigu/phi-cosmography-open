@@ -41,7 +41,22 @@ class CurrentBhriguDualRouteTests(unittest.TestCase):
             "https://www.bhrigu.io/crypto-astro/btc/live?lang=ru",
         )
 
-    def test_entry_requires_current_cta_and_snapshot_timestamp(self) -> None:
+    def test_entry_requires_structural_primary_cta_and_snapshot_timestamp(self) -> None:
+        timestamp = "2026-08-03T03:20:57Z"
+        result = self.fetch_result(
+            '<title>BTC Field Read</title>'
+            f'<main data-source-generated-at="{timestamp}">'
+            '<a href="/crypto-astro/btc/live?lang=ru" '
+            'data-primary-btc-change-question="true">'
+            'Спросить, что изменилось в Bitcoin</a>'
+            "</main>"
+        )
+        assertions = mod.verify_current_bhrigu_entry(result)
+        self.assertTrue(all(assertions.values()))
+        self.assertTrue(assertions["current_primary_cta_present"])
+        self.assertEqual(mod._entry_snapshot_timestamp, timestamp)
+
+    def test_entry_rejects_copy_only_without_structural_marker(self) -> None:
         timestamp = "2026-08-03T03:20:57Z"
         result = self.fetch_result(
             '<title>BTC Field Read</title>'
@@ -49,16 +64,17 @@ class CurrentBhriguDualRouteTests(unittest.TestCase):
             '<a href="/crypto-astro/btc/live?lang=ru">Открыть BTC Field</a>'
             "</main>"
         )
-        assertions = mod.verify_current_bhrigu_entry(result)
-        self.assertTrue(all(assertions.values()))
-        self.assertEqual(mod._entry_snapshot_timestamp, timestamp)
+        with self.assertRaises(mod.base.ProofFailure) as ctx:
+            mod.verify_current_bhrigu_entry(result)
+        self.assertEqual(ctx.exception.reason_code, "BHRIGU_ENTRY_ASSERTION_FAILED")
 
     def test_entry_rejects_legacy_cta(self) -> None:
         timestamp = "2026-08-03T03:20:57Z"
         result = self.fetch_result(
             '<title>BTC Field Read</title>'
             f'<main data-source-generated-at="{timestamp}">'
-            '<a href="/crypto-astro/btc/live?lang=ru">Start free dialogue</a>'
+            '<a href="/crypto-astro/btc/live?lang=ru" '
+            'data-primary-btc-change-question="true">Start free dialogue</a>'
             "</main>"
         )
         with self.assertRaises(mod.base.ProofFailure) as ctx:
@@ -70,7 +86,9 @@ class CurrentBhriguDualRouteTests(unittest.TestCase):
         entry = self.fetch_result(
             '<title>BTC Field Read</title>'
             f'<main data-source-generated-at="{timestamp}">'
-            '<a href="/crypto-astro/btc/live?lang=ru">Открыть BTC Field</a>'
+            '<a href="/crypto-astro/btc/live?lang=ru" '
+            'data-primary-btc-change-question="true">'
+            'Спросить, что изменилось в Bitcoin</a>'
             "</main>"
         )
         mod.verify_current_bhrigu_entry(entry)
@@ -94,7 +112,9 @@ class CurrentBhriguDualRouteTests(unittest.TestCase):
         entry = self.fetch_result(
             '<title>BTC Field Read</title>'
             f'<main data-source-generated-at="{entry_timestamp}">'
-            '<a href="/crypto-astro/btc/live?lang=ru">Открыть BTC Field</a>'
+            '<a href="/crypto-astro/btc/live?lang=ru" '
+            'data-primary-btc-change-question="true">'
+            'Спросить, что изменилось в Bitcoin</a>'
             "</main>"
         )
         mod.verify_current_bhrigu_entry(entry)
