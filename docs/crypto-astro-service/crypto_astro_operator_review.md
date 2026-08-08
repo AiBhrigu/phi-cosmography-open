@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-08-07T00:15:11Z
+GENERATED_AT_UTC=2026-08-07T20:58:12Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_31133938170
-REFRESH_REASON=Automatic scheduler source probe PASS; scheduler_run_id=31133938170; base_sha=8e43590416fdf8833a23f8437b5bb7be6b6aa9ed
+OPERATOR_REF=CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_31218078363
+REFRESH_REASON=Automatic scheduler source probe PASS; scheduler_run_id=31218078363; base_sha=cecac903103911ac389fca87d3afd4311734d028
 
 ## Changed modules
 
@@ -29,4 +29,4 @@ REFRESH_REASON=Automatic scheduler source probe PASS; scheduler_run_id=311339381
 
 ## Boundary
 
-Workflow may push one fully validated review branch and open one review PR. It may not merge or issue a deployment command. Publication follows only after explicit merge authorization.
+Workflow may push one fully validated generated-refresh branch and open one generated refresh PR. Publication is permitted only through the gated automatic publication path after all required gates PASS. Human-authored product PRs are not eligible for this automatic path.
