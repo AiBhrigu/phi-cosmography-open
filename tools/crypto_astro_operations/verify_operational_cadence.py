@@ -22,11 +22,17 @@ EXPECTED_MODES = [
 ]
 EXPECTED_EXCEPTION_MODES = EXPECTED_MODES[1:]
 EXPECTED_INPUTS = ["refresh_mode", "operator_ref", "refresh_reason"]
-OPERATOR_BOUNDARY = (
+LEGACY_OPERATOR_BOUNDARY = (
     "Workflow may push one fully validated review branch and open one review PR. "
     "It may not merge or issue a deployment command. Publication follows only "
     "after explicit merge authorization."
 )
+CANONICAL_GENERATED_REFRESH_BOUNDARY = (
+    "Workflow may push one fully validated generated-refresh branch and open one generated refresh PR. "
+    "Publication is permitted only through the gated automatic publication path after all required gates PASS. "
+    "Human-authored product PRs are not eligible for this automatic path."
+)
+OPERATOR_BOUNDARY = LEGACY_OPERATOR_BOUNDARY
 
 
 class CadenceVerificationError(RuntimeError):
@@ -318,7 +324,11 @@ def verify_cadence_workflow(text: str) -> list[str]:
 
 def verify_operator_review(text: str) -> list[str]:
     failures: list[str] = []
-    require(OPERATOR_BOUNDARY in text, "operator_review:boundary", failures)
+    require(
+        LEGACY_OPERATOR_BOUNDARY in text or CANONICAL_GENERATED_REFRESH_BOUNDARY in text,
+        "operator_review:boundary",
+        failures,
+    )
     require("No push, no PR, no deploy." not in text, "operator_review:obsolete_boundary", failures)
     return failures
 
