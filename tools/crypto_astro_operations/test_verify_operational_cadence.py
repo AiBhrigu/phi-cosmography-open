@@ -8,6 +8,7 @@ from verify_operational_cadence import (
     EXPECTED_INPUTS,
     EXPECTED_MODES,
     FRESHNESS_CONTRACT_ID,
+    CANONICAL_GENERATED_REFRESH_BOUNDARY,
     OPERATOR_BOUNDARY,
     automatic_refresh_dry_run_matrix,
     evaluate_automatic_refresh_dry_run,
@@ -234,7 +235,9 @@ class OperationalCadenceTests(unittest.TestCase):
     def test_cadence_workflow_and_operator_boundary(self):
         self.assertEqual(verify_cadence_workflow(valid_cadence_workflow()), [])
         self.assertEqual(verify_operator_review(OPERATOR_BOUNDARY), [])
+        self.assertEqual(verify_operator_review(CANONICAL_GENERATED_REFRESH_BOUNDARY), [])
         self.assertIn("operator_review:obsolete_boundary", verify_operator_review(OPERATOR_BOUNDARY + "\nNo push, no PR, no deploy."))
+        self.assertIn("operator_review:boundary", verify_operator_review("unrecognized boundary"))
 
 
 if __name__ == "__main__":

@@ -215,6 +215,14 @@ jobs:
               'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
               'tools/crypto_astro_operations/verify_operational_cadence.py',
           }
+          cadence_boundary_compat_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              'tools/crypto_astro_operations/test_verify_operational_cadence.py',
+              'tools/crypto_astro_operations/verify_operational_cadence.py',
+          }
           natural_cycle_trusted_release_handoff_scope = {
               '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
@@ -231,7 +239,9 @@ jobs:
               ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
           ).splitlines())
 
-          if changed == natural_cycle_trusted_release_handoff_scope:
+          if changed == cadence_boundary_compat_repair_scope:
+              print("OPERATIONAL_CADENCE_BOUNDARY_COMPAT_REPAIR_SCOPE=PASS")
+          elif changed == natural_cycle_trusted_release_handoff_scope:
               print("OPERATIONAL_CADENCE_NATURAL_CYCLE_TRUSTED_RELEASE_HANDOFF_SCOPE=PASS")
           elif changed == trusted_ci_to_autopublish_handoff_scope:
               print("OPERATIONAL_CADENCE_TRUSTED_CI_TO_AUTOPUBLISH_HANDOFF_SCOPE=PASS")
