@@ -1,0 +1,74 @@
+name: COSMOGRAPHY v1.1 fresh heldout encrypted JPL input capsule
+
+on:
+  push:
+    branches:
+      - research/cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v01
+    paths:
+      - 'research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py'
+      - '.github/workflows/cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v01.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  materialize-encrypt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Install blind encryption public key
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/fresh-heldout-public.pem <<'EOF'
+          -----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAmqkijyImYIXrD/mx6A8s
+          jJBGI5s4KhKSDymxXhbWGKMBbrfiAD6VDI1V8gageNAXKocPCbbOC19EP0Qo9sJ0
+          x7NjjFK9A2kTbBDrW+VJj5QliHm9rYavxScPqETAhBgnA24WOnFLuZ4CiSZmotAJ
+          gKcyUqVqEgdkqQo/eayv/FQg6+TG8iM29NfHqgbmUFk3zPQg2OvBxa4fAFLVpfzG
+          rmEwFmNBl9DnJtfkp6yVF6vW1pNyOFy/Q2O+x3AKJw6m3bi0RwCwEcypbkwqjQdY
+          MiazfZ/mxLh9FCpDzhbYKf+JkalmiOUSHfJNwbKM8RHG8kWJRFKeczmaecqy/P8S
+          BVcWPUHuJdo9p15EtWa8WVrlemwMXj49ef5u66Xq2Iijt/Btv+Dytyv/RalFhX7b
+          qd6yC1LPUYFaeA0qdQjcVnLx4rN7GYyH+BlChJITU+x+YAXQSMHb6/dAqgKcQgXX
+          75Eh5iD1osXYx5EBcUdObIMNbOpPAW8sMZe6yXDbhhcPAgMBAAE=
+          -----END PUBLIC KEY-----
+          EOF
+          openssl pkey -pubin -in /tmp/fresh-heldout-public.pem -noout
+      - name: Materialize exact frozen JPL object inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py
+          python research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py
+      - name: Encrypt identity-bearing JPL input capsule
+        shell: bash
+        run: |
+          set -euo pipefail
+          plain=/tmp/fresh-heldout-jpl-input-capsule.json
+          test -f "$plain"
+          sha256sum "$plain" > jpl-input-plaintext.sha256
+          openssl rand -hex 32 > /tmp/jpl-input-key.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -in "$plain" -out fresh-heldout-jpl-input-capsule-v0-1.enc -pass file:/tmp/jpl-input-key.txt
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/fresh-heldout-public.pem -in /tmp/jpl-input-key.txt -out fresh-heldout-jpl-input-key-v0-1.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          rm -f "$plain" /tmp/jpl-input-key.txt
+          test ! -e "$plain"
+          cp /tmp/fresh-heldout-jpl-input-capsule-redacted.json ./
+          echo PLAINTEXT_IDENTITY_UPLOAD=NO
+          echo ENGINE_SOURCE_INCLUDED=NO
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v0-1
+          path: |
+            fresh-heldout-jpl-input-capsule-v0-1.enc
+            fresh-heldout-jpl-input-key-v0-1.enc
+            fresh-heldout-jpl-input-capsule-redacted.json
+            jpl-input-plaintext.sha256
+          retention-days: 7
+          if-no-files-found: error
