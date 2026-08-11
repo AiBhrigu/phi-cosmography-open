@@ -5,7 +5,7 @@ on:
     branches:
       - research/cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v01
     paths:
-      - 'research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py'
+      - 'research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v02.py'
       - '.github/workflows/cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v01.yml'
   workflow_dispatch:
 
@@ -41,12 +41,12 @@ jobs:
           -----END PUBLIC KEY-----
           EOF
           openssl pkey -pubin -in /tmp/fresh-heldout-public.pem -noout
-      - name: Materialize exact frozen JPL object inputs
+      - name: Materialize semantic-frozen JPL object inputs
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py
-          python research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v01.py
+          python -m py_compile research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v02.py
+          python research/cosmography_engine_v1_1_encrypted_jpl_input_capsule_v02.py
       - name: Encrypt identity-bearing JPL input capsule
         shell: bash
         run: |
@@ -55,8 +55,8 @@ jobs:
           test -f "$plain"
           sha256sum "$plain" > jpl-input-plaintext.sha256
           openssl rand -hex 32 > /tmp/jpl-input-key.txt
-          openssl enc -aes-256-cbc -salt -pbkdf2 -in "$plain" -out fresh-heldout-jpl-input-capsule-v0-1.enc -pass file:/tmp/jpl-input-key.txt
-          openssl pkeyutl -encrypt -pubin -inkey /tmp/fresh-heldout-public.pem -in /tmp/jpl-input-key.txt -out fresh-heldout-jpl-input-key-v0-1.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          openssl enc -aes-256-cbc -salt -pbkdf2 -in "$plain" -out fresh-heldout-jpl-input-capsule-v0-2.enc -pass file:/tmp/jpl-input-key.txt
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/fresh-heldout-public.pem -in /tmp/jpl-input-key.txt -out fresh-heldout-jpl-input-key-v0-2.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
           rm -f "$plain" /tmp/jpl-input-key.txt
           test ! -e "$plain"
           cp /tmp/fresh-heldout-jpl-input-capsule-redacted.json ./
@@ -64,10 +64,10 @@ jobs:
           echo ENGINE_SOURCE_INCLUDED=NO
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v0-1
+          name: cosmography-v1-1-fresh-heldout-encrypted-jpl-input-capsule-v0-2
           path: |
-            fresh-heldout-jpl-input-capsule-v0-1.enc
-            fresh-heldout-jpl-input-key-v0-1.enc
+            fresh-heldout-jpl-input-capsule-v0-2.enc
+            fresh-heldout-jpl-input-key-v0-2.enc
             fresh-heldout-jpl-input-capsule-redacted.json
             jpl-input-plaintext.sha256
           retention-days: 7
