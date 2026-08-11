@@ -1,0 +1,84 @@
+name: COSMOGRAPHY v1.1 numerical runtime capsule
+
+on:
+  push:
+    branches:
+      - research/cosmography-v1-1-numerical-runtime-capsule-v01
+    paths:
+      - '.github/workflows/cosmography-v1-1-numerical-runtime-capsule-v01.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KERNEL_URL: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp
+  KERNEL_SHA256: c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2
+
+jobs:
+  build-runtime-capsule:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Install exact frozen numerical stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check numpy==2.2.6 rebound==5.0.0 spiceypy==6.0.3
+          python - <<'PY'
+          import sys,numpy,rebound,spiceypy
+          assert sys.version_info[:2] == (3,11)
+          assert numpy.__version__ == '2.2.6'
+          assert rebound.__version__ == '5.0.0'
+          assert spiceypy.__version__ == '6.0.3'
+          print('FROZEN_NUMERICAL_STACK=PASS')
+          print('PYTHON='+sys.version.split()[0])
+          print('NUMPY='+numpy.__version__)
+          print('REBOUND='+rebound.__version__)
+          print('SPICEYPY='+spiceypy.__version__)
+          PY
+      - name: Fetch and verify JPL DE440s
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/capsule/assets
+          curl -fL --retry 8 --retry-all-errors --connect-timeout 30 -o /tmp/capsule/assets/de440s.bsp "$KERNEL_URL"
+          echo "$KERNEL_SHA256  /tmp/capsule/assets/de440s.bsp" | sha256sum -c -
+      - name: Pack relocatable Python runtime and authority report
+        shell: bash
+        run: |
+          set -euo pipefail
+          prefix="$(python -c 'import sys; print(sys.prefix)')"
+          mkdir -p /tmp/capsule/runtime
+          cp -a "$prefix" /tmp/capsule/runtime/python311
+          rm -rf /tmp/capsule/runtime/python311/lib/python3.11/site-packages/pip/_vendor/cachecontrol/caches/__pycache__ || true
+          find /tmp/capsule/runtime/python311 -type d -name __pycache__ -prune -exec rm -rf {} + || true
+          cat > /tmp/capsule/RUNTIME_AUTHORITY.txt <<EOF
+          NODE=COSMOGRAPHY_V1_1_NUMERICAL_RUNTIME_CAPSULE_v0_1
+          PYTHON=3.11
+          NUMPY=2.2.6
+          REBOUND=5.0.0
+          SPICEYPY=6.0.3
+          DE440S_SHA256=$KERNEL_SHA256
+          ENGINE_SOURCE_INCLUDED=NO
+          HELDOUT_IDENTITIES_INCLUDED=NO
+          EOF
+          (cd /tmp/capsule && find . -type f -print0 | sort -z | xargs -0 sha256sum) > /tmp/capsule/FILES_SHA256.txt
+          tar -C /tmp -czf /tmp/cosmography-v1-1-runtime-capsule.tar.gz capsule
+          sha256sum /tmp/cosmography-v1-1-runtime-capsule.tar.gz > /tmp/cosmography-v1-1-runtime-capsule.tar.gz.sha256
+          mkdir -p artifacts/runtime_capsule
+          mv /tmp/cosmography-v1-1-runtime-capsule.tar.gz* artifacts/runtime_capsule/
+          echo RUNTIME_CAPSULE_BUILD=PASS
+          cat artifacts/runtime_capsule/cosmography-v1-1-runtime-capsule.tar.gz.sha256
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cosmography-v1-1-numerical-runtime-capsule-v0-1
+          path: artifacts/runtime_capsule
+          retention-days: 7
+          if-no-files-found: error
