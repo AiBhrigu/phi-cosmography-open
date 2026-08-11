@@ -42,9 +42,22 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Wait for exact producer terminal success
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MANUAL_RUN_ID: ${{ inputs.manual_run_id }}
+        run: |
+          set -euo pipefail
+          [[ "$MANUAL_RUN_ID" =~ ^[0-9]+$ ]]
+          python -m tools.crypto_astro_trusted_release.wait_producer \
+            --repo "$GITHUB_REPOSITORY" --token "$GITHUB_TOKEN" \
+            --run-id "$MANUAL_RUN_ID" --timeout 120
+
       - name: Validate trusted CI release implementation
         run: |
           python -m unittest \
+            tools.crypto_astro_trusted_release.test_wait_producer \
             tools.crypto_astro_operations.test_verify_generated_refresh_ci_release \
             tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
 
@@ -81,10 +94,13 @@ jobs:
           HEAD_SHA=$(jq -r .head_sha "$REPORT_PATH")
           test "$HEAD_SHA" != "null"
           test -n "$HEAD_SHA"
-          RUN_ID=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=100"             --jq '.workflow_runs | map(select(.name == "Crypto-Astro Automatic Refresh Activation PR" and .status == "completed" and .conclusion == "success")) | max_by(.id) | .id')
+          RUN_ID=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=100" \
+            --jq '.workflow_runs | map(select(.name == "Crypto-Astro Automatic Refresh Activation PR" and .status == "completed" and .conclusion == "success")) | max_by(.id) | .id')
           test "$RUN_ID" != "null"
           test -n "$RUN_ID"
-          gh workflow run crypto-astro-generated-refresh-autopublish.yml --ref main             -f trigger_run_id="$RUN_ID"             -f expected_head_sha="$HEAD_SHA"
+          gh workflow run crypto-astro-generated-refresh-autopublish.yml --ref main \
+            -f trigger_run_id="$RUN_ID" \
+            -f expected_head_sha="$HEAD_SHA"
           echo TRUSTED_CI_TO_GATED_AUTOPUBLISH_DISPATCH=PASS
 
       - name: Return recovery callback

@@ -1,0 +1,65 @@
+name: Crypto-Astro Trusted Release Producer Terminal Race PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/crypto-astro-generated-refresh-ci-release.yml'
+      - '.github/workflows/crypto-astro-generated-refresh-ci-release-pr.yml'
+      - 'tools/crypto_astro_trusted_release/wait_producer.py'
+      - 'tools/crypto_astro_trusted_release/test_wait_producer.py'
+
+permissions:
+  contents: read
+
+jobs:
+  producer-terminal-race:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact control-plane scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          python - "$BASE" "$HEAD_SHA" <<'PY'
+          import subprocess, sys
+          expected = {
+              '.github/workflows/crypto-astro-generated-refresh-ci-release.yml',
+              '.github/workflows/crypto-astro-generated-refresh-ci-release-pr.yml',
+              'tools/crypto_astro_trusted_release/wait_producer.py',
+              'tools/crypto_astro_trusted_release/test_wait_producer.py',
+          }
+          changed = set(subprocess.check_output(
+              ['git', 'diff', '--name-only', sys.argv[1], sys.argv[2]], text=True
+          ).splitlines())
+          assert changed == expected, {'changed': sorted(changed), 'expected': sorted(expected)}
+          print('PRODUCER_TERMINAL_RACE_REPAIR_SCOPE=PASS')
+          print('PRODUCT_OR_MARKET_SCOPE_CHANGE=ZERO')
+          PY
+
+      - name: Verify bounded terminal-wait regression
+        run: |
+          python -m unittest \
+            tools.crypto_astro_trusted_release.test_wait_producer \
+            tools.crypto_astro_operations.test_verify_generated_refresh_ci_release \
+            tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+
+      - name: Verify trusted-release fail-closed wiring
+        run: |
+          set -euo pipefail
+          grep -F 'name: Wait for exact producer terminal success' .github/workflows/crypto-astro-generated-refresh-ci-release.yml
+          grep -F 'python -m tools.crypto_astro_trusted_release.wait_producer' .github/workflows/crypto-astro-generated-refresh-ci-release.yml
+          grep -F -- '--run-id "$MANUAL_RUN_ID" --timeout 120' .github/workflows/crypto-astro-generated-refresh-ci-release.yml
+          grep -F 'PRODUCER_TERMINAL_SUCCESS=PASS' tools/crypto_astro_trusted_release/wait_producer.py
+          echo TRUSTED_RELEASE_PRODUCER_TERMINAL_WAIT_WIRING=PASS
