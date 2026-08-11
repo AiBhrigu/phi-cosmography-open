@@ -1,0 +1,97 @@
+name: Cosmography Engine v1.1 Fresh Heldout Source Preflight Blind
+
+on:
+  push:
+    branches:
+      - research/cosmography-engine-v1-1-fresh-heldout-source-preflight-v01
+    paths:
+      - research/cosmography_engine_v1_1_source_preflight_blind.py
+      - .github/workflows/cosmography-engine-v1-1-fresh-heldout-source-preflight-blind.yml
+
+permissions:
+  contents: read
+
+jobs:
+  source-preflight-freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Record exact authority
+        run: |
+          set -euo pipefail
+          {
+            echo "HEAD_SHA=$(git rev-parse HEAD)"
+            echo "REF=${GITHUB_REF}"
+            echo "RUN_ID=${GITHUB_RUN_ID}"
+            echo "RUN_ATTEMPT=${GITHUB_RUN_ATTEMPT}"
+          } > authority.txt
+
+      - name: Install blind encryption public key
+        run: |
+          cat > /tmp/fresh-heldout-public.pem <<'EOF'
+          -----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAmqkijyImYIXrD/mx6A8s
+          jJBGI5s4KhKSDymxXhbWGKMBbrfiAD6VDI1V8gageNAXKocPCbbOC19EP0Qo9sJ0
+          x7NjjFK9A2kTbBDrW+VJj5QliHm9rYavxScPqETAhBgnA24WOnFLuZ4CiSZmotAJ
+          gKcyUqVqEgdkqQo/eayv/FQg6+TG8iM29NfHqgbmUFk3zPQg2OvBxa4fAFLVpfzG
+          rmEwFmNBl9DnJtfkp6yVF6vW1pNyOFy/Q2O+x3AKJw6m3bi0RwCwEcypbkwqjQdY
+          MiazfZ/mxLh9FCpDzhbYKf+JkalmiOUSHfJNwbKM8RHG8kWJRFKeczmaecqy/P8S
+          BVcWPUHuJdo9p15EtWa8WVrlemwMXj49ef5u66Xq2Iijt/Btv+Dytyv/RalFhX7b
+          qd6yC1LPUYFaeA0qdQjcVnLx4rN7GYyH+BlChJITU+x+YAXQSMHb6/dAqgKcQgXX
+          75Eh5iD1osXYx5EBcUdObIMNbOpPAW8sMZe6yXDbhhcPAgMBAAE=
+          -----END PUBLIC KEY-----
+          EOF
+          openssl pkey -pubin -in /tmp/fresh-heldout-public.pem -noout
+
+      - name: Execute frozen JPL source preflight
+        run: |
+          set +e
+          python3 research/cosmography_engine_v1_1_source_preflight_blind.py > source-preflight-console-redacted.json 2>&1
+          rc=$?
+          echo "$rc" > preflight.exitcode
+          cat source-preflight-console-redacted.json
+          exit 0
+
+      - name: Encrypt identity-bearing freeze
+        if: always()
+        run: |
+          set -euo pipefail
+          plain="research/fresh_heldout_source_freeze_v0_1.json"
+          if [ -f "$plain" ]; then
+            sha256sum "$plain" > freeze-plaintext.sha256
+            openssl rand -hex 32 > /tmp/freeze-key.txt
+            openssl enc -aes-256-cbc -salt -pbkdf2 -in "$plain" -out fresh-heldout-source-freeze-v0-1.enc -pass file:/tmp/freeze-key.txt
+            openssl pkeyutl -encrypt -pubin -inkey /tmp/fresh-heldout-public.pem \
+              -in /tmp/freeze-key.txt -out fresh-heldout-source-freeze-key-v0-1.enc \
+              -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+            rm -f "$plain" /tmp/freeze-key.txt
+          fi
+
+      - name: Upload blinded source-freeze evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmography-engine-v1-1-fresh-heldout-source-freeze-blind-v0-1
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            authority.txt
+            preflight.exitcode
+            source-preflight-console-redacted.json
+            research/fresh_heldout_source_freeze_redacted_v0_1.json
+            freeze-plaintext.sha256
+            fresh-heldout-source-freeze-v0-1.enc
+            fresh-heldout-source-freeze-key-v0-1.enc
+
+      - name: Enforce preflight verdict
+        if: always()
+        run: |
+          set -euo pipefail
+          rc=$(cat preflight.exitcode)
+          if [ "$rc" != "0" ]; then
+            echo "SOURCE_PREFLIGHT_FAIL_EXIT=$rc"
+            exit "$rc"
+          fi
