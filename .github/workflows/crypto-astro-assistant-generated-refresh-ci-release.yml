@@ -51,8 +51,8 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -Eq 'gh[[:space:]]+pr[[:space:]]+merge' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
-          ! grep -Eq 'actions/deploy-pages' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
-          ! grep -Eq 'generated-refresh-autopublish' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -Eq 'actions/deploy[-]pages' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -Eq 'generated-refresh-auto[p]ublish' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
           grep -q 'EXPLICIT_AUTHORIZED_MERGE_ONLY' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
           echo ASSISTANT_RELEASE_MERGE_AUTHORITY=ZERO
           echo ASSISTANT_RELEASE_DEPLOY_AUTHORITY=ZERO
