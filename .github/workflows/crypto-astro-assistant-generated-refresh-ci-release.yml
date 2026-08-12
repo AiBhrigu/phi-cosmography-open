@@ -1,0 +1,128 @@
+name: Crypto-Astro Assistant Generated Refresh CI Release
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml'
+      - 'tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py'
+      - 'tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py'
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-astro-assistant-generated-refresh-ci-release
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify exact assistant generated-refresh CI release scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/changed.txt
+          cat > /tmp/expected.txt <<'EOF'
+          .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py
+          tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py
+          EOF
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          echo ASSISTANT_GENERATED_REFRESH_CI_RELEASE_SCOPE=PASS
+      - name: Run fail-closed regression tests
+        run: |
+          python -m unittest \
+            tools.crypto_astro_operations.test_verify_assistant_generated_refresh_ci_release -v
+      - name: Verify no merge or deployment authority
+        run: |
+          set -euo pipefail
+          ! grep -q 'gh pr merge' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -q 'actions/deploy-pages' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -q 'generated-refresh-autopublish' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          grep -q 'EXPLICIT_AUTHORIZED_MERGE_ONLY' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          echo ASSISTANT_RELEASE_MERGE_AUTHORITY=ZERO
+          echo ASSISTANT_RELEASE_DEPLOY_AUTHORITY=ZERO
+
+  release:
+    if: >-
+      github.event_name == 'issues' &&
+      github.event.issue.title == 'Crypto-Astro assistant generated refresh CI release request' &&
+      github.event.issue.user.login == 'AiBhrigu' &&
+      github.event.issue.author_association == 'OWNER' &&
+      github.actor == 'AiBhrigu'
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate release implementation
+        run: |
+          python -m unittest \
+            tools.crypto_astro_operations.test_verify_assistant_generated_refresh_ci_release \
+            tools.crypto_astro_operations.test_verify_generated_refresh_ci_release \
+            tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
+      - name: Release exact assistant-generated refresh CI
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          REPORT="$RUNNER_TEMP/assistant-generated-refresh-ci-release.json"
+          python -m tools.crypto_astro_operations.verify_assistant_generated_refresh_ci_release \
+            --repo "$GITHUB_REPOSITORY" \
+            --token "$GITHUB_TOKEN" \
+            --issue-number "$ISSUE_NUMBER" \
+            --report "$REPORT"
+          cat "$REPORT"
+          grep -q '"status": "PASS"' "$REPORT"
+          grep -q '"publication_mode": "EXPLICIT_AUTHORIZED_MERGE_ONLY"' "$REPORT"
+          echo ASSISTANT_GENERATED_REFRESH_CI_RELEASE=PASS
+          echo MERGE_ATTEMPT=ZERO
+          echo DEPLOY_ATTEMPT=ZERO
+      - name: Return release callback
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RELEASE_OUTCOME: ${{ steps.release.outcome }}
+        run: |
+          set -euo pipefail
+          if [ "$RELEASE_OUTCOME" = "success" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body $'SCHEMA=crypto_astro_assistant_generated_refresh_ci_release_callback_v0_1\nSTATUS=PASS\nTRUSTED_CI_RELEASE=PASS\nPUBLICATION_MODE=EXPLICIT_AUTHORIZED_MERGE_ONLY'
+            gh issue close "$ISSUE_NUMBER" --reason completed
+          else
+            gh issue comment "$ISSUE_NUMBER" --body $'SCHEMA=crypto_astro_assistant_generated_refresh_ci_release_callback_v0_1\nSTATUS=FAIL_CLOSED\nTRUSTED_CI_RELEASE=FAIL'
+          fi
+      - name: Upload release proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-astro-assistant-generated-refresh-ci-release-${{ github.run_id }}
+          path: ${{ runner.temp }}/assistant-generated-refresh-ci-release.json
+          if-no-files-found: ignore
