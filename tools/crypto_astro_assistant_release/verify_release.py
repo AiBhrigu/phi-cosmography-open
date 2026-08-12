@@ -181,6 +181,34 @@ def validate_pr_identity(
     return int(suffix), head_ref, head_sha, body
 
 
+def validate_rebound_pr(
+    pr: dict[str, Any],
+    repo: str,
+    *,
+    expected_head: str,
+    expected_generation: str,
+    expected_dispatch_issue: int,
+    expected_manual_id: int,
+    expected_head_ref: str,
+    expected_acceptance: str,
+) -> dict[str, Any]:
+    manual_after, head_ref_after, head_after, body_after = validate_pr_identity(
+        pr,
+        repo,
+        expected_head=expected_head,
+        expected_generation=expected_generation,
+        expected_dispatch_issue=expected_dispatch_issue,
+    )
+    if (
+        manual_after != expected_manual_id
+        or head_ref_after != expected_head_ref
+        or head_after != expected_head
+        or body_after["acceptance"] != expected_acceptance
+    ):
+        fail("BASE_OR_IDENTITY_DRIFT")
+    return body_after
+
+
 def compare_topology_only(gh: GitHub, repo: str, generation: str, current_main: str) -> set[str]:
     if generation == current_main:
         return set()
@@ -290,21 +318,18 @@ def run(repo: str, token: str, issue_number: int, report_path: Path) -> int:
             gh.request(f"/repos/{repo}/pulls/{pr_number}", "PATCH", {"body": new_body})
 
         pr_after, _ = gh.request(f"/repos/{repo}/pulls/{pr_number}")
-        manual_after, head_ref_after, head_after, body_after = validate_pr_identity(
+        if current_main_sha(gh, repo) != main:
+            fail("MAIN_MOVED_DURING_RELEASE")
+        validate_rebound_pr(
             pr_after,
             repo,
             expected_head=head_sha,
             expected_generation=expected_generation,
             expected_dispatch_issue=dispatch_issue_number,
+            expected_manual_id=manual_id,
+            expected_head_ref=head_ref,
+            expected_acceptance=main,
         )
-        if (
-            manual_after != manual_id
-            or head_ref_after != head_ref
-            or head_after != head_sha
-            or body_after["acceptance"] != main
-            or pr_after.get("base", {}).get("sha") != main
-        ):
-            fail("BASE_OR_IDENTITY_DRIFT")
 
         runs = wait_required_runs(gh, repo, head_sha)
         result = approve_and_wait(gh, repo, head_sha, runs)

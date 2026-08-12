@@ -11,11 +11,36 @@ from tools.crypto_astro_assistant_release.verify_release import (
     parse_pr_body,
     parse_release_issue,
     validate_dispatch_comments,
+    validate_pr_identity,
+    validate_rebound_pr,
 )
 
 REPO = "AiBhrigu/phi-cosmography-open"
 H = "b" * 40
 B = "a" * 40
+A = "c" * 40
+
+
+def generated_pr(*, base_ref: str = "main", base_sha: str = B, head_sha: str = H, acceptance: str = A):
+    return {
+        "state": "open",
+        "title": "Crypto-Astro: automated static market snapshot refresh",
+        "user": {"login": "github-actions[bot]"},
+        "base": {"ref": base_ref, "sha": base_sha},
+        "head": {
+            "ref": "automation/crypto-astro-static-refresh-123",
+            "sha": head_sha,
+            "repo": {"full_name": REPO},
+        },
+        "body": (
+            "- Refresh mode: DAILY_CADENCE\n"
+            "- Operator reference: CRYPTO_ASTRO_TIME_AXIS_AUTOMATION_20260812\n"
+            "- Reason: Accepted snapshot exceeded 18 hours.\n"
+            f"- Generation Base SHA: {B}\n"
+            f"- Acceptance Base SHA: {acceptance}\n"
+            "- Assistant dispatch issue: 360\n"
+        ),
+    }
 
 
 class T(unittest.TestCase):
@@ -132,6 +157,72 @@ class T(unittest.TestCase):
                 head_ref="automation/crypto-astro-static-refresh-123",
                 pr_number=361,
             )
+
+    def test_rebound_accepts_original_base_sha_with_current_acceptance(self):
+        body = validate_rebound_pr(
+            generated_pr(base_sha=B, acceptance=A),
+            REPO,
+            expected_head=H,
+            expected_generation=B,
+            expected_dispatch_issue=360,
+            expected_manual_id=123,
+            expected_head_ref="automation/crypto-astro-static-refresh-123",
+            expected_acceptance=A,
+        )
+        self.assertEqual(body["generation"], B)
+        self.assertEqual(body["acceptance"], A)
+
+    def test_rebound_still_requires_main_base_ref(self):
+        with self.assertRaisesRegex(GateError, "WRONG_BASE"):
+            validate_rebound_pr(
+                generated_pr(base_ref="other", base_sha=B, acceptance=A),
+                REPO,
+                expected_head=H,
+                expected_generation=B,
+                expected_dispatch_issue=360,
+                expected_manual_id=123,
+                expected_head_ref="automation/crypto-astro-static-refresh-123",
+                expected_acceptance=A,
+            )
+
+    def test_rebound_rejects_head_drift(self):
+        with self.assertRaisesRegex(GateError, "HEAD_DRIFT"):
+            validate_rebound_pr(
+                generated_pr(head_sha="d" * 40, acceptance=A),
+                REPO,
+                expected_head=H,
+                expected_generation=B,
+                expected_dispatch_issue=360,
+                expected_manual_id=123,
+                expected_head_ref="automation/crypto-astro-static-refresh-123",
+                expected_acceptance=A,
+            )
+
+    def test_rebound_rejects_acceptance_drift(self):
+        with self.assertRaisesRegex(GateError, "BASE_OR_IDENTITY_DRIFT"):
+            validate_rebound_pr(
+                generated_pr(acceptance=B),
+                REPO,
+                expected_head=H,
+                expected_generation=B,
+                expected_dispatch_issue=360,
+                expected_manual_id=123,
+                expected_head_ref="automation/crypto-astro-static-refresh-123",
+                expected_acceptance=A,
+            )
+
+    def test_validate_identity_preserves_generation(self):
+        manual_id, head_ref, head_sha, body = validate_pr_identity(
+            generated_pr(base_sha=B, acceptance=A),
+            REPO,
+            expected_head=H,
+            expected_generation=B,
+            expected_dispatch_issue=360,
+        )
+        self.assertEqual(manual_id, 123)
+        self.assertEqual(head_ref, "automation/crypto-astro-static-refresh-123")
+        self.assertEqual(head_sha, H)
+        self.assertEqual(body["generation"], B)
 
     def test_control_plane_scope_is_exact_three_files(self):
         self.assertEqual(
