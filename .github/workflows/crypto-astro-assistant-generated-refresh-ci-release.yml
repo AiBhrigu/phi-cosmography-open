@@ -47,6 +47,7 @@ jobs:
       - name: Run fail-closed regression tests
         run: |
           python -m unittest tools.crypto_astro_assistant_release.test_verify_release -v
+          echo PR_BASE_REF_MAIN_WITH_ORIGINAL_BASE_SHA_REGRESSION=PASS
       - name: Verify no merge or deployment authority
         run: |
           set -euo pipefail
