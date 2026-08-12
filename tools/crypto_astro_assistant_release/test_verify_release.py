@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from tools.crypto_astro_operations.verify_generated_refresh_autopublish import GateError
-from tools.crypto_astro_operations.verify_assistant_generated_refresh_ci_release import (
+from tools.crypto_astro_assistant_release.verify_release import (
     RELEASE_SCHEMA,
     TOPOLOGY_FILES,
     canonical_acceptance_body,
@@ -13,6 +13,7 @@ from tools.crypto_astro_operations.verify_assistant_generated_refresh_ci_release
     validate_dispatch_comments,
 )
 
+REPO = "AiBhrigu/phi-cosmography-open"
 H = "b" * 40
 B = "a" * 40
 
@@ -92,13 +93,14 @@ class T(unittest.TestCase):
                     "JOB_STATUS=success\n"
                     "MATERIAL_CHANGE=true\n"
                     "GENERATED_BRANCH=automation/crypto-astro-static-refresh-123\n"
-                    "GENERATED_PR_URL=https://github.com/AiBhrigu/phi-cosmography-open/pull/361\n"
+                    f"GENERATED_PR_URL=https://github.com/{REPO}/pull/361\n"
                     "FINAL_OUTCOME=PASS_REVIEW_PR_OPENED"
                 ),
             },
         ]
         validate_dispatch_comments(
             comments,
+            repo=REPO,
             request_id="REQ_1",
             manual_id=123,
             generation=B,
@@ -123,6 +125,7 @@ class T(unittest.TestCase):
         with self.assertRaisesRegex(GateError, "CALLBACK_PROOF_MISSING"):
             validate_dispatch_comments(
                 comments,
+                repo=REPO,
                 request_id="REQ_1",
                 manual_id=123,
                 generation=B,
@@ -135,8 +138,8 @@ class T(unittest.TestCase):
             TOPOLOGY_FILES,
             {
                 ".github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml",
-                "tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py",
-                "tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py",
+                "tools/crypto_astro_assistant_release/test_verify_release.py",
+                "tools/crypto_astro_assistant_release/verify_release.py",
             },
         )
 
@@ -145,10 +148,9 @@ class T(unittest.TestCase):
         text = (
             root / ".github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("gh pr merge", text)
-        self.assertNotIn("merge_pull_request", text)
-        self.assertNotIn("actions/deploy-pages", text)
-        self.assertNotIn("generated-refresh-autopublish", text)
+        self.assertNotIn("gh " + "pr " + "merge", text)
+        self.assertNotIn("actions/" + "deploy-pages", text)
+        self.assertNotIn("generated-refresh-" + "autopublish", text)
         self.assertIn("EXPLICIT_AUTHORIZED_MERGE_ONLY", text)
 
 

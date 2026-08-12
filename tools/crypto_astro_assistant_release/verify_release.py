@@ -39,8 +39,8 @@ RELEASE_SCHEMA = "crypto_astro_assistant_generated_refresh_ci_release_request_v0
 CALLBACK_SCHEMA = "crypto_astro_assistant_generated_refresh_ci_release_callback_v0_1"
 TOPOLOGY_FILES = {
     ".github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml",
-    "tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py",
-    "tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py",
+    "tools/crypto_astro_assistant_release/verify_release.py",
+    "tools/crypto_astro_assistant_release/test_verify_release.py",
 }
 
 
@@ -104,6 +104,7 @@ def parse_comment(body: str) -> dict[str, str]:
 def validate_dispatch_comments(
     comments: list[dict[str, Any]],
     *,
+    repo: str,
     request_id: str,
     manual_id: int,
     generation: str,
@@ -112,7 +113,7 @@ def validate_dispatch_comments(
 ) -> None:
     accepted = False
     callback = False
-    expected_pr_url = f"https://github.com/AiBhrigu/phi-cosmography-open/pull/{pr_number}"
+    expected_pr_url = f"https://github.com/{repo}/pull/{pr_number}"
     for comment in comments:
         if comment.get("user", {}).get("login") != "github-actions[bot]":
             continue
@@ -274,6 +275,7 @@ def run(repo: str, token: str, issue_number: int, report_path: Path) -> int:
         comments, _ = gh.request(f"/repos/{repo}/issues/{dispatch_issue_number}/comments?per_page=100")
         validate_dispatch_comments(
             comments,
+            repo=repo,
             request_id=request.request_id,
             manual_id=manual_id,
             generation=expected_generation,

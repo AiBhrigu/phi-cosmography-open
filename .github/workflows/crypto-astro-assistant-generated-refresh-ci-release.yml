@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml'
-      - 'tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py'
-      - 'tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py'
+      - 'tools/crypto_astro_assistant_release/verify_release.py'
+      - 'tools/crypto_astro_assistant_release/test_verify_release.py'
   issues:
     types: [opened]
 
@@ -38,22 +38,21 @@ jobs:
           git diff --name-only "$BASE" "$HEAD_SHA" | sort > /tmp/changed.txt
           cat > /tmp/expected.txt <<'EOF'
           .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
-          tools/crypto_astro_operations/test_verify_assistant_generated_refresh_ci_release.py
-          tools/crypto_astro_operations/verify_assistant_generated_refresh_ci_release.py
+          tools/crypto_astro_assistant_release/test_verify_release.py
+          tools/crypto_astro_assistant_release/verify_release.py
           EOF
           sort -o /tmp/expected.txt /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/changed.txt
           echo ASSISTANT_GENERATED_REFRESH_CI_RELEASE_SCOPE=PASS
       - name: Run fail-closed regression tests
         run: |
-          python -m unittest \
-            tools.crypto_astro_operations.test_verify_assistant_generated_refresh_ci_release -v
+          python -m unittest tools.crypto_astro_assistant_release.test_verify_release -v
       - name: Verify no merge or deployment authority
         run: |
           set -euo pipefail
-          ! grep -q 'gh pr merge' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
-          ! grep -q 'actions/deploy-pages' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
-          ! grep -q 'generated-refresh-autopublish' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -Eq 'gh[[:space:]]+pr[[:space:]]+merge' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -Eq 'actions/deploy-pages' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
+          ! grep -Eq 'generated-refresh-autopublish' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
           grep -q 'EXPLICIT_AUTHORIZED_MERGE_ONLY' .github/workflows/crypto-astro-assistant-generated-refresh-ci-release.yml
           echo ASSISTANT_RELEASE_MERGE_AUTHORITY=ZERO
           echo ASSISTANT_RELEASE_DEPLOY_AUTHORITY=ZERO
@@ -83,7 +82,7 @@ jobs:
       - name: Validate release implementation
         run: |
           python -m unittest \
-            tools.crypto_astro_operations.test_verify_assistant_generated_refresh_ci_release \
+            tools.crypto_astro_assistant_release.test_verify_release \
             tools.crypto_astro_operations.test_verify_generated_refresh_ci_release \
             tools.crypto_astro_operations.test_verify_generated_refresh_autopublish -v
       - name: Release exact assistant-generated refresh CI
@@ -94,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           REPORT="$RUNNER_TEMP/assistant-generated-refresh-ci-release.json"
-          python -m tools.crypto_astro_operations.verify_assistant_generated_refresh_ci_release \
+          python -m tools.crypto_astro_assistant_release.verify_release \
             --repo "$GITHUB_REPOSITORY" \
             --token "$GITHUB_TOKEN" \
             --issue-number "$ISSUE_NUMBER" \
