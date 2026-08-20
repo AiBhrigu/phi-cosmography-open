@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-08-19T17:58:47Z
+GENERATED_AT_UTC=2026-08-20T14:54:35Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=CRYPTO_ASTRO_OPERATOR_REFRESH_20260819
-REFRESH_REASON=Operator-authorized refresh after exact preflight PASS; accepted snapshot exceeded the 18-hour minimum interval while single-flight is clear. Refresh static market evidence and rebuild the exact bounded public snapshot package.
+OPERATOR_REF=CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_32382894700
+REFRESH_REASON=Automatic scheduler source probe PASS; scheduler_run_id=32382894700; base_sha=cad99f1b43486447cd325f6826fff2c704254cfd
 
 ## Changed modules
 
