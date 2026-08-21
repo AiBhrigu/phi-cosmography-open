@@ -361,7 +361,7 @@ jobs:
             site/theme/crypto_astro
 
       - name: Prove dispatch runtime and public surface unchanged for bounded repairs
-        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'trusted_ci_topology_repair' && steps.scope.outputs.mode != 'trusted_ci_release_runtime_repair' && steps.scope.outputs.mode != 'trusted_ci_to_autopublish_handoff' && steps.scope.outputs.mode != 'natural_cycle_trusted_release_handoff' && steps.scope.outputs.mode != 'cadence_boundary_compat_repair'
+        if: steps.scope.outputs.mode != 'assistant_dispatch' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'trusted_ci_topology_repair' && steps.scope.outputs.mode != 'trusted_ci_release_runtime_repair' && steps.scope.outputs.mode != 'trusted_ci_to_autopublish_handoff' && steps.scope.outputs.mode != 'natural_cycle_trusted_release_handoff' && steps.scope.outputs.mode != 'cadence_boundary_compat_repair' && steps.scope.outputs.mode != 'public_link_canonicalization'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
