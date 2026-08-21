@@ -50,6 +50,19 @@ jobs:
           import os
           import subprocess
 
+          public_link_canonicalization_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+              'site/crypto-astro/index.html',
+              'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+              'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
           assistant_dispatch_scope = {
               ".github/workflows/crypto-astro-assistant-dispatch.yml",
               ".github/workflows/crypto-astro-assistant-dispatch-pr.yml",
@@ -234,7 +247,10 @@ jobs:
                   ["git", "diff", "--name-only", base, os.environ["HEAD_SHA"]], text=True
               ).splitlines()
           )
-          if changed == cadence_boundary_compat_repair_scope:
+          if changed == public_link_canonicalization_scope:
+              mode = 'public_link_canonicalization'
+              print('ASSISTANT_DISPATCH_PUBLIC_LINK_CANONICALIZATION_SCOPE=PASS')
+          elif changed == cadence_boundary_compat_repair_scope:
               mode = "cadence_boundary_compat_repair"
               print("ASSISTANT_DISPATCH_CADENCE_BOUNDARY_COMPAT_REPAIR_SCOPE=PASS")
           elif changed == natural_cycle_trusted_release_handoff_scope:

@@ -158,6 +158,8 @@ jobs:
             'tools/crypto_astro_what_changed/verify_what_changed.py',
           }
           public_link_canonicalization_scope = {
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
               '.github/workflows/crypto-astro-editorial-composition-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
@@ -661,6 +663,8 @@ jobs:
           python - <<'PY'
           import os, subprocess
           expected = {
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
               '.github/workflows/crypto-astro-editorial-composition-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
