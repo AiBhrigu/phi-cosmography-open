@@ -103,7 +103,8 @@ jobs:
               hero_text=page.locator('.editorial-orientation-v0-1__trust').text_content() or ''
               btc_text=page.locator('#btc-phi-cycle-hub').text_content() or ''
               btc_aria=page.locator('.btc-field-v1').get_attribute('aria-label') or ''
-              cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()
+              overview_cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc"]').count()
+              question_cta_count=page.locator('a[href="https://www.bhrigu.io/crypto-astro/btc/clean-chat?lang=en"]').count()
               core=page.locator('.btc-quiet-phi-core-v0-3')
               core_text=core.text_content() or ''
               core_style=core.get_attribute('style')
@@ -155,7 +156,8 @@ jobs:
                 'btc_timestamp_present':generated in btc_text,
                 'btc_aria':btc_aria,
                 'expected_btc_aria_fragment':f'BTC dominance is {dominance_number} percent',
-                'cta_count':cta_count,
+                'overview_cta_count':overview_cta_count,
+                'question_cta_count':question_cta_count,
                 'core_dominance_present':dominance in core_text,
                 'core_style':core_style,
                 'expected_core_style':f'--btc-dominance:{dominance};',
@@ -178,7 +180,8 @@ jobs:
               assert hero_timestamp in hero_text, evidence
               assert generated in btc_text, evidence
               assert f'BTC dominance is {dominance_number} percent' in btc_aria, evidence
-              assert cta_count==2, evidence
+              assert overview_cta_count==1, evidence
+              assert question_cta_count==1, evidence
               assert dominance in core_text, evidence
               assert core_style==f'--btc-dominance:{dominance};', evidence
               assert semantic_nodes.count()==5, evidence

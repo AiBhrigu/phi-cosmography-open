@@ -157,6 +157,19 @@ jobs:
             'tools/crypto_astro_public_http_proof/verify_public_http_proof.py',
             'tools/crypto_astro_what_changed/verify_what_changed.py',
           }
+          public_link_canonicalization_scope = {
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+              'site/crypto-astro/index.html',
+              'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+              'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
           timestamp_consistency_repair = {
             '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
             '.github/workflows/crypto-astro-operational-cadence-pr.yml',
@@ -337,6 +350,9 @@ jobs:
           elif changed == producer_public_identity:
             mode='producer_public_identity'
             print('SNAPSHOT_MEMORY_PRODUCER_PUBLIC_IDENTITY_FILE_SCOPE=PASS')
+          elif changed == public_link_canonicalization_scope:
+            mode='public_link_canonicalization'
+            print('SNAPSHOT_MEMORY_PUBLIC_LINK_CANONICALIZATION_FILE_SCOPE=PASS')
           elif changed in (timestamp_consistency_repair, timestamp_consistency_data_repair):
             mode='timestamp_consistency_repair'
           elif changed == maintenance:
@@ -367,6 +383,7 @@ jobs:
               'btc_phi_semantic_geometry_missing':sorted(btc_phi_semantic_geometry-changed),
               'public_service_truth_alignment_missing':sorted(public_service_truth_alignment-changed),
               'producer_public_identity_missing':sorted(producer_public_identity-changed),
+              'public_link_canonicalization_missing':sorted(public_link_canonicalization_scope-changed),
               'timestamp_consistency_repair_missing':sorted(timestamp_consistency_repair-changed),
               'maintenance_missing':sorted(maintenance-changed),
               'cadence_maintenance_missing':sorted(cadence_maintenance-changed),
@@ -375,7 +392,7 @@ jobs:
               'freshness_policy_scope_missing':sorted(freshness_policy_scope-changed),
               'freshness_policy_scope_applicability_repair_missing':sorted(freshness_policy_scope_applicability_repair-changed),
               'generated_missing':sorted(generated-changed),
-              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-freshness_policy_scope-freshness_policy_scope_applicability_repair-generated-optional),
+              'unexpected':sorted(changed-implementation-squash_merge_ancestry_repair-runtime_registry_test_repair-workflow_applicability_repair-btc_phi_semantic_geometry-public_service_truth_alignment-producer_public_identity-public_link_canonicalization_scope-timestamp_consistency_repair-maintenance-cadence_maintenance-assistant_dispatch_maintenance-consumer_repair-freshness_policy_scope-freshness_policy_scope_applicability_repair-generated-optional),
             })
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write(f'mode={mode}\n')
           print(f'SNAPSHOT_MEMORY_SCOPE={mode}')
@@ -637,8 +654,40 @@ jobs:
             site/theme \
             docs/crypto-astro-service \
             tools/crypto_astro_snapshot_memory
+      - name: Prove public link canonicalization preserves data authority
+        if: steps.scope.outputs.mode == 'public_link_canonicalization'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          expected = {
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-editorial-composition-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              '.github/workflows/crypto-astro-static-refresh-pr-visual.yml',
+              'site/crypto-astro/index.html',
+              'tools/crypto_astro_editorial_composition/apply_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/test_verify_editorial_composition.py',
+              'tools/crypto_astro_editorial_composition/verify_editorial_composition.py',
+              'tools/crypto_astro_what_changed/verify_what_changed.py',
+          }
+          base=subprocess.check_output(['git','merge-base',os.environ['BASE_SHA'],os.environ['HEAD_SHA']], text=True).strip()
+          changed=set(subprocess.check_output(['git','diff','--name-only',base,os.environ['HEAD_SHA']], text=True).splitlines())
+          assert changed == expected, {'changed':sorted(changed),'expected':sorted(expected)}
+          html=subprocess.check_output(['git','show',f"{os.environ['HEAD_SHA']}:site/crypto-astro/index.html"], text=True)
+          assert html.count('href="https://www.bhrigu.io/crypto-astro/btc"') == 1
+          assert html.count('href="https://www.bhrigu.io/crypto-astro/btc/clean-chat?lang=en"') == 1
+          assert '/crypto-astro/btc/live' not in html
+          print('SNAPSHOT_MEMORY_PUBLIC_LINK_CANONICALIZATION=PASS')
+          PY
+          BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          git diff --exit-code "$BASE" "$HEAD_SHA" -- site/crypto-astro/data docs/crypto-astro-service
       - name: Prove non-generated scope leaves canonical public data and HTML unchanged
-        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity'
+        if: steps.scope.outputs.mode != 'generated_refresh' && steps.scope.outputs.mode != 'automatic_refresh_activation' && steps.scope.outputs.mode != 'squash_merge_ancestry_repair' && steps.scope.outputs.mode != 'timestamp_consistency_repair' && steps.scope.outputs.mode != 'public_service_truth_alignment' && steps.scope.outputs.mode != 'producer_public_identity' && steps.scope.outputs.mode != 'public_link_canonicalization'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

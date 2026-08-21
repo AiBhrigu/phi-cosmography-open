@@ -18,7 +18,8 @@ CHAPTERS = [
     'data-editorial-chapter="trust-access"',
 ]
 NAV_TARGETS = ["#surface", "#what-changed", "#btc-phi-cycle-hub", "#market", "#trust-access"]
-PRIMARY_HREF = "https://www.bhrigu.io/crypto-astro/btc"
+OVERVIEW_HREF = "https://www.bhrigu.io/crypto-astro/btc"
+QUESTION_HREF = "https://www.bhrigu.io/crypto-astro/btc/clean-chat?lang=en"
 REQUIRED_VALUES = [
     "$2.287T",
     "$40.71B",
@@ -76,13 +77,18 @@ def verify(html: str) -> dict[str, object]:
     else:
         first_level = html[:proof_index]
 
-    primary_ctas = re.findall(
-        rf'<a[^>]+href="{re.escape(PRIMARY_HREF)}"[^>]*>.*?Ask one BTC field question.*?</a>',
+    overview_ctas = re.findall(
+        rf'<a[^>]+href="{re.escape(OVERVIEW_HREF)}"[^>]*>.*?OPEN BTC FIELD.*?</a>',
         first_level,
         flags=re.S,
     )
-    if len(primary_ctas) != 2:
-        failures.append("primary_cta_two_consistent_placements")
+    question_ctas = re.findall(
+        rf'<a[^>]+href="{re.escape(QUESTION_HREF)}"[^>]*>.*?Ask one BTC field question.*?</a>',
+        first_level,
+        flags=re.S,
+    )
+    if len(overview_ctas) != 1 or len(question_ctas) != 1:
+        failures.append("btc_entry_route_split")
 
     if first_level.count('href="https://www.bhrigu.io/access"') != 1:
         failures.append("one_first_level_research_access_route")
@@ -129,7 +135,8 @@ def verify(html: str) -> dict[str, object]:
         "measurements": {
             "chapter_count": len([position for position in positions if position >= 0]),
             "navigation_targets": nav_targets,
-            "primary_cta_count": len(primary_ctas),
+            "overview_cta_count": len(overview_ctas),
+            "question_cta_count": len(question_ctas),
             "first_level_research_access_count": first_level.count('href="https://www.bhrigu.io/access"'),
             "first_level_proof_link_count": first_level.count('href="#proof"'),
             "first_level_word_count": word_count,
