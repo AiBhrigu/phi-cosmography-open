@@ -2,10 +2,10 @@
 
 NODE=V9_CRYPTO_ASTRO_ALL_MODULE_STATIC_REFRESH_LOCAL_ATOM_SCOPE_v0_1
 STATUS=PASS_PENDING_VISUAL_REVIEW
-GENERATED_AT_UTC=2026-08-27T09:46:25Z
+GENERATED_AT_UTC=2026-08-28T18:08:42Z
 REFRESH_MODE=DAILY_CADENCE
-OPERATOR_REF=CRYPTO_ASTRO_AUTOMATIC_24H_REFRESH_RUN_33060043357
-REFRESH_REASON=Automatic scheduler source probe PASS; scheduler_run_id=33060043357; base_sha=efc30e65f0a90395685857dee00f515776babce7
+OPERATOR_REF=CRYPTO_ASTRO_FRESHNESS_RESTORE_20260828
+REFRESH_REASON=Restore stale public snapshot from exact current main using existing hardened static refresh. Preserve source and methodology contracts. No merge or production mutation.
 
 ## Changed modules
 
