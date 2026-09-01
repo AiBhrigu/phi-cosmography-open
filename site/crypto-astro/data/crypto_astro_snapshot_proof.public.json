@@ -1,63 +1,63 @@
 {
   "schema_version": "crypto_astro_snapshot_proof_public_v0_1",
-  "generated_at_utc": "2026-08-31T13:47:04Z",
+  "generated_at_utc": "2026-09-01T10:05:31Z",
   "source_mode": "static_public_snapshot",
   "sources": [
     {
       "label": "coingecko_global",
       "url": "https://api.coingecko.com/api/v3/global",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "cc23ca2aaf4b5c6df3aaede481935769fda1fbdf78f4d7e65206cfb4fbf1024f",
-      "bytes": 3962
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "7bb4ad0ac8136f23930cdd6b7e0f3b8f998cf3ece810e7c1fcb279d4f52da126",
+      "bytes": 3949
     },
     {
       "label": "coingecko_asset_markets_btc_eth_sol_ton_icp",
       "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin%2Cethereum%2Csolana%2Cthe-open-network%2Cinternet-computer&price_change_percentage=1h%2C24h%2C7d%2C30d&sparkline=false",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "000fd480c43e878863a8332f7717b1db2d1a2d463b5f73f8644c599d9cd6557a",
-      "bytes": 5307
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "71ae3c7c6ecdd981e7a44c6ee0a9647c54d13defd3c7d8bfb83aabbae61e1397",
+      "bytes": 5267
     },
     {
       "label": "coingecko_top250_markets",
       "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&price_change_percentage=1h%2C24h%2C7d%2C30d&sparkline=false",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "71b29065cb433a65e8c28ff451c7e966e2038710d4791081dc829409153f27ed",
-      "bytes": 262551
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "36ed6056b3c727c3c73d040e164eaf5508b06da60b4eb49eea470cfcb04a7bb7",
+      "bytes": 260899
     },
     {
       "label": "coingecko_stablecoin_sample",
       "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether%2Cusd-coin%2Cusde%2Cdai%2Cusds%2Cethena-usde%2Cfirst-digital-usd%2Cpaypal-usd%2Cfrax%2Ctrue-usd%2Cpax-dollar%2Cusdd%2Cusdb%2Clusd%2Ccrvusd&order=market_cap_desc&per_page=100&page=1&sparkline=false",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "00a3efe7be21e1a2a9d05c419d499933e2538f0ebc8382dae90548afa20a7073",
-      "bytes": 10799
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "00977380731eff0f80422bcf305138ba7816f55ff81b156e55afcdaf0e1dbd0b",
+      "bytes": 10705
     },
     {
       "label": "defillama_protocols",
       "url": "https://api.llama.fi/v2/historicalChainTvl",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "6df4a2d2652274295e6b11471c5b120fec359ea0343db44f87ed1d1adee9707a",
-      "bytes": 134079
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "a5d2dffe18678de9de5b1b2dcbb0f31b3fd4c88322cef462b42cc307775200b8",
+      "bytes": 134121
     },
     {
       "label": "defillama_dex_overview",
       "url": "https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "79ee20cb7c495dfbcdf8fd80c8db67f70c07384a92d4c60c5311247c42000853",
-      "bytes": 1926150
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "c0ad5e5569394c2aba2eca3fc877fb9e934b814abc828c33a9a6b7871380617c",
+      "bytes": 1929144
     },
     {
       "label": "defillama_stablecoins",
       "url": "https://stablecoins.llama.fi/stablecoins?includePrices=true",
       "status": "PASS",
-      "fetched_at_utc": "2026-08-31T13:47:05Z",
-      "sha256": "4916e8e6bf2044ef285dcffd3136a82012922431ef38673f1aa1df5ae1d22402",
-      "bytes": 586923
+      "fetched_at_utc": "2026-09-01T10:05:32Z",
+      "sha256": "c4b478d9fa33e38e012d6e60341a039afff930c6ed1ddc551a8b419edf230ca3",
+      "bytes": 588272
     }
   ],
   "boundary": {
