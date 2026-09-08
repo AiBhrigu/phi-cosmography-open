@@ -1,7 +1,7 @@
 {
   "schema_version": "crypto_astro_market_field_public_v0_2",
   "snapshot_mode": "public_safe_market_field",
-  "updated_at_utc": "2026-09-08T01:12:09Z",
+  "updated_at_utc": "2026-09-08T21:51:14Z",
   "source_mode": "static_public_snapshot",
   "derived_from": "site/crypto-astro/data/crypto_astro_snapshot.public.json",
   "derived_status": "DERIVED_FROM_CANONICAL_SNAPSHOT",
@@ -19,23 +19,23 @@
     "M_market": {
       "state": "market_vector_active",
       "source_class": "public_market_liquidity",
-      "total_market_cap_usd": 2685068221814.988,
-      "market_cap_change_24h_pct": -3.5128002232699607,
-      "volume_24h_usd": 73011882558.0115,
-      "btc_dominance_pct": 59.11988110875428,
-      "stablecoin_share_pct": 11.583949441829617,
-      "stablecoin_cap_usd": 311036945293.6817,
-      "defi_tvl_usd": 87562782417.0,
+      "total_market_cap_usd": 2695109269652.439,
+      "market_cap_change_24h_pct": -2.310787397565244,
+      "volume_24h_usd": 91518213446.49751,
+      "btc_dominance_pct": 58.374155052582275,
+      "stablecoin_share_pct": 11.541784532157564,
+      "stablecoin_cap_usd": 311063704809.48987,
+      "defi_tvl_usd": 87721762716.0,
       "defi_tvl_source_label": "defillama_protocols",
       "defi_tvl_canonical_source_id": "defillama_global_tvl_ex_double_count",
       "defi_tvl_source_url": "https://api.llama.fi/v2/historicalChainTvl",
-      "defi_tvl_source_timestamp_utc": "2026-09-07T00:00:00Z",
+      "defi_tvl_source_timestamp_utc": "2026-09-08T00:00:00Z",
       "defi_tvl_methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
       "defi_tvl_methodology": "DefiLlama /v2/historicalChainTvl latest point; excludes liquid staking and double-counted TVL.",
       "defi_tvl_excludes_liquid_staking": true,
       "defi_tvl_excludes_double_counted": true,
-      "dex_volume_24h_usd": 10295841466.259998,
-      "market_breadth_pct": 47.1,
+      "dex_volume_24h_usd": 10304281954.81,
+      "market_breadth_pct": 44.1,
       "liquidity_health": "context fresh"
     },
     "CT_context": {
@@ -47,7 +47,7 @@
     }
   },
   "field_output": {
-    "market_field_score": 76.0,
+    "market_field_score": 80.0,
     "regime_label": "Balanced Expansion",
     "direction_bias": "Neutral → Bullish",
     "continuation_label": "Scenario-only continuation map",
@@ -55,8 +55,8 @@
   },
   "probability_continuation": {
     "base_path_pct": 65,
-    "expansion_path_pct": 17,
-    "compression_reversal_pct": 18,
+    "expansion_path_pct": 19,
+    "compression_reversal_pct": 16,
     "window_label": "7D",
     "boundary": "Scenario continuation only. Not a price forecast. Not a trading signal."
   },
