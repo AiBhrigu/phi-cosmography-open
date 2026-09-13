@@ -19,73 +19,73 @@
     "ui_binding_opened": true
   },
   "comparison_status": "FULL_COMPARABLE",
-  "current_snapshot_id": "crypto-astro:2026-09-12T17:08:49Z:e407e8b6d896",
-  "generated_at_utc": "2026-09-12T17:08:49Z",
+  "current_snapshot_id": "crypto-astro:2026-09-13T14:26:42Z:51073e808721",
+  "generated_at_utc": "2026-09-13T14:26:42Z",
   "metrics": {
     "alt_breadth_24h_pct": {
-      "current_value": "37.0",
+      "current_value": "36.6",
       "delta_unit": "percentage_points",
       "direction": "DOWN",
-      "display_delta": "-20.6",
+      "display_delta": "-0.4",
       "display_precision": 1,
       "methodology_id": "top250_nonstable_ex_btc_positive_breadth_24h_v0_1",
       "path": "altcoin_rotation.alt_breadth_24h_pct",
-      "previous_value": "57.6",
+      "previous_value": "37.0",
       "proof_sources": [
         "coingecko_top250_markets"
       ],
-      "raw_delta": "-20.6",
+      "raw_delta": "-0.4",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
     "alt_breadth_7d_pct": {
-      "current_value": "40.8",
+      "current_value": "31.9",
       "delta_unit": "percentage_points",
       "direction": "DOWN",
-      "display_delta": "-10.0",
+      "display_delta": "-8.9",
       "display_precision": 1,
       "methodology_id": "top250_nonstable_ex_btc_positive_breadth_7d_v0_1",
       "path": "altcoin_rotation.alt_breadth_7d_pct",
-      "previous_value": "50.8",
+      "previous_value": "40.8",
       "proof_sources": [
         "coingecko_top250_markets"
       ],
-      "raw_delta": "-10.0",
+      "raw_delta": "-8.9",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
     "btc_gravity_pct": {
-      "current_value": "58.208320058762475",
+      "current_value": "58.8519306881855",
       "delta_unit": "percentage_points",
       "direction": "UP",
-      "display_delta": "+0.06",
+      "display_delta": "+0.64",
       "display_precision": 2,
       "methodology_id": "coingecko_global_btc_dominance_direct_v0_1",
       "path": "market_reality.btc_dominance_pct",
-      "previous_value": "58.14816177525902",
+      "previous_value": "58.208320058762475",
       "proof_sources": [
         "coingecko_global"
       ],
-      "raw_delta": "0.060158283503455",
+      "raw_delta": "0.643610629423025",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     },
     "defi_tvl_usd": {
-      "current_value": "88591129225.0",
+      "current_value": "87490885348.0",
       "delta_unit": "usd",
-      "direction": "UP",
-      "display_delta": "+97551590",
+      "direction": "DOWN",
+      "display_delta": "-1100243877",
       "display_precision": 0,
       "methodology_id": "defillama_historical_chain_tvl_ex_double_count_v0_1",
       "path": "liquidity_tvl.defi_tvl_usd",
-      "previous_value": "88493577635.0",
+      "previous_value": "88591129225.0",
       "proof_sources": [
         "defillama_tvl_methodology_source"
       ],
-      "raw_delta": "97551590.0",
+      "raw_delta": "-1100243877.0",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "usd"
@@ -104,20 +104,20 @@
       "unit": "state"
     },
     "market_field_score": {
-      "current_value": "68.0",
+      "current_value": "67.0",
       "delta_unit": "score_points",
       "direction": "DOWN",
-      "display_delta": "-20.0",
+      "display_delta": "-1.0",
       "display_precision": 1,
       "methodology_id": "public_market_field_score_v0_1",
       "path": "field_output.market_field_score",
-      "previous_value": "88.0",
+      "previous_value": "68.0",
       "proof_sources": [
         "coingecko_global",
         "coingecko_top250_markets",
         "defillama_stablecoins"
       ],
-      "raw_delta": "-20.0",
+      "raw_delta": "-1.0",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "score_0_100"
@@ -138,25 +138,25 @@
       "unit": "state"
     },
     "stablecoin_share_pct": {
-      "current_value": "11.722119205752453",
+      "current_value": "11.857843176467211",
       "delta_unit": "percentage_points",
       "direction": "UP",
-      "display_delta": "+0.03",
+      "display_delta": "+0.14",
       "display_precision": 2,
       "methodology_id": "stablecoin_share_prefer_llama_then_coingecko_over_total_cap_v0_1",
       "path": "market_reality.stablecoin_share_pct",
-      "previous_value": "11.69394947678835",
+      "previous_value": "11.722119205752453",
       "proof_sources": [
         "defillama_stablecoins",
         "coingecko_global"
       ],
-      "raw_delta": "0.028169728964103",
+      "raw_delta": "0.135723970714758",
       "status": "COMPARABLE",
       "type": "NUMERIC",
       "unit": "percent"
     }
   },
-  "previous_snapshot_id": "crypto-astro:2026-09-11T18:31:45Z:39f0cbbc5be9",
+  "previous_snapshot_id": "crypto-astro:2026-09-12T17:08:49Z:e407e8b6d896",
   "schema_version": "crypto_astro_snapshot_delta_public_v0_2",
   "unavailable_metrics": {}
 }
