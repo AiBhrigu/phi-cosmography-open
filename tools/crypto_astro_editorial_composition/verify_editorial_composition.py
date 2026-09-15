@@ -95,6 +95,14 @@ def verify(html: str) -> dict[str, object]:
     if first_level.count('href="#proof"') != 1:
         failures.append("one_first_level_proof_route")
 
+    support_href = 'href="https://www.bhrigu.io/support"'
+    if first_level.count(support_href) != 0:
+        failures.append("support_route_not_first_level")
+    if html.count(support_href) != 1:
+        failures.append("one_proof_support_route")
+    if proof_index >= 0 and support_href not in html[proof_index:]:
+        failures.append("support_route_inside_proof")
+
     if "Previous verified snapshot is not yet available." not in first_level:
         failures.append("what_changed_fail_closed_fallback")
     if first_level.count("Research context only. No trading signal, forecast, price target, or investment advice.") != 1:
