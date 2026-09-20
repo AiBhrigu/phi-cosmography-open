@@ -16,7 +16,7 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
 <section id="btc-phi-cycle-hub" data-editorial-chapter="btc-field"><a href="https://www.bhrigu.io/crypto-astro/btc/clean-chat?lang=en">Ask one BTC field question</a></section>
 <section id="market" data-editorial-chapter="wider-market">{values} {filler}</section>
 <section id="trust-access" data-editorial-chapter="trust-access"><a href="#proof">View source proof</a><a href="https://www.bhrigu.io/access">Research access</a>Research context only. No trading signal, forecast, price target, or investment advice.</section>
-<details id="proof"><summary>Proof</summary></details>
+<details id="proof"><summary>Proof</summary><a href="https://www.bhrigu.io/support">Support with Bitcoin</a></details>
 </main>'''
 
     def test_accepts_canonical_shape(self) -> None:
@@ -56,6 +56,16 @@ class EditorialCompositionVerifierTests(unittest.TestCase):
     def test_rejects_missing_previous_snapshot_fallback(self) -> None:
         report = verify(self.sample().replace("Previous verified snapshot is not yet available.", ""))
         self.assertIn("what_changed_fail_closed_fallback", report["failures"])
+
+    def test_rejects_support_route_on_first_level(self) -> None:
+        value = self.sample().replace(
+            '<section id="trust-access"',
+            '<a href="https://www.bhrigu.io/support">Support with Bitcoin</a><section id="trust-access"',
+            1,
+        )
+        report = verify(value)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertIn("support_route_not_first_level", report["failures"])
 
 
 if __name__ == "__main__":

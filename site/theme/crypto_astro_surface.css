@@ -4569,3 +4569,24 @@
     grid-column: 1 / -1;
   }
 }
+/* CRYPTO_ASTRO_PUBLIC_PROOF_SUPPORT_ROUTE_v0_1:BEGIN */
+.proof-depth-appendix-v0-1__body > .crypto-astro-public-sample-web-panel-v0-1 {
+  padding-bottom: 8px;
+}
+
+.editorial-support-route-v0-1 {
+  margin-top: 14px;
+}
+
+.editorial-support-route-v0-1 .editorial-support-route-v0-1__cta {
+  border-color: rgba(216, 186, 112, 0.46);
+  color: var(--phi-gold, #d8ba70);
+  background: rgba(216, 186, 112, 0.08);
+}
+
+.editorial-support-route-v0-1 .editorial-support-route-v0-1__cta:hover,
+.editorial-support-route-v0-1 .editorial-support-route-v0-1__cta:focus-visible {
+  border-color: rgba(216, 186, 112, 0.72);
+  background: rgba(216, 186, 112, 0.14);
+}
+/* CRYPTO_ASTRO_PUBLIC_PROOF_SUPPORT_ROUTE_v0_1:END */
