@@ -91,7 +91,7 @@ class T(unittest.TestCase):
         def now(): return clock[0]
         def sleep(seconds): clock[0] += seconds
         with patch.object(release.time,"time",side_effect=now), patch.object(release.time,"sleep",side_effect=sleep):
-            out=release.wait_required_runs(GH(),H)
+            out=release.wait_required_runs(GH(),REPO,H)
         self.assertEqual(set(out),REQUIRED_WORKFLOWS)
         self.assertGreater(clock[0],120)
         self.assertLess(clock[0],release.REQUIRED_WORKFLOW_DISCOVERY_TIMEOUT_SECONDS)
