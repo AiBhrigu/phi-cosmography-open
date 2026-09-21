@@ -28,6 +28,8 @@ TOPOLOGY_FILES = {
     'tools/crypto_astro_operations/verify_operational_cadence.py',
 }
 WRITE_TOKEN = re.compile(r"^\s*(contents|actions|pull-requests|issues|checks|deployments|packages|statuses|id-token):\s*write\s*$", re.M)
+REQUIRED_WORKFLOW_DISCOVERY_TIMEOUT_SECONDS = 300
+REQUIRED_WORKFLOW_DISCOVERY_POLL_SECONDS = 4
 
 def fail(msg: str): raise GateError(msg)
 
@@ -139,12 +141,12 @@ def required_runs(gh: GitHub, repo: str, head_sha: str, allow_missing: bool=Fals
     if missing and not allow_missing: fail(f"MISSING_REQUIRED_WORKFLOWS:{sorted(missing)}")
     return out
 
-def wait_required_runs(gh: GitHub, repo: str, head_sha: str, timeout: int=120) -> dict[str,dict[str,Any]]:
+def wait_required_runs(gh: GitHub, repo: str, head_sha: str, timeout: int=REQUIRED_WORKFLOW_DISCOVERY_TIMEOUT_SECONDS) -> dict[str,dict[str,Any]]:
     deadline=time.time()+timeout
     while time.time()<deadline:
         out=required_runs(gh,repo,head_sha,allow_missing=True)
         if set(out)==REQUIRED_WORKFLOWS: return out
-        time.sleep(4)
+        time.sleep(REQUIRED_WORKFLOW_DISCOVERY_POLL_SECONDS)
     fail("MISSING_REQUIRED_WORKFLOWS_TIMEOUT")
 
 def approve_and_wait(gh: GitHub, repo: str, head_sha: str, runs: dict[str,dict[str,Any]], timeout: int=1800) -> dict[str,int]:

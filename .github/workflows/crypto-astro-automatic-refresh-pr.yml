@@ -69,6 +69,14 @@ jobs:
               '.github/workflows/crypto-astro-operational-cadence-pr.yml',
               '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
           }
+          trusted_ci_required_workflow_wait_race_repair_scope = {
+              '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
+              '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
+              '.github/workflows/crypto-astro-operational-cadence-pr.yml',
+              '.github/workflows/crypto-astro-snapshot-memory-pr.yml',
+              'tools/crypto_astro_operations/test_verify_generated_refresh_ci_release.py',
+              'tools/crypto_astro_operations/verify_generated_refresh_ci_release.py',
+          }
           trusted_ci_topology_repair_scope = {
               '.github/workflows/crypto-astro-assistant-dispatch-pr.yml',
               '.github/workflows/crypto-astro-automatic-refresh-pr.yml',
@@ -120,6 +128,7 @@ jobs:
           elif changed==natural_cycle_trusted_release_handoff_scope: mode='natural_cycle_trusted_release_handoff'; marker='AUTOMATIC_REFRESH_NATURAL_CYCLE_TRUSTED_RELEASE_HANDOFF_SCOPE=PASS'
           elif changed==trusted_ci_to_autopublish_handoff_scope: mode='trusted_ci_to_autopublish_handoff'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_TO_AUTOPUBLISH_HANDOFF_SCOPE=PASS'
           elif changed==trusted_ci_release_runtime_repair_scope: mode='trusted_ci_release_runtime_repair'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_RELEASE_RUNTIME_REPAIR_SCOPE=PASS'
+          elif changed==trusted_ci_required_workflow_wait_race_repair_scope: mode='trusted_ci_required_workflow_wait_race_repair'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_REQUIRED_WORKFLOW_WAIT_RACE_REPAIR_SCOPE=PASS'
           elif changed==trusted_ci_topology_repair_scope: mode='trusted_ci_topology_repair'; marker='AUTOMATIC_REFRESH_TRUSTED_CI_TOPOLOGY_REPAIR_SCOPE=PASS'
           elif changed==artifact_redirect_auth_repair: mode='artifact_redirect_auth_repair'; marker='AUTOPUBLISH_ARTIFACT_REDIRECT_AUTH_REPAIR_EXACT_SCOPE=PASS'
           elif changed==repair: mode='automatic_publication_repair'; marker='AUTOMATIC_PUBLICATION_REPAIR_EXACT_SCOPE=PASS'
