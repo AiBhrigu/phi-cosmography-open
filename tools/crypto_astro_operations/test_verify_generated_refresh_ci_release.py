@@ -1,11 +1,13 @@
 from __future__ import annotations
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from tools.crypto_astro_operations.verify_generated_refresh_ci_release import (
     GateError, RECOVERY_SCHEMA, canonical_body, parse_body, parse_recovery_issue,
     validate_control_workflow, validate_pr_identity, validate_scope,
 )
-from tools.crypto_astro_operations.verify_generated_refresh_autopublish import REQUIRED_FILES
+import tools.crypto_astro_operations.verify_generated_refresh_ci_release as release
+from tools.crypto_astro_operations.verify_generated_refresh_autopublish import REQUIRED_FILES, REQUIRED_WORKFLOWS
 
 REPO="AiBhrigu/phi-cosmography-open"; H="b"*40; B="a"*40
 def pr(**kw):
@@ -77,6 +79,22 @@ class T(unittest.TestCase):
         self.assertIn('manual_run_id:', release)
         self.assertIn("github.event_name == 'workflow_dispatch'", release)
         self.assertIn('github.event.workflow_run.id || inputs.manual_run_id', release)
+
+    def test_required_workflow_discovery_wait_survives_160_second_materialization_delay(self):
+        class GH:
+            def __init__(self): self.calls=0
+            def request(self, path):
+                self.calls += 1
+                names=[] if self.calls <= 40 else sorted(REQUIRED_WORKFLOWS)
+                return {"workflow_runs":[{"name":name,"id":i+1} for i,name in enumerate(names)]}, None
+        clock=[0.0]
+        def now(): return clock[0]
+        def sleep(seconds): clock[0] += seconds
+        with patch.object(release.time,"time",side_effect=now), patch.object(release.time,"sleep",side_effect=sleep):
+            out=release.wait_required_runs(GH(),H)
+        self.assertEqual(set(out),REQUIRED_WORKFLOWS)
+        self.assertGreater(clock[0],120)
+        self.assertLess(clock[0],release.REQUIRED_WORKFLOW_DISCOVERY_TIMEOUT_SECONDS)
 
     def test_canonical_governance_copy(self):
         body=f"- Base SHA: {B}\n- review PR only; no auto-merge and no deploy command\n- publication follows only after explicit merge authorization and accepted merge to main\n"
