@@ -268,16 +268,15 @@ h3 {
 }
 
 .map-viewport {
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
+  overflow-x: hidden;
   border-bottom: 1px solid rgba(241, 239, 233, 0.07);
   background: #05070a;
 }
 
 .map-viewport img {
   display: block;
-  width: 760px;
-  max-width: none;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   margin: 0 auto;
 }
@@ -392,13 +391,6 @@ h3 {
 }
 
 .footer-links a:hover { color: var(--ivory); }
-
-@media (min-width: 820px) {
-  .map-viewport img {
-    width: 100%;
-    max-width: 100%;
-  }
-}
 
 @media (max-width: 860px) {
   .nav-shell {
